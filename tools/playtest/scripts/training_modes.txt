@@ -1,0 +1,37 @@
+# Training: every dummy mode in turn (Tab), with an attack against each, then the hitbox view
+# (F1), frame data (F2) and a reset (F4).
+wait 4.0
+hold d 700
+shot d00_stand
+tap tab 60
+wait 1.0
+tap u 50
+wait 0.8
+shot d01_mode2
+tap tab 60
+wait 1.0
+tap u 50
+wait 0.4
+chord a l 60
+wait 0.8
+shot d02_mode3
+tap tab 60
+wait 1.5
+shot d03_mode4
+tap tab 60
+wait 2.5
+shot d04_mode5
+tap tab 60
+wait 2.5
+shot d05_mode6
+tap f1 60
+wait 0.5
+shot d06_hitboxes
+tap f2 60
+wait 0.5
+tap u 50
+wait 0.3
+shot d07_frames
+tap f4 60
+wait 1.0
+shot d08_reset
