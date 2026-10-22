@@ -1,0 +1,69 @@
+# A tour of the released build: menus, the select screen's portraits, a training fight, Extras,
+# then Quit from the main menu (the game should exit by itself).
+wait 3.0
+shot r00_title
+tap enter 60
+wait 1.0
+shot r01_menu
+tap enter 60
+wait 2.0
+shot r02_select
+tap backspace 60
+wait 1.2
+tap s 60
+wait 0.2
+tap s 60
+wait 0.2
+tap enter 60
+wait 2.0
+shot r03_training_select
+tap j 60
+wait 1.5
+tap j 60
+wait 1.5
+shot r04_training_stage
+tap enter 60
+wait 6.0
+shot r05_training_fight
+hold d 500
+tap u 50
+wait 0.4
+chord s u 60
+wait 1.5
+shot r06_training_hit
+tap esc 60
+wait 0.6
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 2.0
+shot r07_menu_again
+tap s 60
+wait 0.15
+tap s 60
+wait 0.3
+tap enter 60
+wait 1.5
+shot r08_extras
+tap enter 60
+wait 1.2
+shot r09_endings
+tap backspace 60
+wait 1.0
+tap backspace 60
+wait 1.0
+shot r10_menu
+# The menu remembers Extras; Quit is two below it.
+tap s 60
+wait 0.15
+tap s 60
+wait 0.3
+shot r11_quit
+tap enter 60
+wait 3.0

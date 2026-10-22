@@ -36,6 +36,7 @@ var ticks_run := 0
 var sim_usec := 0
 ## With --trace=path every tick's input, states and events are written as JSON lines.
 var _trace: FileAccess
+static var _trace_file: FileAccess
 var _trace_live := false
 ## With --bench=seconds frame times are collected, printed and the game quits.
 var _bench_secs := 0.0
@@ -126,8 +127,12 @@ func start(cfg: Dictionary) -> void:
 	Input.joy_connection_changed.connect(_on_joy_changed)
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--trace="):
-			_trace = FileAccess.open(arg.trim_prefix("--trace="), FileAccess.READ_WRITE if FileAccess.file_exists(arg.trim_prefix("--trace=")) else FileAccess.WRITE)
-			_trace.seek_end()
+			# One handle for the whole run: a restarted match starts before the old one is freed,
+			# and two handles on one file write over each other.
+			if _trace_file == null:
+				_trace_file = FileAccess.open(arg.trim_prefix("--trace="), FileAccess.READ_WRITE if FileAccess.file_exists(arg.trim_prefix("--trace=")) else FileAccess.WRITE)
+				_trace_file.seek_end()
+			_trace = _trace_file
 		elif arg == "--trace-live":
 			# Flush every tick, for tools that read the trace while the game runs.
 			_trace_live = true
@@ -135,8 +140,11 @@ func start(cfg: Dictionary) -> void:
 			_bench_secs = float(arg.trim_prefix("--bench="))
 	if _trace:
 		# One header per match, so a long trace (a whole arcade run) says who fought where.
+		# Object counts too, so a long session shows whether anything accumulates match to match.
 		_trace.store_line(JSON.stringify({"match": {"p1": config["p1"], "p2": config["p2"], "mode": mode, "stage": stage,
-			"difficulty": config.get("difficulty", 1)}}))
+			"difficulty": config.get("difficulty", 1)}, "objects": Performance.get_monitor(Performance.OBJECT_COUNT),
+			"nodes": Performance.get_monitor(Performance.OBJECT_NODE_COUNT), "resources": Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT),
+			"orphans": Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT), "static_mb": snappedf(Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0, 0.1)}))
 
 
 func _exit_tree() -> void:

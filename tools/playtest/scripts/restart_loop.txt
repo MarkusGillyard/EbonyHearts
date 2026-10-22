@@ -1,0 +1,163 @@
+# Restarts the same match from the pause menu many times, for leak checks (the trace header of
+# each match records object counts).
+wait 6.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
+tap esc 60
+wait 0.5
+tap s 60
+wait 0.15
+tap s 60
+wait 0.15
+tap enter 60
+wait 5.0
