@@ -1,0 +1,112 @@
+# The tutorial from the main menu, step by step as a player would do it (Ashka on the left).
+wait 2.5
+tap enter 60
+wait 1.0
+# Main menu: Arcade, Versus, Training, Tutorial ...
+tap s 60
+wait 0.2
+tap s 60
+wait 0.2
+tap s 60
+wait 0.3
+shot t00_menu_tutorial
+tap enter 60
+wait 5.0
+shot t01_walk
+hold d 1100
+wait 0.6
+shot t02_walk_back
+hold a 1100
+wait 0.6
+shot t03_jump
+tap w 60
+wait 1.3
+tap w 60
+wait 1.6
+shot t04_crouch
+hold s 1100
+wait 0.6
+shot t05_strikes
+tap u 50
+wait 0.6
+tap j 50
+wait 0.6
+tap o 50
+wait 0.8
+tap l 50
+wait 1.0
+shot t06_block
+hold i 6500
+wait 0.4
+shot t07_block_low
+press s
+press i
+wait 6.0
+release i
+release s
+wait 0.5
+shot t08_uppercut
+hold d 300
+chord s u 60
+wait 1.2
+hold d 300
+chord s u 60
+wait 1.5
+shot t09_special
+tap s 40
+tap d 40
+tap u 40
+wait 1.4
+tap s 40
+tap d 40
+tap u 40
+wait 1.6
+shot t10_chain
+hold d 500
+tap u 40
+wait 0.15
+tap u 40
+wait 0.15
+tap j 40
+wait 0.15
+chord a o 50
+wait 1.6
+hold d 500
+tap u 40
+wait 0.15
+tap u 40
+wait 0.15
+tap j 40
+wait 0.15
+chord a o 50
+wait 1.6
+shot t11_run
+hold a 900
+press k
+hold d 900
+release k
+wait 0.6
+shot t12_throw
+hold d 700
+chord d j 60
+wait 2.2
+hold d 500
+chord d j 60
+wait 2.2
+shot t13_finish
+# After the throw Gorm has little health left: one high punch knocks him out.
+hold d 500
+tap u 40
+wait 2.6
+shot t14_finish_him
+hold a 300
+wait 0.2
+tap d 40
+wait 0.03
+tap d 40
+wait 0.03
+chord s u 60
+wait 6.0
+shot t15_after
+wait 4.0
+shot t16_results

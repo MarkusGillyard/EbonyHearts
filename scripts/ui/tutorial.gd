@@ -114,13 +114,22 @@ func filter_pads(p: Array) -> Array:
 	if step < 0 or step >= STEPS.size() or _done:
 		return out
 	var id: String = STEPS[step]["id"]
-	var dist := sim.distance()
 	if id in ["block", "block_low"] and g.is_actionable():
-		if dist > 1.15:
+		# He closes in until the swing would actually land, so a held block has something to stop.
+		var swing := "hp" if id == "block" else "sweep"
+		if sim.distance() > _reach(g, swing) - 0.1:
 			out[1] = PadIntent.pad(6, g.facing)
 		elif _t % 70 == 0:
 			out[1] = PadIntent.pad(5 if id == "block" else 4, g.facing, InputBuffer.HP if id == "block" else InputBuffer.LK)
 	return out
+
+
+## How far a move reaches: its furthest hitbox plus about half the other fighter's body.
+func _reach(f: Fighter, move_id: String) -> float:
+	var r := 0.0
+	for hb in f.def.move(move_id).hitboxes:
+		r = maxf(r, (hb["rect"] as Rect2).end.x)
+	return r + 0.22 * sim.fighters[1 - f.index].scale()
 
 
 func on_event(e: Dictionary) -> void:

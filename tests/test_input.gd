@@ -8,8 +8,11 @@ extends TestCase
 func after_each() -> void:
 	for a in ["p1_hp", "p1_left", "p2_hp", "p2_left", "p1_bl"]:
 		Input.action_release(a)
+	# Restore the defaults on disk too, so the next run starts from them.
 	Settings.assign = {"kb_left": 0, "kb_right": 1, "pad0": 0, "pad1": 1}
-	Settings.set_solo(true)
+	Settings.solo = true
+	Settings.save_settings()
+	Settings.apply()
 
 
 static func _pad_button(device: int, button: int, pressed: bool) -> InputEventJoypadButton:

@@ -66,6 +66,26 @@ func test_flawless_win_offers_the_stranger() -> void:
 	Game.arcade = {}
 
 
+func test_tutorial_blocking_steps_give_something_to_block() -> void:
+	# Gorm walks in from the opening gap and swings; a player holding the block the prompt asks
+	# for must be able to finish the step.
+	for id in ["block", "block_low"]:
+		var h := SimHarness.new(Content.fighter("ashka"), Content.fighter("gorm"))
+		h.place(3.0)
+		var tut: Node = load("res://scripts/ui/tutorial.gd").new()
+		tut.sim = h.sim
+		for i in tut.STEPS.size():
+			if tut.STEPS[i]["id"] == id:
+				tut.step = i
+		var held := Vector3i(SimHarness.D if id == "block_low" else 0, SimHarness.BL, 0)
+		for t in 600:
+			h.sim.step(tut.filter_pads([held, Vector3i.ZERO]))
+			h.log.append_array(h.sim.events)
+		assert_true(h.count("block") >= (3 if id == "block" else 2), "Gorm's swings reach a held block in step " + id)
+		assert_eq(h.count("hit"), 0, "and none of them gets through it")
+		tut.free()
+
+
 func test_progress_roundtrip_and_recovery() -> void:
 	Progress.data = Progress.fresh()
 	Progress.record_arcade("nix", 2, 312.0)
