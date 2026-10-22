@@ -13,6 +13,8 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--only="):
 			only = a.trim_prefix("--only=")
+	# The project letterboxes to 16:9; a portrait wants the window's own pixels.
+	get_window().content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 	get_window().size = SIZE
 	_run.call_deferred()
 
@@ -64,10 +66,12 @@ func _run() -> void:
 		for i in 90:
 			for c in v.cloths:
 				c.step(1.0 / 60.0)
+		# Head and shoulders: about 0.75 m of a 1.8 m fighter fills the frame's height.
+		var k := def.height / 1.8
 		var head := v.rig.global_transform * v.rig.joint_pos("head")
-		var target := head + Vector3(0, 0.02 * def.height, 0)
+		var target := head + Vector3(0, -0.06 * k, 0)
 		var dir := Vector3(0.55, 0.05, 1.0).normalized()
-		cam.global_transform = Transform3D(Basis.looking_at(-dir, Vector3.UP), target + dir * (1.15 * def.height / 1.8) + Vector3(0, -0.12, 0))
+		cam.global_transform = Transform3D(Basis.looking_at(-dir, Vector3.UP), target + dir * (1.75 * k))
 		await RenderingServer.frame_post_draw
 		await RenderingServer.frame_post_draw
 		await RenderingServer.frame_post_draw
