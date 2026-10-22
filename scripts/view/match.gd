@@ -36,6 +36,7 @@ var ticks_run := 0
 var sim_usec := 0
 ## With --trace=path every tick's input, states and events are written as JSON lines.
 var _trace: FileAccess
+var _trace_live := false
 ## With --bench=seconds frame times are collected, printed and the game quits.
 var _bench_secs := 0.0
 var _bench_frames: PackedFloat32Array = PackedFloat32Array()
@@ -124,7 +125,11 @@ func start(cfg: Dictionary) -> void:
 	Input.joy_connection_changed.connect(_on_joy_changed)
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--trace="):
-			_trace = FileAccess.open(arg.trim_prefix("--trace="), FileAccess.WRITE)
+			_trace = FileAccess.open(arg.trim_prefix("--trace="), FileAccess.READ_WRITE if FileAccess.file_exists(arg.trim_prefix("--trace=")) else FileAccess.WRITE)
+			_trace.seek_end()
+		elif arg == "--trace-live":
+			# Flush every tick, for tools that read the trace while the game runs.
+			_trace_live = true
 		elif arg.begins_with("--bench="):
 			_bench_secs = float(arg.trim_prefix("--bench="))
 
@@ -256,8 +261,9 @@ func _write_trace(p: Array) -> void:
 			if e.has(k):
 				short[k] = e[k]
 		ev.append(short)
-	_trace.store_line(JSON.stringify({"t": sim.tick_count, "pads": [[p[0].x, p[0].z], [p[1].x, p[1].z]], "f": fs, "ev": ev}))
-	if sim.tick_count % 60 == 0:
+	_trace.store_line(JSON.stringify({"t": sim.tick_count, "phase": sim.phase, "pads": [[p[0].x, p[0].z], [p[1].x, p[1].z]], "f": fs, "ev": ev,
+		"facing": [sim.fighters[0].facing, sim.fighters[1].facing], "stun": [sim.fighters[0].stun_kind, sim.fighters[1].stun_kind]}))
+	if sim.tick_count % 60 == 0 or _trace_live:
 		_trace.flush()
 
 

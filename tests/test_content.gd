@@ -96,3 +96,12 @@ func test_every_stage_builds() -> void:
 		assert_true(a.get_child_count() > 5, "%s builds" % id)
 		assert_true(a.music.begins_with("music_"), "%s has music" % id)
 		a.queue_free()
+
+
+func test_music_loops_and_effects_do_not() -> void:
+	for name in ["music_menu", "music_select", "music_yards", "music_chapel", "music_market", "music_roost", "music_ending"]:
+		var s: AudioStreamWAV = load("res://assets/audio/%s.wav" % name)
+		assert_ne(s.loop_mode, AudioStreamWAV.LOOP_DISABLED, "%s loops" % name)
+		assert_true(s.get_length() > 30.0, "%s is a real loop" % name)
+	var hit: AudioStreamWAV = load("res://assets/audio/hit_heavy.wav")
+	assert_eq(hit.loop_mode, AudioStreamWAV.LOOP_DISABLED, "effects play once")

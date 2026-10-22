@@ -81,9 +81,13 @@ func play_music(track: String) -> void:
 		return
 	_music_name = track
 	var s := stream(track)
-	if s is AudioStreamWAV:
-		(s as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
-		(s as AudioStreamWAV).loop_end = (s as AudioStreamWAV).data.size() / 2
+	if s is AudioStreamWAV and (s as AudioStreamWAV).loop_mode == AudioStreamWAV.LOOP_DISABLED:
+		# Music files carry their own loop points; this is only a fallback for one that does not.
+		# The loop end is in frames, whatever compression the importer chose.
+		var w := s as AudioStreamWAV
+		w.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		w.loop_begin = 0
+		w.loop_end = int(w.get_length() * w.mix_rate)
 	_music.stream = s
 	if s:
 		_music.play()

@@ -188,6 +188,21 @@ func _extra_actions() -> void:
 		k.physical_keycode = pair[1]
 		if not InputMap.action_has_event(pair[0], k):
 			InputMap.action_add_event(pair[0], k)
+	# Any gamepad can drive the menus.
+	for pair in [["ui_accept", JOY_BUTTON_A], ["ui_cancel", JOY_BUTTON_B], ["ui_up", JOY_BUTTON_DPAD_UP], ["ui_down", JOY_BUTTON_DPAD_DOWN],
+			["ui_left", JOY_BUTTON_DPAD_LEFT], ["ui_right", JOY_BUTTON_DPAD_RIGHT]]:
+		var jb := InputEventJoypadButton.new()
+		jb.button_index = pair[1]
+		jb.device = -1
+		if not InputMap.action_has_event(pair[0], jb):
+			InputMap.action_add_event(pair[0], jb)
+	for pair in [["ui_up", JOY_AXIS_LEFT_Y, -1.0], ["ui_down", JOY_AXIS_LEFT_Y, 1.0], ["ui_left", JOY_AXIS_LEFT_X, -1.0], ["ui_right", JOY_AXIS_LEFT_X, 1.0]]:
+		var jm := InputEventJoypadMotion.new()
+		jm.axis = pair[1]
+		jm.axis_value = pair[2]
+		jm.device = -1
+		if not InputMap.action_has_event(pair[0], jm):
+			InputMap.action_add_event(pair[0], jm)
 	for extra in [["pause", KEY_ESCAPE, JOY_BUTTON_START], ["debug_boxes", KEY_F1, -1], ["debug_frames", KEY_F2, -1],
 			["debug_states", KEY_F3, -1], ["training_reset", KEY_F4, JOY_BUTTON_BACK], ["debug_pause", KEY_F5, -1],
 			["debug_step", KEY_F6, -1], ["debug_slow", KEY_F7, -1], ["input_display", KEY_F8, -1],
