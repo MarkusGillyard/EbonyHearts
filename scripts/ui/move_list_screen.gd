@@ -176,7 +176,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause") or (event is InputEventKey and event.physical_keycode == KEY_ESCAPE):
 		Audio.play("ui_back")
 		if overlay:
-			get_parent().close_overlay()
+			get_tree().current_scene.close_overlay()
 		else:
 			go_back()
 	else:

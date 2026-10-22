@@ -50,13 +50,15 @@ func _ready() -> void:
 
 
 func _show(screen: String, data: Dictionary) -> void:
-	if _overlay:
-		_overlay.queue_free()
-		_overlay = null
+	close_overlay()
 	if screen == "moves" and match_node:
+		# Over a paused match, on a layer above the HUD (and its pause menu) so nothing covers it.
+		var layer := CanvasLayer.new()
+		layer.layer = 20
+		layer.process_mode = Node.PROCESS_MODE_ALWAYS
+		add_child(layer)
 		_overlay = _make_screen(screen, data)
-		_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
-		add_child(_overlay)
+		layer.add_child(_overlay)
 		return
 	if current:
 		current.queue_free()
@@ -113,5 +115,5 @@ func _on_pause_choice(choice: String) -> void:
 
 func close_overlay() -> void:
 	if _overlay:
-		_overlay.queue_free()
+		_overlay.get_parent().queue_free()
 		_overlay = null
