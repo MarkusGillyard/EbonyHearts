@@ -64,7 +64,31 @@ func _ready() -> void:
 				Game.start_stranger(false)
 				Game.config["p1"] = parts[0]
 			start = "match"
+	_fit_window()
 	_show.call_deferred(start, {})
+
+
+## The default window is 1600x900; on a smaller screen it shrinks to fit, centred and 16:9.
+func _fit_window() -> void:
+	if DisplayServer.get_name() == "headless" or Settings.values["fullscreen"]:
+		return
+	var area := DisplayServer.screen_get_usable_rect(DisplayServer.window_get_current_screen())
+	var size := DisplayServer.window_get_size()
+	if size.x <= area.size.x and size.y <= area.size.y:
+		return
+	var k := minf(area.size.x * 0.92 / size.x, area.size.y * 0.92 / size.y)
+	var fit := Vector2i(int(size.x * k), int(size.y * k))
+	DisplayServer.window_set_size(fit)
+	DisplayServer.window_set_position(area.position + (area.size - fit) / 2)
+
+
+func _input(event: InputEvent) -> void:
+	# F11 or Alt+Enter switch between a window and full screen anywhere in the game.
+	var key := event as InputEventKey
+	if key and key.pressed and not key.echo and (key.physical_keycode == KEY_F11
+			or (key.alt_pressed and key.physical_keycode in [KEY_ENTER, KEY_KP_ENTER])):
+		Settings.set_value("fullscreen", not Settings.values["fullscreen"])
+		get_viewport().set_input_as_handled()
 
 
 func _show(screen: String, data: Dictionary) -> void:

@@ -46,6 +46,7 @@ gamepad to a side. Every key can be rebound in **Settings**.
 | Run | K | Numpad 5 | LB or LT |
 | Low Kick | L | Numpad 6 | A |
 | Pause | Esc | | Start |
+| Full screen | F11 or Alt+Enter | | |
 
 Menus: arrows or WASD to move, Enter (or J/U) to choose, Backspace or Esc to go back.
 

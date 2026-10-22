@@ -19,6 +19,7 @@ CONTROLS (all keys can be changed in Settings)
   Run               K            Numpad 5      LB / LT
   Low Kick          L            Numpad 6      A
   Pause             Esc                        Start
+  Full screen       F11 or Alt+Enter
 
 In one-player modes both keyboard halves and any gamepad control Player 1.
 In Versus, the Controllers screen decides who uses what.
