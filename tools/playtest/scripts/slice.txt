@@ -1,0 +1,32 @@
+# First look at a match: intro, walking, a few attacks from both sides, a jump.
+wait 3.5
+shot s1_intro
+wait 2.0
+shot s2_fight
+hold d 500
+shot s3_walk
+tap u 50
+wait 0.12
+shot s4_punch
+wait 0.4
+tap o 50
+wait 0.2
+shot s5_kick
+wait 0.6
+press s
+tap u 50
+wait 0.15
+shot s6_upper
+release s
+wait 1.0
+press w d
+wait 0.25
+release w d
+wait 0.25
+shot s7_jump
+wait 1.0
+press left
+tap kp6 50
+release left
+wait 0.3
+shot s8_p2

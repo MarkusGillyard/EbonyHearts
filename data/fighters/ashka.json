@@ -5,106 +5,790 @@
 	"pronoun": "her",
 	"style": "Muay Thai and lamp-fire",
 	"blurb": "The last lamplighter of drowned Ninefathom fights to carry its beacon-flame back to the city.",
-	"stats": {"height": 1.74, "health": 1000, "walk_f": 2.5, "walk_b": 2.05, "run_speed": 5.4},
+	"stats": {
+		"height": 1.74,
+		"health": 1000,
+		"walk_f": 2.5,
+		"walk_b": 2.05,
+		"run_speed": 5.4
+	},
 	"basic_tweaks": {
-		"hp2": {"chain": [
-			{"input": "LP", "move": "ashka_elbow_chain", "window": [5, 15], "cost": 12},
-			{"input": "HP", "move": "hp", "window": [5, 15], "cost": 6}
-		]},
-		"lk": {"chain": [{"input": "LK", "move": "ashka_knee_chain", "window": [6, 16], "cost": 12}]}
+		"hp2": {
+			"chain": [
+				{
+					"input": "LP",
+					"move": "ashka_elbow_chain",
+					"window": [
+						5,
+						15
+					],
+					"cost": 12
+				},
+				{
+					"input": "HP",
+					"move": "hp",
+					"window": [
+						5,
+						15
+					],
+					"cost": 6
+				}
+			]
+		},
+		"lk": {
+			"chain": [
+				{
+					"input": "LK",
+					"move": "ashka_knee_chain",
+					"window": [
+						6,
+						16
+					],
+					"cost": 12
+				}
+			]
+		}
 	},
 	"moves": {
 		"ashka_elbow_chain": {
-			"name": "Lantern Lash: elbow", "kind": "chain", "startup": 6, "active": 3, "recovery": 13, "level": "mid", "damage": 45,
-			"hitstun": 20, "blockstun": 11, "push_hit": 0.25, "push_block": 0.4,
-			"motion": [[6, 0.12]],
-			"hitboxes": [{"rect": [0.2, 1.2, 0.42, 0.34]}],
-			"chain": [{"input": "B+HK", "move": "ashka_spin_chain", "window": [6, 17], "cost": 12}],
-			"cancel": [6, 18],
-			"anim": {"tip": "hand_r", "keys": [[3, "ashka_elbow_load", "out"], [6, "ashka_elbow_hit", "snap"], [9, "ashka_elbow_hit", "linear"], [21, "stance", "inout"]]},
-			"sfx": {"swing": "light"}
+			"name": "Lantern Lash: elbow",
+			"kind": "chain",
+			"startup": 6,
+			"active": 3,
+			"recovery": 13,
+			"level": "mid",
+			"damage": 45,
+			"hitstun": 20,
+			"blockstun": 11,
+			"push_hit": 0.25,
+			"push_block": 0.4,
+			"motion": [
+				[
+					6,
+					0.12
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						1.2,
+						0.42,
+						0.34
+					]
+				}
+			],
+			"chain": [
+				{
+					"input": "B+HK",
+					"move": "ashka_spin_chain",
+					"window": [
+						6,
+						17
+					],
+					"cost": 12
+				}
+			],
+			"cancel": [
+				6,
+				18
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						3,
+						"ashka_elbow_load",
+						"out"
+					],
+					[
+						6,
+						"ashka_elbow_hit",
+						"snap"
+					],
+					[
+						9,
+						"ashka_elbow_hit",
+						"linear"
+					],
+					[
+						21,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "light"
+			}
 		},
 		"ashka_spin_chain": {
-			"name": "Lantern Lash: spinning heel", "kind": "chain", "startup": 10, "active": 4, "recovery": 20, "level": "high", "damage": 80,
-			"hitstun": 26, "blockstun": 13, "effect": "knockdown", "launch": [3.8, 4.2], "hitstop": 11, "push_block": 0.8,
-			"motion": [[10, 0.15]],
-			"hitboxes": [{"rect": [0.28, 1.2, 0.66, 0.4]}],
-			"hurtboxes": [{"frames": [8, 20], "rect": [0.15, 1.1, 0.7, 0.34]}],
-			"anim": {"tip": "foot_r", "keys": [[5, "rh_turn", "out"], [10, "rh_hit", "snap"], [14, "rh_hit", "linear"], [24, "rh_follow", "out"], [33, "stance", "inout"]]},
-			"sfx": {"swing": "heavy"}
+			"name": "Lantern Lash: spinning heel",
+			"kind": "chain",
+			"startup": 10,
+			"active": 4,
+			"recovery": 20,
+			"level": "high",
+			"damage": 80,
+			"hitstun": 26,
+			"blockstun": 13,
+			"effect": "knockdown",
+			"launch": [
+				3.8,
+				4.2
+			],
+			"hitstop": 11,
+			"push_block": 0.8,
+			"motion": [
+				[
+					10,
+					0.15
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.28,
+						1.2,
+						0.66,
+						0.4
+					]
+				}
+			],
+			"hurtboxes": [
+				{
+					"frames": [
+						8,
+						20
+					],
+					"rect": [
+						0.15,
+						1.1,
+						0.7,
+						0.34
+					]
+				}
+			],
+			"anim": {
+				"tip": "foot_r",
+				"keys": [
+					[
+						5,
+						"rh_turn",
+						"out"
+					],
+					[
+						10,
+						"rh_hit",
+						"snap"
+					],
+					[
+						14,
+						"rh_hit",
+						"linear"
+					],
+					[
+						24,
+						"rh_follow",
+						"out"
+					],
+					[
+						33,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "heavy"
+			}
 		},
 		"ashka_knee_chain": {
-			"name": "Temple Bell: knee", "kind": "chain", "startup": 6, "active": 3, "recovery": 14, "level": "mid", "damage": 50,
-			"hitstun": 20, "blockstun": 11, "push_hit": 0.2, "push_block": 0.4,
-			"motion": [[6, 0.15]],
-			"hitboxes": [{"rect": [0.18, 0.75, 0.42, 0.45]}],
-			"chain": [{"input": "HK", "move": "ashka_head_chain", "window": [6, 17], "cost": 12}],
-			"anim": {"tip": "knee_r", "keys": [[3, "ashka_knee_load", "out"], [6, "ashka_knee_hit", "snap"], [9, "ashka_knee_hit", "linear"], [22, "stance", "inout"]]},
-			"sfx": {"swing": "light"}
+			"name": "Temple Bell: knee",
+			"kind": "chain",
+			"startup": 6,
+			"active": 3,
+			"recovery": 14,
+			"level": "mid",
+			"damage": 50,
+			"hitstun": 20,
+			"blockstun": 11,
+			"push_hit": 0.2,
+			"push_block": 0.4,
+			"motion": [
+				[
+					6,
+					0.15
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.18,
+						0.75,
+						0.42,
+						0.45
+					]
+				}
+			],
+			"chain": [
+				{
+					"input": "HK",
+					"move": "ashka_head_chain",
+					"window": [
+						6,
+						17
+					],
+					"cost": 12
+				}
+			],
+			"anim": {
+				"tip": "knee_r",
+				"keys": [
+					[
+						3,
+						"ashka_knee_load",
+						"out"
+					],
+					[
+						6,
+						"ashka_knee_hit",
+						"snap"
+					],
+					[
+						9,
+						"ashka_knee_hit",
+						"linear"
+					],
+					[
+						22,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "light"
+			}
 		},
 		"ashka_head_chain": {
-			"name": "Temple Bell: head kick", "kind": "chain", "startup": 9, "active": 3, "recovery": 20, "level": "high", "damage": 70,
-			"hitstun": 26, "blockstun": 12, "effect": "launch", "launch": [1.4, 7.6], "juggle_cost": 2, "hitstop": 10, "push_block": 0.6,
-			"hitboxes": [{"rect": [0.32, 1.28, 0.62, 0.34]}],
-			"hurtboxes": [{"frames": [7, 18], "rect": [0.15, 1.15, 0.7, 0.3]}],
-			"cancel": [10, 22],
-			"anim": {"tip": "foot_r", "keys": [[5, "hk_chamber", "out"], [9, "ashka_head_hit", "snap"], [12, "ashka_head_hit", "linear"], [20, "hk_chamber", "inout"], [32, "stance", "inout"]]},
-			"sfx": {"swing": "medium"}
+			"name": "Temple Bell: head kick",
+			"kind": "chain",
+			"startup": 9,
+			"active": 3,
+			"recovery": 20,
+			"level": "high",
+			"damage": 70,
+			"hitstun": 26,
+			"blockstun": 12,
+			"effect": "launch",
+			"launch": [
+				1.4,
+				7.6
+			],
+			"juggle_cost": 2,
+			"hitstop": 10,
+			"push_block": 0.6,
+			"hitboxes": [
+				{
+					"rect": [
+						0.32,
+						1.28,
+						0.62,
+						0.34
+					]
+				}
+			],
+			"hurtboxes": [
+				{
+					"frames": [
+						7,
+						18
+					],
+					"rect": [
+						0.15,
+						1.15,
+						0.7,
+						0.3
+					]
+				}
+			],
+			"cancel": [
+				10,
+				22
+			],
+			"anim": {
+				"tip": "foot_r",
+				"keys": [
+					[
+						5,
+						"hk_chamber",
+						"out"
+					],
+					[
+						9,
+						"ashka_head_hit",
+						"snap"
+					],
+					[
+						12,
+						"ashka_head_hit",
+						"linear"
+					],
+					[
+						20,
+						"hk_chamber",
+						"inout"
+					],
+					[
+						32,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "medium"
+			}
 		},
 		"ember_shot": {
-			"name": "Ember Shot", "kind": "special", "startup": 12, "active": 0, "recovery": 26, "level": "none",
-			"projectile": {"frame": 12, "kind": "ember", "offset": [0.62, 1.34], "speed": 7.2, "size": [0.36, 0.3], "life": 110,
-				"level": "high", "damage": 70, "chip": 12, "hitstun": 26, "blockstun": 16, "push_hit": 0.6, "push_block": 0.5},
-			"tags": ["projectile"],
-			"anim": {"tip": "hand_l", "keys": [[6, "ashka_ember_load", "out"], [12, "ashka_ember_throw", "snap"], [24, "ashka_ember_throw", "linear"], [37, "stance", "inout"]]},
-			"sfx": {"swing": "fire"}
+			"name": "Ember Shot",
+			"kind": "special",
+			"startup": 12,
+			"active": 0,
+			"recovery": 26,
+			"level": "none",
+			"projectile": {
+				"frame": 12,
+				"kind": "ember",
+				"offset": [
+					0.62,
+					1.34
+				],
+				"speed": 7.2,
+				"size": [
+					0.36,
+					0.3
+				],
+				"life": 110,
+				"level": "high",
+				"damage": 70,
+				"chip": 12,
+				"hitstun": 26,
+				"blockstun": 16,
+				"push_hit": 0.6,
+				"push_block": 0.5
+			},
+			"tags": [
+				"projectile"
+			],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						6,
+						"ashka_ember_load",
+						"out"
+					],
+					[
+						12,
+						"ashka_ember_throw",
+						"snap"
+					],
+					[
+						24,
+						"ashka_ember_throw",
+						"linear"
+					],
+					[
+						37,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "fire"
+			}
 		},
 		"wick_knee": {
-			"name": "Wick Knee", "kind": "special", "startup": 11, "active": 7, "recovery": 18, "level": "mid", "damage": 95,
-			"hitstun": 26, "blockstun": 14, "effect": "knockdown", "launch": [3.2, 4.0], "hitstop": 11, "chip": 14, "push_block": 0.7,
-			"motion": [[3, 0.1], [17, 2.2], [24, 2.35]],
-			"lift": [[3, 0.0], [10, 0.55], [17, 0.35], [22, 0.0]],
-			"props": {"airborne": [5, 20]},
-			"hitboxes": [{"rect": [0.15, 0.85, 0.5, 0.55]}],
-			"tags": ["rush"],
-			"anim": {"tip": "knee_r", "keys": [[4, "ashka_knee_load", "out"], [11, "ashka_flying_knee", "snap"], [18, "ashka_flying_knee", "linear"], [24, "crouch", "inout"], [35, "stance", "inout"]]},
-			"sfx": {"swing": "fire"}
+			"name": "Wick Knee",
+			"kind": "special",
+			"startup": 11,
+			"active": 7,
+			"recovery": 18,
+			"level": "mid",
+			"damage": 95,
+			"hitstun": 26,
+			"blockstun": 14,
+			"effect": "knockdown",
+			"launch": [
+				3.2,
+				4.0
+			],
+			"hitstop": 11,
+			"chip": 14,
+			"push_block": 0.7,
+			"motion": [
+				[
+					3,
+					0.1
+				],
+				[
+					17,
+					2.2
+				],
+				[
+					24,
+					2.35
+				]
+			],
+			"lift": [
+				[
+					3,
+					0.0
+				],
+				[
+					10,
+					0.55
+				],
+				[
+					17,
+					0.35
+				],
+				[
+					22,
+					0.0
+				]
+			],
+			"props": {
+				"airborne": [
+					5,
+					20
+				]
+			},
+			"hitboxes": [
+				{
+					"rect": [
+						0.15,
+						0.85,
+						0.5,
+						0.55
+					]
+				}
+			],
+			"tags": [
+				"rush"
+			],
+			"anim": {
+				"tip": "knee_r",
+				"keys": [
+					[
+						4,
+						"ashka_knee_load",
+						"out"
+					],
+					[
+						11,
+						"ashka_flying_knee",
+						"snap"
+					],
+					[
+						18,
+						"ashka_flying_knee",
+						"linear"
+					],
+					[
+						24,
+						"crouch",
+						"inout"
+					],
+					[
+						35,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "fire"
+			}
 		},
 		"elbow_rush": {
-			"name": "Elbow Rush", "kind": "special", "startup": 9, "active": 4, "recovery": 14, "level": "mid", "damage": 70,
-			"hitstun": 24, "blockstun": 13, "chip": 10, "push_hit": 0.45, "push_block": 0.55,
-			"motion": [[2, 0.05], [10, 1.4], [14, 1.5]],
-			"hitboxes": [{"rect": [0.2, 1.15, 0.45, 0.4]}],
-			"cancel": [11, 20],
-			"tags": ["rush"],
-			"anim": {"tip": "hand_r", "keys": [[3, "ashka_elbow_load", "out"], [9, "ashka_elbow_hit", "snap"], [13, "ashka_elbow_hit", "linear"], [26, "stance", "inout"]]},
-			"sfx": {"swing": "medium"}
+			"name": "Elbow Rush",
+			"kind": "special",
+			"startup": 9,
+			"active": 4,
+			"recovery": 14,
+			"level": "mid",
+			"damage": 70,
+			"hitstun": 24,
+			"blockstun": 13,
+			"chip": 10,
+			"push_hit": 0.45,
+			"push_block": 0.55,
+			"motion": [
+				[
+					2,
+					0.05
+				],
+				[
+					10,
+					1.4
+				],
+				[
+					14,
+					1.5
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						1.15,
+						0.45,
+						0.4
+					]
+				}
+			],
+			"cancel": [
+				11,
+				20
+			],
+			"tags": [
+				"rush"
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						3,
+						"ashka_elbow_load",
+						"out"
+					],
+					[
+						9,
+						"ashka_elbow_hit",
+						"snap"
+					],
+					[
+						13,
+						"ashka_elbow_hit",
+						"linear"
+					],
+					[
+						26,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "medium"
+			}
 		},
 		"rising_knee": {
-			"name": "Rising Knee", "kind": "special", "startup": 5, "active": 6, "recovery": 24, "level": "mid", "damage": 100,
-			"hitstun": 30, "blockstun": 14, "effect": "launch", "launch": [1.2, 8.4], "juggle_cost": 2, "hitstop": 12, "chip": 15, "push_block": 0.5,
-			"lift": [[4, 0.1], [10, 1.05], [16, 1.25], [28, 0.0]],
-			"motion": [[10, 0.25]],
-			"props": {"invuln": [1, 6], "airborne": [5, 28]},
-			"hitboxes": [{"rect": [0.05, 0.75, 0.48, 1.05]}],
-			"tags": ["anti_air", "reversal"],
-			"anim": {"tip": "knee_r", "keys": [[3, "crouch", "out"], [6, "ashka_rising_knee", "snap"], [16, "ashka_rising_knee", "linear"], [26, "jump", "inout"], [35, "stance", "inout"]]},
-			"sfx": {"swing": "fire"}
+			"name": "Rising Knee",
+			"kind": "special",
+			"startup": 5,
+			"active": 6,
+			"recovery": 24,
+			"level": "mid",
+			"damage": 100,
+			"hitstun": 30,
+			"blockstun": 14,
+			"effect": "launch",
+			"launch": [
+				1.2,
+				8.4
+			],
+			"juggle_cost": 2,
+			"hitstop": 12,
+			"chip": 15,
+			"push_block": 0.5,
+			"lift": [
+				[
+					4,
+					0.1
+				],
+				[
+					10,
+					1.05
+				],
+				[
+					16,
+					1.25
+				],
+				[
+					28,
+					0.0
+				]
+			],
+			"motion": [
+				[
+					10,
+					0.25
+				]
+			],
+			"props": {
+				"invuln": [
+					1,
+					6
+				],
+				"airborne": [
+					5,
+					28
+				]
+			},
+			"hitboxes": [
+				{
+					"rect": [
+						0.05,
+						0.75,
+						0.48,
+						1.05
+					]
+				}
+			],
+			"tags": [
+				"anti_air",
+				"reversal"
+			],
+			"anim": {
+				"tip": "knee_r",
+				"keys": [
+					[
+						3,
+						"crouch",
+						"out"
+					],
+					[
+						6,
+						"ashka_rising_knee",
+						"snap"
+					],
+					[
+						16,
+						"ashka_rising_knee",
+						"linear"
+					],
+					[
+						26,
+						"jump",
+						"inout"
+					],
+					[
+						35,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "fire"
+			}
 		},
 		"last_light": {
-			"name": "Last Light", "kind": "finisher", "startup": 1, "active": 0, "recovery": 0, "total": 240,
-			"anim": {"keys": [[10, "ashka_ember_load", "out"], [30, "ashka_ember_load", "linear"], [40, "ashka_ember_throw", "snap"], [130, "ashka_ember_throw", "linear"], [160, "stance", "inout"], [240, "win", "inout"]]}
+			"name": "Last Light",
+			"kind": "finisher",
+			"startup": 1,
+			"active": 0,
+			"recovery": 0,
+			"total": 240,
+			"anim": {
+				"keys": [
+					[
+						10,
+						"ashka_ember_load",
+						"out"
+					],
+					[
+						30,
+						"ashka_ember_load",
+						"linear"
+					],
+					[
+						40,
+						"ashka_ember_throw",
+						"snap"
+					],
+					[
+						130,
+						"ashka_ember_throw",
+						"linear"
+					],
+					[
+						160,
+						"stance",
+						"inout"
+					],
+					[
+						240,
+						"win",
+						"inout"
+					]
+				]
+			}
 		}
 	},
 	"commands": [
-		["D,F+HP", "ember_shot"],
-		["B,F+HK", "wick_knee"],
-		["F,F+LP", "elbow_rush"],
-		["D,U+HK", "rising_knee"]
+		[
+			"D,F+HP",
+			"ember_shot"
+		],
+		[
+			"B,F+HK",
+			"wick_knee"
+		],
+		[
+			"F,F+LP",
+			"elbow_rush"
+		],
+		[
+			"D,U+HK",
+			"rising_knee"
+		]
 	],
-	"finisher": {"input": "F,F,D+HP", "range": "sweep", "move": "last_light"},
-	"ai": {"range": 1.0, "aggression": 0.55, "zoning": 0.4,
-		"weights": {"hp": 1.2, "lp": 1.0, "hk": 0.9, "lk": 1.0, "sweep": 0.7, "roundhouse": 0.5, "crouch_lk": 0.8, "ember_shot": 1.0, "wick_knee": 0.5, "elbow_rush": 0.7},
-		"anti_air": ["rising_knee", "uppercut"], "combos": [["HP", "HP", "LP", "B+HK"], ["LK", "LK", "HK"]], "juggle": ["D,F+HP"]},
-	"look": {}
+	"finisher": {
+		"input": "F,F,D+HP",
+		"range": "sweep",
+		"move": "last_light"
+	},
+	"ai": {
+		"range": 1.0,
+		"aggression": 0.55,
+		"zoning": 0.4,
+		"weights": {
+			"hp": 1.2,
+			"lp": 1.0,
+			"hk": 0.9,
+			"lk": 1.0,
+			"sweep": 0.7,
+			"roundhouse": 0.5,
+			"crouch_lk": 0.8,
+			"ember_shot": 1.0,
+			"wick_knee": 0.5,
+			"elbow_rush": 0.7
+		},
+		"anti_air": [
+			"rising_knee",
+			"uppercut"
+		],
+		"combos": [
+			[
+				"HP",
+				"HP",
+				"LP",
+				"B+HK"
+			],
+			[
+				"LK",
+				"LK",
+				"HK"
+			]
+		],
+		"juggle": [
+			"D,F+HP"
+		]
+	}
 }
