@@ -35,8 +35,8 @@ func load_progress() -> void:
 	data = fresh()
 	if not FileAccess.file_exists(path):
 		return
-	var text := FileAccess.get_file_as_string(path)
-	var parsed: Variant = JSON.parse_string(text)
+	var json := JSON.new()
+	var parsed: Variant = json.data if json.parse(FileAccess.get_file_as_string(path)) == OK else null
 	if not parsed is Dictionary or int(parsed.get("version", 0)) < 1:
 		push_warning("Progress file unreadable; starting fresh and keeping the old one as .bad")
 		DirAccess.rename_absolute(ProjectSettings.globalize_path(path), ProjectSettings.globalize_path(path + ".bad"))

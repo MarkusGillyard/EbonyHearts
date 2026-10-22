@@ -1,0 +1,651 @@
+{
+	"id": "nix",
+	"name": "Nix Hollow",
+	"title": "Hand of the Drowned",
+	"pronoun": "him",
+	"style": "Ninjutsu and kusarigama",
+	"stats": {
+		"height": 1.78,
+		"health": 950,
+		"walk_f": 2.7,
+		"walk_b": 2.3,
+		"run_speed": 5.8
+	},
+	"basic_tweaks": {
+		"hp": {
+			"startup": 4,
+			"damage": 45
+		},
+		"hp2": {
+			"startup": 4,
+			"chain": [
+				{
+					"input": "LP",
+					"move": "nix_slash",
+					"window": [
+						4,
+						14
+					],
+					"cost": 12
+				},
+				{
+					"input": "HP",
+					"move": "hp",
+					"window": [
+						4,
+						14
+					],
+					"cost": 6
+				}
+			]
+		},
+		"hk": {
+			"damage": 70
+		},
+		"lk": {
+			"chain": [
+				{
+					"input": "HK",
+					"move": "nix_spin",
+					"window": [
+						6,
+						16
+					],
+					"cost": 12
+				}
+			]
+		}
+	},
+	"moves": {
+		"nix_slash": {
+			"name": "Drowned Hand: slash",
+			"startup": 6,
+			"active": 3,
+			"recovery": 12,
+			"level": "mid",
+			"damage": 45,
+			"hitboxes": [
+				{
+					"rect": [
+						0.25,
+						0.85,
+						0.75,
+						0.55
+					]
+				}
+			],
+			"anim": {
+				"tip": "prop",
+				"keys": [
+					[
+						3,
+						"nix_slash_load",
+						"out"
+					],
+					[
+						6,
+						"nix_slash_hit",
+						"snap"
+					],
+					[
+						9,
+						"nix_slash_hit",
+						"linear"
+					],
+					[
+						21,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "chain",
+			"hitstun": 20,
+			"blockstun": 11,
+			"push_hit": 0.25,
+			"chain": [
+				{
+					"input": "LK",
+					"move": "nix_low",
+					"window": [
+						6,
+						17
+					],
+					"cost": 12
+				}
+			],
+			"cancel": [
+				7,
+				18
+			],
+			"sfx": {
+				"swing": "light"
+			}
+		},
+		"nix_low": {
+			"name": "Drowned Hand: hook",
+			"startup": 8,
+			"active": 4,
+			"recovery": 20,
+			"level": "low",
+			"damage": 60,
+			"hitboxes": [
+				{
+					"rect": [
+						0.3,
+						0.0,
+						0.85,
+						0.35
+					]
+				}
+			],
+			"anim": {
+				"tip": "foot_r",
+				"keys": [
+					[
+						4,
+						"sweep_load",
+						"out"
+					],
+					[
+						8,
+						"nix_low_hit",
+						"snap"
+					],
+					[
+						12,
+						"nix_low_hit",
+						"linear"
+					],
+					[
+						32,
+						"crouch",
+						"inout"
+					]
+				]
+			},
+			"kind": "chain",
+			"hitstun": 24,
+			"blockstun": 12,
+			"effect": "sweep",
+			"launch": [
+				0.4,
+				3.2
+			],
+			"ends_crouched": true,
+			"props": {
+				"low_profile": [
+					2,
+					30
+				]
+			},
+			"sfx": {
+				"swing": "medium"
+			}
+		},
+		"nix_spin": {
+			"name": "Black Water: spin kick",
+			"startup": 8,
+			"active": 3,
+			"recovery": 14,
+			"level": "high",
+			"damage": 60,
+			"hitboxes": [
+				{
+					"rect": [
+						0.32,
+						1.25,
+						0.65,
+						0.38
+					]
+				}
+			],
+			"anim": {
+				"tip": "foot_r",
+				"keys": [
+					[
+						4,
+						"rh_turn",
+						"out"
+					],
+					[
+						8,
+						"rh_hit",
+						"snap"
+					],
+					[
+						11,
+						"rh_hit",
+						"linear"
+					],
+					[
+						25,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "chain",
+			"hitstun": 20,
+			"blockstun": 11,
+			"chain": [
+				{
+					"input": "HK",
+					"move": "nix_axe",
+					"window": [
+						8,
+						19
+					],
+					"cost": 12
+				}
+			],
+			"sfx": {
+				"swing": "medium"
+			}
+		},
+		"nix_axe": {
+			"name": "Black Water: axe kick",
+			"startup": 10,
+			"active": 3,
+			"recovery": 20,
+			"level": "overhead",
+			"damage": 75,
+			"hitboxes": [
+				{
+					"rect": [
+						0.3,
+						0.6,
+						0.6,
+						1.2
+					]
+				}
+			],
+			"anim": {
+				"tip": "foot_l",
+				"keys": [
+					[
+						6,
+						"nix_axe_load",
+						"out"
+					],
+					[
+						10,
+						"nix_axe_hit",
+						"snap"
+					],
+					[
+						13,
+						"nix_axe_hit",
+						"linear"
+					],
+					[
+						33,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "chain",
+			"hitstun": 26,
+			"blockstun": 13,
+			"effect": "launch",
+			"launch": [
+				1.2,
+				6.8
+			],
+			"juggle_cost": 2,
+			"hitstop": 10,
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"sickle_throw": {
+			"name": "Sickle Throw",
+			"kind": "special",
+			"startup": 11,
+			"active": 0,
+			"recovery": 22,
+			"level": "none",
+			"projectile": {
+				"frame": 11,
+				"kind": "sickle",
+				"offset": [
+					0.5,
+					1.25
+				],
+				"speed": 10.0,
+				"size": [
+					0.36,
+					0.36
+				],
+				"life": 52,
+				"returns": true,
+				"level": "mid",
+				"damage": 60,
+				"chip": 10,
+				"hitstun": 22,
+				"blockstun": 14
+			},
+			"anim": {
+				"tip": "prop",
+				"keys": [
+					[
+						6,
+						"nix_throw_load",
+						"out"
+					],
+					[
+						11,
+						"nix_throw",
+						"snap"
+					],
+					[
+						20,
+						"nix_throw",
+						"linear"
+					],
+					[
+						33,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"tags": [
+				"projectile"
+			],
+			"sfx": {
+				"swing": "chain"
+			}
+		},
+		"sinkstep": {
+			"name": "Sinkstep",
+			"startup": 34,
+			"active": 4,
+			"recovery": 18,
+			"level": "mid",
+			"damage": 70,
+			"hitboxes": [
+				{
+					"rect": [
+						0.1,
+						0.3,
+						0.65,
+						1.5
+					]
+				}
+			],
+			"anim": {
+				"tip": "prop",
+				"keys": [
+					[
+						6,
+						"nix_sink",
+						"in"
+					],
+					[
+						22,
+						"nix_sink",
+						"linear"
+					],
+					[
+						30,
+						"crouch",
+						"out"
+					],
+					[
+						34,
+						"nix_rise_slash",
+						"snap"
+					],
+					[
+						38,
+						"nix_rise_slash",
+						"linear"
+					],
+					[
+						55,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "special",
+			"hitstun": 28,
+			"blockstun": 14,
+			"effect": "launch",
+			"launch": [
+				1.0,
+				7.5
+			],
+			"juggle_cost": 2,
+			"chip": 10,
+			"props": {
+				"invuln": [
+					4,
+					30
+				]
+			},
+			"effects": {
+				"teleport": {
+					"frame": 22,
+					"dist": 0.95
+				},
+				"sink": [
+					4,
+					30
+				]
+			},
+			"tags": [
+				"teleport"
+			],
+			"sfx": {
+				"swing": "sink"
+			}
+		},
+		"undertow": {
+			"name": "Undertow",
+			"startup": 15,
+			"active": 5,
+			"recovery": 26,
+			"level": "low",
+			"damage": 55,
+			"hitboxes": [
+				{
+					"rect": [
+						0.5,
+						0.0,
+						2.15,
+						0.45
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						8,
+						"nix_chain_load",
+						"out"
+					],
+					[
+						15,
+						"nix_chain_throw",
+						"snap"
+					],
+					[
+						20,
+						"nix_chain_throw",
+						"linear"
+					],
+					[
+						46,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "special",
+			"hitstun": 52,
+			"blockstun": 14,
+			"effect": "pull",
+			"chip": 8,
+			"effects": {
+				"whip": [
+					15,
+					22
+				]
+			},
+			"tags": [
+				"pull",
+				"far"
+			],
+			"sfx": {
+				"swing": "chain"
+			}
+		},
+		"drowned_drop": {
+			"name": "Drowned Drop",
+			"startup": 4,
+			"active": 34,
+			"recovery": 0,
+			"level": "overhead",
+			"damage": 70,
+			"hitboxes": [
+				{
+					"rect": [
+						0.05,
+						-0.05,
+						0.6,
+						0.5
+					]
+				}
+			],
+			"anim": {
+				"tip": "foot_r",
+				"keys": [
+					[
+						3,
+						"jk_load",
+						"out"
+					],
+					[
+						5,
+						"nix_drop",
+						"snap"
+					],
+					[
+						60,
+						"nix_drop",
+						"linear"
+					]
+				]
+			},
+			"kind": "air",
+			"air": true,
+			"total": 60,
+			"hitstun": 22,
+			"blockstun": 13,
+			"effects": {
+				"air_vel": [
+					4,
+					4.5,
+					-10.0
+				],
+				"air_knock": true
+			},
+			"tags": [
+				"jump_in"
+			],
+			"sfx": {
+				"swing": "medium"
+			}
+		},
+		"undertow_pool": {
+			"name": "Undertow",
+			"kind": "finisher",
+			"total": 250,
+			"anim": {
+				"keys": [
+					[
+						12,
+						"nix_chain_load",
+						"out"
+					],
+					[
+						22,
+						"nix_chain_throw",
+						"snap"
+					],
+					[
+						60,
+						"nix_chain_throw",
+						"linear"
+					],
+					[
+						90,
+						"nix_pull",
+						"inout"
+					],
+					[
+						200,
+						"nix_pull",
+						"linear"
+					],
+					[
+						250,
+						"win",
+						"inout"
+					]
+				]
+			}
+		}
+	},
+	"commands": [
+		[
+			"B,F+LP",
+			"sickle_throw"
+		],
+		[
+			"D,B+LK",
+			"sinkstep"
+		],
+		[
+			"B,B+HP",
+			"undertow"
+		]
+	],
+	"air_commands": [
+		[
+			"D+HK",
+			"drowned_drop"
+		]
+	],
+	"finisher": {
+		"input": "B,B,D+LK",
+		"range": "far",
+		"move": "undertow_pool"
+	},
+	"ai": {
+		"range": 1.5,
+		"aggression": 0.6,
+		"zoning": 0.3,
+		"anti_air": [
+			"uppercut"
+		],
+		"combos": [
+			[
+				"HP",
+				"HP",
+				"LP",
+				"LK"
+			],
+			[
+				"LK",
+				"HK",
+				"HK"
+			]
+		],
+		"weights": {}
+	}
+}

@@ -1,0 +1,79 @@
+{
+	"premise": [
+		"Every river in the world ends in the Sump: black water, reed forests and stilt-towns sinking into living mud.",
+		"Beneath it sleeps the Slopbat, a winged thing of tar and storm whose dreams make the mud alive.",
+		"Once a generation it wakes and calls the mortal world to fight. One champion is carried down to its roost.",
+		"Win, and it sleeps, and grants one thing from its drowned hoard. Lose, and the flood rises."
+	],
+	"fighters": {
+		"ashka": {
+			"rival": "nix", "home": "stilt_market",
+			"bio": "Last lamplighter of drowned Ninefathom. She keeps the city's beacon-flame alive in a brass lamp at her breast and means to carry it home.",
+			"rival_lines": ["Ninefathom's light went out the night your Hand came.", "We only drowned what was already sinking."],
+			"ending": [
+				"Ashka asked the Slopbat for one thing: the deep fire that once burned in Ninefathom's beacon.",
+				"She swam down through the drowned streets with her little brass lamp and lit the tower from within. For the first time in forty years, light moved under the water.",
+				"Fishermen say the Drowned Hand no longer walks the causeways after dark. They say a lamplighter still makes her rounds, street by street, below the waves."
+			]
+		},
+		"gorm": {
+			"rival": "bram", "home": "rendering_yards",
+			"bio": "Master of the rendering vats of Tallowmarket. Gentle until he is not. If the flood takes the yards, it takes his workers with them.",
+			"rival_lines": ["I didn't start that fire, Captain.", "Then you'll not mind coming quietly."],
+			"ending": [
+				"Gorm asked only that the flood spare Tallowmarket. The Slopbat agreed, and Gorm rendered a single candle from the tar it shed.",
+				"The candle never burns down. He carried it to the Lantern Watch house and set it on Captain Ketch's desk without a word.",
+				"Bram Ketch has not tried to arrest him since. The yards are quiet for a season, and the vats, for once, are cold."
+			]
+		},
+		"nix": {
+			"rival": "ashka", "home": "drowned_chapel",
+			"bio": "A blade of the Drowned Hand, the cult that worships the Slopbat and prays for the flood. He was sent to win. No one asked what he would wish for.",
+			"rival_lines": ["Lamplighter. You carry a candle into a flood.", "And you will learn what a candle does to slop."],
+			"ending": [
+				"The Drowned Hand had promised the Slopbat a town. Nix knelt in the roost and offered it one: the cult's own island.",
+				"By morning the island was gone, temple and elders and all, folded into the mud without a sound.",
+				"The Hand always said that Nix would bring the water. They never asked whose door it would come to."
+			]
+		},
+		"mirela": {
+			"rival": "hollis", "home": "drowned_chapel",
+			"bio": "A mourner of Lowmere's floating cemetery, paid to weep at drowned men's funerals. Her voice can unmake. She means to sing the Slopbat to sleep for good.",
+			"rival_lines": ["I sang for you once. You did not stay buried.", "...still listening."],
+			"ending": [
+				"Mirela did not ask the Slopbat for anything. She sat at the edge of its pool and sang the last verse of the funeral song, the one no mourner is paid to finish.",
+				"It closed its eyes. The waters went down further than anyone in Lowmere had ever seen.",
+				"Walking home across the uncovered mud, she heard, far below, the slow toll of a diving bell, keeping time with her."
+			]
+		},
+		"bram": {
+			"rival": "gorm", "home": "stilt_market",
+			"bio": "Captain of the Lantern Watch, keeper of Lowmere's peace with his fists and a hardwood baton. He has never once been told a thing was above his authority and believed it.",
+			"rival_lines": ["Tallow. You're under arrest. Again.", "You'll need a bigger cell."],
+			"ending": [
+				"Captain Bram Ketch stood before the sovereign of the Sump, cleared his throat, and placed it under arrest for crimes against the town of Lowmere.",
+				"It did not resist. The Lantern Watch now holds a very large prisoner in a very small cell, and the prisoner has been, by all accounts, extremely well behaved.",
+				"Nobody has asked the Captain what happens when its sentence is up. He has not asked himself."
+			]
+		},
+		"hollis": {
+			"rival": "mirela", "home": "rendering_yards",
+			"bio": "A brass diving suit that walked out of the Sump the year its diver went down and never came up. A voice inside it still answers to Hollis.",
+			"rival_lines": ["Sing it again.", "This time, stay down."],
+			"ending": [
+				"Hollis asked to see the bottom of the Sump. The Slopbat showed him.",
+				"When the waters fell, the people of Lowmere found the brass helmet on the steps of the drowned chapel, its three portholes turned toward the sea.",
+				"It was empty. Someone inside it, they swear, was humming."
+			]
+		}
+	},
+	"reflection": "Your own reflection climbs out of the slop.",
+	"boss_intro": "The roost. The Slopbat wakes.",
+	"boss_defeated": "The Slopbat sinks into its pool, and the waters recede.",
+	"stranger": {
+		"offer": "A stranger in white watches the fight from the far walkway.",
+		"approach": "Approach him",
+		"leave": "Walk on",
+		"bow": "Hold Block to bow and leave."
+	}
+}

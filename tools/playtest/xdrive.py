@@ -27,7 +27,7 @@ from Xlib import X, XK, display, protocol
 from Xlib.ext import xtest
 
 KEYS = {
-    "esc": "Escape", "enter": "Return", "tab": "Tab", "space": "space",
+    "esc": "Escape", "enter": "Return", "tab": "Tab", "space": "space", "backspace": "BackSpace",
     "left": "Left", "right": "Right", "up": "Up", "down": "Down",
     "kp1": "KP_1", "kp2": "KP_2", "kp4": "KP_4", "kp5": "KP_5", "kp6": "KP_6",
 }

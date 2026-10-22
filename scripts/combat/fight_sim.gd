@@ -116,6 +116,8 @@ func _start_round(with_intro: bool) -> void:
 		f.damage_taken = 0
 		f.throw_victim = null
 		f.thrown_by = null
+		f.buff = ""
+		f.buff_ticks = 0
 		f.input.clear()
 		f.set_state(Fighter.S.INTRO)
 		f.sf = 0
@@ -394,8 +396,26 @@ func _apply(c: Dictionary) -> void:
 		d.hitstop = hs
 		emit({"type": "hit", "who": d.index, "by": a.index, "move": m.id, "damage": 0, "level": level, "point": c["point"], "combo": 1, "proj": p != null})
 		return
-	if d.state == Fighter.S.MOVE and MoveDef.in_range(d.move.armor, d.mf) and d.armor_left > 0:
-		d.armor_left -= 1
+	if not p and d.state == Fighter.S.MOVE and d.move.effects.has("parry") and level in [MoveDef.Level.HIGH, MoveDef.Level.MID, MoveDef.Level.OVERHEAD]:
+		var pr: Dictionary = d.move.effects["parry"]
+		var fr: Array = pr.get("frames", [3, 20])
+		if d.mf >= int(fr[0]) and d.mf <= int(fr[1]):
+			# Caught: the attacker is left open and the parrier answers at once.
+			a.move = null
+			a.take_stun(int(pr.get("stun", 34)), "dazed")
+			a.hitstop = 10
+			d.hitstop = 10
+			var counter := d.def.move(str(pr.get("counter", "")))
+			if counter:
+				d.start_move(counter)
+			emit({"type": "parry", "who": d.index, "by": a.index, "move": m.id, "point": c["point"]})
+			return
+	var buffed := d.buff == "armor" and d.buff_hits > 0 and level != MoveDef.Level.THROW
+	if buffed or (d.state == Fighter.S.MOVE and MoveDef.in_range(d.move.armor, d.mf) and d.armor_left > 0):
+		if buffed:
+			d.buff_hits -= 1
+		else:
+			d.armor_left -= 1
 		var absorbed := int(damage * 0.5)
 		d.health = maxi(0, d.health - absorbed)
 		d.damage_taken += absorbed

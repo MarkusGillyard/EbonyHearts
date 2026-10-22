@@ -55,9 +55,12 @@ func setup(s: FightSim, m: String, cfg: Dictionary) -> void:
 	add_child(_root)
 	for i in 2:
 		_bars.append(_make_bar(i))
+	if mode == "stranger":
+		# He has no health to show, and there is no clock.
+		for n in _bars[1]["nodes"]:
+			(n as CanvasItem).visible = false
 	_timer = UiKit.title("90", 64, UiKit.TEXT)
-	_timer.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_timer.position = Vector2(-60, 22)
+	_timer.position = Vector2(900, 22)
 	_timer.size = Vector2(120, 70)
 	_root.add_child(_timer)
 	_announce = UiKit.title("", 120, UiKit.TEXT)
@@ -78,23 +81,20 @@ func setup(s: FightSim, m: String, cfg: Dictionary) -> void:
 		_root.add_child(c)
 		_combo.append(c)
 	_subtitle = UiKit.label("", 34, UiKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER, UiKit.body_font(true))
-	_subtitle.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_subtitle.position = Vector2(-700, -190)
+	_subtitle.position = Vector2(260, 1080 - 190)
 	_subtitle.size = Vector2(1400, 60)
 	_subtitle.add_theme_color_override("font_outline_color", Color.BLACK)
 	_subtitle.add_theme_constant_override("outline_size", 8)
 	_root.add_child(_subtitle)
 	_prompt = UiKit.label("", 30, UiKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER, UiKit.body_font(true))
-	_prompt.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_prompt.position = Vector2(-800, -120)
+	_prompt.position = Vector2(160, 1080 - 120)
 	_prompt.size = Vector2(1600, 90)
 	_prompt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_prompt.add_theme_color_override("font_outline_color", Color.BLACK)
 	_prompt.add_theme_constant_override("outline_size", 8)
 	_root.add_child(_prompt)
 	_notice = UiKit.label("", 26, UiKit.AMBER, HORIZONTAL_ALIGNMENT_CENTER)
-	_notice.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_notice.position = Vector2(-500, 150)
+	_notice.position = Vector2(460, 150)
 	_notice.size = Vector2(1000, 40)
 	_notice.add_theme_color_override("font_outline_color", Color.BLACK)
 	_notice.add_theme_constant_override("outline_size", 6)
@@ -144,7 +144,10 @@ func _make_bar(i: int) -> Dictionary:
 	sheen.size = Vector2(BAR_W, BAR_H * 0.4)
 	sheen.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(sheen)
-	var name := UiKit.label(sim.fighters[i].def.name.to_upper(), 26, Color(0.06, 0.06, 0.05), HORIZONTAL_ALIGNMENT_RIGHT if right else HORIZONTAL_ALIGNMENT_LEFT, UiKit.body_font(true))
+	var shown_name := sim.fighters[i].def.name.to_upper()
+	if sim.fighters[i].def.id == "daxion":
+		shown_name = "STRANGER IN WHITE"
+	var name := UiKit.label(shown_name, 26, Color(0.06, 0.06, 0.05), HORIZONTAL_ALIGNMENT_RIGHT if right else HORIZONTAL_ALIGNMENT_LEFT, UiKit.body_font(true))
 	name.position = Vector2(x + 12, 38)
 	name.size = Vector2(BAR_W - 24, BAR_H)
 	name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -179,7 +182,9 @@ func _make_bar(i: int) -> Dictionary:
 		m.position = Vector2(mx, 104)
 		_root.add_child(m)
 		marks.append(m)
-	return {"x": x, "fill": fill, "drain": drain, "run": run, "marks": marks, "right": right, "drain_v": 1.0}
+	var nodes: Array = [frame, drain, fill, sheen, run_bg, run, run_label]
+	nodes.append_array(marks)
+	return {"x": x, "fill": fill, "drain": drain, "run": run, "marks": marks, "right": right, "drain_v": 1.0, "nodes": nodes}
 
 
 func _build_pause() -> void:
@@ -193,7 +198,6 @@ func _build_pause() -> void:
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_pause.add_child(dim)
 	var box := VBoxContainer.new()
-	box.set_anchors_preset(Control.PRESET_CENTER)
 	box.position = Vector2(-220, -260)
 	box.size = Vector2(440, 520)
 	box.add_theme_constant_override("separation", 12)
@@ -252,7 +256,14 @@ func prompt(text: String) -> void:
 
 
 func on_event(e: Dictionary) -> void:
+	if mode == "stranger" and e["type"] in ["round_start", "fight", "win_pose", "round_end", "timeout"]:
+		return
 	match e["type"]:
+		"line":
+			if e.get("hint", false):
+				prompt(str(e["text"]))
+			else:
+				subtitle("“%s”" % str(e["text"]), 3.4)
 		"round_start":
 			var r: int = e["round"]
 			var last: bool = sim.wins[0] == sim.rounds_to_win - 1 and sim.wins[1] == sim.rounds_to_win - 1
@@ -346,7 +357,7 @@ func refresh(delta: float) -> void:
 			ms.bg_color = UiKit.ACCENT if sim.wins[i] > k else Color(0.08, 0.08, 0.07)
 		_combo_t[i] = maxf(0.0, _combo_t[i] - delta)
 		_combo[i].modulate.a = clampf(_combo_t[i] * 2.0, 0.0, 1.0)
-	_timer.text = "%d" % sim.timer_seconds() if not sim.training else "∞"
+	_timer.text = "%d" % sim.timer_seconds() if not sim.training else ("" if mode == "stranger" else "∞")
 	_timer.add_theme_color_override("font_color", UiKit.TEXT if sim.timer_seconds() > 10 else UiKit.RUST.lightened(0.2))
 	if _announce_life > 0.0:
 		_announce_t += delta

@@ -16,10 +16,15 @@ var victim_keys: Dictionary = {}
 var missing: Array[String] = []
 var _src: Dictionary = {}
 var _scale := {}
+var _common: Dictionary = {}
+var _common_scale := 1.0
+var _common_cache: Dictionary = {}
 
 
 func build(def: FighterDef, common: Dictionary) -> void:
 	var s := def.height / COMMON_HEIGHT
+	_common = common
+	_common_scale = s
 	var patch: Dictionary = def.raw.get("pose_patch", {})
 	for k in common:
 		_src[k] = common[k]
@@ -57,9 +62,24 @@ func get_pose(name: String) -> Pose:
 		p = get_pose(str(d["mirror"])).mirrored()
 		p = Pose.from_dict(d, p, _scale[name])
 	else:
-		var base: Pose = get_pose(str(d["base"])) if d.has("base") else null
+		var base: Pose = null
+		if d.has("base"):
+			# A fighter's pose named like a shared one may refine that shared pose.
+			base = _common_pose(name) if str(d["base"]) == name else get_pose(str(d["base"]))
 		p = Pose.from_dict(d, base, _scale[name])
 	poses[name] = p
+	return p
+
+
+func _common_pose(name: String) -> Pose:
+	if _common_cache.has(name):
+		return _common_cache[name]
+	var d: Dictionary = _common.get(name, {})
+	var base: Pose = null
+	if d.has("base"):
+		base = _common_pose(str(d["base"])) if str(d["base"]) == name else get_pose(str(d["base"]))
+	var p := Pose.from_dict(d, base, _common_scale)
+	_common_cache[name] = p
 	return p
 
 

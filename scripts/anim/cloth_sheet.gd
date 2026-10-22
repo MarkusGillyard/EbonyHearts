@@ -36,8 +36,11 @@ var _first := 0
 
 
 ## Rest shape of a cloth spec from fighter data, in the anchor joint's frame: a skirt is a ring
-## of columns hanging from the joint (open at the front when it has a gap); hair is an arc around
-## the back of the head that narrows toward the tips, so it reads as a mass rather than a sheet.
+## of columns hanging from the joint (open at the back when it has a gap; "yaw" in degrees turns
+## the ring, so 180 opens it at the front); hair is an arc around the back of the head that
+## narrows toward the tips, so it reads as a mass rather than a sheet. A skirt may also shift its
+## ring back by "cz" and replace the straight flare by a "profile" of [x, z] widenings spaced
+## evenly down its length (veils and capes that drape over the head and shoulders).
 ## Returns {"cols", "rows", "closed", "points"} with points row by row.
 static func rest_shape(spec: Dictionary, h: float) -> Dictionary:
 	var cols := int(spec.get("cols", 14))
@@ -46,6 +49,9 @@ static func rest_shape(spec: Dictionary, h: float) -> Dictionary:
 	var top := float(spec.get("top", 0.0)) * h
 	var length := float(spec.get("length", 0.3)) * h
 	var gap := float(spec.get("gap", 0.0))
+	var yaw := deg_to_rad(float(spec.get("yaw", 0.0)))
+	var cz := float(spec.get("cz", 0.0)) * h
+	var profile: Array = spec.get("profile", [])
 	var pts := PackedVector3Array()
 	pts.resize(rows * cols)
 	for r in rows:
@@ -62,9 +68,19 @@ static func rest_shape(spec: Dictionary, h: float) -> Dictionary:
 				var rx := float(spec.get("rx", 0.1)) * h
 				var rz := float(spec.get("rz", 0.075)) * h
 				var fl := float(spec.get("flare", 0.05)) * h * t
+				var flx := fl
+				var flz := fl
+				if profile.size() >= 2:
+					var u := t * (profile.size() - 1)
+					var i0 := mini(int(u), profile.size() - 2)
+					var a0: Array = profile[i0]
+					var a1: Array = profile[i0 + 1]
+					flx = lerpf(float(a0[0]), float(a1[0]), u - i0) * h
+					flz = lerpf(float(a0[1]), float(a1[1]), u - i0) * h
 				var span := TAU * (1.0 - gap)
 				var a := PI * 0.5 + TAU * gap * 0.5 + span * (float(col) / (cols - 1 if gap > 0.0 else cols))
-				p = Vector3(cos(a) * (rx + fl), top - length * t, sin(a) * (rz + fl))
+				var q := Vector2(cos(a) * (rx + flx), sin(a) * (rz + flz)).rotated(yaw)
+				p = Vector3(q.x, top - length * t, q.y + cz)
 			pts[r * cols + col] = p
 	return {"cols": cols, "rows": rows, "closed": kind != "hair" and gap <= 0.0, "points": pts}
 

@@ -60,6 +60,9 @@ var extra_scale := Vector3.ONE
 var sink := 0.0
 var lift_extra := Vector3.ZERO
 var spin_extra := 0.0
+## A pose the finisher director shows instead of the simulation's ("" for none).
+var pose_override := ""
+var _whip: MeshInstance3D
 
 
 func setup(f: Fighter, common_poses: Dictionary) -> void:
@@ -73,6 +76,18 @@ func setup(f: Fighter, common_poses: Dictionary) -> void:
 	rig.build(def)
 	_build_model()
 	_build_props()
+	_whip = MeshInstance3D.new()
+	var wm := CylinderMesh.new()
+	wm.top_radius = 0.009
+	wm.bottom_radius = 0.009
+	wm.height = 1.0
+	wm.radial_segments = 6
+	_whip.mesh = wm
+	_whip.material_override = Shapes.material(Color(0.33, 0.33, 0.31), 0.45, 0.85)
+	_whip.top_level = true
+	_whip.visible = false
+	_whip.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(_whip)
 	_out = lib.get_pose("stance").duplicate_pose()
 	for i in 2:
 		_feet.append({"pos": Vector3.ZERO, "yaw": 0.0, "step": -1.0, "from": Vector3.ZERO, "from_yaw": 0.0, "dur": 0.15, "valid": false})
@@ -99,7 +114,12 @@ func _build_model() -> void:
 	model = CharacterModel.new()
 	model.name = "Model"
 	rig.add_child(model)
-	model.build(rig, str(def.look.get("model", def.id)), {"body": _body_mat, "eye": _eye_mat, "hair": _hair_mat, "brows": _brow_mat})
+	var model_id := str(def.look.get("model", def.id))
+	if not FileAccess.file_exists(CharacterModel.path_for(model_id)):
+		# Only during development, before a fighter has been sculpted; tests require every model.
+		push_warning("no model for %s yet; showing ashka" % model_id)
+		model_id = "ashka"
+	model.build(rig, model_id, {"body": _body_mat, "eye": _eye_mat, "hair": _hair_mat, "brows": _brow_mat})
 	_mats.append_array([_body_mat, _eye_mat, _hair_mat, _brow_mat])
 
 
@@ -223,7 +243,7 @@ func update_visual(frac: float, delta: float) -> void:
 		frac = 1.0
 	_time += delta
 	var p2 := _prev_pos.lerp(_cur_pos, frac)
-	var p := Vector3(p2.x, p2.y - sink, 0.0)
+	var p := Vector3(p2.x, p2.y - sink - _move_sink(frac), 0.0)
 	if fighter.facing != _facing:
 		_facing = fighter.facing
 		for ft in _feet:
@@ -233,7 +253,8 @@ func update_visual(frac: float, delta: float) -> void:
 	if delta > 0.0:
 		_vis_vel = _vis_vel.lerp((p - _last_root) / delta, clampf(delta * 12.0, 0.0, 1.0))
 	_last_root = p
-	var basis := Basis.looking_at(Vector3(_facing, 0, 0), Vector3.UP).scaled(extra_scale)
+	var basis := Basis.looking_at(Vector3(_facing, 0, 0), Vector3.UP)
+	basis = Basis.from_scale(extra_scale) * basis
 	global_transform = Transform3D(basis, p + lift_extra) * _air_tilt(delta, frozen)
 	_evaluate_source(frac)
 	if delta > 0.0:
@@ -283,6 +304,9 @@ func _hold(name: String, blend: float) -> void:
 func _evaluate_source(frac: float) -> void:
 	var f := fighter
 	var t := float(f.sf) - 1.0 + frac
+	if pose_override != "":
+		_hold(pose_override, 6.0)
+		return
 	match f.state:
 		Fighter.S.IDLE, Fighter.S.WALK_F, Fighter.S.WALK_B:
 			_hold("stance", 7.0)
@@ -543,7 +567,58 @@ func _plant_feet(delta: float, pose: Pose) -> Array:
 func _update_props(pose: Pose) -> void:
 	for node in props:
 		Props.update(node, pose, self)
+		var spec: Dictionary = node.get_meta("spec")
+		if spec.has("thrown"):
+			# A weapon that is also a projectile leaves the hand while it flies.
+			var out := false
+			if fighter.sim:
+				for pr in fighter.sim.projectiles:
+					out = out or (pr.owner == fighter.index and pr.kind == str(spec["thrown"]))
+			node.visible = not out
+	_update_whip()
 	_eye_mat.set_shader_parameter("glow", _eye_base + pose.val["glow"] * 3.0)
+
+
+## Moves that sink into the floor ("sink": [from, to] frames) lower the whole body, then raise it.
+func _move_sink(frac: float) -> float:
+	var f := fighter
+	if f.state != Fighter.S.MOVE or f.move == null or not f.move.effects.has("sink"):
+		return 0.0
+	var r: Array = f.move.effects["sink"]
+	var t := float(f.mf) - 1.0 + frac
+	var a := float(r[0])
+	var b := float(r[1])
+	if t < a or t > b:
+		return 0.0
+	var span := maxf(b - a, 1.0)
+	var u := (t - a) / span
+	var depth := rig.h * 1.05
+	return depth * clampf(minf(u * 4.0, (1.0 - u) * 4.0), 0.0, 1.0)
+
+
+## A chain from the hand to the far end of the move's hitbox while it lashes out ("whip").
+func _update_whip() -> void:
+	var f := fighter
+	var show := f.state == Fighter.S.MOVE and f.move != null and f.move.effects.has("whip")
+	if show:
+		var r: Array = f.move.effects["whip"]
+		show = f.mf >= int(r[0]) and f.mf <= int(r[1]) and not f.move.hitboxes.is_empty()
+	_whip.visible = show
+	if not show:
+		return
+	var hb: Rect2 = f.move.hitboxes[0]["rect"]
+	var reach := hb.end.x
+	var u := clampf(float(f.mf - int(f.move.effects["whip"][0]) + 1) / 3.0, 0.0, 1.0)
+	var hand := strike_point("hand_r")
+	var tip := Vector3(f.pos.x + reach * u * f.facing, hb.position.y + hb.size.y * 0.5, 0.0)
+	var to := tip - hand
+	var len := to.length()
+	if len < 0.05:
+		_whip.visible = false
+		return
+	var y := to / len
+	var x := y.cross(Vector3.BACK).normalized()
+	_whip.global_transform = Transform3D(Basis(x, y, x.cross(y)).scaled_local(Vector3(1, len, 1)), hand + to * 0.5)
 
 
 ## Where the eyes look: the opponent's face.

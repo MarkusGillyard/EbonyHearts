@@ -65,16 +65,17 @@ func two_players() -> bool:
 
 # --- Arcade ---------------------------------------------------------------------------------------
 
-func start_arcade(fighter: String, tower: int) -> void:
+## The ladder a fighter would climb in a tower: ordinary opponents, the rival, the Reflection
+## (Master only) and the boss. `seed` fixes the order of the ordinary opponents.
+func plan_arcade(fighter: String, tower: int, seed: int) -> Array:
 	var t: Dictionary = TOWERS[tower]
 	var rival := str(Content.story.get("fighters", {}).get(fighter, {}).get("rival", ""))
 	var others := []
 	for id in Content.roster():
 		if id != fighter and id != rival:
 			others.append(id)
-	# A fixed but fighter-dependent order, so each fighter's ladder feels its own.
 	var rng := RandomNumberGenerator.new()
-	rng.seed = hash(fighter + str(tower)) + int(Time.get_unix_time_from_system()) % 7
+	rng.seed = seed
 	_shuffle(others, rng)
 	var rungs := []
 	for i in mini(int(t["fights"]), others.size()):
@@ -85,13 +86,17 @@ func start_arcade(fighter: String, tower: int) -> void:
 		rungs.append({"opponent": fighter, "stage": "drowned_chapel", "kind": "mirror"})
 	if Content.fighter("slopbat"):
 		rungs.append({"opponent": "slopbat", "stage": BOSS_ARENA, "kind": "boss"})
+	return rungs
+
+
+func start_arcade(fighter: String, tower: int, rungs: Array) -> void:
 	arcade = {"fighter": fighter, "tower": tower, "rungs": rungs, "rung": 0, "continues": 0, "started": Time.get_ticks_msec(),
 		"seconds": 0.0, "flawless": 0}
 	stranger_pending = false
 	config["mode"] = "arcade"
 	config["p1"] = fighter
 	config["difficulty"] = tower
-	_configure_rung()
+	configure_rung()
 
 
 static func _shuffle(a: Array, rng: RandomNumberGenerator) -> void:
@@ -102,12 +107,13 @@ static func _shuffle(a: Array, rng: RandomNumberGenerator) -> void:
 		a[j] = tmp
 
 
-func _configure_rung() -> void:
+func configure_rung() -> void:
 	var r: Dictionary = arcade["rungs"][arcade["rung"]]
 	config["p2"] = r["opponent"]
 	config["stage"] = r["stage"]
 	config["mirror_dark"] = r["kind"] == "mirror"
-	config["rounds_to_win"] = 2
+	# The boss fight is a single long round, as the last stand should be.
+	config["rounds_to_win"] = 1 if r["kind"] == "boss" else 2
 	config["mode"] = "arcade"
 
 
@@ -126,13 +132,13 @@ func arcade_advance(flawless: bool) -> bool:
 		arcade["seconds"] = (Time.get_ticks_msec() - int(arcade["started"])) / 1000.0
 		return false
 	stranger_pending = flawless and current_rung().get("kind", "") != "boss" and Content.fighter("daxion") != null
-	_configure_rung()
+	configure_rung()
 	return true
 
 
 func arcade_retry() -> void:
 	arcade["continues"] = int(arcade["continues"]) + 1
-	_configure_rung()
+	configure_rung()
 
 
 ## Sets up the optional encounter with the stranger (from the ladder or from Extras).

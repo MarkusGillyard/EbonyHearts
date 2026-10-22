@@ -135,6 +135,7 @@ P["throw_over"] = {"base": "grab_hold", "hips": [-0.02, -0.15, 0.0], "spine": [1
                    "hand_l": [0.0, 1.95, -0.14], "hand_r": [0.0, 1.95, 0.14]}
 P["throw_slam"] = {"base": "stance", "hips": [-0.05, -0.3, 0.0], "spine": [20, 0, 0], "chest": [14, 0, 0], "head": [-10, 0, 0],
                    "hand_l": [-0.5, 1.0, -0.2], "hand_r": [-0.5, 1.0, 0.2], "fist_l": 0.3, "fist_r": 0.3}
+P["thrown_lift"] = {"base": "air_hit", "hips": [0.0, 0.25, 0.0], "hips_rot": [30, 0, 0]}
 P["thrown_hold"] = {"base": "stance", "hips": [0.0, -0.06, 0.0], "hips_rot": [8, -10, 0], "spine": [10, 0, 0], "chest": [12, 0, 0], "head": [10, 0, 0],
                     "hand_l": [0.32, 1.45, -0.12], "hand_r": [0.3, 1.45, 0.12], "elbow_l": [0.1, 1.0, -0.5], "elbow_r": [0.1, 1.0, 0.5]}
 

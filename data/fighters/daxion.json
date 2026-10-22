@@ -1,0 +1,187 @@
+{
+	"id": "daxion",
+	"name": "Daxion",
+	"title": "",
+	"pronoun": "him",
+	"style": "",
+	"hidden": true,
+	"no_basics": "all",
+	"stats": {
+		"height": 1.95,
+		"health": 1000,
+		"walk_f": 2.2,
+		"walk_b": 2.0
+	},
+	"moves": {
+		"dax_evade": {
+			"name": "Step aside",
+			"kind": "special",
+			"startup": 1,
+			"active": 0,
+			"recovery": 0,
+			"total": 18,
+			"level": "none",
+			"motion": [
+				[
+					3,
+					0.0
+				],
+				[
+					10,
+					-0.85
+				]
+			],
+			"props": {
+				"invuln": [
+					1,
+					18
+				]
+			},
+			"anim": {
+				"keys": [
+					[
+						4,
+						"dax_sidestep",
+						"snap"
+					],
+					[
+						12,
+						"dax_sidestep",
+						"linear"
+					],
+					[
+						18,
+						"stance",
+						"inout"
+					]
+				]
+			}
+		},
+		"dax_crack": {
+			"name": "Find the Crack",
+			"startup": 58,
+			"active": 3,
+			"recovery": 40,
+			"level": "unblockable",
+			"damage": 9999,
+			"hitboxes": [
+				{
+					"rect": [
+						0.15,
+						0.7,
+						0.75,
+						1.2
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						6,
+						"dax_touch",
+						"out"
+					],
+					[
+						20,
+						"dax_touch",
+						"linear"
+					],
+					[
+						30,
+						"dax_study",
+						"inout"
+					],
+					[
+						50,
+						"dax_study",
+						"linear"
+					],
+					[
+						55,
+						"dax_punch_load",
+						"in"
+					],
+					[
+						58,
+						"dax_punch",
+						"snap"
+					],
+					[
+						70,
+						"dax_punch",
+						"linear"
+					],
+					[
+						98,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "special",
+			"hitstun": 60,
+			"effect": "knockdown",
+			"launch": [
+				7.5,
+				3.2
+			],
+			"hitstop": 26
+		},
+		"dax_palm": {
+			"name": "Palm",
+			"startup": 4,
+			"active": 3,
+			"recovery": 28,
+			"level": "unblockable",
+			"damage": 9999,
+			"hitboxes": [
+				{
+					"rect": [
+						0.15,
+						0.8,
+						0.8,
+						0.9
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						2,
+						"dax_palm_load",
+						"out"
+					],
+					[
+						4,
+						"dax_palm",
+						"snap"
+					],
+					[
+						8,
+						"dax_palm",
+						"linear"
+					],
+					[
+						34,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "special",
+			"hitstun": 60,
+			"effect": "knockdown",
+			"launch": [
+				7.0,
+				3.4
+			],
+			"hitstop": 22
+		}
+	},
+	"commands": [],
+	"ai": {
+		"stranger": true
+	}
+}

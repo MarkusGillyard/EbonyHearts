@@ -1,0 +1,506 @@
+{
+	"id": "hollis",
+	"name": "Hollis Fathom",
+	"title": "The Diving Bell",
+	"pronoun": "him",
+	"style": "Deep-sea pressure and harpoon",
+	"stats": {
+		"height": 1.95,
+		"health": 1050,
+		"walk_f": 2.0,
+		"walk_b": 1.7,
+		"run_speed": 4.6,
+		"jump_vy": 8.2,
+		"push_w": 0.34
+	},
+	"basic_tweaks": {
+		"hp": {
+			"startup": 6,
+			"damage": 60
+		},
+		"hp2": {
+			"chain": [
+				{
+					"input": "B+HP",
+					"move": "hollis_butt",
+					"window": [
+						5,
+						16
+					],
+					"cost": 12
+				}
+			]
+		},
+		"hk": {
+			"startup": 11,
+			"damage": 85
+		},
+		"lk": {
+			"damage": 65,
+			"chain": [
+				{
+					"input": "HK",
+					"move": "hollis_boot",
+					"window": [
+						7,
+						17
+					],
+					"cost": 12
+				}
+			]
+		}
+	},
+	"moves": {
+		"hollis_butt": {
+			"name": "Pressure Hull: helmet butt",
+			"startup": 9,
+			"active": 4,
+			"recovery": 22,
+			"level": "high",
+			"damage": 85,
+			"hitboxes": [
+				{
+					"rect": [
+						0.15,
+						1.3,
+						0.5,
+						0.5
+					]
+				}
+			],
+			"anim": {
+				"tip": "head",
+				"keys": [
+					[
+						5,
+						"hollis_butt_load",
+						"out"
+					],
+					[
+						9,
+						"hollis_butt_hit",
+						"snap"
+					],
+					[
+						13,
+						"hollis_butt_hit",
+						"linear"
+					],
+					[
+						35,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "chain",
+			"hitstun": 26,
+			"blockstun": 14,
+			"effect": "knockdown",
+			"launch": [
+				2.6,
+				3.2
+			],
+			"hitstop": 11,
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"hollis_boot": {
+			"name": "Lead Boot",
+			"startup": 10,
+			"active": 4,
+			"recovery": 20,
+			"level": "mid",
+			"damage": 80,
+			"hitboxes": [
+				{
+					"rect": [
+						0.3,
+						0.55,
+						0.7,
+						0.5
+					]
+				}
+			],
+			"anim": {
+				"tip": "foot_r",
+				"keys": [
+					[
+						5,
+						"lk_chamber",
+						"out"
+					],
+					[
+						10,
+						"hollis_boot_hit",
+						"snap"
+					],
+					[
+						14,
+						"hollis_boot_hit",
+						"linear"
+					],
+					[
+						34,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "chain",
+			"hitstun": 24,
+			"blockstun": 13,
+			"push_hit": 1.4,
+			"push_block": 1.0,
+			"cancel": [
+				11,
+				24
+			],
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"harpoon": {
+			"name": "Harpoon",
+			"kind": "special",
+			"startup": 14,
+			"active": 0,
+			"recovery": 30,
+			"level": "none",
+			"projectile": {
+				"frame": 14,
+				"kind": "harpoon",
+				"offset": [
+					0.6,
+					1.2
+				],
+				"speed": 13.0,
+				"size": [
+					0.36,
+					0.24
+				],
+				"life": 22,
+				"tether": true,
+				"level": "mid",
+				"damage": 50,
+				"chip": 8,
+				"effect": "pull",
+				"hitstun": 48,
+				"blockstun": 14
+			},
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						7,
+						"hollis_aim",
+						"out"
+					],
+					[
+						14,
+						"hollis_fire",
+						"snap"
+					],
+					[
+						30,
+						"hollis_fire",
+						"linear"
+					],
+					[
+						44,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"tags": [
+				"projectile",
+				"pull"
+			],
+			"sfx": {
+				"swing": "cast_harpoon"
+			}
+		},
+		"anchor_drop": {
+			"name": "Anchor Drop",
+			"kind": "special",
+			"startup": 18,
+			"active": 0,
+			"recovery": 22,
+			"level": "none",
+			"projectile": {
+				"frame": 18,
+				"kind": "anchor",
+				"offset": [
+					1.8,
+					6.0
+				],
+				"at_opponent": [
+					1.2,
+					4.2
+				],
+				"speed": 0.0,
+				"vy": -6.0,
+				"gravity": 22.0,
+				"size": [
+					0.6,
+					0.65
+				],
+				"life": 60,
+				"ground": "die",
+				"level": "overhead",
+				"damage": 95,
+				"chip": 14,
+				"effect": "knockdown",
+				"launch": [
+					1.5,
+					3.0
+				]
+			},
+			"anim": {
+				"keys": [
+					[
+						8,
+						"hollis_signal_load",
+						"out"
+					],
+					[
+						18,
+						"hollis_signal",
+						"snap"
+					],
+					[
+						30,
+						"hollis_signal",
+						"linear"
+					],
+					[
+						40,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"tags": [
+				"projectile",
+				"overhead"
+			],
+			"sfx": {
+				"swing": "chain"
+			}
+		},
+		"bubble": {
+			"name": "Bubble",
+			"kind": "special",
+			"startup": 16,
+			"active": 0,
+			"recovery": 24,
+			"level": "none",
+			"projectile": {
+				"frame": 16,
+				"kind": "bubble",
+				"offset": [
+					0.6,
+					1.25
+				],
+				"speed": 3.4,
+				"decel": 2.0,
+				"min_speed": 1.1,
+				"size": [
+					0.6,
+					0.6
+				],
+				"life": 180,
+				"level": "high",
+				"damage": 25,
+				"chip": 4,
+				"effect": "daze",
+				"hitstun": 62,
+				"blockstun": 12
+			},
+			"anim": {
+				"keys": [
+					[
+						8,
+						"hollis_bubble_load",
+						"out"
+					],
+					[
+						16,
+						"hollis_bubble",
+						"snap"
+					],
+					[
+						28,
+						"hollis_bubble",
+						"linear"
+					],
+					[
+						40,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"tags": [
+				"projectile"
+			],
+			"sfx": {
+				"swing": "cast_bubble"
+			}
+		},
+		"vent": {
+			"name": "Vent",
+			"startup": 6,
+			"active": 7,
+			"recovery": 30,
+			"level": "mid",
+			"damage": 65,
+			"hitboxes": [
+				{
+					"rect": [
+						-0.5,
+						0.2,
+						1.75,
+						1.7
+					]
+				}
+			],
+			"anim": {
+				"tip": "chest",
+				"keys": [
+					[
+						3,
+						"hollis_vent_load",
+						"out"
+					],
+					[
+						6,
+						"hollis_vent",
+						"snap"
+					],
+					[
+						13,
+						"hollis_vent",
+						"linear"
+					],
+					[
+						42,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "special",
+			"hitstun": 26,
+			"blockstun": 16,
+			"effect": "knockdown",
+			"launch": [
+				3.0,
+				3.6
+			],
+			"chip": 12,
+			"props": {
+				"invuln": [
+					1,
+					6
+				]
+			},
+			"tags": [
+				"reversal"
+			],
+			"sfx": {
+				"swing": "steam"
+			}
+		},
+		"crush_depth": {
+			"name": "Crush Depth",
+			"kind": "finisher",
+			"total": 270,
+			"anim": {
+				"keys": [
+					[
+						10,
+						"hollis_aim",
+						"out"
+					],
+					[
+						24,
+						"hollis_fire",
+						"snap"
+					],
+					[
+						60,
+						"hollis_fire",
+						"linear"
+					],
+					[
+						100,
+						"hollis_reel",
+						"inout"
+					],
+					[
+						140,
+						"hollis_gulp",
+						"inout"
+					],
+					[
+						210,
+						"hollis_gulp",
+						"linear"
+					],
+					[
+						270,
+						"win",
+						"inout"
+					]
+				]
+			}
+		}
+	},
+	"commands": [
+		[
+			"B,F+LP",
+			"harpoon"
+		],
+		[
+			"D,D+HK",
+			"anchor_drop"
+		],
+		[
+			"D,F+LP",
+			"bubble"
+		],
+		[
+			"D,B+HP",
+			"vent"
+		]
+	],
+	"finisher": {
+		"input": "B,F,B+LP",
+		"range": "sweep",
+		"move": "crush_depth"
+	},
+	"ai": {
+		"range": 2.6,
+		"aggression": 0.4,
+		"zoning": 0.6,
+		"anti_air": [
+			"vent",
+			"uppercut"
+		],
+		"combos": [
+			[
+				"HP",
+				"HP",
+				"B+HP"
+			],
+			[
+				"LK",
+				"HK"
+			]
+		],
+		"weights": {}
+	}
+}

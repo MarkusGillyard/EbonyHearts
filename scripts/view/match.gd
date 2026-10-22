@@ -48,13 +48,19 @@ func start(cfg: Dictionary) -> void:
 	mode = str(config.get("mode", "cpu"))
 	Settings.set_solo(not Game.two_players())
 	sim = FightSim.new()
-	sim.training = mode in ["training", "tutorial"]
+	sim.training = mode in ["training", "tutorial", "stranger"]
 	sim.rounds_to_win = int(config.get("rounds_to_win", 2))
 	sim.finishers_enabled = mode != "stranger"
 	var stage := str(config.get("stage", "rendering_yards"))
 	if Content.fighter(config["p1"]).move("stage_vat") and stage == "rendering_yards":
 		sim.stage_finisher = "stage_vat"
+	sim.intro = mode not in ["training", "tutorial", "stranger"]
 	sim.setup(Content.fighter(config["p1"]), Content.fighter(config["p2"]))
+	if mode == "stranger":
+		# No announcer and no rounds: he is simply there.
+		sim.phase = FightSim.Phase.FIGHT
+		for f in sim.fighters:
+			f.set_state(Fighter.S.IDLE)
 	arena = Arena.create(stage)
 	add_child(arena)
 	arena.build()
@@ -97,7 +103,10 @@ func start(cfg: Dictionary) -> void:
 	var diff := int(config.get("difficulty", Settings.get_value("difficulty")))
 	for i in 2:
 		if Game.is_cpu(i) and mode not in ["training", "tutorial", "stranger"]:
-			brains[i] = CpuBrain.new(sim, i, diff)
+			if sim.fighters[i].def.boss:
+				brains[i] = BossBrain.new(sim, i, diff)
+			else:
+				brains[i] = CpuBrain.new(sim, i, diff)
 	if mode == "training":
 		dummy = TrainingDummy.new(sim, 1)
 		hud.dummy = dummy
@@ -389,4 +398,5 @@ func _on_event(e: Dictionary) -> void:
 			_ended = true
 			var w: int = e["winner"]
 			finished.emit({"winner": w, "wins": sim.wins.duplicate(), "p1": sim.fighters[0].def.id, "p2": sim.fighters[1].def.id,
-				"finisher": e.get("finisher", ""), "flawless": e.get("flawless", false), "mode": mode})
+				"finisher": e.get("finisher", ""), "flawless": e.get("flawless", false), "mode": mode,
+				"stranger_line": e.get("stranger_line", "")})

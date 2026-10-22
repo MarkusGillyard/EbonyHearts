@@ -1,0 +1,698 @@
+{
+	"id": "slopbat",
+	"name": "The Slopbat",
+	"title": "Sovereign of the Sump",
+	"pronoun": "it",
+	"style": "Tar, wing and storm",
+	"boss": true,
+	"no_basics": "all",
+	"stats": {
+		"height": 2.65,
+		"health": 1900,
+		"walk_f": 1.8,
+		"walk_b": 1.6,
+		"run_speed": 4.0,
+		"push_w": 0.48,
+		"unthrowable": true
+	},
+	"moves": {
+		"claw": {
+			"name": "Claw",
+			"startup": 9,
+			"active": 4,
+			"recovery": 14,
+			"level": "high",
+			"damage": 75,
+			"hitboxes": [
+				{
+					"rect": [
+						0.3,
+						1.45,
+						0.95,
+						0.6
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						5,
+						"bat_claw_load",
+						"out"
+					],
+					[
+						9,
+						"bat_claw_hit",
+						"snap"
+					],
+					[
+						13,
+						"bat_claw_hit",
+						"linear"
+					],
+					[
+						27,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 20,
+			"blockstun": 12,
+			"chain": [
+				{
+					"input": "HP",
+					"move": "claw2",
+					"window": [
+						9,
+						20
+					],
+					"cost": 0
+				}
+			],
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"claw2": {
+			"name": "Raking Claw",
+			"startup": 9,
+			"active": 4,
+			"recovery": 20,
+			"level": "mid",
+			"damage": 80,
+			"hitboxes": [
+				{
+					"rect": [
+						0.3,
+						0.9,
+						0.95,
+						0.75
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						5,
+						"bat_claw2_load",
+						"out"
+					],
+					[
+						9,
+						"bat_claw2_hit",
+						"snap"
+					],
+					[
+						13,
+						"bat_claw2_hit",
+						"linear"
+					],
+					[
+						33,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "chain",
+			"hitstun": 26,
+			"blockstun": 13,
+			"effect": "knockdown",
+			"launch": [
+				3.0,
+				3.4
+			],
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"low_claw": {
+			"name": "Low Rake",
+			"startup": 10,
+			"active": 4,
+			"recovery": 18,
+			"level": "low",
+			"damage": 70,
+			"hitboxes": [
+				{
+					"rect": [
+						0.3,
+						0.0,
+						1.15,
+						0.4
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						5,
+						"crouch",
+						"out"
+					],
+					[
+						10,
+						"bat_low_hit",
+						"snap"
+					],
+					[
+						14,
+						"bat_low_hit",
+						"linear"
+					],
+					[
+						32,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 24,
+			"blockstun": 12,
+			"effect": "sweep",
+			"launch": [
+				0.5,
+				3.0
+			],
+			"props": {
+				"low_profile": [
+					3,
+					30
+				]
+			},
+			"sfx": {
+				"swing": "medium"
+			}
+		},
+		"rising_claw": {
+			"name": "Rising Talon",
+			"startup": 9,
+			"active": 5,
+			"recovery": 26,
+			"level": "mid",
+			"damage": 110,
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						1.0,
+						0.85,
+						1.9
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						5,
+						"upper_load",
+						"out"
+					],
+					[
+						9,
+						"bat_rise_hit",
+						"snap"
+					],
+					[
+						14,
+						"bat_rise_hit",
+						"linear"
+					],
+					[
+						40,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 30,
+			"blockstun": 14,
+			"effect": "launch",
+			"launch": [
+				1.2,
+				8.0
+			],
+			"juggle_cost": 3,
+			"tags": [
+				"anti_air"
+			],
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"tar_spit": {
+			"name": "Tar Spit",
+			"kind": "special",
+			"startup": 16,
+			"active": 0,
+			"recovery": 22,
+			"level": "none",
+			"projectile": {
+				"frame": 16,
+				"kind": "tar",
+				"offset": [
+					0.7,
+					2.15
+				],
+				"speed": 6.5,
+				"vy": -0.6,
+				"size": [
+					0.38,
+					0.32
+				],
+				"life": 110,
+				"level": "high",
+				"damage": 75,
+				"chip": 12,
+				"hitstun": 26,
+				"blockstun": 16
+			},
+			"anim": {
+				"keys": [
+					[
+						8,
+						"bat_spit_load",
+						"out"
+					],
+					[
+						16,
+						"bat_spit",
+						"snap"
+					],
+					[
+						26,
+						"bat_spit",
+						"linear"
+					],
+					[
+						38,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"tags": [
+				"projectile"
+			],
+			"sfx": {
+				"swing": "cast_tar"
+			}
+		},
+		"wing_gust": {
+			"name": "Wing Gust",
+			"kind": "special",
+			"startup": 20,
+			"active": 0,
+			"recovery": 24,
+			"level": "none",
+			"projectile": {
+				"frame": 20,
+				"kind": "gust",
+				"offset": [
+					0.8,
+					1.2
+				],
+				"speed": 7.0,
+				"size": [
+					0.8,
+					2.2
+				],
+				"life": 60,
+				"strength": 3,
+				"level": "mid",
+				"damage": 0,
+				"chip": 0,
+				"hitstun": 14,
+				"blockstun": 10,
+				"push_hit": 2.2,
+				"push_block": 2.0
+			},
+			"anim": {
+				"keys": [
+					[
+						10,
+						"bat_gust_load",
+						"out"
+					],
+					[
+						20,
+						"bat_gust",
+						"snap"
+					],
+					[
+						32,
+						"bat_gust",
+						"linear"
+					],
+					[
+						44,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"tags": [
+				"projectile"
+			],
+			"sfx": {
+				"swing": "wing"
+			}
+		},
+		"dive": {
+			"name": "The Dive",
+			"startup": 86,
+			"active": 10,
+			"recovery": 50,
+			"level": "overhead",
+			"damage": 140,
+			"hitboxes": [
+				{
+					"rect": [
+						-0.75,
+						0.0,
+						1.5,
+						1.7
+					]
+				}
+			],
+			"anim": {
+				"tip": "chest",
+				"keys": [
+					[
+						10,
+						"bat_rise",
+						"out"
+					],
+					[
+						25,
+						"bat_fly",
+						"inout"
+					],
+					[
+						80,
+						"bat_fly",
+						"linear"
+					],
+					[
+						86,
+						"bat_dive",
+						"snap"
+					],
+					[
+						95,
+						"bat_dive",
+						"linear"
+					],
+					[
+						110,
+						"bat_stuck",
+						"snap"
+					],
+					[
+						146,
+						"bat_stuck",
+						"linear"
+					],
+					[
+						150,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 30,
+			"blockstun": 18,
+			"effect": "knockdown",
+			"launch": [
+				2.0,
+				4.0
+			],
+			"chip": 20,
+			"hitstop": 14,
+			"lift": [
+				[
+					4,
+					0.0
+				],
+				[
+					25,
+					7.0
+				],
+				[
+					80,
+					7.0
+				],
+				[
+					90,
+					0.0
+				]
+			],
+			"track": [
+				26,
+				80,
+				3.2
+			],
+			"props": {
+				"invuln": [
+					5,
+					84
+				],
+				"airborne": [
+					5,
+					90
+				]
+			},
+			"tags": [
+				"dive"
+			],
+			"sfx": {
+				"swing": "wing"
+			}
+		},
+		"storm_shroud": {
+			"name": "Storm Shroud",
+			"startup": 50,
+			"active": 14,
+			"recovery": 40,
+			"level": "unblockable",
+			"damage": 150,
+			"hitboxes": [
+				{
+					"rect": [
+						-2.6,
+						0.0,
+						5.2,
+						3.3
+					]
+				}
+			],
+			"anim": {
+				"tip": "chest",
+				"keys": [
+					[
+						10,
+						"bat_storm_load",
+						"out"
+					],
+					[
+						50,
+						"bat_storm_load",
+						"linear"
+					],
+					[
+						52,
+						"bat_storm",
+						"snap"
+					],
+					[
+						64,
+						"bat_storm",
+						"linear"
+					],
+					[
+						103,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 30,
+			"effect": "knockdown",
+			"launch": [
+				2.5,
+				4.5
+			],
+			"hitstop": 12,
+			"effects": {
+				"health_below": 0.5
+			},
+			"tags": [
+				"storm"
+			],
+			"sfx": {
+				"swing": "charge"
+			}
+		},
+		"bite": {
+			"name": "Bite",
+			"kind": "grab",
+			"startup": 8,
+			"active": 3,
+			"recovery": 30,
+			"level": "throw",
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						0.6,
+						0.85,
+						1.5
+					]
+				}
+			],
+			"throw": {
+				"frames": 60,
+				"damage_frame": 40,
+				"damage": 170,
+				"release": [
+					2.6,
+					3.6
+				],
+				"recover": 12,
+				"path": [
+					[
+						0,
+						0.8,
+						0.2
+					],
+					[
+						20,
+						0.6,
+						1.0
+					],
+					[
+						40,
+						0.65,
+						1.1
+					],
+					[
+						48,
+						0.9,
+						0.7
+					],
+					[
+						60,
+						1.1,
+						0.3
+					]
+				]
+			},
+			"anim": {
+				"keys": [
+					[
+						4,
+						"grab_reach",
+						"snap"
+					],
+					[
+						10,
+						"grab_reach",
+						"linear"
+					],
+					[
+						40,
+						"stance",
+						"inout"
+					]
+				],
+				"hold": [
+					[
+						8,
+						"bat_bite_hold",
+						"out"
+					],
+					[
+						36,
+						"bat_bite",
+						"inout"
+					],
+					[
+						48,
+						"bat_toss",
+						"snap"
+					],
+					[
+						60,
+						"stance",
+						"inout"
+					]
+				],
+				"victim": [
+					[
+						6,
+						"thrown_hold",
+						"out"
+					],
+					[
+						20,
+						"thrown_lift",
+						"inout"
+					],
+					[
+						48,
+						"air_fall",
+						"snap"
+					]
+				]
+			},
+			"tags": [
+				"grab"
+			],
+			"sfx": {
+				"swing": "screech"
+			}
+		}
+	},
+	"commands": [
+		[
+			"D,U+HK",
+			"dive"
+		],
+		[
+			"B,B+HP",
+			"storm_shroud"
+		],
+		[
+			"D,F+HP",
+			"tar_spit"
+		],
+		[
+			"B,F+HK",
+			"wing_gust"
+		],
+		[
+			"F,F+LP",
+			"bite"
+		],
+		[
+			"D+HP",
+			"rising_claw"
+		],
+		[
+			"D+LK",
+			"low_claw"
+		],
+		[
+			"HP",
+			"claw"
+		]
+	],
+	"ai": {
+		"boss": true
+	}
+}

@@ -76,6 +76,10 @@ var last_hit_move: MoveDef
 var last_hit_level := MoveDef.Level.MID
 var crouch_stun := false
 var land_frames := LAND_FRAMES
+## A temporary power-up from a move (Gorm's Tallow Hide): its name, ticks left, hits it absorbs.
+var buff := ""
+var buff_ticks := 0
+var buff_hits := 0
 ## Training: the dummy holds block automatically.
 var auto_block := ""
 
@@ -218,6 +222,12 @@ func tick() -> void:
 	sf += 1
 	if invuln > 0:
 		invuln -= 1
+	if buff_ticks > 0:
+		buff_ticks -= 1
+		if buff_ticks == 0 or buff_hits <= 0:
+			buff_ticks = 0
+			buff = ""
+			sim.emit({"type": "buff_end", "who": index})
 	_regen_run()
 	match state:
 		S.INTRO, S.WIN, S.DIZZY:
@@ -228,6 +238,9 @@ func tick() -> void:
 		S.RUN:
 			_run()
 		S.PREJUMP:
+			# Motions ending in up (D,U+HK) arrive a tick or two after the jump began.
+			if sim.can_act() and try_commands(def.commands):
+				return
 			if sf >= PREJUMP_FRAMES:
 				_jump()
 		S.AIR:
@@ -435,10 +448,16 @@ func can_use(m: MoveDef) -> bool:
 		return false
 	if m.air != (state == S.AIR):
 		return false
+	if m.effects.has("health_below") and float(health) / def.health >= float(m.effects["health_below"]):
+		return false
+	if m.effects.has("buff") and buff_ticks > 0:
+		return false
 	match m.requires:
 		"close":
 			var o := opponent()
 			if absf(o.pos.x - pos.x) > def.throw_range or o.is_airborne() or o.is_invulnerable():
+				return false
+			if o.def.raw.get("stats", {}).get("unthrowable", false) and m.kind in ["throw", "grab"]:
 				return false
 			if o.state in [S.HITSTUN, S.BLOCKSTUN, S.THROWN, S.JUGGLE] or (o.state == S.MOVE and o.move.kind in ["throw", "grab"] and o.mf > o.move.startup):
 				return false
@@ -548,6 +567,24 @@ func _move_frame() -> void:
 	if m.track != Vector3.ZERO and mf >= int(m.track.x) and mf <= int(m.track.y):
 		var o := opponent()
 		pos.x = move_toward(pos.x, o.pos.x, m.track.z * DT)
+	var fx := m.effects
+	if fx.has("teleport") and mf == int(fx["teleport"].get("frame", 20)):
+		# Reappears on the far side of the opponent, facing them.
+		var o := opponent()
+		var d := float(fx["teleport"].get("dist", 0.9)) * scale()
+		var side := -o.facing
+		pos.x = clampf(o.pos.x + side * d, -FightSim.STAGE_HALF + def.push_w, FightSim.STAGE_HALF - def.push_w)
+		if absf(pos.x - o.pos.x) < d * 0.5:
+			pos.x = clampf(o.pos.x - side * d, -FightSim.STAGE_HALF + def.push_w, FightSim.STAGE_HALF - def.push_w)
+		facing = 1 if o.pos.x > pos.x else -1
+		sim.emit({"type": "teleport", "who": index})
+	if fx.has("air_vel") and mf == int(fx["air_vel"][0]):
+		vel = Vector2(float(fx["air_vel"][1]) * facing, float(fx["air_vel"][2]))
+	if fx.has("buff") and mf == int(fx.get("buff_frame", m.startup)):
+		buff = str(fx["buff"])
+		buff_ticks = int(fx.get("buff_ticks", 240))
+		buff_hits = int(fx.get("buff_hits", 2))
+		sim.emit({"type": "buff", "who": index, "buff": buff})
 	_spawn_check()
 
 

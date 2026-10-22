@@ -25,6 +25,8 @@ const KINDS := {
 	"harpoon": {"core": Color(0.8, 0.62, 0.3), "light": 0.0, "size": 0.25, "trail": Color(0.6, 0.6, 0.6)},
 	"anchor": {"core": Color(0.25, 0.25, 0.27), "light": 0.0, "size": 0.5, "trail": Color(0.5, 0.6, 0.6)},
 	"storm": {"core": Color(0.6, 1.0, 0.4), "light": 2.5, "size": 0.5, "trail": Color(0.6, 1.0, 0.4)},
+	"quake": {"core": Color(0.55, 0.45, 0.32), "light": 0.0, "size": 0.5, "trail": Color(0.5, 0.42, 0.3)},
+	"gust": {"core": Color(0.75, 0.82, 0.8), "light": 0.0, "size": 1.6, "trail": Color(0.8, 0.85, 0.85)},
 }
 
 var sim: FightSim
@@ -40,6 +42,10 @@ var _flashes: Array[Dictionary] = []
 var _lights: Array[Dictionary] = []
 ## Projectile visuals: {"node", "core", "mat", "light", "trail", "chain", "proj"}
 var _proj: Array[Dictionary] = []
+var _shadows: Array[MeshInstance3D] = []
+var _storm_light: OmniLight3D
+var _bolts: Array[MeshInstance3D] = []
+var _storm_fired := -1
 var _next_spark := 0
 var _next_blood := 0
 var _next_puff := 0
@@ -125,6 +131,45 @@ func setup(s: FightSim, v: Array[FighterView], cam: FightCamera) -> void:
 		_lights.append({"light": l, "t": 1.0, "life": 1.0, "energy": 0.0})
 	for i in PROJ_POOL:
 		_proj.append(_make_projectile_visual())
+	# A soft blob shadow under each fighter: it shows where a jumper (or the Slopbat, high above
+	# the screen during its dive) will come down.
+	for i in 2:
+		var sh := MeshInstance3D.new()
+		var q := QuadMesh.new()
+		q.size = Vector2(1, 1)
+		q.orientation = PlaneMesh.FACE_Y
+		sh.mesh = q
+		var sm := StandardMaterial3D.new()
+		sm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		sm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		sm.albedo_texture = _soft_dot()
+		sm.albedo_color = Color(0, 0, 0, 0.55)
+		sh.material_override = sm
+		sh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(sh)
+		_shadows.append(sh)
+	_storm_light = OmniLight3D.new()
+	_storm_light.light_color = Color(0.55, 1.0, 0.35)
+	_storm_light.omni_range = 6.0
+	_storm_light.visible = false
+	add_child(_storm_light)
+	for i in 6:
+		var b := MeshInstance3D.new()
+		var bq := QuadMesh.new()
+		bq.size = Vector2(0.22, 6.0)
+		b.mesh = bq
+		var bm := StandardMaterial3D.new()
+		bm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		bm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		bm.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		bm.billboard_mode = BaseMaterial3D.BILLBOARD_FIXED_Y
+		bm.albedo_color = Color(0.7, 1.0, 0.5, 0.9)
+		bm.albedo_texture = _bolt_texture()
+		b.material_override = bm
+		b.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		b.visible = false
+		add_child(b)
+		_bolts.append(b)
 
 
 func _particles(amount: int, lifetime: float, mesh: Mesh) -> GPUParticles3D:
@@ -192,6 +237,21 @@ func _fade_ramp() -> GradientTexture1D:
 	var t := GradientTexture1D.new()
 	t.gradient = g
 	return t
+
+
+## A jagged vertical streak for lightning bolts.
+func _bolt_texture() -> Texture2D:
+	var img := Image.create(32, 256, false, Image.FORMAT_RGBA8)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	var x := 16.0
+	for y in 256:
+		x = clampf(x + rng.randf_range(-2.5, 2.5), 6.0, 26.0)
+		for xx in 32:
+			var d := absf(xx - x)
+			var a := clampf(1.0 - d / 5.0, 0.0, 1.0)
+			img.set_pixel(xx, y, Color(1, 1, 1, a * a))
+	return ImageTexture.create_from_image(img)
 
 
 func _soft_dot() -> Texture2D:
@@ -387,6 +447,44 @@ func burst(pos: Vector3, color: Color, count: int, speed: float, life := 0.3) ->
 	_burst(pos, color, count, speed, life)
 
 
+## The Storm Shroud: green crackling while it gathers, then bolts all around the caster.
+func _storm_step() -> void:
+	var any := false
+	for f in sim.fighters:
+		if f.state != Fighter.S.MOVE or f.move == null or not "storm" in f.move.tags:
+			continue
+		any = true
+		var c := Vector3(f.pos.x, 1.4, 0.0)
+		_storm_light.global_position = c + Vector3(0, 0.6, 0.6)
+		_storm_light.visible = true
+		if f.mf < f.move.startup:
+			var k := float(f.mf) / f.move.startup
+			_storm_light.light_energy = (0.6 + k * 2.5) * (0.6 + 0.4 * sin(_time * 40.0)) * (0.6 if reduced else 1.0)
+			if randf() < 0.35 + k * 0.4:
+				_burst(c + Vector3(randf_range(-0.8, 0.8), randf_range(-0.6, 1.2), 0.2), Color(0.6, 1.0, 0.4), 6, 2.5, 0.25)
+			for b in _bolts:
+				b.visible = false
+		elif f.move.in_active(f.mf):
+			if _storm_fired != f.sim.tick_count - f.mf:
+				_storm_fired = f.sim.tick_count - f.mf
+				Audio.play("thunder", 2.0)
+				flash(c, Color(0.7, 1.0, 0.5), 3.0, 0.25, 0.0, f.index)
+			_storm_light.light_energy = 4.0 * (0.6 if reduced else 1.0)
+			for i in _bolts.size():
+				var b := _bolts[i]
+				b.visible = flashes_on or i % 2 == 0
+				var ang := (float(i) / _bolts.size()) * TAU + _time * 3.0
+				var r := 0.9 + fmod(float(i) * 0.53 + _time * 2.0, 1.6)
+				b.global_position = Vector3(f.pos.x + cos(ang) * r, 3.0, sin(ang) * 0.3)
+		else:
+			for b in _bolts:
+				b.visible = false
+	if not any:
+		_storm_light.visible = false
+		for b in _bolts:
+			b.visible = false
+
+
 static func _v3(p: Vector2, z := 0.0) -> Vector3:
 	return Vector3(p.x, p.y, z)
 
@@ -436,6 +534,16 @@ func on_event(e: Dictionary) -> void:
 
 func step(delta: float) -> void:
 	_time += delta
+	for i in 2:
+		var f := sim.fighters[i]
+		var sh := _shadows[i]
+		var hgt := maxf(f.pos.y, 0.0)
+		var w := f.def.push_w * 2.6 * (1.0 + hgt * 0.12)
+		sh.global_position = Vector3(f.pos.x, 0.015, 0.0)
+		sh.scale = Vector3(w, 1.0, w * 0.55)
+		(sh.material_override as StandardMaterial3D).albedo_color = Color(0, 0, 0, clampf(0.5 - hgt * 0.03, 0.22, 0.5))
+		sh.visible = views[i].visible and f.state != Fighter.S.DOWN and f.state != Fighter.S.KO
+	_storm_step()
 	for fl in _flashes:
 		var n: MeshInstance3D = fl["node"]
 		if not n.visible:

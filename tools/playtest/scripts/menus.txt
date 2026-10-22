@@ -1,0 +1,75 @@
+# Title -> menu -> arcade -> select -> tower -> versus screen -> fight -> pause -> quit to menu,
+# then a look at every other menu screen.
+wait 2.5
+shot m01_title
+tap enter 60
+wait 1.0
+shot m02_menu
+tap enter 60
+wait 2.0
+shot m03_select
+tap d 60
+wait 0.8
+shot m04_select_move
+tap a 60
+wait 0.4
+tap j 60
+wait 1.6
+shot m05_tower
+tap enter 60
+wait 1.5
+shot m06_versus
+wait 5.0
+shot m07_match_intro
+wait 3.5
+hold d 400
+tap u 50
+wait 0.2
+tap u 50
+wait 1.0
+shot m08_fight
+tap esc 60
+wait 0.6
+shot m09_pause
+tap down 60
+wait 0.2
+tap enter 60
+wait 0.8
+shot m10_movelist
+tap esc 60
+wait 0.5
+tap down 60
+tap down 60
+wait 0.2
+tap enter 60
+wait 1.2
+shot m11_menu_again
+tap down 60
+tap down 60
+tap down 60
+tap down 60
+tap down 60
+wait 0.2
+tap enter 60
+wait 1.0
+shot m12_settings
+tap backspace 60
+wait 0.8
+tap up 60
+wait 0.2
+tap enter 60
+wait 1.0
+shot m13_extras
+tap backspace 60
+wait 0.8
+tap up 60
+tap up 60
+tap up 60
+tap up 60
+wait 0.2
+tap enter 60
+wait 1.0
+shot m14_devices
+tap enter 60
+wait 2.0
+shot m15_vs_select

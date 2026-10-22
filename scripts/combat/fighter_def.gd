@@ -61,7 +61,8 @@ static func from_dict(d: Dictionary, basics: Dictionary = {}) -> FighterDef:
 	var k := f.height / BASE_HEIGHT
 	f.push_w = float(s.get("push_w", f.push_w * k))
 	f.throw_range = float(s.get("throw_range", f.throw_range * k))
-	var skip: Array = d.get("no_basics", [])
+	var nb: Variant = d.get("no_basics", [])
+	var skip: Array = (basics.get("moves", {}) as Dictionary).keys() if nb is String and nb == "all" else nb
 	var bm: Dictionary = basics.get("moves", {})
 	var own: Dictionary = d.get("moves", {})
 	var tweaks: Dictionary = d.get("basic_tweaks", {})
