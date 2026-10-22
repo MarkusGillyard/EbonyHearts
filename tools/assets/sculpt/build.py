@@ -143,13 +143,13 @@ def segments(rig, body, binds, hands):
     return seg
 
 
-def mesh_part(tree, voxel, target, log, fallback_bones=("hips",), focus=None):
+def mesh_part(tree, voxel, target, log, fallback_bones=("hips",), focus=None, bounds=(None, None)):
     """Meshes an SDF tree; returns vertices, faces, normals, occlusion, material keys and the
     bones each vertex may follow."""
     leaves = tree.leaves()
     for i, lf in enumerate(leaves):
         lf.index = i
-    v, f = mesher.polygonize(tree, voxel, log=log)
+    v, f = mesher.polygonize(tree, voxel, lo=bounds[0], hi=bounds[1], log=log)
     f = mesher.orient_outward(tree, v, f)
     v, f = mesher.simplify(v, f, target, log=log, focus=focus)
     v = mesher.project(tree, v)
@@ -262,6 +262,25 @@ def hair_meshes(rig, body, outfit, w, bone_index, log):
     return skeletons
 
 
+## Grid cells a rigid piece may span: about what the body meshes in at 2 mm (~1.2 GB).
+CELL_BUDGET = 150e6
+
+
+def surface_bounds(tree, steps=64):
+    """The box a piece's surface actually occupies, from a coarse sample. A piece cut from a
+    bigger shape (a cuff from the whole arm) inherits that shape's box, which would waste grid."""
+    lo, hi = np.asarray(tree.lo, np.float32), np.asarray(tree.hi, np.float32)
+    axes = [np.linspace(lo[i], hi[i], steps, dtype=np.float32) for i in range(3)]
+    pts = np.stack(np.meshgrid(*axes, indexing="ij"), -1).reshape(-1, 3)
+    d, _ = mesher.evaluate(tree, pts)
+    cell = (hi - lo) / (steps - 1)
+    # Every point of the surface lies within one cell diagonal of some sample.
+    near = pts[d < float(np.linalg.norm(cell))]
+    if len(near) == 0:
+        return lo, hi
+    return near.min(axis=0) - cell, near.max(axis=0) + cell
+
+
 def rigid(bone, n):
     return np.tile(np.array([[bone, 0, 0, 0]], np.int32), (n, 1)), np.tile(np.array([[1, 0, 0, 0]], np.float32), (n, 1))
 
@@ -285,11 +304,11 @@ def build(char_id, voxel, target, log=print):
     for extra in outfit.extras(body):
         name, node, bone = extra[:3]
         opts = extra[3] if len(extra) > 3 else {}
-        # Small rigid pieces (rings, claws) mesh finely; a big one (a helmet) would take
-        # gigabytes at that voxel size, so the voxel also grows with the piece (~250 across).
-        diag = float(np.linalg.norm(np.asarray(node.hi) - np.asarray(node.lo)))
-        ev = max(min(voxel, opts.get("voxel", 0.001)), voxel * 0.25, diag / 250.0)
-        v, f, n, ao, keys, _ = mesh_part(node, ev, opts.get("triangles", 4000), log)
+        # Rigid pieces (rings, claws, a helmet) mesh finely; the voxel only grows if a piece would
+        # need more grid than the body does (a 5 m box at 1.6 mm once took over 12 GB).
+        lo, hi = surface_bounds(node)
+        ev = max(min(voxel, opts.get("voxel", 0.001)), voxel * 0.25, float(np.prod(hi - lo) / CELL_BUDGET) ** (1.0 / 3.0))
+        v, f, n, ao, keys, _ = mesh_part(node, ev, opts.get("triangles", 4000), log, bounds=(lo, hi))
         bi, bw = rigid(bone_index[bone], len(v))
         total += len(f)
         w.add_mesh(name, "body", [{"material": "body", "start": 0, "count": int(len(f) * 3)}], surface_arrays(pal, body, v, f, n, ao, keys, bi, bw))

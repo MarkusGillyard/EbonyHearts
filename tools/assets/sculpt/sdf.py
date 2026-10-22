@@ -176,7 +176,10 @@ def frame_from(axis, ref):
     y = _f(axis) / np.linalg.norm(axis)
     z = _f(ref) - y * np.dot(ref, y)
     if np.linalg.norm(z) < 1e-6:
-        z = np.array([0, 0, 1], np.float32) - y * y[2]
+        # `ref` runs along the axis: lean toward whichever world axis is furthest from it.
+        w = np.zeros(3, np.float32)
+        w[int(np.argmin(np.abs(y)))] = 1.0
+        z = w - y * np.dot(w, y)
     z = z / np.linalg.norm(z)
     x = np.cross(y, z)
     return np.stack([x, y, z], axis=1).astype(np.float32)

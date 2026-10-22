@@ -72,8 +72,11 @@ alternate colours) are shader parameters.
 
 The character models are generated offline (`tools/assets/sculpt/`): a signed-distance sculpt of
 the body and outfit from the look data, meshed at 2 mm, decimated to about 120,000 triangles,
-skinned by distance to the rig's bones, with materials baked per vertex. `test_content` fails when
-a model is older than its look.
+skinned by distance to the rig's bones, with materials baked per vertex. Rigid pieces (a helmet,
+claws, rings) are meshed separately at a finer voxel, over the box their surface actually
+occupies (sampled first, since a cuff cut from a whole arm inherits the arm's box) and within a
+fixed grid budget, so a build peaks at about 1.3 GB. `test_content` fails when a model is older
+than its look.
 
 ## Saves and settings
 

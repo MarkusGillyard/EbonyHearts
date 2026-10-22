@@ -106,7 +106,7 @@ are committed, so a normal build needs none of this.
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r tools/assets/sculpt/requirements.txt   # once
 godot --headless --path . -s tools/assets/export_rigs.gd    # rigs for the sculptor
-.venv/bin/python tools/assets/sculpt/build.py [--only=gorm]  # fighter models (minutes each)
+.venv/bin/python tools/assets/sculpt/build.py [--only=gorm]  # fighter models (minutes and ~1.3 GB each)
 .venv/bin/python tools/assets/gen_audio.py                   # all sound effects and music
 python3 tools/poses/common.py && python3 tools/poses/fighters.py   # pose data
 godot --path . res://tools/preview/portraits.tscn            # select-screen portraits

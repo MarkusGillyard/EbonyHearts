@@ -123,8 +123,10 @@ def elliptic_cylinder(c, a, b, y0, y1, edge, material, bones, rot=None, tag=""):
         out = np.sqrt(np.maximum(d2, 0) ** 2 + np.maximum(dy, 0) ** 2)
         return (out + np.minimum(np.maximum(d2, dy), 0.0) - edge).astype(np.float32)
 
-    ext = max(a, b, abs(y0), abs(y1)) * 1.5
-    return Leaf(fn, c - ext, c + ext, material, bones, tag)
+    # Bounds from the corners of its own box, so a ring placed far from c stays a small piece.
+    corners = np.array([[x, y, z] for x in (-a, a) for y in (y0, y1) for z in (-b, b)], np.float32) @ R.T + c
+    pad = abs(edge) + 0.002
+    return Leaf(fn, corners.min(axis=0) - pad, corners.max(axis=0) + pad, material, bones, tag)
 
 
 def limb_ring(b, ja, jb, t, radius, minor, mat, bones, squash=1.0):
