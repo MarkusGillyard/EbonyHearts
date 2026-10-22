@@ -1,0 +1,22 @@
+# Godot
+.godot/
+*.import.tmp
+*.translation
+export_credentials.cfg
+
+# Build output
+build/
+dist/
+
+# Working notes that are not part of the product
+Mortal_Slopbat_*Directive*.md
+
+# Editor / OS clutter
+*.tmp
+*.swp
+*~
+.DS_Store
+.vscode/
+.idea/
+__pycache__/
+.venv/
