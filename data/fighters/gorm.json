@@ -64,12 +64,72 @@
 		"roundhouse": {
 			"startup": 17,
 			"damage": 120,
-			"recovery": 26
+			"recovery": 26,
+			"anim": {
+				"tip": "foot_r",
+				"keys": [
+					[
+						11,
+						"rh_turn",
+						"out"
+					],
+					[
+						17,
+						"rh_hit",
+						"snap"
+					],
+					[
+						21,
+						"rh_hit",
+						"linear"
+					],
+					[
+						31,
+						"rh_follow",
+						"out"
+					],
+					[
+						43,
+						"stance",
+						"inout"
+					]
+				]
+			}
 		},
 		"sweep": {
 			"startup": 14,
 			"damage": 95,
-			"recovery": 28
+			"recovery": 28,
+			"anim": {
+				"tip": "foot_r",
+				"keys": [
+					[
+						8,
+						"sweep_load",
+						"out"
+					],
+					[
+						14,
+						"sweep_hit",
+						"snap"
+					],
+					[
+						18,
+						"sweep_hit",
+						"linear"
+					],
+					[
+						30,
+						"sweep_follow",
+						"out"
+					],
+					[
+						42,
+						"crouch",
+						"inout"
+					]
+				]
+			}
 		},
 		"uppercut": {
 			"startup": 10,
