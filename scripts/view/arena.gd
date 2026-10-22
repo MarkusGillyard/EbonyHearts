@@ -351,6 +351,8 @@ func plume(pos: Vector3, color: Color, amount := 24, spread := 0.6, rise := 0.8,
 	grow.add_point(Vector2(0, 0.3))
 	grow.add_point(Vector2(1, 1.0))
 	var gt := CurveTexture.new()
+	# One channel is all a scale curve needs (the default RGB float format gets converted).
+	gt.texture_mode = CurveTexture.TEXTURE_MODE_RED
 	gt.curve = grow
 	pm.scale_curve = gt
 	pm.color = color

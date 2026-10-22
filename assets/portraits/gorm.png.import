@@ -3,20 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cu7rs40a45hxc"
-path="res://.godot/imported/gorm.png-0ebc5fbd353e64e6038787d3f508e37a.ctex"
+path.bptc="res://.godot/imported/gorm.png-0ebc5fbd353e64e6038787d3f508e37a.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/portraits/gorm.png"
-dest_files=["res://.godot/imported/gorm.png-0ebc5fbd353e64e6038787d3f508e37a.ctex"]
+dest_files=["res://.godot/imported/gorm.png-0ebc5fbd353e64e6038787d3f508e37a.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

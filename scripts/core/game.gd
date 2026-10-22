@@ -4,6 +4,9 @@ extends Node
 
 signal screen_requested(screen: String, data: Dictionary)
 
+## The main menu item chosen last, so coming back (from Settings, a match, Extras) lands there.
+var menu_choice := 0
+
 const DIFFICULTIES := ["Novice", "Warrior", "Master"]
 ## Arcade towers: how many ordinary opponents precede the rival, and whether the Reflection
 ## (a mirror match against a slop-dark copy) stands before the boss.
