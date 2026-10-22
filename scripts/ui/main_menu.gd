@@ -11,6 +11,9 @@ const ITEMS := [
 	["Quit", "quit", "Leave the Sump."],
 ]
 
+## The item chosen last, so coming back (from Settings, a match, Extras) lands where you were.
+static var last_choice := 0
+
 var _desc: Label
 
 
@@ -29,11 +32,12 @@ func build() -> void:
 	for i in buttons.size():
 		var text: String = ITEMS[i][2]
 		buttons[i].focus_entered.connect(func(): _desc.text = text)
+	_focus_first = buttons[last_choice]
 	var panel := PanelContainer.new()
 	panel.position = Vector2(760, 330)
 	panel.size = Vector2(900, 220)
 	add_child(panel)
-	_desc = UiKit.label(ITEMS[0][2], 30, UiKit.TEXT)
+	_desc = UiKit.label(ITEMS[last_choice][2], 30, UiKit.TEXT)
 	_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_desc.custom_minimum_size = Vector2(860, 180)
 	panel.add_child(_desc)
@@ -47,6 +51,9 @@ func build() -> void:
 
 
 func _choose(id: String) -> void:
+	for i in ITEMS.size():
+		if ITEMS[i][1] == id:
+			last_choice = i
 	match id:
 		"arcade":
 			Game.config["mode"] = "arcade"
