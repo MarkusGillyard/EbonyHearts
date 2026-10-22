@@ -169,8 +169,10 @@ def main():
             lines = [ln for ln in data.splitlines() if ln.strip()]
             if lines:
                 try:
-                    state = json.loads(lines[-1])
+                    row = json.loads(lines[-1])
                     last_line = time.time()
+                    if "f" in row:  # not a match header
+                        state = row
                 except json.JSONDecodeError:
                     pass
         quiet = time.time() - last_line

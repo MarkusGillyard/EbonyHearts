@@ -132,6 +132,10 @@ func start(cfg: Dictionary) -> void:
 			_trace_live = true
 		elif arg.begins_with("--bench="):
 			_bench_secs = float(arg.trim_prefix("--bench="))
+	if _trace:
+		# One header per match, so a long trace (a whole arcade run) says who fought where.
+		_trace.store_line(JSON.stringify({"match": {"p1": config["p1"], "p2": config["p2"], "mode": mode, "stage": stage,
+			"difficulty": config.get("difficulty", 1)}}))
 
 
 func _exit_tree() -> void:
@@ -257,7 +261,7 @@ func _write_trace(p: Array) -> void:
 	var ev := []
 	for e in sim.events:
 		var short := {"type": e["type"]}
-		for k in ["who", "by", "move", "damage", "combo", "winner"]:
+		for k in ["who", "by", "move", "damage", "combo", "winner", "how"]:
 			if e.has(k):
 				short[k] = e[k]
 		ev.append(short)
