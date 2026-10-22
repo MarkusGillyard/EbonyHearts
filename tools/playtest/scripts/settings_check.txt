@@ -1,0 +1,17 @@
+# After relaunch: the settings screen should show what settings_change.txt left.
+wait 2.5
+tap enter 60
+wait 1.0
+tap s 50
+wait 0.15
+tap s 50
+wait 0.15
+tap s 50
+wait 0.15
+tap s 50
+wait 0.15
+tap s 50
+wait 0.3
+tap enter 60
+wait 1.2
+shot s10_relaunched_settings

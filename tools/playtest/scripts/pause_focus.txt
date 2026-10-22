@@ -1,0 +1,34 @@
+# In a fight: pause and resume with Esc, then lose window focus (the game must pause itself),
+# come back, resume, and open the move list from the pause menu.
+wait 9.0
+shot p00_fight
+hold d 600
+tap u 50
+wait 1.0
+tap esc 60
+wait 0.8
+shot p01_paused
+tap enter 60
+wait 1.5
+shot p02_resumed
+blur
+wait 1.5
+shot p03_after_focus_loss
+focus
+wait 1.0
+shot p04_back
+tap enter 60
+wait 1.5
+shot p05_resumed_again
+tap esc 60
+wait 0.6
+tap s 60
+wait 0.2
+tap enter 60
+wait 1.2
+shot p06_move_list
+tap esc 60
+wait 0.8
+shot p07_back_to_pause
+tap enter 60
+wait 2.0

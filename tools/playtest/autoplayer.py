@@ -104,6 +104,11 @@ class Player:
         if op_move == "storm_shroud" and dist < 3.2:
             self.hold([back])
             return
+        # A projectile on its way in: block it, low if it travels low (as a player watching would).
+        for owner, px, py, pvx, low in s.get("proj", []):
+            if owner == 1 and abs(px - me[4]) < 2.6 and pvx * (me[4] - px) > 0:
+                self.hold([BL, DOWN] if low else [BL])
+                return
         if op_state == "MOVE" and op_mf < 10 and dist < 2.2 and op_move not in ("dive",):
             low = op_move in ("sweep", "crouch_lk", "low_claw", "nix_low", "baton_trip", "crouch_lp")
             self.hold([BL, DOWN] if low else [BL])

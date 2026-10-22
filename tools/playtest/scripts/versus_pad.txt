@@ -1,0 +1,30 @@
+# Player 2 on a virtual gamepad for versus_keys.txt. OUT is replaced by the output folder.
+waitfile OUT/v02_p1_locked.png 60
+wait 0.6
+tap y 80
+waitfile OUT/v05_fight.png 60
+stick -1 0 700
+wait 0.4
+tap y 80
+wait 0.6
+tap x 80
+wait 0.6
+tap b 80
+wait 0.8
+tap a 80
+wait 0.8
+hold rb 2500
+waitfile OUT/v06_exchange.png 30
+wait 0.8
+tap start 80
+waitfile OUT/v07_paused.png 30
+wait 1.0
+tap start 80
+waitfile OUT/v09_arrows_ignored.png 30
+wait 1.0
+dpad down 600
+tap y 80
+wait 1.0
+stick 1 0 500
+wait 0.6
+tap b 80

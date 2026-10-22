@@ -13,6 +13,7 @@ one per line:
     shot name           save <outdir>/<name>.png of the game window
     step n              advance n frames in the game's frame-step mode (F6 n times)
     focus               re-focus the game window
+    blur                move keyboard focus off the game (to the desktop), as alt-tabbing away would
 
 Usage: xdrive.py --window "Mortal Slopbat" --out /tmp/shots script.txt
 Requires python3-xlib and Pillow.
@@ -135,6 +136,10 @@ class Driver:
                 self.shot(args[0])
             elif cmd == "focus":
                 self.focus()
+            elif cmd == "blur":
+                self.d.set_input_focus(self.root, X.RevertToParent, X.CurrentTime)
+                self.d.sync()
+                time.sleep(0.15)
             else:
                 sys.exit("unknown command " + cmd)
 

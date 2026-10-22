@@ -4,7 +4,8 @@
 #   tools/playtest/autoplay.sh <out_dir> <seconds> [autoplayer args --] [game args...]
 # Example (a whole arcade run from the title screen):
 #   tools/playtest/autoplay.sh /tmp/arcade 900
-# GAME=path/to/exported/binary runs an exported build instead of the project.
+# GAME=path/to/exported/binary runs an exported build instead of the project. PRELUDE=script.txt
+# first plays an xdrive script (to pick a mode, fighter or tower) before the autoplayer takes over.
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 OUT="$1"; SECS="$2"; shift 2
@@ -29,10 +30,15 @@ for i in $(seq 1 80); do
 	sleep 0.25
 done
 sleep 1.0
+# The game's memory once a minute, for the record of long sessions.
+( while kill -0 "$PID" 2>/dev/null; do echo "$(date +%T) rss_kb=$(ps -o rss= -p "$PID")"; sleep 60; done ) > "$OUT/resources.txt" 2>/dev/null &
+SAMPLER=$!
+if [ -n "${PRELUDE:-}" ]; then
+	python3 tools/playtest/xdrive.py --window "$TITLE" --out "$OUT" "$PRELUDE"
+fi
 python3 tools/playtest/autoplayer.py --window "$TITLE" --trace "$TRACE" --seconds "$SECS" --shots "$OUT" --every 15 "${AP[@]}"
 status=$?
-# Resources at the end of the session, for the record.
-ps -o rss=,etime= -p "$PID" > "$OUT/resources.txt" 2>/dev/null
-kill "$PID" 2>/dev/null
+echo "$(date +%T) rss_kb=$(ps -o rss= -p "$PID") at the end" >> "$OUT/resources.txt"
+kill "$SAMPLER" "$PID" 2>/dev/null
 wait "$PID" 2>/dev/null
 exit $status

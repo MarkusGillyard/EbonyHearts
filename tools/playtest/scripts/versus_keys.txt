@@ -1,0 +1,57 @@
+# Versus, player 1 on the left keyboard set. Pairs with versus_pad.txt (player 2 on a gamepad);
+# run both through tools/playtest/versus.sh. The pad script waits for this script's screenshots.
+wait 2.5
+tap enter 60
+wait 1.0
+tap s 60
+wait 0.3
+tap enter 60
+wait 1.5
+shot v00_devices
+# The arrow keys go to nobody, Gamepad 1 to Player 2.
+tap s 60
+wait 0.2
+tap a 60
+wait 0.2
+tap s 60
+wait 0.2
+tap d 60
+wait 0.2
+tap d 60
+wait 0.4
+shot v01_assigned
+tap enter 60
+wait 1.8
+# Player 1 takes Gorm; the pad then takes Gorm too (a mirror match).
+tap d 60
+wait 0.3
+tap j 60
+wait 0.5
+shot v02_p1_locked
+wait 3.0
+shot v03_after_p2
+tap enter 60
+wait 1.5
+shot v04_after_stage
+wait 7.0
+shot v05_fight
+hold d 500
+wait 4.0
+tap u 50
+wait 0.5
+tap j 50
+wait 0.5
+chord a o 60
+wait 2.0
+shot v06_exchange
+wait 2.0
+# The pad pauses with Start here and resumes later.
+shot v07_paused
+wait 3.0
+shot v08_resumed
+# The arrow keys belong to nobody now: they must not move player 2.
+hold left 1200
+wait 0.5
+shot v09_arrows_ignored
+wait 6.0
+shot v10_later

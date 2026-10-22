@@ -1,0 +1,57 @@
+# Settings: fullscreen on and off, music down, gore low, effects reduced; then Quit from the menu.
+# settings_check.txt relaunches and looks again.
+wait 2.5
+tap enter 60
+wait 1.0
+tap s 50
+wait 0.15
+tap s 50
+wait 0.15
+tap s 50
+wait 0.15
+tap s 50
+wait 0.15
+tap s 50
+wait 0.3
+tap enter 60
+wait 1.2
+shot s00_settings
+tap enter 60
+wait 2.5
+shot s01_fullscreen
+tap enter 60
+wait 2.5
+shot s02_windowed
+tap s 50
+wait 0.15
+tap s 50
+wait 0.15
+tap s 50
+wait 0.15
+tap s 50
+wait 0.15
+tap s 50
+wait 0.15
+tap a 50
+wait 0.15
+tap a 50
+wait 0.15
+tap s 50
+wait 0.15
+tap s 50
+wait 0.15
+tap d 50
+wait 0.15
+tap s 50
+wait 0.15
+tap d 50
+wait 0.5
+shot s03_changed
+tap esc 60
+wait 1.0
+shot s04_menu
+tap s 60
+wait 0.3
+shot s05_quit_selected
+tap enter 60
+wait 3.0

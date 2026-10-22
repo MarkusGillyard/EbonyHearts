@@ -265,8 +265,11 @@ func _write_trace(p: Array) -> void:
 			if e.has(k):
 				short[k] = e[k]
 		ev.append(short)
+	var pr := []
+	for q in sim.projectiles:
+		pr.append([q.owner, snappedf(q.pos.x, 0.001), snappedf(q.pos.y, 0.001), snappedf(q.vel.x, 0.01), q.level == MoveDef.Level.LOW])
 	_trace.store_line(JSON.stringify({"t": sim.tick_count, "phase": sim.phase, "pads": [[p[0].x, p[0].z], [p[1].x, p[1].z]], "f": fs, "ev": ev,
-		"facing": [sim.fighters[0].facing, sim.fighters[1].facing], "stun": [sim.fighters[0].stun_kind, sim.fighters[1].stun_kind]}))
+		"facing": [sim.fighters[0].facing, sim.fighters[1].facing], "stun": [sim.fighters[0].stun_kind, sim.fighters[1].stun_kind], "proj": pr}))
 	if sim.tick_count % 60 == 0 or _trace_live:
 		_trace.flush()
 

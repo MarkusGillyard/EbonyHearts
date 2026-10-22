@@ -6,6 +6,7 @@ not a physical one; results from it say so.
 
 Script lines:  wait <sec> | tap <button> [ms] | hold <button> <ms> | press <button> | release <button>
                | stick <x> <y> [ms]  (values -1..1, returns to centre after ms) | dpad <up|down|left|right> [ms]
+               | waitfile <path> [timeout sec]  (e.g. a screenshot xdrive takes, to keep two scripts in step)
 Buttons: a b x y lb rb start back
 Usage:  python3 tools/playtest/vpad.py script.txt      (needs write access to /dev/uinput)
 """
@@ -107,6 +108,12 @@ def run(pad, lines):
             pad.stick(float(args[0]), float(args[1]))
             time.sleep((float(args[2]) if len(args) > 2 else 120) / 1000.0)
             pad.stick(0, 0)
+        elif cmd == "waitfile":
+            end = time.time() + (float(args[1]) if len(args) > 1 else 60)
+            while not os.path.exists(args[0]):
+                if time.time() > end:
+                    sys.exit("waitfile timed out: " + args[0])
+                time.sleep(0.05)
         elif cmd == "dpad":
             d = {"up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0)}[args[0]]
             pad.hat(*d)

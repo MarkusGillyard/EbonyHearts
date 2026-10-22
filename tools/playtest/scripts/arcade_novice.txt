@@ -1,0 +1,14 @@
+# Title -> Arcade -> the highlighted fighter -> the Novice tower; the autoplayer does the rest.
+wait 2.5
+tap enter 60
+wait 1.0
+tap enter 60
+wait 2.0
+tap enter 60
+wait 1.6
+shot n00_tower
+tap a 60
+wait 0.4
+shot n01_novice
+tap enter 60
+wait 0.5
