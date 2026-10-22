@@ -6,8 +6,8 @@
 	"style": "Baguazhang palms and the dirge",
 	"stats": {
 		"height": 1.82,
-		"health": 960,
-		"walk_f": 2.2,
+		"health": 1000,
+		"walk_f": 2.4,
 		"walk_b": 2.0,
 		"run_speed": 5.0
 	},
@@ -225,12 +225,12 @@
 		"lament": {
 			"name": "Lament",
 			"kind": "special",
-			"startup": 15,
+			"startup": 13,
 			"active": 0,
-			"recovery": 26,
+			"recovery": 22,
 			"level": "none",
 			"projectile": {
-				"frame": 15,
+				"frame": 13,
 				"kind": "wave",
 				"offset": [
 					0.55,
@@ -253,22 +253,22 @@
 				"tip": "hand_l",
 				"keys": [
 					[
-						8,
+						7,
 						"mirela_lament_load",
 						"out"
 					],
 					[
-						15,
+						13,
 						"mirela_lament",
 						"snap"
 					],
 					[
-						30,
+						26,
 						"mirela_lament",
 						"linear"
 					],
 					[
-						41,
+						35,
 						"stance",
 						"inout"
 					]
@@ -283,11 +283,11 @@
 		},
 		"keen": {
 			"name": "Keen",
-			"startup": 19,
+			"startup": 16,
 			"active": 8,
-			"recovery": 26,
+			"recovery": 24,
 			"level": "mid",
-			"damage": 30,
+			"damage": 40,
 			"hitboxes": [
 				{
 					"rect": [
@@ -302,22 +302,22 @@
 				"tip": "head",
 				"keys": [
 					[
-						10,
+						9,
 						"mirela_keen_load",
 						"out"
 					],
 					[
-						18,
+						16,
 						"mirela_keen",
 						"snap"
 					],
 					[
-						40,
+						36,
 						"mirela_keen",
 						"linear"
 					],
 					[
-						55,
+						48,
 						"stance",
 						"inout"
 					]
@@ -337,7 +337,7 @@
 		},
 		"grave_float": {
 			"name": "Grave Float",
-			"startup": 44,
+			"startup": 36,
 			"active": 12,
 			"recovery": 14,
 			"level": "overhead",
@@ -361,27 +361,27 @@
 						"out"
 					],
 					[
-						18,
+						16,
 						"mirela_float",
 						"inout"
 					],
 					[
-						40,
+						32,
 						"mirela_float",
 						"linear"
 					],
 					[
-						44,
+						36,
 						"mirela_float_dive",
 						"snap"
 					],
 					[
-						56,
+						48,
 						"mirela_float_dive",
 						"linear"
 					],
 					[
-						69,
+						61,
 						"stance",
 						"inout"
 					]
@@ -396,44 +396,44 @@
 					0.0
 				],
 				[
-					18,
+					16,
 					1.5
 				],
 				[
-					40,
+					32,
 					1.6
 				],
 				[
-					50,
+					42,
 					0.9
 				],
 				[
-					58,
+					50,
 					0.0
 				]
 			],
 			"motion": [
 				[
-					18,
+					16,
 					0.4
 				],
 				[
-					44,
+					36,
 					1.3
 				],
 				[
-					56,
+					48,
 					1.6
 				]
 			],
 			"props": {
 				"proj_invuln": [
 					4,
-					40
+					32
 				],
 				"airborne": [
 					4,
-					58
+					50
 				]
 			},
 			"tags": [
@@ -547,8 +547,8 @@
 		"move": "last_note"
 	},
 	"ai": {
-		"range": 2.6,
-		"aggression": 0.35,
+		"range": 2.0,
+		"aggression": 0.45,
 		"zoning": 0.75,
 		"anti_air": [
 			"uppercut"

@@ -6,7 +6,7 @@
 	"style": "Ninjutsu and kusarigama",
 	"stats": {
 		"height": 1.78,
-		"health": 950,
+		"health": 1000,
 		"walk_f": 2.7,
 		"walk_b": 2.3,
 		"run_speed": 5.8

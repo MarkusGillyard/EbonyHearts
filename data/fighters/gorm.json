@@ -6,7 +6,7 @@
 	"style": "Sumo and catch wrestling",
 	"stats": {
 		"height": 2.12,
-		"health": 1050,
+		"health": 1000,
 		"walk_f": 1.9,
 		"walk_b": 1.6,
 		"run_speed": 4.4,
@@ -63,7 +63,7 @@
 		},
 		"roundhouse": {
 			"startup": 17,
-			"damage": 120,
+			"damage": 105,
 			"recovery": 26,
 			"anim": {
 				"tip": "foot_r",
@@ -98,7 +98,7 @@
 		},
 		"sweep": {
 			"startup": 14,
-			"damage": 95,
+			"damage": 85,
 			"recovery": 28,
 			"anim": {
 				"tip": "foot_r",
@@ -133,7 +133,7 @@
 		},
 		"uppercut": {
 			"startup": 10,
-			"damage": 150
+			"damage": 130
 		},
 		"throw_f": {
 			"throw": {
