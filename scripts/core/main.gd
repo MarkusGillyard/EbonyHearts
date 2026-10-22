@@ -28,6 +28,9 @@ func _ready() -> void:
 	Game.screen_requested.connect(_show)
 	var start := "title"
 	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--window-title="):
+			# Playtest tools find the window by a title no other instance shares.
+			get_window().title = a.trim_prefix("--window-title=")
 		if a.begins_with("--screen="):
 			start = a.trim_prefix("--screen=")
 		elif a.begins_with("--match="):

@@ -274,7 +274,7 @@ func update_visual(frac: float, delta: float) -> void:
 	_update_props(shown)
 	if _flash > 0.0:
 		set_shader("flash", _flash)
-		_flash = maxf(0.0, _flash - delta * 6.0)
+		_flash = maxf(0.0, _flash - delta * 8.0)
 		if _flash <= 0.0:
 			set_shader("flash", 0.0)
 	var t_cloth := Time.get_ticks_usec()
@@ -504,7 +504,7 @@ func impact(dir: float, strength: float, level: int, blocked: bool) -> void:
 	(_spring["hips"] as Array)[1] += Vector3(-s * 2.0 * (1.6 if level == MoveDef.Level.LOW else 0.6), 0, 0)
 	_shake = clampf(0.004 + strength * 0.012, 0.0, 0.02)
 	if not blocked and strength > 0.6:
-		flash(0.5)
+		flash(0.22)
 
 
 # --- Feet ---------------------------------------------------------------------------------------

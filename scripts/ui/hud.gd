@@ -198,7 +198,7 @@ func _build_pause() -> void:
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_pause.add_child(dim)
 	var box := VBoxContainer.new()
-	box.position = Vector2(-220, -260)
+	box.position = Vector2(740, 280)
 	box.size = Vector2(440, 520)
 	box.add_theme_constant_override("separation", 12)
 	_pause.add_child(box)
