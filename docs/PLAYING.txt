@@ -1,0 +1,36 @@
+MORTAL SLOPBAT
+Copyright (c) 2026 Markus Gillyard. All rights reserved. See LICENSE.
+
+Run:   ./MortalSlopbat.sh
+       (needs a Vulkan or OpenGL 3 capable graphics driver; tested on Linux Mint 22.3 x86_64)
+       Add it to your application menu: ./install-desktop-entry.sh
+       Force OpenGL: ./MortalSlopbat.sh --rendering-driver opengl3
+
+Settings and progress are kept in ~/.local/share/MortalSlopbat/
+
+CONTROLS (all keys can be changed in Settings)
+
+                    Player 1     Player 2      Gamepad
+  Move/jump/crouch  W A S D      Arrows        D-pad / left stick
+  High Punch        U            Numpad 7      Y
+  Block             I            Numpad 8      RB / RT
+  High Kick         O            Numpad 9      B
+  Low Punch         J            Numpad 4      X
+  Run               K            Numpad 5      LB / LT
+  Low Kick          L            Numpad 6      A
+  Pause             Esc                        Start
+
+In one-player modes both keyboard halves and any gamepad control Player 1.
+In Versus, the Controllers screen decides who uses what.
+
+FIGHTING
+  Block is a button: stand to block highs and mids, crouch to block lows.
+  Hold Run with forward to run; running and dial-a-combos spend the run meter.
+  Down + High Punch: uppercut.  Back + Low Kick: sweep.  Back + High Kick: roundhouse.
+  Forward or Back + Low Punch up close: throw (press a punch right after being grabbed to break).
+  Every fighter's specials, combos and Sloptality: Pause -> Move List.
+  When FINISH appears, stand at the right distance and enter your Sloptality.
+
+New here? Try the Tutorial from the main menu.
+
+Third-party licenses: THIRD_PARTY_NOTICES.md and the licenses/ folder.

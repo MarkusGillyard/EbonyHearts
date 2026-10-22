@@ -49,8 +49,8 @@ void fragment() {
 	col *= 0.82 + 0.36 * h;
 	ALBEDO = mix(col, tint_color, tint * 0.85);
 	ROUGHNESS = roughness;
-	SPECULAR = 0.3;
-	ANISOTROPY = 0.7;
+	SPECULAR = 0.16;
+	ANISOTROPY = 0.55;
 	BACKLIGHT = col * 0.3;
 	EMISSION = dissolve_color * glow * 3.0 + vec3(flash * 0.6);
 }

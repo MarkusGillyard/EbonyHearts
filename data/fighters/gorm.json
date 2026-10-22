@@ -6,7 +6,7 @@
 	"style": "Sumo and catch wrestling",
 	"stats": {
 		"height": 2.12,
-		"health": 1100,
+		"health": 1050,
 		"walk_f": 1.9,
 		"walk_b": 1.6,
 		"run_speed": 4.4,
@@ -62,12 +62,14 @@
 			]
 		},
 		"roundhouse": {
-			"startup": 15,
-			"damage": 125
+			"startup": 17,
+			"damage": 120,
+			"recovery": 26
 		},
 		"sweep": {
-			"startup": 12,
-			"damage": 100
+			"startup": 14,
+			"damage": 95,
+			"recovery": 28
 		},
 		"uppercut": {
 			"startup": 10,
@@ -215,7 +217,7 @@
 			"kind": "chain",
 			"hitstun": 24,
 			"blockstun": 13,
-			"push_hit": 1.5,
+			"push_hit": 1.1,
 			"push_block": 1.0,
 			"motion": [
 				[
@@ -410,9 +412,9 @@
 			"name": "Rendering Charge",
 			"startup": 12,
 			"active": 10,
-			"recovery": 22,
+			"recovery": 26,
 			"level": "mid",
-			"damage": 110,
+			"damage": 95,
 			"hitboxes": [
 				{
 					"rect": [
@@ -475,8 +477,8 @@
 			],
 			"props": {
 				"armor": [
-					3,
-					20
+					4,
+					12
 				]
 			},
 			"tags": [

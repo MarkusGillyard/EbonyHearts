@@ -283,9 +283,9 @@
 		},
 		"keen": {
 			"name": "Keen",
-			"startup": 18,
+			"startup": 19,
 			"active": 8,
-			"recovery": 30,
+			"recovery": 26,
 			"level": "mid",
 			"damage": 30,
 			"hitboxes": [

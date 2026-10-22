@@ -6,7 +6,7 @@
 	"style": "Deep-sea pressure and harpoon",
 	"stats": {
 		"height": 1.95,
-		"health": 1050,
+		"health": 1080,
 		"walk_f": 2.0,
 		"walk_b": 1.7,
 		"run_speed": 4.6,
@@ -15,7 +15,7 @@
 	},
 	"basic_tweaks": {
 		"hp": {
-			"startup": 6,
+			"startup": 5,
 			"damage": 60
 		},
 		"hp2": {
@@ -166,7 +166,7 @@
 			"kind": "special",
 			"startup": 14,
 			"active": 0,
-			"recovery": 30,
+			"recovery": 24,
 			"level": "none",
 			"projectile": {
 				"frame": 14,
@@ -186,7 +186,7 @@
 				"damage": 50,
 				"chip": 8,
 				"effect": "pull",
-				"hitstun": 48,
+				"hitstun": 56,
 				"blockstun": 14
 			},
 			"anim": {

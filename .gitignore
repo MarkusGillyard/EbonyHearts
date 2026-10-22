@@ -5,8 +5,8 @@
 export_credentials.cfg
 
 # Build output
-build/
-dist/
+/build/
+/dist/
 
 # Working notes that are not part of the product
 Mortal_Slopbat_*Directive*.md

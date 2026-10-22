@@ -6,9 +6,9 @@ extends RefCounted
 ## It plays its fighter's real moves through PadIntent, the same input path a player's keys take.
 
 const LEVELS := [
-	{"react": 24, "block": 0.28, "anti_air": 0.2, "punish": 0.2, "combo": 0.35, "aggr": 0.35, "tech": 0.1, "think": 24, "mistake": 0.25, "finish": 0.35},
-	{"react": 16, "block": 0.55, "anti_air": 0.5, "punish": 0.5, "combo": 0.7, "aggr": 0.5, "tech": 0.35, "think": 15, "mistake": 0.1, "finish": 0.7},
-	{"react": 11, "block": 0.78, "anti_air": 0.75, "punish": 0.8, "combo": 0.92, "aggr": 0.6, "tech": 0.6, "think": 10, "mistake": 0.03, "finish": 0.95},
+	{"react": 24, "block": 0.25, "anti_air": 0.2, "punish": 0.25, "combo": 0.35, "aggr": 0.45, "tech": 0.1, "think": 16, "mistake": 0.25, "finish": 0.35},
+	{"react": 16, "block": 0.45, "anti_air": 0.5, "punish": 0.55, "combo": 0.7, "aggr": 0.6, "tech": 0.35, "think": 10, "mistake": 0.1, "finish": 0.7},
+	{"react": 11, "block": 0.62, "anti_air": 0.75, "punish": 0.85, "combo": 0.92, "aggr": 0.7, "tech": 0.6, "think": 7, "mistake": 0.03, "finish": 0.95},
 ]
 
 var sim: FightSim
@@ -26,6 +26,9 @@ var _walk_t := 0
 var _run_t := 0
 var _last_hit_tick := -1000
 var _combo_queued := false
+var _was_blocking := false
+var _reach_cache := {}
+var _recent: Array = []
 
 
 func _init(s: FightSim, i: int, difficulty: int, seed := 0) -> void:
@@ -75,9 +78,22 @@ func think() -> Vector3i:
 		_block_t -= 1
 		return PadIntent.pad(2 if _block_low else 5, m.facing, 0, InputBuffer.BL)
 	if not m.is_actionable() and m.state != Fighter.S.AIR:
+		_was_blocking = m.state == Fighter.S.BLOCKSTUN
 		return _continue_combo(m)
 	var o := opp()
 	var dist := absf(o.pos.x - m.pos.x)
+	# A stunned, dazed or reeled-in opponent is an opening: take it.
+	if o.state == Fighter.S.HITSTUN and o.stun_kind in ["dazed", "pulled", "break"] and o.stun > 8 and dist < 1.6:
+		if rng.randf() < float(level["combo"]):
+			_start_combo(true)
+			return intent.next(m.facing)
+	# Just blocked something that is still recovering: punish it.
+	if _was_blocking and o.state == Fighter.S.MOVE and o.move and o.mf > o.move.last_active() and o.move.total - o.mf > 8 and dist < 1.5:
+		_was_blocking = false
+		if rng.randf() < float(level["punish"]):
+			_start_combo(true)
+			return intent.next(m.facing)
+	_was_blocking = false
 	# --- Reactions to what has been seen ---
 	var sm: MoveDef = seen["move"]
 	if seen["state"] == Fighter.S.MOVE and sm and sm.is_attack() and int(seen["mf"]) <= sm.last_active() and dist < 2.4:
@@ -157,6 +173,11 @@ func _plan(m: Fighter, o: Fighter, dist: float) -> void:
 		return
 	if dist > want + 0.9:
 		var r := rng.randf()
+		if r < float(level["block"]) * 0.35 and opp().is_actionable():
+			# Expecting the opponent to come in: guard for a moment.
+			_block_t = rng.randi_range(12, 24)
+			_block_low = rng.randf() < 0.3
+			return
 		if r < 0.18 * aggr + 0.05:
 			intent.hold(9, 3)
 			intent.hold(5, 18)
@@ -166,25 +187,29 @@ func _plan(m: Fighter, o: Fighter, dist: float) -> void:
 		if not rush.is_empty() and r < 0.3 * aggr + 0.1:
 			intent.command(_notation(rush[rng.randi_range(0, rush.size() - 1)]))
 			return
-		var far: Array = ["HK", "B+LK", "B+HK"]
 		if r < 0.45:
-			intent.hold(6, rng.randi_range(4, 10))
-			intent.command(far[rng.randi_range(0, far.size() - 1)])
-			return
+			var pick := _attack_for(dist)
+			if pick != "":
+				intent.command(pick)
+				return
 		_walk = 6
 		_walk_t = rng.randi_range(10, 24)
 		return
 	# Close.
 	var r2 := rng.randf()
-	if r2 < 0.12:
+	if r2 < 0.12 and dist < m.def.throw_range:
 		intent.command("F+LP")
 		return
-	if r2 < 0.12 + 0.45 * aggr:
+	if r2 < 0.12 + 0.45 * aggr and dist < _reach("hp") + 0.05:
 		_start_combo(false)
 		return
-	if r2 < 0.75:
-		var pokes := ["HP", "LP", "LK", "D+LK", "D+LP", "HK", "B+LK"]
-		intent.command(pokes[rng.randi_range(0, pokes.size() - 1)])
+	if r2 < 0.8:
+		var pick := _attack_for(dist)
+		if pick != "":
+			intent.command(pick)
+			return
+		_walk = 6
+		_walk_t = 6
 		return
 	if rng.randf() < 0.5:
 		_block_t = rng.randi_range(10, 26)
@@ -233,6 +258,66 @@ func _finish() -> Vector3i:
 	if sim.phase_t - sim.finish_t0 > 50:
 		intent.command(m.def.finisher_cmd.text)
 	return PadIntent.pad(5, m.facing)
+
+
+## How far a move can reach, root to root: its farthest hitbox edge plus its forward motion plus
+## the depth of the opponent's body.
+func _reach(move_id: String) -> float:
+	if _reach_cache.has(move_id):
+		return _reach_cache[move_id]
+	var mv := me().def.move(move_id)
+	var r := 0.0
+	if mv:
+		for hb in mv.hitboxes:
+			r = maxf(r, (hb["rect"] as Rect2).end.x)
+		if not mv.motion.is_empty():
+			r += mv.motion[mv.motion.size() - 1].y
+		if not mv.projectile.is_empty():
+			r = 99.0
+	r = r + 0.22 * opp().scale() if r > 0.0 else 0.0
+	_reach_cache[move_id] = r
+	return r
+
+
+## A ground attack that can connect from `dist` now, weighted toward the fighter's habits; "" if
+## none reaches.
+func _attack_for(dist: float) -> String:
+	var options := []
+	var total := 0.0
+	var weights: Dictionary = ai.get("weights", {})
+	# Specials are a spice, not the meal: most decisions consider only normals, and walking in
+	# when none reaches.
+	var specials_ok := rng.randf() < 0.3
+	for c in me().def.commands:
+		var mv := me().def.move(c.move)
+		if mv == null or mv.kind in ["throw", "grab", "finisher"] or not mv.is_attack() or mv.hitboxes.is_empty():
+			continue
+		if mv.kind == "special" and not specials_ok:
+			continue
+		var reach := _reach(c.move)
+		if reach < dist or reach > dist + 1.4:
+			continue
+		var w := float(weights.get(c.move, 1.0)) * (1.6 if mv.kind == "normal" else 0.35)
+		# Variety: a move just used is less likely to be picked again at once.
+		w *= 0.3 if c.move in _recent else 1.0
+		options.append([c.text, w])
+		total += w
+	if options.is_empty():
+		return ""
+	var pick := rng.randf() * total
+	var chosen: String = options[0][0]
+	for o in options:
+		pick -= o[1]
+		if pick <= 0.0:
+			chosen = o[0]
+			break
+	for c in me().def.commands:
+		if c.text == chosen:
+			_recent.push_front(c.move)
+			break
+	if _recent.size() > 3:
+		_recent.pop_back()
+	return chosen
 
 
 func _moves_tagged(tag: String) -> Array:
