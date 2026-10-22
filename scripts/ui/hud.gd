@@ -147,12 +147,13 @@ func _make_bar(i: int) -> Dictionary:
 	var shown_name := sim.fighters[i].def.name.to_upper()
 	if sim.fighters[i].def.id == "daxion":
 		shown_name = "STRANGER IN WHITE"
-	var name := UiKit.label(shown_name, 26, Color(0.06, 0.06, 0.05), HORIZONTAL_ALIGNMENT_RIGHT if right else HORIZONTAL_ALIGNMENT_LEFT, UiKit.body_font(true))
+	# Light with a dark outline: readable over the full bar and over the emptied part alike.
+	var name := UiKit.label(shown_name, 26, UiKit.TEXT, HORIZONTAL_ALIGNMENT_RIGHT if right else HORIZONTAL_ALIGNMENT_LEFT, UiKit.body_font(true))
 	name.position = Vector2(x + 12, 38)
 	name.size = Vector2(BAR_W - 24, BAR_H)
 	name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	name.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.35))
-	name.add_theme_constant_override("outline_size", 2)
+	name.add_theme_color_override("font_outline_color", Color(0.02, 0.02, 0.02))
+	name.add_theme_constant_override("outline_size", 7)
 	_root.add_child(name)
 	var run_bg := ColorRect.new()
 	run_bg.color = Color(0.02, 0.02, 0.03, 0.8)
