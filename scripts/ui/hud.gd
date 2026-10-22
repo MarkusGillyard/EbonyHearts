@@ -320,7 +320,7 @@ func on_event(e: Dictionary) -> void:
 			var n: int = e["combo"]
 			if n >= 2:
 				var v := sim.fighters[e["who"]]
-				_combo[by].text = "%d HIT COMBO\n%d%%" % [n, int(round(100.0 * v.combo_damage / v.def.health))]
+				_combo[by].text = "%d HIT COMBO\n%d%%" % [n, int(round(100.0 * v.combo_damage / v.max_health()))]
 				_combo_t[by] = 1.6
 		"finisher_range":
 			notice("Wrong distance: %s range" % str(e.get("want", "")))
@@ -351,7 +351,7 @@ func refresh(delta: float) -> void:
 	for i in 2:
 		var f := sim.fighters[i]
 		var b := _bars[i]
-		var h := clampf(float(f.health) / f.def.health, 0.0, 1.0)
+		var h := clampf(float(f.health) / f.max_health(), 0.0, 1.0)
 		var fill: ColorRect = b["fill"]
 		var drain: ColorRect = b["drain"]
 		var w := BAR_W * h

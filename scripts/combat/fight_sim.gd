@@ -97,7 +97,7 @@ func timer_seconds() -> int:
 func _start_round(with_intro: bool) -> void:
 	projectiles.clear()
 	for f in fighters:
-		f.health = f.def.health
+		f.health = f.max_health()
 		f.run_meter = Fighter.RUN_MAX
 		f.run_idle = 0
 		f.pos = Vector2(START_GAP * (-0.5 if f.index == 0 else 0.5), 0.0)
@@ -168,8 +168,8 @@ func step(pads: Array) -> void:
 	_check_round()
 	if refill_health:
 		for f in fighters:
-			if f.health < f.def.health and f.is_actionable() and f.sf > 30 and f.opponent().is_actionable():
-				f.health = f.def.health
+			if f.health < f.max_health() and f.is_actionable() and f.sf > 30 and f.opponent().is_actionable():
+				f.health = f.max_health()
 
 
 func _phase_tick() -> void:
@@ -614,8 +614,8 @@ func _check_round() -> void:
 					emit({"type": "ko", "who": loser, "by": winner, "finish": false, "boss": lf.def.boss})
 					_end_round(winner, "ko")
 			elif timer <= 0:
-				var h0 := float(fighters[0].health) / fighters[0].def.health
-				var h1 := float(fighters[1].health) / fighters[1].def.health
+				var h0 := float(fighters[0].health) / fighters[0].max_health()
+				var h1 := float(fighters[1].health) / fighters[1].max_health()
 				var w := -1 if is_equal_approx(h0, h1) else (0 if h0 > h1 else 1)
 				emit({"type": "timeout", "winner": w})
 				_end_round(w, "timeout")

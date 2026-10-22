@@ -47,6 +47,8 @@ var move_origin := Vector2.ZERO
 var move_contact := ""
 var hit_groups := {}
 var health := 1000
+## Full health for this match: the definition's, unless the match sets it (the arcade's boss).
+var health_max := 0
 var run_meter := RUN_MAX
 var run_idle := 0
 var stun := 0
@@ -157,6 +159,10 @@ func is_proj_invulnerable() -> bool:
 ## Free to start an action (also used by the CPU and tests).
 func is_actionable() -> bool:
 	return state in [S.IDLE, S.WALK_F, S.WALK_B, S.CROUCH, S.BLOCK, S.CROUCH_BLOCK, S.RUN]
+
+
+func max_health() -> int:
+	return health_max if health_max > 0 else def.health
 
 
 func scale() -> float:
@@ -448,7 +454,7 @@ func can_use(m: MoveDef) -> bool:
 		return false
 	if m.air != (state == S.AIR):
 		return false
-	if m.effects.has("health_below") and float(health) / def.health >= float(m.effects["health_below"]):
+	if m.effects.has("health_below") and float(health) / max_health() >= float(m.effects["health_below"]):
 		return false
 	if m.effects.has("buff") and buff_ticks > 0:
 		return false

@@ -58,7 +58,7 @@ func think() -> Vector3i:
 	if not m.is_actionable():
 		return Vector3i.ZERO
 	var dist := absf(o.pos.x - m.pos.x)
-	var low := float(m.health) / m.def.health < 0.5
+	var low := float(m.health) / m.max_health() < 0.5
 	if seen["air"] and dist < 2.4 and rng.randf() < float(level["aa"]) * 0.2:
 		intent.command("D+HP")
 		return intent.next(m.facing)

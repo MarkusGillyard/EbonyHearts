@@ -236,7 +236,7 @@
 					0.55,
 					1.0
 				],
-				"speed": 4.2,
+				"speed": 5.4,
 				"size": [
 					0.55,
 					1.6
@@ -283,7 +283,7 @@
 		},
 		"keen": {
 			"name": "Keen",
-			"startup": 16,
+			"startup": 14,
 			"active": 8,
 			"recovery": 24,
 			"level": "mid",
@@ -302,22 +302,22 @@
 				"tip": "head",
 				"keys": [
 					[
-						9,
+						8,
 						"mirela_keen_load",
 						"out"
 					],
 					[
-						16,
+						14,
 						"mirela_keen",
 						"snap"
 					],
 					[
-						36,
+						34,
 						"mirela_keen",
 						"linear"
 					],
 					[
-						48,
+						46,
 						"stance",
 						"inout"
 					]
@@ -333,6 +333,12 @@
 			],
 			"sfx": {
 				"swing": "scream"
+			},
+			"props": {
+				"proj_invuln": [
+					1,
+					24
+				]
 			}
 		},
 		"grave_float": {
@@ -548,9 +554,10 @@
 	},
 	"ai": {
 		"range": 2.0,
-		"aggression": 0.45,
+		"aggression": 0.5,
 		"zoning": 0.75,
 		"anti_air": [
+			"keen",
 			"uppercut"
 		],
 		"combos": [

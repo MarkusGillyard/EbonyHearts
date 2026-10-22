@@ -68,6 +68,10 @@ func _play(a: String, b: String, seed: int) -> Dictionary:
 	sim.intro = false
 	sim.rounds_to_win = 1 if b == "slopbat" else 2
 	sim.setup(Content.fighter(a), Content.fighter(b))
+	if b == "slopbat":
+		# As in the arcade: the boss's health depends on the tower.
+		sim.fighters[1].health_max = Game.BOSS_HEALTH[clampi(difficulty, 0, Game.BOSS_HEALTH.size() - 1)]
+		sim.fighters[1].health = sim.fighters[1].max_health()
 	var brains := [CpuBrain.new(sim, 0, difficulty, 100 + seed), BossBrain.new(sim, 1, difficulty) if b == "slopbat" else CpuBrain.new(sim, 1, difficulty, 200 + seed)]
 	var hits := {}
 	var problems := []

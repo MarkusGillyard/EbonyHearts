@@ -59,6 +59,10 @@ func start(cfg: Dictionary) -> void:
 		sim.stage_finisher = "stage_vat"
 	sim.intro = mode not in ["training", "tutorial", "stranger"]
 	sim.setup(Content.fighter(config["p1"]), Content.fighter(config["p2"]))
+	if mode == "arcade" and config.has("p2_health"):
+		# The arcade sets the Slopbat's health by tower.
+		sim.fighters[1].health_max = int(config["p2_health"])
+		sim.fighters[1].health = sim.fighters[1].max_health()
 	if mode == "stranger":
 		# No announcer and no rounds: he is simply there.
 		sim.phase = FightSim.Phase.FIGHT

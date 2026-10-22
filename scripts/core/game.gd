@@ -12,6 +12,8 @@ const TOWERS := [{"name": "Novice", "fights": 3, "mirror": false},
 	{"name": "Master", "fights": 4, "mirror": true}]
 const ARENAS := ["rendering_yards", "drowned_chapel", "stilt_market"]
 const BOSS_ARENA := "roost"
+## The Slopbat's health in each tower: Novice to Master.
+const BOSS_HEALTH := [1400, 1650, 1900]
 
 ## mode: "arcade", "versus" (two players), "cpu" (player 1 against the CPU), "training",
 ## "tutorial", "stranger" (the optional encounter), "watch" (CPU against CPU).
@@ -114,6 +116,10 @@ func configure_rung() -> void:
 	config["mirror_dark"] = r["kind"] == "mirror"
 	# The boss fight is a single long round, as the last stand should be.
 	config["rounds_to_win"] = 1 if r["kind"] == "boss" else 2
+	if r["kind"] == "boss":
+		config["p2_health"] = BOSS_HEALTH[clampi(int(arcade.get("tower", 1)), 0, BOSS_HEALTH.size() - 1)]
+	else:
+		config.erase("p2_health")
 	config["mode"] = "arcade"
 
 
