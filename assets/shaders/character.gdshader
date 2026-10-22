@@ -23,6 +23,8 @@ uniform vec3 dissolve_color : source_color = vec3(1.0, 0.45, 0.1);
 uniform float cloth_hue = 0.0;
 uniform float cloth_sat = 1.0;
 uniform float detail_strength = 1.0;
+// Brightness of surfaces lit from within (detail kind 7, "glow" in the sculpt materials).
+uniform float glow_energy = 1.6;
 
 varying vec4 v_params;
 varying vec4 v_bind;
@@ -73,8 +75,10 @@ float detail_height(vec3 p, float kind) {
 		return abs(sin(p.y * 1400.0 + noise(p * 200.0) * 2.0)) * 0.7 + noise(p * 500.0) * 0.3;
 	} else if (kind < 5.5) {
 		return noise(p * 700.0) * 0.5 + noise(p * 90.0) * 0.5;
+	} else if (kind < 6.5) {
+		return noise(p * vec3(500.0, 160.0, 500.0));
 	}
-	return noise(p * vec3(500.0, 160.0, 500.0));
+	return 0.0;
 }
 
 void vertex() {
@@ -135,4 +139,7 @@ void fragment() {
 	RIM = v_params.z * 0.12;
 	RIM_TINT = 0.8;
 	EMISSION = vec3(flash * 0.9) + dissolve_color * edge_glow * 4.0;
+	if (kind > 6.5) {
+		EMISSION += col * glow_energy * (1.0 - tint);
+	}
 }

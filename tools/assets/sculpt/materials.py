@@ -14,6 +14,8 @@ KINDS = {
     "fur": (0.9, 0.0, 0.8, 0.0, 6),
     "metal": (0.3, 0.0, 0.0, 1.0, 0),
     "hair": (0.45, 0.0, 0.0, 0.0, 0),
+    # Lit from within (the Slopbat's veins): smooth, and glowing in its own colour in the shader.
+    "glow": (0.35, 0.0, 0.0, 0.0, 7),
 }
 
 DEFAULT_KIND = {"skin": "skin", "lips": "lips", "dress": "silk", "robe": "fabric", "coat": "fur", "fur": "fur",

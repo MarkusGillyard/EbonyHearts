@@ -5,7 +5,7 @@
 		"lips": {"color": "#0a0f08", "kind": "leather", "roughness": 0.3},
 		"brows": {"color": "#0a0f08"},
 		"eyes": {"color": "#8cff3c", "emission": 2.4},
-		"vein": {"color": "#4fae24", "kind": "silk", "roughness": 0.3},
+		"vein": {"color": "#4fae24", "kind": "glow", "roughness": 0.3},
 		"horn": {"color": "#2b2a22", "kind": "leather", "roughness": 0.45},
 		"claw": {"color": "#26241c", "kind": "metal", "roughness": 0.3, "metallic": 0.2},
 		"membrane": {"color": "#18200f", "kind": "leather", "roughness": 0.42, "backlight": "#28501a"},
