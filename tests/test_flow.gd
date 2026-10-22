@@ -49,6 +49,7 @@ func test_arcade_advances_and_retries() -> void:
 		assert_true(Game.arcade_advance(false))
 	assert_eq(Game.config["p2"], "slopbat")
 	assert_eq(Game.config["rounds_to_win"], 1, "the boss is one long round")
+	assert_eq(Game.config["p2_health"], Game.BOSS_HEALTH[0], "and is gentler in the Novice tower")
 	assert_false(Game.arcade_advance(false), "beating the boss completes the run")
 	Game.arcade = {}
 
