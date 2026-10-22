@@ -157,6 +157,7 @@ func _bench() -> void:
 	var times := PackedFloat32Array()
 	var gpu := 0.0
 	var order := ["centre", "left", "right", "wide", "air"]
+	var by_framing := {}
 	var last := Time.get_ticks_usec()
 	for i in bench:
 		if i % 80 == 0:
@@ -171,7 +172,11 @@ func _bench() -> void:
 		var now := Time.get_ticks_usec()
 		if i >= 20:
 			times.append((now - last) / 1000.0)
-			gpu += RenderingServer.viewport_get_measured_render_time_gpu(vp)
+			var g := RenderingServer.viewport_get_measured_render_time_gpu(vp)
+			gpu += g
+			var key: String = order[(i / 80) % order.size()]
+			if i % 80 >= 10:
+				by_framing[key] = by_framing.get(key, []) + [Vector2((now - last) / 1000.0, g)]
 		last = now
 	var sorted := times.duplicate()
 	sorted.sort()
@@ -182,6 +187,16 @@ func _bench() -> void:
 	print("BENCH %s graphics=%s: mean %.2f ms (%.0f fps), p95 %.2f ms, gpu %.2f ms over %d frames at %s" % [stage_id,
 		Settings.get_value("graphics"), mean, 1000.0 / mean, sorted[int(sorted.size() * 0.95)], gpu / times.size(),
 		times.size(), get_window().size])
+	for key in by_framing:
+		var ft := 0.0
+		var fg := 0.0
+		var worst := 0.0
+		for v: Vector2 in by_framing[key]:
+			ft += v.x
+			fg += v.y
+			worst = maxf(worst, v.x)
+		var n: int = by_framing[key].size()
+		print("  %-6s frame %.2f ms  gpu %.2f ms  worst %.2f ms" % [key, ft / n, fg / n, worst])
 
 
 func _save_sheet(imgs: Array[Image]) -> void:

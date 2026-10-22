@@ -74,6 +74,7 @@ func setup(s: FightSim, m: String, cfg: Dictionary) -> void:
 	_announce_sub.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_announce_sub.offset_top = 70
 	_root.add_child(_announce_sub)
+	_warm_glyphs()
 	for i in 2:
 		var c := UiKit.title("", 40, UiKit.AMBER, HORIZONTAL_ALIGNMENT_LEFT if i == 0 else HORIZONTAL_ALIGNMENT_RIGHT)
 		c.position = Vector2(60 if i == 0 else 1920 - 560, 250)
@@ -230,6 +231,26 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _pause.visible and (event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel")):
 		pause_choice.emit("resume")
 		get_viewport().set_input_as_handled()
+
+
+## Draws the announcement lettering, all but invisibly, at every size the HUD shows it, in the
+## match's first frames. Glyphs are rasterised the first time they are drawn at a size, and the
+## first "WINS" of a match otherwise did that mid-round (one 30 ms frame).
+func _warm_glyphs() -> void:
+	var font := UiKit.display_font()
+	var outline := _announce.get_theme_constant("outline_size")
+	var sizes := [[104, outline], [120, outline], [130, outline], [140, outline], [150, outline],
+		[52, _announce_sub.get_theme_constant("outline_size")], [40, 4], [64, 7], [72, 8]]
+	var w := Control.new()
+	w.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	w.draw.connect(func():
+		var ink := Color(0, 0, 0, 0.01)
+		for sz in sizes:
+			if sz[1] > 0:
+				w.draw_string_outline(font, Vector2(0, 300), "ABCDEFGHIJKLMNOPQRSTUVWXYZ!0123456789", HORIZONTAL_ALIGNMENT_LEFT, -1, sz[0], sz[1], ink)
+			w.draw_string(font, Vector2(0, 300), "ABCDEFGHIJKLMNOPQRSTUVWXYZ!0123456789", HORIZONTAL_ALIGNMENT_LEFT, -1, sz[0], ink))
+	_root.add_child(w)
+	get_tree().create_timer(0.5).timeout.connect(w.queue_free)
 
 
 func announce(text: String, sub := "", life := 1.6, color := UiKit.TEXT, size := 120) -> void:

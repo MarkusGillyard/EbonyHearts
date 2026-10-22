@@ -112,9 +112,12 @@ python3 tools/poses/common.py && python3 tools/poses/fighters.py   # pose data
 godot --path . res://tools/preview/portraits.tscn            # select-screen portraits
 ```
 
-`tools/preview/pose_sheet.tscn` renders poses and moves for review, `tools/balance/balance.tscn`
-runs CPU-against-CPU matches, and `tools/playtest/play.sh` drives the real game through X11
-input and screenshots.
+`tools/preview/pose_sheet.tscn` renders poses and moves for review and `tools/balance/balance.tscn`
+runs CPU-against-CPU matches. The playtest tools drive the real game window on an X11 desktop:
+`tools/playtest/play.sh` plays a scripted sequence of key presses with screenshots,
+`autoplay.sh` lets a simple closed-loop player fight whole matches or an arcade run from the
+game's live trace, `versus.sh` adds a virtual gamepad (uinput) as player 2, and `specials.py`
+enters every special of a fighter and checks that each one started.
 
 ## Documentation
 

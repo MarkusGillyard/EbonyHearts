@@ -42,6 +42,7 @@ var _bench_secs := 0.0
 var _bench_frames: PackedFloat32Array = PackedFloat32Array()
 var _bench_t := 0.0
 var _bench_anim_usec := 0
+var _bench_gpu: PackedFloat32Array = PackedFloat32Array()
 
 
 func start(cfg: Dictionary) -> void:
@@ -360,9 +361,13 @@ func _sound(e: Dictionary) -> void:
 
 func _bench_step(delta: float, anim_usec: int) -> void:
 	_bench_t += delta
+	var vp := get_viewport().get_viewport_rid()
 	if _bench_t < 2.0:
+		RenderingServer.viewport_set_measure_render_time(vp, true)
 		return
 	_bench_frames.append(delta * 1000.0)
+	# The GPU's own time for the frame: frame times well above it are waits (pacing), not cost.
+	_bench_gpu.append(RenderingServer.viewport_get_measured_render_time_gpu(vp))
 	_bench_anim_usec += anim_usec
 	if _bench_t < 2.0 + _bench_secs:
 		return
@@ -373,9 +378,17 @@ func _bench_step(delta: float, anim_usec: int) -> void:
 	for x in sorted:
 		total += x
 	var avg_ms := total / n
-	print("BENCH frames=%d avg_fps=%.1f avg_ms=%.2f p50=%.2f p95=%.2f p99=%.2f p999=%.2f max=%.2f sim_us_per_tick=%.0f anim_us_per_frame=%.0f window=%s renderer=%s" % [
-		n, 1000.0 / avg_ms, avg_ms, sorted[n / 2], sorted[int(n * 0.95)], sorted[int(n * 0.99)], sorted[mini(n - 1, int(n * 0.999))], sorted[n - 1],
-		float(sim_usec) / maxi(1, ticks_run), float(_bench_anim_usec) / n, get_window().size, RenderingServer.get_current_rendering_method()])
+	var gpu := _bench_gpu.duplicate()
+	gpu.sort()
+	var late := 0
+	for x in sorted:
+		if x > 20.0:
+			late += 1
+	print("BENCH frames=%d avg_fps=%.1f avg_ms=%.2f p50=%.2f p95=%.2f p99=%.2f p999=%.2f max=%.2f over_20ms=%d gpu_p50=%.2f gpu_p95=%.2f gpu_p99=%.2f gpu_max=%.2f sim_us_per_tick=%.0f anim_us_per_frame=%.0f window=%s renderer=%s vsync=%s" % [
+		n, 1000.0 / avg_ms, avg_ms, sorted[n / 2], sorted[int(n * 0.95)], sorted[int(n * 0.99)], sorted[mini(n - 1, int(n * 0.999))], sorted[n - 1], late,
+		gpu[n / 2], gpu[int(n * 0.95)], gpu[int(n * 0.99)], gpu[n - 1],
+		float(sim_usec) / maxi(1, ticks_run), float(_bench_anim_usec) / n, get_window().size, RenderingServer.get_current_rendering_method(),
+		DisplayServer.window_get_vsync_mode() != DisplayServer.VSYNC_DISABLED])
 	_bench_secs = 0.0
 	Game.quit()
 
