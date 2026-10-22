@@ -7,6 +7,16 @@ extends Camera3D
 const VFOV := 30.0
 ## Horizontal margin kept around the fighters, in metres.
 const MARGIN := 1.9
+## Closest and farthest camera distances, in metres. At the closest, a 1.8 m fighter fills about
+## two thirds of the screen's height.
+const DIST_MIN := 4.8
+const DIST_MAX := 8.4
+## Height alone pulls back no further than this, which still fits a jumping fighter's head: the
+## view should not breathe in and out by the full range on every jump.
+const DIST_MAX_HEIGHT := 7.2
+## Room kept below the lowest feet and above the highest head, in metres.
+const FLOOR_ROOM := 0.3
+const HEAD_ROOM := 0.35
 
 var sim: FightSim
 var shake_enabled := true
@@ -78,15 +88,25 @@ func _targets() -> Array:
 		var sz := vp.get_visible_rect().size
 		if sz.y > 0.0:
 			aspect = sz.x / sz.y
-	var half_w_per_d := tan(deg_to_rad(VFOV * 0.5)) * aspect
-	var dist := clampf((sep + MARGIN) / (2.0 * half_w_per_d), 4.3, 8.4)
+	var half_h_per_d := tan(deg_to_rad(VFOV * 0.5))
+	var half_w_per_d := half_h_per_d * aspect
+	# Both fighters whole, feet to head, jumps and juggles included: the camera pulls back as far
+	# as it must (and as they separate), keeping the floor near the bottom of the frame.
+	var top := -INF
+	var bottom := INF
+	for f in sim.fighters:
+		top = maxf(top, f.pos.y + f.def.height * 1.05 + HEAD_ROOM)
+		bottom = minf(bottom, f.pos.y - FLOOR_ROOM)
+	var dist := maxf((sep + MARGIN) / (2.0 * half_w_per_d), minf((top - bottom) / (2.0 * half_h_per_d), DIST_MAX_HEIGHT))
+	dist = clampf(dist, DIST_MIN, DIST_MAX)
 	dist *= 1.0 - _zoom * 0.45
 	var half_w := dist * half_w_per_d
+	var half_h := dist * half_h_per_d
 	var lim := maxf(0.0, FightSim.STAGE_HALF + 0.9 - half_w)
 	var cx := clampf(mid, -lim, lim)
-	# Follow jumps and juggles upward so the airborne fighter stays in frame.
-	var high := maxf(a.y, b.y)
-	var ly := 1.0 + clampf(high - 0.3, 0.0, 3.0) * 0.55
+	# Always anchored to the lowest fighter: something higher than the farthest framing (the
+	# Slopbat rising for its dive) leaves the top of the screen rather than the player the bottom.
+	var ly := bottom + half_h
 	var focus := Vector3(cx, ly, 0.0)
 	if _zoom_focus >= 0:
 		var fp := sim.fighters[_zoom_focus].pos
