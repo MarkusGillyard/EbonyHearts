@@ -285,7 +285,11 @@ def build(char_id, voxel, target, log=print):
     for extra in outfit.extras(body):
         name, node, bone = extra[:3]
         opts = extra[3] if len(extra) > 3 else {}
-        v, f, n, ao, keys, _ = mesh_part(node, max(min(voxel, opts.get("voxel", 0.001)), voxel * 0.25), opts.get("triangles", 4000), log)
+        # Small rigid pieces (rings, claws) mesh finely; a big one (a helmet) would take
+        # gigabytes at that voxel size, so the voxel also grows with the piece (~250 across).
+        diag = float(np.linalg.norm(np.asarray(node.hi) - np.asarray(node.lo)))
+        ev = max(min(voxel, opts.get("voxel", 0.001)), voxel * 0.25, diag / 250.0)
+        v, f, n, ao, keys, _ = mesh_part(node, ev, opts.get("triangles", 4000), log)
         bi, bw = rigid(bone_index[bone], len(v))
         total += len(f)
         w.add_mesh(name, "body", [{"material": "body", "start": 0, "count": int(len(f) * 3)}], surface_arrays(pal, body, v, f, n, ao, keys, bi, bw))
