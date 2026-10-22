@@ -109,10 +109,16 @@ def run(pad, lines):
             time.sleep((float(args[2]) if len(args) > 2 else 120) / 1000.0)
             pad.stick(0, 0)
         elif cmd == "waitfile":
-            end = time.time() + (float(args[1]) if len(args) > 1 else 60)
-            while not os.path.exists(args[0]):
+            # The path may contain spaces; a trailing number is the timeout.
+            limit = 60.0
+            if len(args) > 1 and args[-1].replace(".", "", 1).isdigit():
+                limit = float(args[-1])
+                args = args[:-1]
+            path = " ".join(args)
+            end = time.time() + limit
+            while not os.path.exists(path):
                 if time.time() > end:
-                    sys.exit("waitfile timed out: " + args[0])
+                    sys.exit("waitfile timed out: " + path)
                 time.sleep(0.05)
         elif cmd == "dpad":
             d = {"up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0)}[args[0]]
