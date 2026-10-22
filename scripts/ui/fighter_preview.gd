@@ -9,6 +9,7 @@ var _world: Node3D
 var _sim: FightSim
 var _view: FighterView
 var _cam: Camera3D
+var _rim: DirectionalLight3D
 var _id := ""
 var _costume := false
 var _celebrate := 0.0
@@ -42,11 +43,11 @@ func _init(size_px := Vector2i(560, 760)) -> void:
 	key.light_energy = 1.6
 	key.rotation_degrees = Vector3(-30, 35, 0)
 	_world.add_child(key)
-	var rim := DirectionalLight3D.new()
-	rim.light_color = Color(0.5, 0.85, 0.4)
-	rim.light_energy = 1.4
-	rim.rotation_degrees = Vector3(-10, 200, 0)
-	_world.add_child(rim)
+	# The rim takes each fighter's own colour (show_fighter); a fixed green dyed dark hair green.
+	_rim = DirectionalLight3D.new()
+	_rim.light_energy = 1.1
+	_rim.rotation_degrees = Vector3(-10, 200, 0)
+	_world.add_child(_rim)
 	var fill := DirectionalLight3D.new()
 	fill.light_color = Color(0.7, 0.75, 0.85)
 	fill.light_energy = 0.5
@@ -72,6 +73,7 @@ func show_fighter(id: String, costume := false) -> void:
 	var def := Content.fighter(id)
 	if def == null:
 		return
+	_rim.light_color = Color(str(def.look.get("glow", "#a8dc3a"))).lerp(Color.WHITE, 0.3)
 	_sim = FightSim.new()
 	_sim.training = true
 	_sim.intro = false

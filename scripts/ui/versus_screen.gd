@@ -51,8 +51,7 @@ func build() -> void:
 	for l in lines:
 		var lab := UiKit.label(str(l), 28, UiKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 		lab.position = Vector2(400, y)
-		lab.size = Vector2(1120, 44)
-		lab.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		UiKit.wrap(lab, Vector2(1120, 44))
 		add_child(lab)
 		y += 56.0
 	if cfg.get("mode", "") == "arcade":

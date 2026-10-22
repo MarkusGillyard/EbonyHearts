@@ -4,6 +4,7 @@ extends Screen
 
 var fighter := "ashka"
 var _lines: Array[Label] = []
+var _name: Label
 var _t := 0.0
 var _credits: Control
 var _phase := 0
@@ -22,6 +23,7 @@ func build() -> void:
 	pv.celebrate()
 	var def := Content.fighter(fighter)
 	var name := UiKit.title(def.name.to_upper(), 72, UiKit.ACCENT, HORIZONTAL_ALIGNMENT_LEFT)
+	_name = name
 	name.position = Vector2(820, 140)
 	name.size = Vector2(1000, 100)
 	add_child(name)
@@ -29,8 +31,7 @@ func build() -> void:
 	for line in Content.story.get("fighters", {}).get(fighter, {}).get("ending", []):
 		var l := UiKit.label(str(line), 32, UiKit.TEXT)
 		l.position = Vector2(820, y)
-		l.size = Vector2(960, 160)
-		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		UiKit.wrap(l, Vector2(960, 160))
 		l.modulate.a = 0.0
 		add_child(l)
 		_lines.append(l)
@@ -77,6 +78,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_t = 1.0 + _lines.size() * 3.0
 			return
 		_phase = 1
+		# The story makes way for the credits rather than showing through them.
+		for l in _lines:
+			l.visible = false
+		_name.visible = false
 		_credits.visible = true
 		Audio.play("ui_select")
 	else:

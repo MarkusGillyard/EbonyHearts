@@ -72,8 +72,7 @@ func build() -> void:
 		_names.append(n)
 		var info := UiKit.label("", 22, UiKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 		info.position = Vector2(30 if side == 0 else 1920 - 590, 910)
-		info.size = Vector2(560, 120)
-		info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		UiKit.wrap(info, Vector2(560, 120))
 		add_child(info)
 		_infos.append(info)
 	if mode == "versus":

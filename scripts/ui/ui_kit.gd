@@ -100,6 +100,15 @@ static func label(text: String, size := 24, color := TEXT, align := HORIZONTAL_A
 	return l
 
 
+## Makes a label wrap within `box`. A control grows to its minimum size when sized, and a label's
+## minimum stays its whole unwrapped line until it is in the tree, so the box is applied then.
+static func wrap(l: Label, box: Vector2) -> void:
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.size = box
+	if not l.is_inside_tree():
+		l.tree_entered.connect(func(): l.set_deferred("size", box), CONNECT_ONE_SHOT)
+
+
 ## Big display text with a dark outline, for titles and announcements.
 static func title(text: String, size := 72, color := TEXT, align := HORIZONTAL_ALIGNMENT_CENTER) -> Label:
 	var l := label(text, size, color, align, display_font())

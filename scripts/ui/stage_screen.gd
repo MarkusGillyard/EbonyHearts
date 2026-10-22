@@ -43,8 +43,7 @@ func build() -> void:
 	add_child(_thumb)
 	_desc = UiKit.label("", 26, UiKit.TEXT)
 	_desc.position = Vector2(760, 840)
-	_desc.size = Vector2(1000, 120)
-	_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	UiKit.wrap(_desc, Vector2(1000, 120))
 	add_child(_desc)
 	_show(_ids[0])
 	hint("Enter to fight   ·   Backspace to go back")

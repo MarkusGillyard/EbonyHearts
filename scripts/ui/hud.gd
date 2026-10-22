@@ -88,8 +88,7 @@ func setup(s: FightSim, m: String, cfg: Dictionary) -> void:
 	_root.add_child(_subtitle)
 	_prompt = UiKit.label("", 30, UiKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER, UiKit.body_font(true))
 	_prompt.position = Vector2(160, 1080 - 120)
-	_prompt.size = Vector2(1600, 90)
-	_prompt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	UiKit.wrap(_prompt, Vector2(1600, 90))
 	_prompt.add_theme_color_override("font_outline_color", Color.BLACK)
 	_prompt.add_theme_constant_override("outline_size", 8)
 	_root.add_child(_prompt)
