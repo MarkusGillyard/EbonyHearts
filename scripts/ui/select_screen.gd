@@ -60,19 +60,21 @@ func build() -> void:
 		tile.add_child(nm)
 		_tiles.append(tile)
 	for side in 2:
-		var pv := FighterPreview.new(Vector2i(560, 700))
+		var pv := FighterPreview.new(Vector2i(560, 640))
 		pv.facing = 1 if side == 0 else -1
 		pv.position = Vector2(30 if side == 0 else 1920 - 590, 150)
 		add_child(pv)
 		_previews.append(pv)
 		var n := UiKit.title("", 54, UiKit.ACCENT if side == 0 else UiKit.AMBER, HORIZONTAL_ALIGNMENT_CENTER)
-		n.position = Vector2(30 if side == 0 else 1920 - 590, 840)
+		n.position = Vector2(30 if side == 0 else 1920 - 590, 785)
 		n.size = Vector2(560, 70)
 		add_child(n)
 		_names.append(n)
 		var info := UiKit.label("", 22, UiKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-		info.position = Vector2(30 if side == 0 else 1920 - 590, 910)
-		UiKit.wrap(info, Vector2(560, 120))
+		# Title, style and a short bio: five lines at most, clear of the hint along the bottom.
+		info.position = Vector2(30 if side == 0 else 1920 - 590, 855)
+		UiKit.wrap(info, Vector2(560, 155))
+		info.max_lines_visible = 5
 		add_child(info)
 		_infos.append(info)
 	if mode == "versus":

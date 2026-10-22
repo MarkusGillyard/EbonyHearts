@@ -73,6 +73,14 @@ func _process(delta: float) -> void:
 
 func _start() -> void:
 	set_process(false)
+	set_process_unhandled_input(false)
+	# Building the fight can take a while (the first time, shaders compile and the window holds
+	# still), so this frame says what is happening before the hand-off.
+	var wait := UiKit.label("Loading…", 26, UiKit.DIM, HORIZONTAL_ALIGNMENT_CENTER)
+	wait.position = Vector2(660, 1000)
+	wait.size = Vector2(600, 40)
+	add_child(wait)
+	await RenderingServer.frame_post_draw
 	Game.goto("match")
 
 
