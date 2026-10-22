@@ -7,7 +7,7 @@ config_version=5
 
 config/name="Mortal Slopbat"
 config/description="A 3D arcade fighting game on a classic side-on plane."
-config/version="0.1.0"
+config/version="1.0.0"
 run/main_scene="res://scenes/main.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="MortalSlopbat"
