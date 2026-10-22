@@ -72,6 +72,8 @@
 			"flare": 0.075,
 			"cols": 16,
 			"rows": 8,
+			"gap": 0.14,
+			"yaw": 180,
 			"shape": 0.07,
 			"damping": 0.96,
 			"max_dev": 0.6,
