@@ -1,0 +1,148 @@
+{
+	"build": {
+		"shoulders": 1.12,
+		"chest": 1.12,
+		"waist": 1.06,
+		"limbs": 1.08,
+		"hips": 1.03
+	},
+	"materials": {
+		"skin": {
+			"color": "#b5806a"
+		},
+		"hair": {
+			"color": "#6e6256",
+			"roughness": 0.55
+		},
+		"brows": {
+			"color": "#5c5047"
+		},
+		"beard": {
+			"color": "#5f5449",
+			"kind": "fur",
+			"roughness": 0.85
+		},
+		"eyes": {
+			"color": "#62788a"
+		},
+		"coat": {
+			"color": "#273760",
+			"kind": "fabric",
+			"roughness": 0.86
+		},
+		"coat_dark": {
+			"color": "#1a2342",
+			"kind": "fabric",
+			"roughness": 0.8
+		},
+		"brass": {
+			"color": "#c79a45",
+			"kind": "metal",
+			"roughness": 0.3
+		},
+		"belt": {
+			"color": "#1d1611",
+			"kind": "leather",
+			"roughness": 0.35
+		},
+		"trousers": {
+			"color": "#2c2d33",
+			"kind": "fabric",
+			"roughness": 0.88
+		},
+		"boots": {
+			"color": "#1b1512",
+			"kind": "leather",
+			"roughness": 0.28
+		},
+		"sole": {
+			"color": "#120e0c",
+			"kind": "leather",
+			"roughness": 0.6
+		},
+		"cap": {
+			"color": "#24325a",
+			"kind": "fabric",
+			"roughness": 0.8
+		},
+		"cap_dark": {
+			"color": "#161d36",
+			"kind": "fabric",
+			"roughness": 0.8
+		},
+		"peak": {
+			"color": "#0f0f10",
+			"kind": "leather",
+			"roughness": 0.15
+		},
+		"baton": {
+			"color": "#3b2617",
+			"roughness": 0.45
+		},
+		"iron": {
+			"color": "#2a2826",
+			"roughness": 0.5,
+			"metallic": 0.8
+		}
+	},
+	"hair": {
+		"style": "short",
+		"strands": 650,
+		"length": 0.045,
+		"wave": 0.004,
+		"lift": 0.01
+	},
+	"cloth": [
+		{
+			"kind": "skirt",
+			"joint": "hips",
+			"material": "coat",
+			"top": 0.04,
+			"rx": 0.1,
+			"rz": 0.07,
+			"cz": 0.012,
+			"length": 0.4,
+			"flare": 0.05,
+			"cols": 14,
+			"rows": 7,
+			"gap": 0.12,
+			"yaw": 180,
+			"shape": 0.08,
+			"damping": 0.95,
+			"max_dev": 0.42,
+			"thickness": 0.007,
+			"folds": 0.009,
+			"fold_count": 9
+		}
+	],
+	"props": [
+		{
+			"kind": "baton",
+			"joint": "hand_r",
+			"offset": [0.03, -0.08, 0.02],
+			"rot": [0, 0, -90],
+			"tip": 0.55
+		},
+		{
+			"kind": "lantern",
+			"joint": "hips",
+			"offset": [-0.2, 0.08, -0.03],
+			"rot": [0, 0, 0],
+			"light": 0.55
+		}
+	],
+	"sculpt": {
+		"figure": "male",
+		"muscle": 0.75,
+		"face": {
+			"jaw": 1.12,
+			"brow": 1.25,
+			"nose": 1.12,
+			"chin": 1.08,
+			"lips": 0.9,
+			"eye_open": 0.84,
+			"tilt": 0.5
+		}
+	},
+	"glow": "#ff5a2a"
+}

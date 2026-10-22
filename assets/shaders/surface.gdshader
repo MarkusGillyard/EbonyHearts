@@ -12,6 +12,8 @@ uniform float roughness = 0.85;
 uniform float metallic = 0.0;
 uniform float wet = 0.0;
 uniform float grime = 0.4;
+// How dark the joints between flags, planks or bricks are (lower under standing water).
+uniform float mortar_dark = 0.65;
 uniform vec3 emission_color : source_color = vec3(0.0);
 uniform float emission_energy = 0.0;
 
@@ -105,7 +107,7 @@ void fragment() {
 	}
 	vec3 col = mix(color_a, color_b, clamp(n * 0.9 + cell * 0.35 - 0.2, 0.0, 1.0));
 	col *= 0.9 + fine * 0.2;
-	col = mix(col, col * 0.35, mortar);
+	col = mix(col, col * (1.0 - mortar_dark), mortar);
 	// Grime gathers low down and in cracks.
 	float low = 1.0 - smoothstep(0.0, 1.2, wpos.y);
 	col *= 1.0 - grime * (0.35 * low * n + 0.25 * mortar);

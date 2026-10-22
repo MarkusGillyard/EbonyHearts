@@ -1,0 +1,7 @@
+# Python packages for tools/assets/sculpt (development only; nothing here ships with the game).
+#   python3 -m venv .venv && .venv/bin/pip install -r tools/assets/sculpt/requirements.txt
+numpy==2.5.4
+scipy==1.18.1
+scikit-image==0.26.0
+fast-simplification==0.2.0
+pillow==13.0.0

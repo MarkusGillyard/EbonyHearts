@@ -3,7 +3,11 @@ extends Node3D
 ## Base for the stages: environment, lighting and building helpers. Each stage is a diorama around
 ## a flat fighting strip (x within FightSim.STAGE_HALF, z around 0) seen from +z. Background pieces
 ## sit behind z = -2; anything in front of z = 2 stays low so it never hides the fight.
-## Settings "graphics" decides soft shadows, ambient occlusion and fog volumes.
+## Settings "graphics" decides soft shadows, ambient occlusion and screen-space reflections;
+## "effects" decides particle counts. Stages end build() with finish(), which moves the stage's
+## geometry onto STAGE_LAYER and floors onto FLOOR_LAYER: the camera-side fill then lights only the
+## fighters (layer 1), so it never flattens a stage's own lighting, and the rim skips floors, since
+## a back light grazing a wet floor would paint a glare band right behind the fighters.
 
 const STAGES := {
 	"rendering_yards": "res://scripts/view/arenas/yards.gd",
@@ -14,11 +18,17 @@ const STAGES := {
 const NAMES := {"rendering_yards": "The Rendering Yards", "drowned_chapel": "The Drowned Chapel",
 	"stilt_market": "Lowmere Stilt Market", "roost": "The Slopbat's Roost"}
 
+## Render layer bits: floors and water, and everything else in the stage. Fighters stay on 1.
+const FLOOR_LAYER := 2
+const STAGE_LAYER := 4
+
 var id := ""
 var music := "music_yards"
 var environment: Environment
 var key: DirectionalLight3D
 var rim: DirectionalLight3D
+## Stages with mirror-like water turn this on; used only on high graphics.
+var ssr := false
 var _animated: Array = []
 var _time := 0.0
 
@@ -109,6 +119,7 @@ func make_fill(color: Color, energy: float) -> DirectionalLight3D:
 	fill.light_energy = energy
 	fill.light_specular = 0.25
 	fill.shadow_enabled = false
+	fill.light_cull_mask = 1
 	fill.rotation_degrees = Vector3(-12, 8, 0)
 	add_child(fill)
 	return fill
@@ -119,13 +130,16 @@ func make_rim(color: Color, energy: float, rot_deg: Vector3) -> DirectionalLight
 	rim.light_color = color
 	rim.light_energy = energy
 	rim.light_specular = 0.9
+	rim.light_cull_mask = 0xFFFFF & ~FLOOR_LAYER
 	rim.rotation_degrees = rot_deg
 	add_child(rim)
 	return rim
 
 
-func omni(pos: Vector3, color: Color, energy: float, rng: float, shadows := false) -> OmniLight3D:
+## `specular` below 1 keeps small warm lights from leaving glints on glossy floors.
+func omni(pos: Vector3, color: Color, energy: float, rng: float, shadows := false, specular := 1.0) -> OmniLight3D:
 	var l := OmniLight3D.new()
+	l.light_specular = specular
 	l.position = pos
 	l.light_color = color
 	l.light_energy = energy
@@ -155,12 +169,24 @@ func flicker(l: Light3D, base: float, amount: float, speed := 9.0) -> void:
 		l.light_energy = base * (1.0 + amount * (sin(t * speed + seed) * 0.5 + sin(t * speed * 2.7 + seed * 1.3) * 0.3 + sin(t * speed * 6.1) * 0.2)))
 
 
+## Call at the end of build(): sorts the stage's geometry onto its layers and applies settings.
+func finish() -> void:
+	for n in find_children("*", "GeometryInstance3D", true, false):
+		var g := n as GeometryInstance3D
+		g.layers = FLOOR_LAYER if g.layers & FLOOR_LAYER else STAGE_LAYER
+	apply_quality(str(Settings.get_value("graphics")))
+
+
 func apply_quality(q: String) -> void:
 	var high := q != "low"
 	environment.ssao_enabled = high
 	environment.ssao_radius = 1.0
 	environment.ssao_intensity = 1.4
 	environment.volumetric_fog_enabled = false
+	environment.ssr_enabled = high and ssr
+	environment.ssr_max_steps = 48
+	environment.ssr_fade_in = 0.1
+	environment.ssr_fade_out = 2.0
 	if key:
 		key.shadow_blur = 1.5 if high else 0.5
 	RenderingServer.sub_surface_scattering_set_quality(RenderingServer.SUB_SURFACE_SCATTERING_QUALITY_MEDIUM if high else RenderingServer.SUB_SURFACE_SCATTERING_QUALITY_DISABLED)
@@ -256,25 +282,18 @@ func sphere(radius: float, pos: Vector3, mat: Material, squash := Vector3.ONE) -
 	return mi
 
 
-## A hanging chain of `links` from `top` straight down, swaying gently.
-func chain(top: Vector3, length: float, mat: Material) -> Node3D:
-	var root := Node3D.new()
+## A hanging chain from `top` straight down, swaying gently; one merged mesh.
+func chain(top: Vector3, length: float, mat: Material, link := 1.0) -> Node3D:
+	var b := Batch.new()
+	var tm := TorusMesh.new()
+	tm.inner_radius = 0.022 * link
+	tm.outer_radius = 0.04 * link
+	tm.rings = 8
+	tm.ring_segments = 6
+	for i in int(length / (0.075 * link)):
+		b.add(tm, Transform3D(Basis.from_euler(Vector3(PI * 0.5, PI * 0.5 * (i % 2), 0)), Vector3(0, -i * 0.075 * link, 0)))
+	var root := commit(b, mat, false)
 	root.position = top
-	add_child(root)
-	var n := int(length / 0.09)
-	for i in n:
-		var t := MeshInstance3D.new()
-		var tm := TorusMesh.new()
-		tm.inner_radius = 0.022
-		tm.outer_radius = 0.04
-		tm.rings = 8
-		tm.ring_segments = 6
-		t.mesh = tm
-		t.material_override = mat
-		t.position = Vector3(0, -i * 0.075, 0)
-		t.rotation_degrees = Vector3(90, 90 * (i % 2), 0)
-		t.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		root.add_child(t)
 	var seed := randf() * 10.0
 	_animated.append(func(t: float, _d: float): root.rotation = Vector3(sin(t * 0.7 + seed) * 0.05, 0, sin(t * 0.9 + seed * 2.0) * 0.06))
 	return root
@@ -361,3 +380,201 @@ func plume(pos: Vector3, color: Color, amount := 24, spread := 0.6, rise := 0.8,
 	p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(p)
 	return p
+
+
+# --- Batching and instancing -------------------------------------------------------------------
+
+## Static pieces merged into one mesh: one draw call however many boxes go in.
+class Batch:
+	var st := SurfaceTool.new()
+	var empty := true
+
+	func _init() -> void:
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+
+	func add(mesh: Mesh, xf: Transform3D) -> void:
+		st.append_from(mesh, 0, xf)
+		empty = false
+
+	func box(size: Vector3, pos: Vector3, rot_deg := Vector3.ZERO) -> void:
+		var m := BoxMesh.new()
+		m.size = size
+		add(m, Arena.xf(pos, rot_deg))
+
+	func cyl(radius: float, height: float, pos: Vector3, rot_deg := Vector3.ZERO, top := -1.0, segs := 12) -> void:
+		var m := CylinderMesh.new()
+		m.top_radius = radius if top < 0.0 else top
+		m.bottom_radius = radius
+		m.height = height
+		m.radial_segments = segs
+		m.rings = 1
+		add(m, Arena.xf(pos, rot_deg))
+
+	func sphere(radius: float, pos: Vector3, squash := Vector3.ONE, segs := 12) -> void:
+		var m := SphereMesh.new()
+		m.radius = radius
+		m.height = radius * 2.0
+		m.radial_segments = segs
+		m.rings = segs / 2
+		add(m, Transform3D(Basis.from_scale(squash), pos))
+
+
+static func xf(pos: Vector3, rot_deg := Vector3.ZERO, scl := Vector3.ONE) -> Transform3D:
+	return Transform3D(Basis.from_euler(rot_deg * (PI / 180.0)).scaled_local(scl), pos)
+
+
+func commit(b: Batch, mat: Material, shadows := true, layer := 1) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	if not b.empty:
+		mi.mesh = b.st.commit()
+	mi.material_override = mat
+	mi.layers = layer
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadows else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mi)
+	return mi
+
+
+func multi(mesh: Mesh, xforms: Array, mat: Material, shadows := false) -> MultiMeshInstance3D:
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.mesh = mesh
+	mm.instance_count = xforms.size()
+	for i in xforms.size():
+		mm.set_instance_transform(i, xforms[i])
+	var mmi := MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	mmi.material_override = mat
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadows else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mmi.extra_cull_margin = 1.0
+	add_child(mmi)
+	return mmi
+
+
+## Glowing sprites at `points` (stage_sprite.gdshader): mode 0 flames (the point is the wick),
+## 1 twinkling glints, 2 soft glow dots. `sizes` optionally scales each one.
+func sprites(points: Array, size: Vector2, color: Color, energy: float, mode := 0, fade := 0.02, sizes := []) -> MultiMeshInstance3D:
+	var q := QuadMesh.new()
+	q.size = size
+	if mode == 0:
+		q.center_offset = Vector3(0, size.y * 0.3, 0)
+	var m := ShaderMaterial.new()
+	m.shader = preload("res://assets/shaders/stage_sprite.gdshader")
+	m.set_shader_parameter("color", color)
+	m.set_shader_parameter("energy", energy)
+	m.set_shader_parameter("mode", mode)
+	m.set_shader_parameter("fade", fade)
+	var xforms := []
+	for i in points.size():
+		var s: float = sizes[i] if i < sizes.size() else 1.0
+		xforms.append(Transform3D(Basis.from_scale(Vector3.ONE * s), points[i]))
+	return multi(q, xforms, m)
+
+
+static func shader_mat(path: String, params: Dictionary) -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = load(path)
+	for k in params:
+		m.set_shader_parameter(k, params[k])
+	return m
+
+
+## Small glowing specks drifting in a box (dust in a shaft of light, spores over slop).
+func motes(center: Vector3, extents: Vector3, amount: int, color: Color, size := 0.025, rise := 0.0) -> GPUParticles3D:
+	var p := GPUParticles3D.new()
+	p.amount = amount if Settings.get_value("effects") != "reduced" else maxi(4, amount / 3)
+	p.lifetime = 9.0
+	p.preprocess = 9.0
+	p.visibility_aabb = AABB(-extents - Vector3.ONE * 2.0, extents * 2.0 + Vector3.ONE * 4.0)
+	var pm := ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = extents
+	pm.direction = Vector3.UP
+	pm.spread = 180.0
+	pm.initial_velocity_min = 0.02
+	pm.initial_velocity_max = 0.08 + rise
+	pm.gravity = Vector3(0, rise * 0.2, 0)
+	pm.turbulence_enabled = true
+	pm.turbulence_noise_strength = 0.4
+	pm.turbulence_noise_scale = 2.0
+	pm.turbulence_influence_min = 0.02
+	pm.turbulence_influence_max = 0.05
+	pm.scale_min = 0.5
+	pm.scale_max = 1.3
+	var g := Gradient.new()
+	g.set_color(0, Color(1, 1, 1, 0))
+	g.set_color(1, Color(1, 1, 1, 0))
+	g.add_point(0.2, Color(1, 1, 1, 1))
+	g.add_point(0.8, Color(1, 1, 1, 1))
+	var ramp := GradientTexture1D.new()
+	ramp.gradient = g
+	pm.color_ramp = ramp
+	pm.color = color
+	p.process_material = pm
+	var q := QuadMesh.new()
+	q.size = Vector2(size, size)
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	m.vertex_color_use_as_albedo = true
+	m.disable_fog = true
+	m.albedo_texture = _soft_dot()
+	q.material = m
+	p.draw_pass_1 = q
+	p.position = center
+	p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(p)
+	return p
+
+
+static func _soft_dot() -> ImageTexture:
+	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	for y in 32:
+		for x in 32:
+			var d := Vector2(x - 15.5, y - 15.5).length() / 16.0
+			img.set_pixel(x, y, Color(1, 1, 1, clampf(1.0 - d, 0.0, 1.0) ** 2))
+	return ImageTexture.create_from_image(img)
+
+
+## A soft beam of light from `from` to `to` (stage_shaft.gdshader): a card `w_from` wide at the
+## source and `w_to` where it lands, turned about its axis to face the camera's side (+z).
+func shaft(from: Vector3, to: Vector3, w_from: float, w_to: float, color: Color, energy: float) -> MeshInstance3D:
+	var dir := (to - from).normalized()
+	var side := Vector3.RIGHT - dir * dir.dot(Vector3.RIGHT)
+	side = side.normalized()
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var corners := [[from - side * w_from * 0.5, Vector2(0, 0)], [from + side * w_from * 0.5, Vector2(1, 0)],
+		[to + side * w_to * 0.5, Vector2(1, 1)], [to - side * w_to * 0.5, Vector2(0, 1)]]
+	for i in [0, 1, 2, 0, 2, 3]:
+		st.set_uv(corners[i][1])
+		st.set_normal(Vector3.BACK)
+		st.add_vertex(corners[i][0])
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = shader_mat("res://assets/shaders/stage_shaft.gdshader", {"color": color, "energy": energy})
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mi)
+	return mi
+
+
+## A card of drifting mist (stage_mist.gdshader); flat on the ground unless `upright`.
+func mist(size: Vector2, pos: Vector3, color: Color, density: float, upright := false) -> MeshInstance3D:
+	var mi := plane(size, pos, shader_mat("res://assets/shaders/stage_mist.gdshader", {"color": color, "density": density}),
+		Vector3(90, 0, 0) if upright else Vector3.ZERO)
+	return mi
+
+
+## A box probe that renders the static stage once, for reflections on transparent water.
+func probe(pos: Vector3, size: Vector3, origin_offset := Vector3.ZERO) -> ReflectionProbe:
+	var rp := ReflectionProbe.new()
+	rp.update_mode = ReflectionProbe.UPDATE_ONCE
+	rp.size = size
+	rp.position = pos
+	rp.origin_offset = origin_offset
+	rp.box_projection = true
+	rp.interior = true
+	rp.intensity = 1.0
+	add_child(rp)
+	return rp

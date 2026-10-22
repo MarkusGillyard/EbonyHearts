@@ -100,6 +100,7 @@ func test_save_is_atomic() -> void:
 
 func test_test_profile_is_separate() -> void:
 	assert_ne(_saved_path, Progress.PATH, "tests never write the player's real progress file")
+	assert_ne(Settings.path, Settings.PATH, "nor the player's real settings")
 
 
 func test_settings_bindings_swap_and_persist() -> void:

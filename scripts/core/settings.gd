@@ -45,7 +45,14 @@ var assign := {"kb_left": 0, "kb_right": 1, "pad0": 0, "pad1": 1}
 var solo := true
 
 
+var path := PATH
+
+
 func _ready() -> void:
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--profile="):
+			# Test and development runs keep their settings apart from the player's.
+			path = "user://settings_%s.cfg" % a.trim_prefix("--profile=").validate_filename()
 	load_settings()
 	apply()
 
@@ -66,7 +73,7 @@ func set_value(k: String, v: Variant) -> void:
 
 func load_settings() -> void:
 	var cf := ConfigFile.new()
-	if cf.load(PATH) != OK:
+	if cf.load(path) != OK:
 		return
 	for k in values:
 		var v: Variant = cf.get_value("prefs", k, values[k])
@@ -92,7 +99,7 @@ func save_settings() -> void:
 			cf.set_value("keys_" + dev, a, keys[dev][a])
 	for dev in DEVICES:
 		cf.set_value("devices", dev, assign[dev])
-	cf.save(PATH)
+	cf.save(path)
 
 
 func rebind(dev: String, action: String, keycode: int) -> void:

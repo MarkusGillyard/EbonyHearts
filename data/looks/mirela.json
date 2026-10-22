@@ -1,0 +1,176 @@
+{
+	"build": {
+		"shoulders": 0.95,
+		"chest": 0.92,
+		"waist": 0.84,
+		"limbs": 0.94,
+		"hips": 0.98
+	},
+	"materials": {
+		"skin": {
+			"color": "#e4d0c4"
+		},
+		"hair": {
+			"color": "#0a0a0d",
+			"roughness": 0.4
+		},
+		"brows": {
+			"color": "#121014"
+		},
+		"eyes": {
+			"color": "#8eaec8",
+			"emission": 0.25
+		},
+		"gown": {
+			"color": "#e8dfcc",
+			"kind": "silk",
+			"roughness": 0.55
+		},
+		"underdress": {
+			"color": "#d5cbb6",
+			"kind": "silk",
+			"roughness": 0.6
+		},
+		"lace": {
+			"color": "#121115",
+			"kind": "silk",
+			"roughness": 0.5
+		},
+		"veil": {
+			"color": "#100f13",
+			"kind": "silk",
+			"roughness": 0.6
+		},
+		"gloves": {
+			"color": "#141317",
+			"kind": "leather",
+			"roughness": 0.42
+		},
+		"boots": {
+			"color": "#18161a",
+			"kind": "leather",
+			"roughness": 0.45
+		}
+	},
+	"hair": {
+		"style": "long",
+		"strands": 460,
+		"volume": 0.9,
+		"locks": true,
+		"lock_length": 0.24
+	},
+	"cloth": [
+		{
+			"kind": "skirt",
+			"joint": "hips",
+			"material": "gown",
+			"top": -0.012,
+			"rx": 0.104,
+			"rz": 0.073,
+			"cz": 0.012,
+			"length": 0.45,
+			"flare": 0.075,
+			"cols": 16,
+			"rows": 8,
+			"shape": 0.07,
+			"damping": 0.96,
+			"max_dev": 0.6,
+			"thickness": 0.004,
+			"folds": 0.013,
+			"fold_count": 15
+		},
+		{
+			"kind": "hair",
+			"joint": "head",
+			"material": "hair",
+			"top": 0.05,
+			"back": 0.05,
+			"width": 0.076,
+			"length": 0.46,
+			"cols": 7,
+			"rows": 9,
+			"shape": 0.05,
+			"damping": 0.93
+		},
+		{
+			"kind": "skirt",
+			"joint": "head",
+			"material": "veil",
+			"top": 0.11,
+			"rx": 0.029,
+			"rz": 0.032,
+			"cz": 0.0095,
+			"length": 0.28,
+			"profile": [
+				[
+					0,
+					0
+				],
+				[
+					0.021,
+					0.034
+				],
+				[
+					0.026,
+					0.041
+				],
+				[
+					0.029,
+					0.038
+				],
+				[
+					0.031,
+					0.054
+				],
+				[
+					0.04,
+					0.063
+				],
+				[
+					0.064,
+					0.063
+				],
+				[
+					0.1,
+					0.063
+				],
+				[
+					0.114,
+					0.064
+				],
+				[
+					0.117,
+					0.065
+				],
+				[
+					0.119,
+					0.066
+				]
+			],
+			"cols": 11,
+			"rows": 11,
+			"gap": 0.36,
+			"yaw": 180,
+			"shape": 0.3,
+			"damping": 0.93,
+			"thickness": 0.003,
+			"folds": 0.006,
+			"fold_count": 9,
+			"hem_curve": 0.42
+		}
+	],
+	"sculpt": {
+		"figure": "female",
+		"muscle": 0.35,
+		"face": {
+			"jaw": 0.88,
+			"cheek": 1.12,
+			"lips": 1.1,
+			"nose": 0.88,
+			"eye_open": 0.84,
+			"tilt": 1.0,
+			"brow": 0.35
+		}
+	},
+	"glow": "#9fd4ff"
+}
