@@ -19,13 +19,31 @@ const SCREENS := {
 	"stranger_offer": "res://scripts/ui/stranger_offer_screen.gd",
 }
 
+## Screens that draw 3D fighters or a stage. The first time each kind is shown after an install,
+## its shaders compile and the window holds still for some seconds, so a "Loading" note is
+## drawn for a frame before they are built.
+const HEAVY := ["select", "versus", "stage", "ending", "match"]
+
 var current: Node
 var match_node: Match
 var _overlay: Control
+var _loading: CanvasLayer
+var _busy := false
+var _next: Array = []
 
 
 func _ready() -> void:
 	Game.screen_requested.connect(_show)
+	_loading = CanvasLayer.new()
+	_loading.layer = 30
+	_loading.visible = false
+	add_child(_loading)
+	var note := UiKit.label("Loading…", 26, UiKit.DIM, HORIZONTAL_ALIGNMENT_RIGHT)
+	note.position = Vector2(1920 - 460, 1080 - 64)
+	note.size = Vector2(400, 40)
+	note.add_theme_color_override("font_outline_color", Color(0.01, 0.01, 0.01))
+	note.add_theme_constant_override("outline_size", 6)
+	_loading.add_child(note)
 	var start := "title"
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--window-title="):
@@ -50,6 +68,23 @@ func _ready() -> void:
 
 
 func _show(screen: String, data: Dictionary) -> void:
+	# Requests made while a screen is being prepared replace each other; the latest wins.
+	_next = [screen, data]
+	if _busy:
+		return
+	_busy = true
+	while not _next.is_empty():
+		var req := _next
+		_next = []
+		if req[0] in HEAVY:
+			_loading.visible = true
+			await RenderingServer.frame_post_draw
+		_show_now(req[0], req[1])
+		_loading.visible = false
+	_busy = false
+
+
+func _show_now(screen: String, data: Dictionary) -> void:
 	close_overlay()
 	if screen == "moves" and match_node:
 		# Over a paused match, on a layer above the HUD (and its pause menu) so nothing covers it.
