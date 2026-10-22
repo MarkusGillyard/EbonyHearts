@@ -205,6 +205,14 @@ func set_dissolve(amount: float, color := Color(1.0, 0.45, 0.1)) -> void:
 		p.visible = amount < 0.4
 
 
+## Menu previews render into transparent viewports, where Godot cannot scatter light under the
+## skin (it switches it off with a warning); they draw with a copy of the shader without it.
+func disable_subsurface() -> void:
+	var flat := Shader.new()
+	flat.code = _body_mat.shader.code.replace("SSS_STRENGTH =", "float sss_unused =")
+	_body_mat.shader = flat
+
+
 func set_costume(hue: float, sat: float) -> void:
 	_body_mat.set_shader_parameter("cloth_hue", hue)
 	_body_mat.set_shader_parameter("cloth_sat", sat)

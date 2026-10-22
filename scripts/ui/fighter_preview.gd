@@ -87,6 +87,7 @@ func show_fighter(id: String, costume := false) -> void:
 	_view = FighterView.new()
 	_world.add_child(_view)
 	_view.setup(f, Content.common_poses)
+	_view.disable_subsurface()
 	if costume:
 		_view.set_costume(0.42, 1.05)
 	var h := def.height
