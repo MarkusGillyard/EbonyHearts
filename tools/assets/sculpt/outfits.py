@@ -797,5 +797,58 @@ class Hollis(Outfit):
                 ("helmet", self.helmet(b), "head", {"triangles": 22000, "voxel": 0.0014})]
 
 
+class Slopbat(Outfit):
+    """The sovereign of the Sump: a gaunt body of glossy black-green tar with faint green veins,
+    long clawed fingers and toes, bat ears and a crown of horn. Its wings are props (props.gd,
+    kind "wing") and its tattered membrane cloak is a cloth sheet."""
+
+    def body(self, b):
+        base = super().body(b)
+        r = b.rig
+        veins = []
+        for k, s in enumerate(("l", "r")):
+            sh, el, wr = r.pos("upperarm_" + s), r.pos("forearm_" + s), r.pos("hand_" + s)
+            hp, kn, an = r.pos("thigh_" + s), r.pos("shin_" + s), r.pos("foot_" + s)
+            side = r.side(s)
+            for a, c, bones in ((sh, el, ["upperarm_" + s]), (el, wr, ["forearm_" + s]), (hp, kn, ["thigh_" + s]), (kn, an, ["shin_" + s])):
+                mid = (a + c) * 0.5
+                wiggle = [a + (c - a) * t + np.array([side * b.m(0.06), 0.0, -b.m(0.05) + b.m(0.02) * np.sin(t * 9.0 + k)], np.float32) for t in (0.08, 0.35, 0.62, 0.92)]
+                veins.append(surface_strap(base, b.m(0.0016), wiggle, mid, b.m(0.0042), "vein", bones, per=5))
+        chest = [b.torso_pt(sd * x, y, -0.14) for sd in (-1, 1) for x, y in ((0.02, 0.62), (0.06, 0.68), (0.1, 0.74), (0.14, 0.79))]
+        for sd in (0, 1):
+            pts = chest[sd * 4:sd * 4 + 4]
+            veins.append(surface_strap(base, b.m(0.0016), pts, b.torso_pt(0, 0.7, 0.0), b.m(0.004), "vein", ["chest", "spine"], per=5))
+        return Union([base] + veins, b.m(0.002))
+
+    def extras(self, b):
+        from human import HandLayout
+        h = b.head_model()
+        P, M = h.P, h.M
+        hb = ["head"]
+        parts = []
+        for sd in (-1, 1):
+            # Tall bat ears swept back, and three horns each side curving back over the skull.
+            parts.append(round_cone(P(sd * 0.07, 0.14, 0.02), P(sd * 0.13, 0.3, 0.07), M(0.03), M(0.004), "skin", hb, squash=(1.0, 0.35)))
+            for j, (x, y, z, l) in enumerate(((0.035, 0.205, -0.02, 0.12), (0.06, 0.19, 0.02, 0.15), (0.075, 0.165, 0.06, 0.12))):
+                base = P(sd * x, y, z)
+                tip = P(sd * (x + 0.02), y + l * 0.6, z + l * 0.9)
+                parts.append(round_cone(base, tip, M(0.012), M(0.002), "horn", hb))
+        out = [("crown", Union(parts, M(0.004)), "head")]
+        for s in ("l", "r"):
+            lay = HandLayout(b, s, 0.0)
+            for name, pts, radii, d in lay.chains:
+                tip = lay.to_bind(pts[3])
+                prev = lay.to_bind(pts[2])
+                ax = (tip - prev) / max(float(np.linalg.norm(tip - prev)), 1e-6)
+                claw = round_cone(tip - ax * b.m(0.004), tip + ax * b.m(0.05), radii[3] * 0.9, b.m(0.0015), "claw", ["%s3_%s" % (name, s)])
+                out.append(("claw_%s_%s" % (name, s), claw, "%s3_%s" % (name, s)))
+            an = b.rig.pos("foot_" + s)
+            toes = Union([round_cone(np.array([an[0] + d * b.m(0.022), b.m(0.02), an[2] - b.m(0.15)], np.float32),
+                                     np.array([an[0] + d * b.m(0.03), b.m(0.006), an[2] - b.m(0.22)], np.float32), b.m(0.012), b.m(0.002), "claw", ["foot_" + s])
+                          for d in (-1.0, 0.0, 1.0)], b.m(0.004))
+            out.append(("toes_" + s, toes, "foot_" + s))
+        return out
+
+
 def for_fighter(rig):
-    return {"daxion": Daxion, "ashka": Ashka, "gorm": Gorm, "nix": Nix, "mirela": Mirela, "bram": Bram, "hollis": Hollis}.get(rig.id, Outfit)(rig)
+    return {"daxion": Daxion, "ashka": Ashka, "gorm": Gorm, "nix": Nix, "mirela": Mirela, "bram": Bram, "hollis": Hollis, "slopbat": Slopbat}.get(rig.id, Outfit)(rig)
