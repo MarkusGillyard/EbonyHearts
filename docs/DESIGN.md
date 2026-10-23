@@ -27,8 +27,9 @@ commentary and no AI-themed material.
 - **Lighting.** Each stage has a warm key, a cool rim, a soft fill from the camera side so
   fighters always read, fog for depth, and one signature light (vat glow, candles, lanterns,
   green lightning).
-- **Camera.** Fixed side view on the fighting plane, about 30° vertical field of view, framing
-  both fighters with a margin, rising with jumps and juggles, never cutting during play.
+- **Camera.** Fixed side view on the fighting plane, about 30° vertical field of view, keeping
+  both fighters whole from feet to head with a margin, pulling back for jumps and juggles and
+  anchored to the floor, never cutting during play.
   Finishers may take a closer framing and always return.
 - **UI.** New Rocker (display) and Oswald (text), bone-white on near-black teal, slop-green for
   focus and selection, amber and rust for warnings. MK-style top bars: health with names, a run
@@ -65,7 +66,7 @@ Yards also has a stage finisher (D,D,D+LP up close).
 | **Ashka Rook** (she), the Last Lamplighter, 1.74 m | Lean, athletic, brown skin, black ponytail, amber eyes; dark leather sleeveless vest, rust-red silk fight shorts with gold trim and waistband, bone-white hand and shin wraps, gold arm band, a small brass lamp charm | Muay Thai and lamp-fire. All-rounder | Ember Shot (fireball), Wick Knee (flying knee), Elbow Rush, Rising Knee (anti-air) | Last Light: burns the opponent to ash |
 | **Gorm Tallow** (he), the Renderer, 2.12 m | Huge, bald, pale ruddy skin, heavy jaw; bare barrel chest under a thick rubberised leather apron, rolled canvas trousers, heavy boots, iron vambraces | Sumo and catch wrestling. Grappler: slow, armoured, devastating up close | Vat Press (command grab), Tallow Hide (armour), Rendering Charge (armoured shoulder), Ground Slap (low shockwave) | Rendered Down: lifts and slams, then stamps them flat |
 | **Nix Hollow** (he), Hand of the Drowned, 1.78 m | Slim; charcoal and black wrapped garments, deep hood, a cloth mask over nose and mouth, slop-green sash, glowing green eyes; a kusarigama (sickle and chain) | Ninjutsu. Mix-up and teleports | Sickle Throw (returns), Sinkstep (sink through the floor and rise behind), Undertow (chain trips the legs), Drowned Drop (air dive) | Undertow: drags them down into a slop pool |
-| **Mirela Sorrow** (she), the Keening Widow, 1.82 m | Tall, slender, pale; very long black hair; an ivory mourning gown with a long skirt, a black lace veil over hair and shoulders, black gloves | Baguazhang palms and a voice that unmakes. Zoner | Lament (slow, large wave), Keen (scream that dazes), Grave Float (hover), Veil Step (backward fade) | The Last Note: turns them to salt that crumbles |
+| **Mirela Sorrow** (she), the Keening Widow, 1.82 m | Tall, slender, pale; very long black hair; an ivory mourning gown with a long skirt open at the front over ivory leggings, a black lace veil over hair and shoulders, black gloves | Baguazhang palms and a voice that unmakes. Zoner | Lament (slow, large wave), Keen (scream that dazes and passes through projectiles), Grave Float (hover), Veil Step (backward fade) | The Last Note: turns them to salt that crumbles |
 | **Bram Ketch** (he), Captain of the Lantern Watch, 1.86 m | Broad, weathered, short grey-brown hair and mutton-chop beard; a long navy watch coat with brass buttons and coat tails, a peaked watch cap, leather boots; a hardwood baton and a lantern at his belt | Bare-knuckle boxing and the baton. Rushdown | Signal Flare (high arc / low roll), Baton Trip, Bull Rush, Stand Down (counter) | Lights Out: a baton swing that sends them over the horizon |
 | **Hollis Fathom** (he), the Diving Bell, 1.95 m | An olive canvas diving suit, a round brass helmet with three portholes and a faint green glow inside, a brass breastplate, lead-soled boots, rubber gloves, a harpoon gun | Deep-sea pressure. Heavy zoner and trapper | Harpoon (pulls them in), Anchor Drop (overhead from above), Bubble (slow trap), Vent (steam burst reversal) | Crush Depth: reels them in and the helmet swallows them |
 
@@ -75,9 +76,9 @@ Hollis (she sang at the funeral of the diver who never came back up).
 
 ## The Slopbat (final boss), 2.65 m
 
-A gaunt, towering sovereign of tar: glossy black-green skin with faint green veins, long arms
+A gaunt, towering sovereign of tar: glossy black-green skin traced with glowing green veins, long arms
 and claws, a bat's ears and a crown of horn, glowing green eyes, a tattered membrane cloak, and
-great bat wings folded at its back. It cannot be thrown and has much more health, but every
+great bat wings folded at its back. It cannot be thrown and has much more health (1400, 1650 or 1900 by tower), but every
 pattern can be learned: claw swipes; Tar Spit (high, duck it); Wing Gust (pushes, no damage);
 the Dive (it flies off the top of the screen, its shadow follows you for a second, then it comes
 down where the shadow is; move away, and punish while it is stuck in the mud); and below half

@@ -1,0 +1,23 @@
+# Training in slow motion (F7): a special and a dial-a-combo entered at normal speed must still
+# come out (skipped ticks used to drop presses).
+wait 4.0
+tap f7 60
+wait 0.5
+chord s 50
+wait 0.05
+chord d u 60
+wait 2.5
+tap f4 60
+wait 1.0
+hold d 500
+tap u 50
+wait 0.15
+tap u 50
+wait 0.15
+tap j 50
+wait 0.15
+chord a o 60
+wait 3.0
+shot slow_after
+tap f7 60
+wait 1.0
