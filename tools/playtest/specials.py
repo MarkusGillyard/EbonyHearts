@@ -44,7 +44,7 @@ def script(fid):
             lines += ["tap w 60", "wait 0.3"]
         steps = cmd.split(",")
         for st in steps[:-1]:
-            lines += ["chord %s 35" % " ".join(keys(st)), "wait 0.02"]
+            lines += ["chord %s 35" % " ".join(keys(st)), "wait 0.04"]
         lines += ["chord %s 60" % " ".join(keys(steps[-1])), "wait 0.35", "shot %s_%s" % (fid, mid), "wait 1.8"]
     lines += ["wait 1.0"]
     return "\n".join(lines) + "\n"

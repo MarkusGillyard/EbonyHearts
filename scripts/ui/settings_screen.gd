@@ -133,7 +133,8 @@ func _step(key: String, amount: float, wrap := false) -> void:
 	var v: float = Settings.values[key] + amount
 	if wrap and v > 1.001:
 		v = 0.0
-	Settings.set_value(key, snappedf(clampf(v, 0.0, 1.0), 0.1))
+	# Tenths by division, so the saved value is 0.3 and not 0.30000000000000004.
+	Settings.set_value(key, roundf(clampf(v, 0.0, 1.0) * 10.0) / 10.0)
 	Audio.play("ui_move")
 	_refresh()
 
