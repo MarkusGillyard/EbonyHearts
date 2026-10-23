@@ -29,6 +29,12 @@ var _combo_queued := false
 var _was_blocking := false
 var _reach_cache := {}
 var _recent: Array = []
+## Tick at which to start an anti-air timed to meet a jump seen coming in (-1: none planned).
+var _aa_at := -1
+var _aa_ready := true
+## How the CPU was hit lately ("low", "jump" or "other", newest first), so it adapts to habits.
+var _hit_by: Array = []
+var _last_damage := 0
 
 
 func _init(s: FightSim, i: int, difficulty: int, seed := 0) -> void:
@@ -77,11 +83,21 @@ func think() -> Vector3i:
 	if _block_t > 0:
 		_block_t -= 1
 		return PadIntent.pad(2 if _block_low else 5, m.facing, 0, InputBuffer.BL)
+	_note_hit(m)
 	if not m.is_actionable() and m.state != Fighter.S.AIR:
 		_was_blocking = m.state == Fighter.S.BLOCKSTUN
 		return _continue_combo(m)
 	var o := opp()
 	var dist := absf(o.pos.x - m.pos.x)
+	# A jump is read from its start, as a player reads it: the arc is predictable, so the
+	# anti-air is timed to meet the opponent on the way down (from what was seen, not inputs).
+	_plan_anti_air(m, seen)
+	if _aa_at >= 0 and sim.tick_count >= _aa_at:
+		_aa_at = -1
+		if o.is_airborne() and dist < 2.6:
+			var aas: Array = ai.get("anti_air", ["uppercut"])
+			intent.command(_notation(aas[rng.randi_range(0, aas.size() - 1)]))
+			return intent.next(m.facing)
 	# A stunned, dazed or reeled-in opponent is an opening: take it.
 	if o.state == Fighter.S.HITSTUN and o.stun_kind in ["dazed", "pulled", "break"] and o.stun > 8 and dist < 1.6:
 		if rng.randf() < float(level["combo"]):
@@ -126,6 +142,13 @@ func think() -> Vector3i:
 		if rng.randf() < float(level["combo"]):
 			intent.command("D+HP")
 			return intent.next(m.facing)
+	# Swept again and again: crouch and guard while the sweeper is in range, which in turn
+	# leaves the CPU open to overheads and jump-ins (the habit fades as other hits replace it).
+	var lows := _hit_by.count("low")
+	if lows >= 4 and o.is_actionable() and dist < 2.3 and rng.randf() < float(level["block"]) * 0.015 * lows:
+		_block_t = rng.randi_range(14, 26)
+		_block_low = true
+		return PadIntent.pad(2, m.facing, 0, InputBuffer.BL)
 	# --- Plans ---
 	_think_t -= 1
 	if _think_t <= 0:
@@ -173,10 +196,11 @@ func _plan(m: Fighter, o: Fighter, dist: float) -> void:
 		return
 	if dist > want + 0.9:
 		var r := rng.randf()
-		if r < float(level["block"]) * 0.35 and opp().is_actionable():
-			# Expecting the opponent to come in: guard for a moment.
+		var lows := _hit_by.count("low")
+		if r < float(level["block"]) * (0.35 + 0.08 * lows) and opp().is_actionable():
+			# Expecting the opponent to come in: guard for a moment, low if they keep sweeping.
 			_block_t = rng.randi_range(12, 24)
-			_block_low = rng.randf() < 0.3
+			_block_low = rng.randf() < 0.3 + 0.12 * lows
 			return
 		if r < 0.18 * aggr + 0.05:
 			intent.hold(9, 3)
@@ -196,6 +220,16 @@ func _plan(m: Fighter, o: Fighter, dist: float) -> void:
 		_walk_t = rng.randi_range(10, 24)
 		return
 	# Close.
+	if o.state in [Fighter.S.CROUCH_BLOCK, Fighter.S.BLOCK] and dist < m.def.throw_range and rng.randf() < 0.35:
+		# Someone sitting in their guard gets thrown.
+		intent.command("F+LP")
+		return
+	var lows_close := _hit_by.count("low")
+	if lows_close >= 2 and opp().is_actionable() and rng.randf() < float(level["block"]) * 0.12 * lows_close:
+		# Swept again and again: expect another and guard low for a moment.
+		_block_t = rng.randi_range(12, 22)
+		_block_low = true
+		return
 	var r2 := rng.randf()
 	if r2 < 0.12 and dist < m.def.throw_range:
 		intent.command("F+LP")
@@ -213,10 +247,59 @@ func _plan(m: Fighter, o: Fighter, dist: float) -> void:
 		return
 	if rng.randf() < 0.5:
 		_block_t = rng.randi_range(10, 26)
-		_block_low = rng.randf() < 0.4
+		_block_low = rng.randf() < 0.4 + 0.1 * _hit_by.count("low")
 	else:
 		_walk = 4
 		_walk_t = rng.randi_range(8, 18)
+
+
+## Plans an anti-air for a jump seen rising toward the CPU: when the seen arc will come down
+## through head height near it, less the move's startup. More likely the more jump-ins have
+## landed lately.
+func _plan_anti_air(m: Fighter, seen: Dictionary) -> void:
+	if not seen["air"]:
+		_aa_ready = true
+		return
+	if not _aa_ready or _aa_at >= 0:
+		return
+	var o := opp()
+	var p: Vector2 = seen["pos"]
+	var v: Vector2 = seen["vel"]
+	var toward := signf(m.pos.x - p.x)
+	if v.y <= 0.0 or signf(v.x) != toward or absf(m.pos.x - p.x) > 3.6:
+		return
+	_aa_ready = false
+	var chance := minf(0.95, float(level["anti_air"]) + 0.12 * _hit_by.count("jump"))
+	if rng.randf() > chance:
+		return
+	var g := o.def.gravity
+	var h := 1.4 * o.scale()
+	var disc := v.y * v.y + 2.0 * g * (p.y - h)
+	if disc < 0.0:
+		return
+	var t := (v.y + sqrt(disc)) / g
+	var aas: Array = ai.get("anti_air", ["uppercut"])
+	var mv := m.def.move(str(aas[0]))
+	var startup := mv.startup if mv else 8
+	var ticks_left := int(t * 60.0) - (sim.tick_count - int(seen["tick"]))
+	_aa_at = sim.tick_count + maxi(0, ticks_left - startup + 1)
+
+
+## Remembers the kind of attack that last hit the CPU.
+func _note_hit(m: Fighter) -> void:
+	var taken := m.damage_taken
+	var hit := taken > _last_damage
+	_last_damage = taken
+	if not hit or m.last_hit_move == null:
+		return
+	var kind := "other"
+	if m.last_hit_move.air:
+		kind = "jump"
+	elif m.last_hit_move.level == MoveDef.Level.LOW:
+		kind = "low"
+	_hit_by.push_front(kind)
+	if _hit_by.size() > 8:
+		_hit_by.pop_back()
 
 
 func _start_combo(punish: bool) -> void:
