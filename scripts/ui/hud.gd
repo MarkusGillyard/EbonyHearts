@@ -30,6 +30,7 @@ var _announce_t := 0.0
 var _announce_life := 0.0
 var _combo: Array[Label] = []
 var _combo_t := [0.0, 0.0]
+var _combo_pop := [0.0, 0.0]
 var _subtitle: Label
 var _subtitle_t := 0.0
 var _notice: Label
@@ -76,9 +77,10 @@ func setup(s: FightSim, m: String, cfg: Dictionary) -> void:
 	_root.add_child(_announce_sub)
 	_warm_glyphs()
 	for i in 2:
-		var c := UiKit.title("", 40, UiKit.AMBER, HORIZONTAL_ALIGNMENT_LEFT if i == 0 else HORIZONTAL_ALIGNMENT_RIGHT)
+		var c := UiKit.title("", 44, UiKit.AMBER, HORIZONTAL_ALIGNMENT_LEFT if i == 0 else HORIZONTAL_ALIGNMENT_RIGHT)
 		c.position = Vector2(60 if i == 0 else 1920 - 560, 250)
-		c.size = Vector2(500, 120)
+		c.size = Vector2(500, 130)
+		c.pivot_offset = Vector2(0 if i == 0 else 500, 40)
 		_root.add_child(c)
 		_combo.append(c)
 	_subtitle = UiKit.label("", 34, UiKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER, UiKit.body_font(true))
@@ -210,6 +212,8 @@ func _build_pause() -> void:
 		items.append(["Character Select", "select"])
 	if mode == "arcade":
 		items.append(["Quit Arcade", "menu"])
+	elif mode == "survival":
+		items.append(["Quit Survival", "menu"])
 	else:
 		items.append(["Main Menu", "menu"])
 	for it in items:
@@ -320,10 +324,23 @@ func on_event(e: Dictionary) -> void:
 		"hit":
 			var by: int = e["by"]
 			var n: int = e["combo"]
-			if n >= 2:
+			var counter: bool = e.get("counter", false)
+			if n >= 2 or counter:
 				var v := sim.fighters[e["who"]]
-				_combo[by].text = "%d HIT COMBO\n%d%%" % [n, int(round(100.0 * v.combo_damage / v.max_health()))]
+				var lines := []
+				if counter:
+					lines.append("COUNTER!")
+				if n >= 2:
+					lines.append("%d HIT COMBO" % n)
+					lines.append("%d%%" % int(round(100.0 * v.combo_damage / v.max_health())))
+				_combo[by].text = "\n".join(lines)
+				# The counter grows warmer as the combo grows, and jumps with every hit.
+				var col := UiKit.AMBER if n < 4 else (UiKit.RUST.lightened(0.3) if n < 7 else UiKit.ACCENT)
+				if counter and n < 2:
+					col = UiKit.RUST.lightened(0.3)
+				_combo[by].add_theme_color_override("font_color", col)
 				_combo_t[by] = 1.6
+				_combo_pop[by] = 1.0
 		"finisher_range":
 			notice("Wrong distance: %s range" % str(e.get("want", "")))
 
@@ -380,6 +397,8 @@ func refresh(delta: float) -> void:
 			ms.bg_color = UiKit.ACCENT if sim.wins[i] > k else Color(0.08, 0.08, 0.07)
 		_combo_t[i] = maxf(0.0, _combo_t[i] - delta)
 		_combo[i].modulate.a = clampf(_combo_t[i] * 2.0, 0.0, 1.0)
+		_combo_pop[i] = maxf(0.0, _combo_pop[i] - delta * 7.0)
+		_combo[i].scale = Vector2.ONE * (1.0 + 0.3 * _combo_pop[i] * _combo_pop[i])
 	_timer.text = "%d" % sim.timer_seconds() if not sim.training else ("" if mode == "stranger" else "∞")
 	_timer.add_theme_color_override("font_color", UiKit.TEXT if sim.timer_seconds() > 10 else UiKit.RUST.lightened(0.2))
 	if _announce_life > 0.0:

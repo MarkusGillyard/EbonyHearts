@@ -12,6 +12,7 @@ const SPARK_POOL := 8
 const BLOOD_POOL := 6
 const PUFF_POOL := 4
 const FLASH_POOL := 6
+const RING_POOL := 6
 const PROJ_POOL := 6
 ## Projectile looks: core colour, light colour and energy, size, trail colour.
 const KINDS := {
@@ -39,6 +40,8 @@ var _sparks: Array[GPUParticles3D] = []
 var _blood: Array[GPUParticles3D] = []
 var _puffs: Array[GPUParticles3D] = []
 var _flashes: Array[Dictionary] = []
+## Impact rings: a thin circle that bursts outward from the point of contact.
+var _rings: Array[Dictionary] = []
 var _lights: Array[Dictionary] = []
 ## Projectile visuals: {"node", "core", "mat", "light", "trail", "chain", "proj"}
 var _proj: Array[Dictionary] = []
@@ -50,7 +53,9 @@ var _next_spark := 0
 var _next_blood := 0
 var _next_puff := 0
 var _next_flash := 0
+var _next_ring := 0
 var _dot_tex: Texture2D
+var _ring_tex: Texture2D
 var _time := 0.0
 
 
@@ -62,7 +67,7 @@ func setup(s: FightSim, v: Array[FighterView], cam: FightCamera) -> void:
 	flashes_on = Settings.get_value("flashes")
 	gore = str(Settings.get_value("gore"))
 	for i in SPARK_POOL:
-		var p := _particles(26, 0.3, _glow_mesh(Vector2(0.014, 0.12)))
+		var p := _particles(40, 0.3, _glow_mesh(Vector2(0.022, 0.16)))
 		var pm: ParticleProcessMaterial = p.process_material
 		pm.particle_flag_align_y = true
 		pm.direction = Vector3.UP
@@ -121,6 +126,21 @@ func setup(s: FightSim, v: Array[FighterView], cam: FightCamera) -> void:
 		mi.visible = false
 		add_child(mi)
 		_flashes.append({"node": mi, "mat": m, "t": 1.0, "life": 1.0, "size": 0.3, "color": Color.WHITE})
+	for i in RING_POOL:
+		var mi := MeshInstance3D.new()
+		mi.mesh = QuadMesh.new()
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		m.albedo_texture = _ring_texture()
+		m.no_depth_test = true
+		mi.material_override = m
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.visible = false
+		add_child(mi)
+		_rings.append({"node": mi, "mat": m, "t": 1.0, "life": 1.0, "size": 0.5, "color": Color.WHITE})
 	for i in 2:
 		var l := OmniLight3D.new()
 		l.omni_range = 2.8
@@ -252,6 +272,20 @@ func _bolt_texture() -> Texture2D:
 			var a := clampf(1.0 - d / 5.0, 0.0, 1.0)
 			img.set_pixel(xx, y, Color(1, 1, 1, a * a))
 	return ImageTexture.create_from_image(img)
+
+
+## A thin, soft-edged circle.
+func _ring_texture() -> Texture2D:
+	if _ring_tex:
+		return _ring_tex
+	var img := Image.create(64, 64, false, Image.FORMAT_RGBA8)
+	for y in 64:
+		for x in 64:
+			var d := Vector2(x - 31.5, y - 31.5).length() / 32.0
+			var a := clampf(1.0 - absf(d - 0.78) / 0.14, 0.0, 1.0)
+			img.set_pixel(x, y, Color(1, 1, 1, a * a))
+	_ring_tex = ImageTexture.create_from_image(img)
+	return _ring_tex
 
 
 func _soft_dot() -> Texture2D:
@@ -447,6 +481,22 @@ func burst(pos: Vector3, color: Color, count: int, speed: float, life := 0.3) ->
 	_burst(pos, color, count, speed, life)
 
 
+## A ring bursting outward from `pos` to `size` metres across.
+func ring(pos: Vector3, color: Color, size: float, life := 0.14) -> void:
+	if not flashes_on:
+		return
+	var r := _rings[_next_ring]
+	_next_ring = (_next_ring + 1) % RING_POOL
+	r["t"] = 0.0
+	r["life"] = life
+	r["size"] = size
+	r["color"] = color
+	var n: MeshInstance3D = r["node"]
+	n.global_position = pos
+	n.scale = Vector3.ONE * size * 0.3
+	n.visible = true
+
+
 ## The Storm Shroud: green crackling while it gathers, then bolts all around the caster.
 func _storm_step() -> void:
 	var any := false
@@ -495,18 +545,29 @@ func on_event(e: Dictionary) -> void:
 			var pos := _v3(e["point"], 0.15)
 			var dmg: int = e["damage"]
 			var strong := dmg >= 90
+			var heavy: bool = strong or str(e.get("effect", "")) in ["launch", "knockdown", "sweep", "crumple"]
+			var counter: bool = e.get("counter", false)
 			var col := Color(1.0, 0.86, 0.62)
+			if counter:
+				col = Color(1.0, 0.55, 0.3)
 			if e.get("proj", false):
 				var k: Dictionary = KINDS.get(str(e.get("kind", "orb")), KINDS["orb"])
 				col = k["core"]
 				_burst(pos, col, 22, 4.0, 0.45)
-			flash(pos, col, 0.35 + (0.3 if strong else 0.0), 0.09, 1.8 if strong else 1.0, int(e["by"]))
-			_burst(pos, col, 10 if not strong else 22, 3.0 if not strong else 4.6)
+			flash(pos, col, 0.5 + (0.4 if strong else 0.0), 0.13, 2.2 if strong else 1.3, int(e["by"]))
+			ring(pos, col, 0.8 + (0.7 if heavy else 0.0) + (0.3 if counter else 0.0), 0.22 if heavy else 0.17)
+			_burst(pos, col, 20 if not heavy else 40, 3.6 if not heavy else 5.6, 0.32 if not heavy else 0.4)
 			if not e.get("throw", false) and dmg > 0:
 				var dir := signf(sim.fighters[e["who"]].pos.x - sim.fighters[e["by"]].pos.x)
 				blood(pos, dir, clampf(dmg / 110.0, 0.15, 1.0))
+			if e.get("ko", false):
+				# The deciding blow: a wide white ring and a long flash.
+				ring(pos, Color(1.0, 0.95, 0.85), 2.6, 0.34)
+				flash(pos, Color(1.0, 0.9, 0.7), 1.0, 0.3, 3.0, int(e["by"]))
 		"block":
-			flash(_v3(e["point"], 0.15), Color(0.55, 0.8, 1.0), 0.32, 0.08, 0.8, 0)
+			flash(_v3(e["point"], 0.15), Color(0.55, 0.8, 1.0), 0.4, 0.1, 0.8, 0)
+			ring(_v3(e["point"], 0.15), Color(0.55, 0.8, 1.0), 0.6, 0.13)
+			_burst(_v3(e["point"], 0.15), Color(0.6, 0.85, 1.0), 8, 2.4, 0.22)
 		"armor":
 			flash(_v3(e["point"], 0.15), Color(1.0, 0.95, 0.75), 0.5, 0.14, 1.5, int(e["who"]))
 		"clash":
@@ -544,6 +605,19 @@ func step(delta: float) -> void:
 		(sh.material_override as StandardMaterial3D).albedo_color = Color(0, 0, 0, clampf(0.5 - hgt * 0.03, 0.22, 0.5))
 		sh.visible = views[i].visible and f.state != Fighter.S.DOWN and f.state != Fighter.S.KO
 	_storm_step()
+	for r in _rings:
+		var rn: MeshInstance3D = r["node"]
+		if not rn.visible:
+			continue
+		r["t"] += delta
+		var u: float = r["t"] / r["life"]
+		if u >= 1.0:
+			rn.visible = false
+			continue
+		var grow := 1.0 - (1.0 - u) * (1.0 - u)
+		rn.scale = Vector3.ONE * float(r["size"]) * (0.3 + 0.7 * grow)
+		var rc: Color = r["color"]
+		(r["mat"] as StandardMaterial3D).albedo_color = Color(rc.r * 1.6, rc.g * 1.6, rc.b * 1.6, (1.0 - u) * (1.0 - u))
 	for fl in _flashes:
 		var n: MeshInstance3D = fl["node"]
 		if not n.visible:

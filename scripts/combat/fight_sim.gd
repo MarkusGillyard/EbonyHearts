@@ -382,6 +382,16 @@ func _apply(c: Dictionary) -> void:
 	var hs: int = p.hitstop if p else m.hitstop
 	if hs < 0:
 		hs = 5 if damage < 50 else (8 if damage < 95 else 11)
+		if effect in ["launch", "knockdown", "sweep"]:
+			# Blows that send a body flying hang on the contact a touch longer.
+			hs += 2
+	# A counter hit: the blow lands while the other fighter is winding up an attack of their own.
+	# It hurts more and keeps them reeling longer, so reading an opponent is rewarded.
+	var counter_hit := not p and d.state == Fighter.S.MOVE and d.move != null and d.move.is_attack() \
+		and d.mf < d.move.startup and d.move_contact == ""
+	if counter_hit:
+		damage = int(round(damage * 1.15))
+		hs += 2
 	if p:
 		p.hits_left -= 1
 		p.dead = p.hits_left <= 0
@@ -448,6 +458,7 @@ func _apply(c: Dictionary) -> void:
 		return
 	var n := d.combo_hits + 1
 	var k := 1.0 if n <= 2 else maxf(0.4, 1.0 - 0.1 * (n - 2))
+	var stun_bonus := 4 if counter_hit else 0
 	# Scaling never takes a damaging hit below 1, but a hit that does none (the wind of the
 	# Slopbat's wings) stays harmless.
 	var dmg := maxi(1, int(round(damage * k))) if damage > 0 else 0
@@ -480,21 +491,22 @@ func _apply(c: Dictionary) -> void:
 			"knockdown", "sweep":
 				d.knock(launch, "fall", int(dir))
 			"crumple":
-				d.take_stun(p.hitstun if p else m.hitstun, "crumple")
+				d.take_stun((p.hitstun if p else m.hitstun) + stun_bonus, "crumple")
 			"pull":
-				d.take_stun(p.hitstun if p else m.hitstun, "pulled")
+				d.take_stun((p.hitstun if p else m.hitstun) + stun_bonus, "pulled")
 			"daze":
-				d.take_stun(p.hitstun if p else m.hitstun, "dazed")
+				d.take_stun((p.hitstun if p else m.hitstun) + stun_bonus, "dazed")
 			_:
 				var kind := "crouch" if d.is_crouching() else ("high" if level == MoveDef.Level.HIGH else "mid")
-				d.take_stun(p.hitstun if p else m.hitstun, kind)
+				d.take_stun((p.hitstun if p else m.hitstun) + stun_bonus, kind)
 				d.push((p.push_hit if p else m.push_hit) * dir, a.index)
 	d.hitstop = hs
 	if not p:
 		a.hitstop = hs
 		a.move_contact = "hit"
 	emit({"type": "hit", "who": d.index, "by": a.index, "move": m.id, "damage": dmg, "level": level, "effect": effect,
-		"point": c["point"], "combo": n, "proj": p != null, "kind": p.kind if p else ""})
+		"point": c["point"], "combo": n, "proj": p != null, "kind": p.kind if p else "", "counter": counter_hit,
+		"ko": d.health <= 0})
 
 
 func _resolve_throws() -> void:
