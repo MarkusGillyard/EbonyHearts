@@ -3,6 +3,7 @@ extends Screen
 
 const ITEMS := [
 	["Arcade", "arcade", "Climb a tower of the Slopbat's chosen to the roost itself. Your choice of tower sets the difficulty."],
+	["Survival", "survival", "An endless ladder: one round a fight, your health carried on with a little given back after each win, and the Slopbat waiting every fifth wave. How far can you climb?"],
 	["Versus", "versus", "Two players on one machine. Any fighter, any stage, mirror matches welcome."],
 	["Training", "training", "Practise against a dummy that stands, blocks, jumps or fights back. Move lists, frame data and hitboxes."],
 	["Tutorial", "tutorial", "Learn to move, block, strike, combo, throw and finish, one step at a time."],
@@ -55,6 +56,9 @@ func _choose(id: String) -> void:
 		"arcade":
 			Game.config["mode"] = "arcade"
 			Game.goto("select", {"mode": "arcade"})
+		"survival":
+			Game.config["mode"] = "survival"
+			Game.goto("select", {"mode": "survival"})
 		"versus":
 			Game.config["mode"] = "versus"
 			Game.goto("devices", {})

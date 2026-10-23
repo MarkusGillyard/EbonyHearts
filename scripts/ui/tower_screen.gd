@@ -54,7 +54,7 @@ func build() -> void:
 		var rec := UiKit.label("", 20, UiKit.DIM, HORIZONTAL_ALIGNMENT_CENTER)
 		var key := "%s:%d" % [fighter, t]
 		var a: Dictionary = Progress.data["arcade"].get(key, {})
-		rec.text = "Cleared %d×  ·  best %s" % [int(a.get("clears", 0)), _time(float(a.get("best", 0.0)))] if not a.is_empty() else "Not yet cleared"
+		rec.text = "Cleared %d×  ·  best %s  ·  %s pts" % [int(a.get("clears", 0)), _time(float(a.get("best", 0.0))), UiKit.commas(int(a.get("score", 0)))] if not a.is_empty() else "Not yet cleared"
 		col.add_child(rec)
 		_records.append(rec)
 		_cols.append(col)

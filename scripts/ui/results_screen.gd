@@ -31,6 +31,8 @@ func build() -> void:
 	match mode:
 		"arcade":
 			_arcade(w, p1)
+		"survival":
+			_survival(w, p1)
 		"stranger":
 			_stranger()
 		"tutorial":
@@ -70,26 +72,41 @@ func _flourishes(y: float) -> void:
 	add_child(l)
 
 
+## "+12,300 points   ·   total 48,200" under the result.
+func _score_line(pts: int, total: int, y: float) -> void:
+	var l := UiKit.label("+%s points   ·   total %s" % [UiKit.commas(pts), UiKit.commas(total)], 30, UiKit.AMBER, HORIZONTAL_ALIGNMENT_CENTER, UiKit.body_font(true))
+	l.position = Vector2(0, y)
+	l.size = Vector2(1920, 40)
+	add_child(l)
+
+
 func _arcade(w: int, p1: String) -> void:
 	if w == 0:
+		var pts := Game.arcade_score(result)
+		var total := int(Game.arcade.get("score", 0))
 		var more := Game.arcade_advance(result.get("flawless", false))
 		if more:
 			heading("%s WINS" % Content.fighter(p1).name.to_upper(), 96, 220)
 			_flourishes(360)
+			_score_line(pts, total, 430)
 			var next: Dictionary = Game.current_rung()
 			var nxt := "Next: " + ("the Slopbat" if next.get("kind", "") == "boss" else ("the Reflection" if next.get("kind", "") == "mirror" else Content.fighter(next["opponent"]).name))
 			var nl := UiKit.label(nxt, 30, UiKit.DIM, HORIZONTAL_ALIGNMENT_CENTER)
-			nl.position = Vector2(0, 450)
+			nl.position = Vector2(0, 480)
 			nl.size = Vector2(1920, 40)
 			add_child(nl)
 			menu([["Continue", func(): Game.goto("stranger_offer" if Game.stranger_pending else "versus", {})],
 				["Quit Arcade", func(): _quit_arcade()]], Vector2(730, 560), 460, 32)
 		else:
 			var secs: float = float(Game.arcade.get("seconds", 0.0))
-			Progress.record_arcade(p1, int(Game.arcade.get("tower", 0)), secs)
+			var tower := int(Game.arcade.get("tower", 0))
+			var old_best := int(Progress.data["arcade"].get("%s:%d" % [p1, tower], {}).get("score", 0))
+			Progress.record_arcade(p1, tower, secs, total)
 			heading(str(Content.story.get("boss_defeated", "")), 44, 300)
-			var t := UiKit.label("Time %d:%02d   ·   continues %d" % [int(secs) / 60, int(secs) % 60, int(Game.arcade.get("continues", 0))], 30, UiKit.DIM, HORIZONTAL_ALIGNMENT_CENTER)
-			t.position = Vector2(0, 420)
+			_score_line(pts, total, 390)
+			var t := UiKit.label("Time %d:%02d   ·   continues %d%s" % [int(secs) / 60, int(secs) % 60, int(Game.arcade.get("continues", 0)),
+				"   ·   NEW BEST SCORE" if total > old_best else ""], 30, UiKit.DIM if total <= old_best else UiKit.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+			t.position = Vector2(0, 440)
 			t.size = Vector2(1920, 40)
 			add_child(t)
 			menu([["Continue", func(): Game.goto("ending", {"fighter": p1})]], Vector2(730, 560), 460, 32)
@@ -101,6 +118,43 @@ func _arcade(w: int, p1: String) -> void:
 		add_child(_count_label)
 		_countdown = 10.99
 		menu([["Retry", func(): _retry()], ["Quit Arcade", func(): _quit_arcade()]], Vector2(730, 600), 460, 32)
+
+
+func _survival(w: int, p1: String) -> void:
+	var name := Content.fighter(p1).name
+	if w == 0:
+		var health: Array = result.get("health", [1, 0])
+		Game.survival_advance(int(health[0]), result.get("flawless", false))
+		var waves := Game.survival_waves()
+		heading("WAVE %d CLEARED" % waves, 96, 220)
+		_flourishes(360)
+		var full := Content.fighter(p1).health
+		var carried := int(Game.survival.get("health", full))
+		var nxt := "the Slopbat" if Game.config["p2"] == "slopbat" else Content.fighter(Game.config["p2"]).name
+		var nl := UiKit.label("Health carried on: %d%%   ·   Next: wave %d, %s (%s)" % [int(round(100.0 * carried / full)), waves + 1, nxt,
+			Game.DIFFICULTIES[int(Game.config["difficulty"])]], 30, UiKit.DIM, HORIZONTAL_ALIGNMENT_CENTER)
+		nl.position = Vector2(0, 450)
+		nl.size = Vector2(1920, 40)
+		add_child(nl)
+		menu([["Continue", func(): Game.goto("versus", {})], ["Quit Survival", func(): _quit_survival()]], Vector2(730, 560), 460, 32)
+	else:
+		var waves := Game.survival_waves()
+		var new_best := Progress.record_survival(p1, waves)
+		heading("%s SURVIVED %d WAVE%s" % [name.to_upper(), waves, "" if waves == 1 else "S"], 80, 220)
+		var t := UiKit.label("NEW RECORD" if new_best and waves > 0 else "Best with %s: %d" % [name.split(" ")[0], Progress.best_survival(p1)],
+			34, UiKit.ACCENT if new_best and waves > 0 else UiKit.DIM, HORIZONTAL_ALIGNMENT_CENTER)
+		t.position = Vector2(0, 380)
+		t.size = Vector2(1920, 50)
+		add_child(t)
+		menu([["Try Again", func():
+			Game.start_survival(p1)
+			Game.goto("versus", {})], ["Character Select", func(): Game.goto("select", {"mode": "survival"})],
+			["Main Menu", func(): _quit_survival()]], Vector2(730, 560), 460, 32)
+
+
+func _quit_survival() -> void:
+	Game.survival = {}
+	Game.goto("menu")
 
 
 func _stranger() -> void:

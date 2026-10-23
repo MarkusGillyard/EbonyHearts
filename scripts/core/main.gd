@@ -172,6 +172,7 @@ func _on_pause_choice(choice: String) -> void:
 			Game.goto("select", {"mode": Game.config["mode"]})
 		"menu":
 			Game.arcade = {}
+			Game.survival = {}
 			Game.goto("menu")
 
 

@@ -89,6 +89,19 @@ static func _box(bg: Color, border: Color) -> StyleBoxFlat:
 	return s
 
 
+## 1234567 -> "1,234,567".
+static func commas(n: int) -> String:
+	var s := str(absi(n))
+	var out := ""
+	var k := 0
+	for i in range(s.length() - 1, -1, -1):
+		out = s[i] + out
+		k += 1
+		if k % 3 == 0 and i > 0:
+			out = "," + out
+	return ("-" if n < 0 else "") + out
+
+
 static func label(text: String, size := 24, color := TEXT, align := HORIZONTAL_ALIGNMENT_LEFT, font: Font = null) -> Label:
 	var l := Label.new()
 	l.text = text
