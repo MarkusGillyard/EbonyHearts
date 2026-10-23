@@ -42,6 +42,7 @@ func build() -> void:
 	_toggle("Fullscreen", "fullscreen")
 	_toggle("Vertical sync", "vsync")
 	_choice("Graphics", "graphics")
+	_toggle("Vignette and grain", "post_fx")
 	_toggle("Motion smoothing", "motion_smoothing")
 	_section("SOUND")
 	_volume("Master volume", "master_volume")

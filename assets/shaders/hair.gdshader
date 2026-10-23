@@ -15,6 +15,8 @@ uniform vec3 tint_color : source_color = vec3(0.2, 0.25, 0.15);
 uniform float dissolve : hint_range(0.0, 1.0) = 0.0;
 uniform vec3 dissolve_color : source_color = vec3(1.0, 0.45, 0.1);
 uniform float flash : hint_range(0.0, 1.0) = 0.0;
+uniform vec3 accent_color : source_color = vec3(1.0, 0.6, 0.3);
+uniform float accent_strength = 0.3;
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -52,5 +54,7 @@ void fragment() {
 	SPECULAR = 0.16;
 	ANISOTROPY = 0.55;
 	BACKLIGHT = col * 0.3;
-	EMISSION = dissolve_color * glow * 3.0 + vec3(flash * 0.6);
+	// Hair is a bundle of thin ribbons, so the edge glow is kept faint or it dyes the whole head.
+	float fres = pow(1.0 - clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0), 5.0);
+	EMISSION = dissolve_color * glow * 3.0 + vec3(flash * 0.6) + accent_color * fres * accent_strength * 0.18 * (1.0 - tint);
 }
