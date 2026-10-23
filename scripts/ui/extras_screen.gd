@@ -60,6 +60,16 @@ func _show_records() -> void:
 		if waves > 0:
 			surv.append("%s %d" % [Content.fighter(id).name.split(" ")[0], waves])
 	lines.append("\nSurvival, most waves cleared: %s" % ("   ·   ".join(surv) if not surv.is_empty() else "none yet"))
+	var tr := []
+	var tr_done := 0
+	var tr_total := 0
+	for id in Content.roster():
+		var n: int = Progress.trials_done(id).size()
+		var t: int = (Content.trials.get(id, []) as Array).size()
+		tr_done += n
+		tr_total += t
+		tr.append("%s %d/%d" % [Content.fighter(id).name.split(" ")[0], n, t])
+	lines.append("Trials cleared: %d of %d   (%s)" % [tr_done, tr_total, "   ".join(tr)])
 	var unl := []
 	for id in Content.roster():
 		if Progress.is_unlocked("costume:" + id):

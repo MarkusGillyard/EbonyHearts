@@ -30,7 +30,13 @@ FIGHTING
   Down + High Punch: uppercut.  Back + Low Kick: sweep.  Back + High Kick: roundhouse.
   Forward or Back + Low Punch up close: throw (press a punch right after being grabbed to break).
   Every fighter's specials, combos and Sloptality: Pause -> Move List.
+  A blow that lands while the other fighter is winding up is a COUNTER: more damage, longer stun.
   When FINISH appears, stand at the right distance and enter your Sloptality.
+
+MODES
+  Arcade climbs a tower to the Slopbat and scores every fight; Survival is an endless ladder,
+  one round a fight, your health carried on with a little back after each win. Trials set out
+  every fighter's combos to land one at a time.
 
 New here? Try the Tutorial from the main menu.
 

@@ -82,6 +82,8 @@ Menus: arrows or WASD to move, Enter (or J/U) to choose, Backspace or Esc to go 
   (F4), hitboxes (F1), frame data (F2), states (F3) and input history (F8).
 - **Tutorial**: a guided five minutes covering movement, blocking, strikes, a special, a combo, a
   throw and a finisher.
+- **Trials**: every fighter's combos, one at a time against their rival, each hit ticked off as
+  it lands. Progress is kept per fighter.
 - **Extras**: endings you have earned, records, move lists and the credits.
 
 Clearing arcade with a fighter unlocks their alternate colours (High Kick on the select screen)

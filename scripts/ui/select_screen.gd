@@ -81,10 +81,10 @@ func build() -> void:
 		_cursor = [0, mini(1, _ids.size() - 1)]
 	else:
 		_cursor = [_ids.find(Game.config.get("p1", _ids[0])) if Game.config.get("p1", "") in _ids else 0, 1]
-	if mode in ["arcade", "survival"]:
+	if mode in ["arcade", "survival", "trials"]:
 		_previews[1].visible = false
 		_names[1].text = "?"
-		_infos[1].text = "The Slopbat's chosen await." if mode == "arcade" else "Wave after wave, until you fall."
+		_infos[1].text = "The Slopbat's chosen await." if mode == "arcade" else ("Wave after wave, until you fall." if mode == "survival" else "Your rival will stand for the trials.")
 	_refresh()
 	hint("Move: arrows / WASD   ·   Select: punch or Enter   ·   Colours: High Kick   ·   Back: Block or Backspace")
 
@@ -177,6 +177,10 @@ func _after_lock(side: int) -> void:
 			Game.config["costume_p1"] = _costume[0]
 			Game.start_survival(_ids[_cursor[0]])
 			_finish("versus", {})
+		"trials":
+			Game.config["costume_p1"] = _costume[0]
+			Game.start_trials(_ids[_cursor[0]])
+			_finish("match", {})
 		"training":
 			if side == 0:
 				_picking = 1
@@ -211,7 +215,7 @@ func _refresh() -> void:
 		sb.border_color = UiKit.ACCENT if c0 and not c1 else (UiKit.AMBER if c1 and not c0 else (Color(0.9, 0.9, 0.6) if c0 and c1 else Color(0.2, 0.24, 0.2)))
 		sb.set_border_width_all(6 if c0 or c1 else 3)
 	for side in 2:
-		if mode in ["arcade", "survival"] and side == 1:
+		if mode in ["arcade", "survival", "trials"] and side == 1:
 			continue
 		if mode == "training" and side == 1 and _picking == 0:
 			_previews[1].visible = false
@@ -225,3 +229,6 @@ func _refresh() -> void:
 		_names[side].text = def.name.to_upper() + ("  ✓" if _locked[side] else "")
 		var bio: String = Content.story.get("fighters", {}).get(id, {}).get("bio", def.blurb)
 		_infos[side].text = "%s\n%s" % [def.title, def.style] + ("\n" + bio if mode != "versus" else "")
+		if mode == "trials":
+			var total: int = (Content.trials.get(id, []) as Array).size()
+			_infos[side].text = "%s\n%s\nTrials cleared: %d of %d" % [def.title, def.style, Progress.trials_done(id).size(), total]

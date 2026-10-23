@@ -24,6 +24,7 @@ static func fresh() -> Dictionary:
 		"version": VERSION,
 		"arcade": {},
 		"survival": {},
+		"trials": {},
 		"endings": [],
 		"unlocks": [],
 		"stranger": 0,
@@ -90,6 +91,22 @@ func record_survival(fighter: String, waves: int) -> bool:
 		return true
 	save()
 	return false
+
+
+## Marks a combo trial complete; returns true the first time.
+func trial_done(fighter: String, trial_name: String) -> bool:
+	var t: Dictionary = data["trials"]
+	var done: Array = t.get(fighter, [])
+	if trial_name in done:
+		return false
+	done.append(trial_name)
+	t[fighter] = done
+	save()
+	return true
+
+
+func trials_done(fighter: String) -> Array:
+	return (data["trials"] as Dictionary).get(fighter, [])
 
 
 func best_survival(fighter: String) -> int:

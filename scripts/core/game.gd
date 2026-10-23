@@ -71,7 +71,7 @@ func goto(screen: String, data := {}) -> void:
 
 func is_cpu(side: int) -> bool:
 	match config["mode"]:
-		"arcade", "cpu", "training", "tutorial", "stranger", "survival":
+		"arcade", "cpu", "training", "tutorial", "stranger", "survival", "trials":
 			return side == 1
 		"watch":
 			return true
@@ -184,6 +184,22 @@ func arcade_advance(flawless: bool) -> bool:
 func arcade_retry() -> void:
 	arcade["continues"] = int(arcade["continues"]) + 1
 	configure_rung()
+
+
+## A fighter's combo trials: a training match against their rival on the rival's home ground.
+func start_trials(fighter: String) -> void:
+	var rival := str(Content.story.get("fighters", {}).get(fighter, {}).get("rival", ""))
+	if Content.fighter(rival) == null:
+		rival = "gorm" if fighter != "gorm" else "bram"
+	arcade = {}
+	survival = {}
+	config["mode"] = "trials"
+	config["p1"] = fighter
+	config["p2"] = rival
+	config["stage"] = str(Content.story.get("fighters", {}).get(rival, {}).get("home", ARENAS[0]))
+	config["rounds_to_win"] = 1
+	config["mirror_dark"] = false
+	config.erase("p2_health")
 
 
 # --- Survival ------------------------------------------------------------------------------------

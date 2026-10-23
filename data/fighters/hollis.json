@@ -104,7 +104,13 @@
 			"hitstop": 11,
 			"sfx": {
 				"swing": "heavy"
-			}
+			},
+			"motion": [
+				[
+					8,
+					0.22
+				]
+			]
 		},
 		"hollis_boot": {
 			"name": "Lead Boot",

@@ -1,0 +1,363 @@
+{
+	"about": "Combo trials per fighter: `steps` are the commands entered in order (each as soon as it can come out: a chain link once the blow before it has landed, a special in a cancel window after contact, anything else once the fighter is free again); `moves` are the hits that must land as one combo, in order. tests/test_trials.gd performs every trial headless against the fighter's rival from touching distance.",
+	"ashka": [
+		{
+			"name": "Lantern Lash",
+			"steps": [
+				"HP",
+				"HP",
+				"LP",
+				"B+HK"
+			],
+			"moves": [
+				"hp",
+				"hp2",
+				"ashka_elbow_chain",
+				"ashka_spin_chain"
+			]
+		},
+		{
+			"name": "Temple Bell",
+			"steps": [
+				"LK",
+				"LK",
+				"HK"
+			],
+			"moves": [
+				"lk",
+				"ashka_knee_chain",
+				"ashka_head_chain"
+			]
+		},
+		{
+			"name": "Lash into the Rush",
+			"steps": [
+				"HP",
+				"HP",
+				"LP",
+				"F,F+LP"
+			],
+			"moves": [
+				"hp",
+				"hp2",
+				"ashka_elbow_chain",
+				"elbow_rush"
+			]
+		},
+		{
+			"name": "Bell and Rising Knee",
+			"steps": [
+				"LK",
+				"LK",
+				"HK",
+				"D,U+HK"
+			],
+			"moves": [
+				"lk",
+				"ashka_knee_chain",
+				"ashka_head_chain",
+				"rising_knee"
+			]
+		},
+		{
+			"name": "Rush and Ember",
+			"steps": [
+				"F,F+LP",
+				"D,F+HP"
+			],
+			"moves": [
+				"elbow_rush",
+				"ember_shot"
+			]
+		}
+	],
+	"gorm": [
+		{
+			"name": "Three Hammers",
+			"steps": [
+				"HP",
+				"HP",
+				"HP"
+			],
+			"moves": [
+				"hp",
+				"hp2",
+				"gorm_hammer"
+			]
+		},
+		{
+			"name": "Belly Kick",
+			"steps": [
+				"LK",
+				"HK"
+			],
+			"moves": [
+				"lk",
+				"gorm_belly"
+			]
+		},
+		{
+			"name": "Vat Press",
+			"steps": [
+				"B,F+LP"
+			],
+			"moves": [
+				"vat_press"
+			]
+		},
+		{
+			"name": "Rendering Charge",
+			"steps": [
+				"B,F+HK"
+			],
+			"moves": [
+				"rendering_charge"
+			]
+		},
+		{
+			"name": "Ground Slap",
+			"steps": [
+				"D,D+HP"
+			],
+			"moves": [
+				"ground_slap"
+			]
+		}
+	],
+	"nix": [
+		{
+			"name": "Drowned Cut",
+			"steps": [
+				"HP",
+				"HP",
+				"LP",
+				"LK"
+			],
+			"moves": [
+				"hp",
+				"hp2",
+				"nix_slash",
+				"nix_low"
+			]
+		},
+		{
+			"name": "Axe Fall",
+			"steps": [
+				"LK",
+				"HK",
+				"HK"
+			],
+			"moves": [
+				"lk",
+				"nix_spin",
+				"nix_axe"
+			]
+		},
+		{
+			"name": "Cut and Sickle",
+			"steps": [
+				"HP",
+				"HP",
+				"LP",
+				"B,F+LP"
+			],
+			"moves": [
+				"hp",
+				"hp2",
+				"nix_slash",
+				"sickle_throw"
+			]
+		},
+		{
+			"name": "Undertow",
+			"steps": [
+				"B,B+HP"
+			],
+			"moves": [
+				"undertow"
+			]
+		},
+		{
+			"name": "Sinkstep",
+			"steps": [
+				"D,B+LK"
+			],
+			"moves": [
+				"sinkstep"
+			]
+		}
+	],
+	"mirela": [
+		{
+			"name": "Circling Palms",
+			"steps": [
+				"HP",
+				"LP",
+				"HP"
+			],
+			"moves": [
+				"hp",
+				"mirela_double",
+				"mirela_circle"
+			]
+		},
+		{
+			"name": "Crescent",
+			"steps": [
+				"LK",
+				"B+HK"
+			],
+			"moves": [
+				"lk",
+				"mirela_crescent"
+			]
+		},
+		{
+			"name": "Keen and Uppercut",
+			"steps": [
+				"B,F+HP",
+				"D+HP"
+			],
+			"moves": [
+				"keen",
+				"uppercut"
+			]
+		},
+		{
+			"name": "Keen and Lament",
+			"steps": [
+				"B,F+HP",
+				"D,F+HP"
+			],
+			"moves": [
+				"keen",
+				"lament"
+			]
+		},
+		{
+			"name": "Lament",
+			"steps": [
+				"D,F+HP"
+			],
+			"moves": [
+				"lament"
+			]
+		}
+	],
+	"bram": [
+		{
+			"name": "Watch Combination",
+			"steps": [
+				"HP",
+				"HP",
+				"HP",
+				"LP"
+			],
+			"moves": [
+				"hp",
+				"hp2",
+				"bram_hook",
+				"bram_body"
+			]
+		},
+		{
+			"name": "Baton Lift",
+			"steps": [
+				"LP",
+				"LP",
+				"HK"
+			],
+			"moves": [
+				"lp",
+				"lp2",
+				"bram_baton"
+			]
+		},
+		{
+			"name": "Baton Trip",
+			"steps": [
+				"F,B+LP"
+			],
+			"moves": [
+				"baton_trip"
+			]
+		},
+		{
+			"name": "Bull Rush",
+			"steps": [
+				"F,F+HK"
+			],
+			"moves": [
+				"bull_rush"
+			]
+		},
+		{
+			"name": "Signal Flare",
+			"steps": [
+				"D,B+HP"
+			],
+			"moves": [
+				"flare_high"
+			]
+		}
+	],
+	"hollis": [
+		{
+			"name": "Helmet Butt",
+			"steps": [
+				"HP",
+				"HP",
+				"B+HP"
+			],
+			"moves": [
+				"hp",
+				"hp2",
+				"hollis_butt"
+			]
+		},
+		{
+			"name": "Lead Boot",
+			"steps": [
+				"LK",
+				"HK"
+			],
+			"moves": [
+				"lk",
+				"hollis_boot"
+			]
+		},
+		{
+			"name": "Boot and Harpoon",
+			"steps": [
+				"LK",
+				"HK",
+				"B,F+LP"
+			],
+			"moves": [
+				"lk",
+				"hollis_boot",
+				"harpoon"
+			]
+		},
+		{
+			"name": "Harpoon and Uppercut",
+			"steps": [
+				"B,F+LP",
+				"D+HP"
+			],
+			"moves": [
+				"harpoon",
+				"uppercut"
+			]
+		},
+		{
+			"name": "Vent",
+			"steps": [
+				"D,B+HP"
+			],
+			"moves": [
+				"vent"
+			]
+		}
+	]
+}

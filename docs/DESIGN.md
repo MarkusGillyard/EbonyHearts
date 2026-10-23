@@ -59,6 +59,13 @@ chip damage only from specials and projectiles; one projectile per fighter on sc
 hits (a blow that lands during the other fighter's wind-up does 15% more and stuns four frames
 longer, called out on the HUD), so reading an opponent pays.
 
+**Combos connect.** The first blow of a combo pushes the other fighter back the full
+distance; a move that opens a dial-a-combo pushes 60% of it and every hit after the first
+35%, so the strings in the move list reach the body the first hit drove back (before, the
+push-back alone put the second link out of reach). Every fighter's combos are set out as
+**Trials** (main menu), one at a time against the rival, each hit ticked off as it lands and
+every trial proven possible by a test that performs it.
+
 **Impact.** Every hit is felt: hit-stop scaled to the blow (longer when it sends a body
 flying), a flash through the victim's body, a ring and sparks from the point of contact, and a
 camera that shakes a little on every hit and kicks along the blow on heavy ones. The deciding
@@ -133,7 +140,8 @@ never says. He is not a boss and not a roster fighter: no health bar, no ordinar
 Arcade (three towers: Novice, Warrior, Master, which also set the CPU's difficulty; rival flavour
 before the rival; the Reflection, a slop-dark mirror match, in Master; the boss; a short ending
 per fighter; points for every fight, from health and time left, flawless victories and
-Sloptalities, with the best total per fighter and tower kept), Survival (an endless ladder, one
+Sloptalities, with the best total per fighter and tower kept), Trials (every fighter's combos,
+checked as they land, progress kept), Survival (an endless ladder, one
 round a fight, health carried on with 30% of full given back after a win and 45% after a
 flawless one, three waves at each difficulty and then Master, the Slopbat on every fifth wave;
 most waves cleared per fighter kept), Versus (two players, any pairing including mirrors, explicit device assignment),

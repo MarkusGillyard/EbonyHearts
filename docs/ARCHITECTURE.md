@@ -26,7 +26,7 @@ devices, and nothing visual changes the simulation.** Every outcome is an event 
 | `scripts/ai/` | `CpuBrain`, `BossBrain`, `TrainingDummy`, `StrangerRules`, all producing ordinary pad input through `PadIntent`. |
 | `scripts/anim/` | `Rig` (joints and two-bone IK), `Pose`, `PoseLibrary`, `CharacterModel` (the sculpted, skinned body), `ClothSheet` (Verlet cloth and hair), `Shapes`. |
 | `scripts/view/` | `Match` (steps the sim, owns the scene, pause and device handling, the knockout freeze and slow motion), `FighterView`, `FightCamera` (framing, shake, the sprung kick, depth of field), `Arena` and `arenas/*`, `Vfx` (sparks, rings, flashes, blood, projectiles), `PostFx` (vignette and grain), `FinisherDirector`, `Props`, `DebugDraw`. |
-| `scripts/ui/` | `Hud`, every menu screen (each a `Screen`), `FighterPreview`, the tutorial. |
+| `scripts/ui/` | `Hud`, every menu screen (each a `Screen`), `FighterPreview`, the tutorial, the trials runner. |
 | `scripts/core/` | Autoloads: `Content` (data), `Settings`, `Progress` (saves), `Audio`, `Game` (flow, the arcade ladder and its scoring, the survival ladder); `Main` (screen host); `PadReader`. |
 
 ## Combat timing
@@ -54,7 +54,14 @@ devices, and nothing visual changes the simulation.** Every outcome is an event 
   more specific command.
 - **Combos.** Damage scales from the third hit (10% per hit, to 40%); juggle points (an uppercut
   costs 3) end a juggle at 7 and juggled bodies fall faster with every hit, so there are no
-  infinites. Chains cost run meter per link, as in MK3.
+  infinites. Chains cost run meter per link, as in MK3. Push-back on hit is scaled by
+  `CHAIN_OPENER_PUSH` (0.6) for a move with chain links and `COMBO_PUSH` (0.35) from the second
+  hit of a combo on. A `combo_end` event is emitted when a hit fighter returns to neutral or
+  lands from a knockdown.
+- **Trials** (`data/trials.json`, `TrialCheck`, `scripts/ui/trials.gd`): a trial is a list of
+  commands and the hits that must land as one combo; `TrialCheck.feed` watches the events.
+  `test_trials` performs every trial headless from touching distance, dialling each link once
+  the blow before it has landed, so the shipped list only holds combos that connect.
 - **Rounds.** 90 seconds; two wins (one long round for the boss). The deciding KO leads to the
   dizzy FINISH phase (7 s); double KOs and draws award nothing, and a match never exceeds nine
   rounds.

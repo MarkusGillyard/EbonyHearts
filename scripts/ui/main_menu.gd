@@ -7,6 +7,7 @@ const ITEMS := [
 	["Versus", "versus", "Two players on one machine. Any fighter, any stage, mirror matches welcome."],
 	["Training", "training", "Practise against a dummy that stands, blocks, jumps or fights back. Move lists, frame data and hitboxes."],
 	["Tutorial", "tutorial", "Learn to move, block, strike, combo, throw and finish, one step at a time."],
+	["Trials", "trials", "Every fighter's combos, one at a time, checked as you land them. Clear them all with every fighter."],
 	["Extras", "extras", "Endings you have earned, your records, and anything else you have found."],
 	["Settings", "settings", "Video, sound, gore, effects and controls."],
 	["Quit", "quit", "Leave the Sump."],
@@ -68,6 +69,9 @@ func _choose(id: String) -> void:
 		"tutorial":
 			Game.config = Game.config.merged({"mode": "tutorial", "p1": "ashka", "p2": "gorm", "stage": "rendering_yards", "rounds_to_win": 1, "mirror_dark": false}, true)
 			Game.goto("match")
+		"trials":
+			Game.config["mode"] = "trials"
+			Game.goto("select", {"mode": "trials"})
 		"extras":
 			Game.goto("extras", {})
 		"settings":

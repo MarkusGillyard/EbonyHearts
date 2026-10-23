@@ -23,6 +23,10 @@ const ROUND_END_TICKS := 170
 const FINISH_TICKS := 420
 const MAX_ROUNDS := 9
 const THROW_BREAK_WINDOW := 8
+## How much of a hit's push-back applies from the second hit of a combo on, and to the first
+## hit of a move that opens a dial-a-combo (so its links can reach the body it drove back).
+const COMBO_PUSH := 0.35
+const CHAIN_OPENER_PUSH := 0.6
 const RANGES := {"close": [0.0, 1.15], "sweep": [1.15, 2.3], "far": [2.6, 99.0]}
 
 var fighters: Array[Fighter] = []
@@ -499,7 +503,14 @@ func _apply(c: Dictionary) -> void:
 			_:
 				var kind := "crouch" if d.is_crouching() else ("high" if level == MoveDef.Level.HIGH else "mid")
 				d.take_stun((p.hitstun if p else m.hitstun) + stun_bonus, kind)
-				d.push((p.push_hit if p else m.push_hit) * dir, a.index)
+				# The first blow of a combo pushes the full distance; the ones that follow push less,
+				# so a dial-a-combo's later links can reach the body the first ones drove back.
+				var push_k := 1.0
+				if n > 1:
+					push_k = COMBO_PUSH
+				elif not p and not m.chain.is_empty():
+					push_k = CHAIN_OPENER_PUSH
+				d.push((p.push_hit if p else m.push_hit) * dir * push_k, a.index)
 	d.hitstop = hs
 	if not p:
 		a.hitstop = hs

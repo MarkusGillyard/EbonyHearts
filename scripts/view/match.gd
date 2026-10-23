@@ -21,6 +21,7 @@ var brains: Array = [null, null]
 var dummy: TrainingDummy
 var stranger: StrangerRules
 var tutorial: Node
+var trials: Node
 var mode := "cpu"
 var config := {}
 var paused := false
@@ -55,13 +56,13 @@ func start(cfg: Dictionary) -> void:
 	mode = str(config.get("mode", "cpu"))
 	Settings.set_solo(not Game.two_players())
 	sim = FightSim.new()
-	sim.training = mode in ["training", "tutorial", "stranger"]
+	sim.training = mode in ["training", "tutorial", "stranger", "trials"]
 	sim.rounds_to_win = int(config.get("rounds_to_win", 2))
 	sim.finishers_enabled = mode != "stranger"
 	var stage := str(config.get("stage", "rendering_yards"))
 	if Content.fighter(config["p1"]).move("stage_vat") and stage == "rendering_yards":
 		sim.stage_finisher = "stage_vat"
-	sim.intro = mode not in ["training", "tutorial", "stranger"]
+	sim.intro = mode not in ["training", "tutorial", "stranger", "trials"]
 	sim.setup(Content.fighter(config["p1"]), Content.fighter(config["p2"]))
 	if mode in ["arcade", "survival"] and config.has("p2_health"):
 		# The arcade sets the Slopbat's health by tower.
@@ -117,7 +118,7 @@ func start(cfg: Dictionary) -> void:
 	hud.input_display = Settings.get_value("input_display") or mode == "training"
 	var diff := int(config.get("difficulty", Settings.get_value("difficulty")))
 	for i in 2:
-		if Game.is_cpu(i) and mode not in ["training", "tutorial", "stranger"]:
+		if Game.is_cpu(i) and mode not in ["training", "tutorial", "stranger", "trials"]:
 			if sim.fighters[i].def.boss:
 				brains[i] = BossBrain.new(sim, i, diff)
 			else:
@@ -134,6 +135,12 @@ func start(cfg: Dictionary) -> void:
 		tutorial = load("res://scripts/ui/tutorial.gd").new()
 		add_child(tutorial)
 		tutorial.setup(self)
+	if mode == "trials":
+		dummy = TrainingDummy.new(sim, 1)
+		sim.infinite_run = true
+		trials = load("res://scripts/ui/trials.gd").new()
+		add_child(trials)
+		trials.setup(self)
 	Audio.play_music(arena.music)
 	get_window().focus_exited.connect(_on_focus_lost)
 	Input.joy_connection_changed.connect(_on_joy_changed)
@@ -197,7 +204,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			toggle_pause()
 		get_viewport().set_input_as_handled()
-	elif not OS.is_debug_build() and not mode in ["training", "tutorial"] and not "--debug-keys" in OS.get_cmdline_user_args():
+	elif not OS.is_debug_build() and not mode in ["training", "tutorial", "trials"] and not "--debug-keys" in OS.get_cmdline_user_args():
 		return
 	elif event.is_action_pressed("debug_boxes"):
 		debug_draw.visible = not debug_draw.visible
@@ -213,7 +220,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		slow = not slow
 	elif event.is_action_pressed("input_display"):
 		hud.input_display = not hud.input_display
-	elif event.is_action_pressed("training_reset") and mode == "training":
+	elif event.is_action_pressed("training_reset") and mode in ["training", "trials"]:
 		reset_positions()
 	elif event.is_action_pressed("training_dummy") and dummy:
 		dummy.next_mode()
@@ -430,6 +437,8 @@ func _on_event(e: Dictionary) -> void:
 		stranger.on_event(e)
 	if tutorial:
 		tutorial.on_event(e)
+	if trials:
+		trials.on_event(e)
 	_sound(e)
 	match e["type"]:
 		"hit":

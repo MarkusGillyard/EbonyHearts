@@ -207,7 +207,7 @@ func _build_pause() -> void:
 	_pause.add_child(box)
 	box.add_child(UiKit.title("PAUSED", 72))
 	var items := [["Resume", "resume"], ["Move List", "moves"]]
-	if mode in ["versus", "cpu", "training", "watch"]:
+	if mode in ["versus", "cpu", "training", "watch", "trials"]:
 		items.append(["Restart Match", "restart"])
 		items.append(["Character Select", "select"])
 	if mode == "arcade":

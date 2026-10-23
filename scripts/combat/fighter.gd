@@ -322,6 +322,8 @@ func to_neutral() -> void:
 
 func combo_reset() -> void:
 	juggle_points = 0
+	if combo_hits > 0 and sim:
+		sim.emit({"type": "combo_end", "who": index, "hits": combo_hits, "damage": combo_damage})
 	combo_hits = 0
 	combo_damage = 0
 
@@ -629,8 +631,7 @@ func _fall_tick() -> void:
 	if _landed():
 		pos.y = 0.0
 		vel = Vector2.ZERO
-		combo_hits = 0
-		juggle_points = 0
+		combo_reset()
 		set_state(S.KO if health <= 0 and not sim.awaiting_dizzy(self) else S.DOWN)
 		sim.emit({"type": "land", "who": index, "soft": false})
 

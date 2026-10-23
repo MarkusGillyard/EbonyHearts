@@ -14,6 +14,8 @@ var fighters: Dictionary = {}
 var basics: Dictionary = {}
 var story: Dictionary = {}
 var common_poses: Dictionary = {}
+## Combo trials per fighter id (data/trials.json).
+var trials: Dictionary = {}
 var errors: Array[String] = []
 
 
@@ -27,6 +29,8 @@ func reload() -> void:
 	basics = load_json("res://data/basics.json")
 	common_poses = load_json("res://data/poses_common.json")
 	story = load_json("res://data/story.json")
+	trials = load_json("res://data/trials.json")
+	trials.erase("about")
 	for id in all_ids():
 		var path: String = FIGHTER_DIR + id + ".json"
 		if not FileAccess.file_exists(path):
