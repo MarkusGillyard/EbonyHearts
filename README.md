@@ -9,7 +9,7 @@ Third-party components keep their own licenses; see [THIRD_PARTY_NOTICES.md](THI
 
 | | |
 |---|---|
-| Version | 1.0.1 |
+| Version | 1.0.2 |
 | Engine | Godot 4.7.2-stable (GDScript, Forward+, falls back to OpenGL 3) |
 | Tested on | Linux Mint 22.3 (X11, Cinnamon), x86_64, NVIDIA GeForce RTX 2060 (driver 595), Ryzen 7 5700G |
 | Settings | `~/.local/share/MortalSlopbat/settings.cfg` |
@@ -20,8 +20,8 @@ Other distributions, Wayland sessions, other GPUs and physical gamepads have not
 ## Playing the Linux build
 
 ```bash
-tar -xzf MortalSlopbat-1.0.1-linux-x86_64.tar.gz
-./MortalSlopbat-1.0.1-linux-x86_64/MortalSlopbat.sh
+tar -xzf MortalSlopbat-1.0.2-linux-x86_64.tar.gz
+./MortalSlopbat-1.0.2-linux-x86_64/MortalSlopbat.sh
 ```
 
 The archive holds a self-contained executable: no Godot editor, network or account is needed.
