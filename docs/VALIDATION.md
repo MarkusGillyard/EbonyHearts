@@ -109,6 +109,13 @@ the main menu with Survival and Trials, the select screen, the Novice tower and 
 from the pause menu back to the main menu; nothing on the error output. The archive is not
 committed; the checksum above ties it to the source commit named in the pull request.
 
+The archive was published as the private GitHub release `v1.1.0`, tagged at the merge commit
+`d1e362d` of the pull request. Both assets were downloaded again with `gh` into a new folder
+whose path contains spaces, checked against the SHA-256 (OK) and compared byte for byte with
+the local build (identical), extracted there and started through `MortalSlopbat.sh` from
+another working directory: the title, the main menu with Trials highlighted, the trials select
+screen, and Quit from the main menu (the game exited by itself); nothing on the error output.
+
 ## Found and fixed
 
 - **Dial-a-combos could not connect.** The first hit's push-back (0.33 m) exceeded the reach of
