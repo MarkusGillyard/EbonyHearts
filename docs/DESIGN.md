@@ -34,8 +34,11 @@ commentary and no AI-themed material.
 - **UI.** New Rocker (display) and Oswald (text), bone-white on near-black teal, slop-green for
   focus and selection, amber and rust for warnings. MK-style top bars: health with names, a run
   meter beneath, round wins, the timer between them.
-- **Effects.** Short and punchy: impact sparks, a brief light, blood that follows the gore
-  setting, dust where bodies land. Reduced effects and no-flash options exist.
+- **Effects.** Short and punchy: impact sparks and rings, a brief light, blood that follows the
+  gore setting, dust where bodies land. Reduced effects and no-flash options exist.
+- **Finish.** The frame is finished like a dark print: the stage softens a few metres behind the
+  fighting plane (high graphics), and a soft vignette and faint grain lie over the fight (can be
+  turned off). Each fighter's own colour catches along the edges of the body like a back light.
 
 ## Combat (MK3-informed)
 
@@ -52,7 +55,16 @@ F,F+LP; D,U+HK...).
 
 Deliberate adaptations, stated in the move list: a throw break; juggle points and damage scaling
 to stop infinites (MK3 had neither); a block button that also works against attacks from behind;
-chip damage only from specials and projectiles; one projectile per fighter on screen.
+chip damage only from specials and projectiles; one projectile per fighter on screen; counter
+hits (a blow that lands during the other fighter's wind-up does 15% more and stuns four frames
+longer, called out on the HUD), so reading an opponent pays.
+
+**Impact.** Every hit is felt: hit-stop scaled to the blow (longer when it sends a body
+flying), a flash through the victim's body, a ring and sparks from the point of contact, and a
+camera that shakes a little on every hit and kicks along the blow on heavy ones. The deciding
+blow freezes the fight for a quarter of a second, the camera closes in on the loser, and the
+fall plays in slow motion. The combo counter grows warmer as a combo grows and jumps with every
+hit.
 
 Rounds last 90 seconds; two round wins take the match. The deciding knockout leaves the loser
 dizzy (FINISH HIM / FINISH HER / FINISH IT) for seven seconds: the winner may enter their
@@ -120,7 +132,11 @@ never says. He is not a boss and not a roster fighter: no health bar, no ordinar
 
 Arcade (three towers: Novice, Warrior, Master, which also set the CPU's difficulty; rival flavour
 before the rival; the Reflection, a slop-dark mirror match, in Master; the boss; a short ending
-per fighter), Versus (two players, any pairing including mirrors, explicit device assignment),
+per fighter; points for every fight, from health and time left, flawless victories and
+Sloptalities, with the best total per fighter and tower kept), Survival (an endless ladder, one
+round a fight, health carried on with 30% of full given back after a win and 45% after a
+flawless one, three waves at each difficulty and then Master, the Slopbat on every fifth wave;
+most waves cleared per fighter kept), Versus (two players, any pairing including mirrors, explicit device assignment),
 Training (dummy modes, move lists, reset, frame data, hitboxes, input history), Tutorial
 (movement, defence, attacks, a combo, a special, a throw and a finisher), Extras (endings seen,
 records, the stranger once met), Settings.

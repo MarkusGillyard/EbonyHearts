@@ -526,7 +526,7 @@ func impact(dir: float, strength: float, level: int, blocked: bool) -> void:
 	_shake = clampf(0.004 + strength * 0.014, 0.0, 0.024)
 	if not blocked:
 		# Every blow lights the body for a frame or two; heavy ones whiten it.
-		flash(0.08 + clampf(strength, 0.0, 1.3) * 0.26)
+		flash(0.05 + clampf(strength, 0.0, 1.3) * 0.14)
 
 
 # --- Feet ---------------------------------------------------------------------------------------

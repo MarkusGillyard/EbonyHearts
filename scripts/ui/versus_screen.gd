@@ -63,7 +63,7 @@ func build() -> void:
 		add_child(prog)
 	elif cfg.get("mode", "") == "survival":
 		var wave := Game.survival_waves() + 1
-		var boss := cfg["p2"] == "slopbat"
+		var boss: bool = str(cfg["p2"]) == "slopbat"
 		var prog := UiKit.title("WAVE %d" % wave, 54, UiKit.RUST.lightened(0.2) if boss else UiKit.AMBER)
 		prog.position = Vector2(560, 50)
 		prog.size = Vector2(800, 70)
