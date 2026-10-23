@@ -41,10 +41,7 @@ func poll() -> Vector3i:
 			dirs |= DIR_BITS[a]
 	# A direction tapped and released within one tick still counts for that tick.
 	dirs |= _latched_dirs
-	var held := 0
-	for a in BUTTON_BITS:
-		if Input.is_action_pressed(_action(a)):
-			held |= BUTTON_BITS[a]
+	var held := _held()
 	var pressed := (_latched | (held & ~_prev_held)) & InputBuffer.ALL
 	_prev_held = held
 	_latched = 0
@@ -52,8 +49,17 @@ func poll() -> Vector3i:
 	return Vector3i(dirs, held | pressed, pressed)
 
 
-## Forgets held and latched state (focus loss, pause, device change), so nothing sticks.
+## Forgets latched presses (focus loss, pause, device change), so nothing sticks. Buttons still
+## held count as already held: B pressed to leave the pause menu must not land a High Kick.
 func reset() -> void:
 	_latched = 0
 	_latched_dirs = 0
-	_prev_held = 0
+	_prev_held = _held()
+
+
+func _held() -> int:
+	var held := 0
+	for a in BUTTON_BITS:
+		if Input.is_action_pressed(_action(a)):
+			held |= BUTTON_BITS[a]
+	return held

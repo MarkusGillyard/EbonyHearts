@@ -79,3 +79,26 @@ func test_menus_answer_to_gamepads() -> void:
 	assert_true(_pad_button(0, JOY_BUTTON_B, true).is_action("ui_cancel"), "B goes back")
 	assert_true(_pad_button(0, JOY_BUTTON_DPAD_DOWN, true).is_action("ui_down"), "the d-pad moves the selection")
 	assert_true(_pad_button(0, JOY_BUTTON_START, true).is_action("pause"), "Start pauses")
+
+
+func test_held_button_through_a_pause_is_not_a_new_press() -> void:
+	Settings.set_solo(false)
+	var r := PadReader.new(0)
+	Input.action_press("p1_hk")
+	r.reset()
+	assert_eq(r.poll().z & InputBuffer.HK, 0, "B held to leave the pause menu does not throw a kick")
+	Input.action_release("p1_hk")
+	r.poll()
+	Input.action_press("p1_hk")
+	assert_true(r.poll().z & InputBuffer.HK, "pressing it again does")
+	Input.action_release("p1_hk")
+
+
+func test_devices_set_to_nobody_still_play_solo() -> void:
+	Settings.assign["kb_right"] = -1
+	Settings.set_solo(false)
+	Settings.set_solo(true)
+	var k := InputEventKey.new()
+	k.physical_keycode = Settings.keys["kb_right"]["hp"]
+	k.pressed = true
+	assert_true(k.is_action("p1_hp"), "in one-player modes every device drives player 1")

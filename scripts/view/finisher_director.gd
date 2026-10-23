@@ -197,14 +197,18 @@ func step(delta: float) -> void:
 				if gore != "off":
 					m.vfx.blood(vpos + Vector3(0, 1.4, 0), face, 0.7)
 			if _t >= 70.0:
-				var u := clampf((_t - 70.0) / 90.0, 0.0, 1.0)
-				v.lift_extra = Vector3(face * 26.0 * u, 12.0 * sin(u * PI * 0.8) + 4.0 * u, -60.0 * u)
+				# Straight up and out of the top of the picture (stages have walls and ceilings,
+				# so no flight into the distance): the camera stays on Bram, looking up after them.
+				var u := clampf((_t - 70.0) / 50.0, 0.0, 1.0)
+				v.lift_extra = Vector3(face * 2.0 * u, 3.0 * u + 9.0 * u * u, -1.5 * u)
 				v.spin_extra = (_t - 70.0) * 22.0
 				v.pose_override = "air_hit"
-				m.camera.set_override(Vector3(f.pos.x - face * 0.5, 1.6, 6.0), vpos + v.lift_extra * 0.45 + Vector3(0, 1.0, 0), 1.0)
-			if _once("twinkle", 160.0):
+				m.camera.set_override(Vector3(f.pos.x - face * 0.5, 1.4, 6.0), Vector3(f.pos.x + face * 0.6, 2.4, 0.0), 1.0)
+			if _once("gone", 122.0):
 				v.visible = false
-				m.vfx.flash(vpos + Vector3(face * 26.0, 16.0, -60.0), Color(1, 1, 0.9), 4.0, 0.5, 0.0, who)
+			if _once("twinkle", 150.0):
+				# The twinkle where they left the picture, near its top edge.
+				m.vfx.flash(Vector3(f.pos.x + face * 1.6, 4.1, -1.5), Color(1, 1, 0.9), 2.5, 0.5, 0.0, who)
 				Audio.play("ui_select", -2.0, 1.6)
 			if _t > 175.0:
 				m.camera.clear_override()

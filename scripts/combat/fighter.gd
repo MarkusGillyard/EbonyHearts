@@ -635,9 +635,20 @@ func _fall_tick() -> void:
 		sim.emit({"type": "land", "who": index, "soft": false})
 
 
+## A thrower who is hit lets go: the victim drops out of the throw and lands, unhurt by it.
+func release_throw() -> void:
+	if throw_victim == null:
+		return
+	var v := throw_victim
+	throw_victim = null
+	v.thrown_by = null
+	v.knock(Vector2(1.0, 2.0), "fall", facing)
+
+
 ## Sends this fighter flying: `v` is [away from the hitter, up] in m/s. `how` is "juggle"
 ## (hittable on the way down) or "fall" (knocked down, untouchable).
 func knock(v: Vector2, how: String, from_facing := 0) -> void:
+	release_throw()
 	var away := from_facing if from_facing != 0 else -facing
 	vel = Vector2(v.x * away, v.y)
 	if pos.y <= 0.0 and v.y > 0.0:
@@ -647,6 +658,7 @@ func knock(v: Vector2, how: String, from_facing := 0) -> void:
 
 
 func take_stun(frames: int, kind: String) -> void:
+	release_throw()
 	move = null
 	stun = frames
 	stun_kind = kind

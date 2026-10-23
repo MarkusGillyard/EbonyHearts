@@ -54,10 +54,14 @@ var intro := true
 ## Optional rule hooks (the stranger encounter): on_contact(contact) -> String, on_tick(sim).
 var hooks: Object = null
 var flawless := [false, false]
+## Damage each fighter has taken over the whole match: a flawless match is one the winner
+## finished without losing any health, not just a flawless last round.
+var match_damage := [0, 0]
 
 
 func setup(d1: FighterDef, d2: FighterDef) -> void:
 	fighters.clear()
+	match_damage = [0, 0]
 	for i in 2:
 		var f := Fighter.new()
 		f.setup(self, i, d1 if i == 0 else d2)
@@ -444,7 +448,9 @@ func _apply(c: Dictionary) -> void:
 		return
 	var n := d.combo_hits + 1
 	var k := 1.0 if n <= 2 else maxf(0.4, 1.0 - 0.1 * (n - 2))
-	var dmg := maxi(1, int(round(damage * k)))
+	# Scaling never takes a damaging hit below 1, but a hit that does none (the wind of the
+	# Slopbat's wings) stays harmless.
+	var dmg := maxi(1, int(round(damage * k))) if damage > 0 else 0
 	d.health = maxi(0, d.health - dmg)
 	d.damage_taken += dmg
 	d.combo_hits = n
@@ -548,6 +554,9 @@ func _break_throw(a: Fighter, d: Fighter) -> void:
 
 
 func _throw_tick(a: Fighter) -> void:
+	if a.move == null:
+		a.release_throw()
+		return
 	var d := a.throw_victim
 	var td := a.move.throw_data
 	a.throw_t += 1
@@ -605,6 +614,11 @@ func _check_round() -> void:
 				var lf := fighters[loser]
 				if wins[winner] + 1 >= rounds_to_win and _finish_allowed(winner):
 					finish_winner = winner
+					# The beaten fighter's shots still in flight die with the round: nothing of
+					# theirs may hurt the winner while they stand dizzy.
+					for pr in projectiles:
+						if pr.owner == loser:
+							pr.dead = true
 					phase = Phase.FINISH
 					phase_t = 0
 					emit({"type": "ko", "who": loser, "by": winner, "finish": true})
@@ -662,6 +676,8 @@ func _end_round(winner: int, how: String) -> void:
 	phase_t = 0
 	round_winner = winner
 	round_how = how
+	for f in fighters:
+		match_damage[f.index] += f.damage_taken
 	if winner >= 0:
 		wins[winner] += 1
 		if fighters[winner].damage_taken == 0:
@@ -701,7 +717,7 @@ func _round_end_tick() -> void:
 		phase = Phase.MATCH_END
 		phase_t = 0
 		emit({"type": "match_end", "winner": match_winner, "wins": wins.duplicate(), "finisher": finisher.get("move", ""),
-			"flawless": match_winner >= 0 and flawless[match_winner]})
+			"flawless": match_winner >= 0 and match_damage[match_winner] == 0})
 		return
 	round_num += 1
 	_start_round(false)

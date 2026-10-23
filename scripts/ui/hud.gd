@@ -295,6 +295,8 @@ func on_event(e: Dictionary) -> void:
 			announce("FINISH %s" % str(e.get("pronoun", "him")).to_upper(), "", 2.2, UiKit.RUST.lightened(0.15), 130)
 		"finisher":
 			announce("", "")
+			# A "wrong distance" hint from an earlier try must not sit over the finisher itself.
+			notice("", 0.0)
 		"finisher_end":
 			var fid := str(e["move"])
 			var fin := "SLOPTALITY" if not fid.begins_with("stage_") else "STAGE SLOPTALITY"

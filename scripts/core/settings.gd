@@ -103,10 +103,13 @@ func save_settings() -> void:
 
 
 func rebind(dev: String, action: String, keycode: int) -> void:
-	# A key used elsewhere in the same set swaps places, so no action is left unbound.
-	for a in ACTIONS:
-		if keys[dev][a] == keycode:
-			keys[dev][a] = keys[dev][action]
+	# A key already used, in this set or the other (both sets are player 1's in one-player
+	# modes), swaps places, so no key drives two actions and no action is left unbound.
+	var old: int = keys[dev][action]
+	for d in keys:
+		for a in ACTIONS:
+			if keys[d][a] == keycode and not (d == dev and a == action):
+				keys[d][a] = old
 	keys[dev][action] = keycode
 	_apply_bindings()
 	save_settings()
@@ -146,8 +149,10 @@ static func action_name(side: int, action: String) -> String:
 	return "p%d_%s" % [side + 1, action]
 
 
+## Which side a device drives now. In one-player modes every device drives player 1, even one
+## set to "nobody" for Versus.
 func side_of(dev: String) -> int:
-	return 0 if solo and assign[dev] >= 0 else int(assign[dev])
+	return 0 if solo else int(assign[dev])
 
 
 func _apply_bindings() -> void:

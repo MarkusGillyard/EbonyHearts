@@ -157,6 +157,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			_refresh()
 			get_viewport().set_input_as_handled()
 			return
+		if cancel and not _locked[0] and not _locked[1]:
+			# Nothing picked: Block leaves, as the hint says (a gamepad's B is High Kick here).
+			go_back()
+			get_viewport().set_input_as_handled()
+			return
 	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.physical_keycode == KEY_ESCAPE):
 		go_back()
 		get_viewport().set_input_as_handled()

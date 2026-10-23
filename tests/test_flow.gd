@@ -132,6 +132,11 @@ func test_settings_bindings_swap_and_persist() -> void:
 	assert_eq(Settings.keys["kb_left"]["hp"], old_lp)
 	assert_eq(Settings.keys["kb_left"]["lp"], old_hp, "the displaced key moves to the other action")
 	assert_true(InputMap.action_has_event("p1_hp", _key(old_lp)))
+	var right_up: int = Settings.keys["kb_right"]["up"]
+	var left_lk: int = Settings.keys["kb_left"]["lk"]
+	Settings.rebind("kb_left", "lk", right_up)
+	assert_eq(Settings.keys["kb_left"]["lk"], right_up)
+	assert_eq(Settings.keys["kb_right"]["up"], left_lk, "a key taken from the other set swaps there too")
 	Settings.keys = before
 	Settings.save_settings()
 	Settings.apply()

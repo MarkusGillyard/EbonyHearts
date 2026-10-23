@@ -142,6 +142,10 @@ func start(cfg: Dictionary) -> void:
 			_trace_live = true
 		elif arg.begins_with("--bench="):
 			_bench_secs = float(arg.trim_prefix("--bench="))
+	# Started while the window was in the background (switched away during loading): begin paused,
+	# as losing focus mid-fight would have.
+	if DisplayServer.get_name() != "headless" and not get_window().has_focus() and mode != "watch" and _bench_secs <= 0.0:
+		toggle_pause.call_deferred()
 	if _trace:
 		# One header per match, so a long trace (a whole arcade run) says who fought where.
 		# Object counts too, so a long session shows whether anything accumulates match to match.
@@ -230,6 +234,13 @@ func reset_positions() -> void:
 func _physics_process(_delta: float) -> void:
 	if sim == null or paused:
 		return
+	if not debug_pause and (slow or _ko_slow > 0):
+		_slow_count += 1
+		if _ko_slow > 0:
+			_ko_slow -= 1
+		if _slow_count % (4 if slow else 3) != 0:
+			# Skipped ticks leave the pads alone, so presses stay latched for the next real one.
+			return
 	var p := [pads[0].poll(), pads[1].poll()]
 	if debug_pause and not _step_once:
 		_pending_pads = [_merge(_pending_pads[0], p[0]), _merge(_pending_pads[1], p[1])]
@@ -239,12 +250,6 @@ func _physics_process(_delta: float) -> void:
 		_pending_pads = [Vector3i.ZERO, Vector3i.ZERO]
 		_stepped += 1
 	_step_once = false
-	if slow or _ko_slow > 0:
-		_slow_count += 1
-		if _ko_slow > 0:
-			_ko_slow -= 1
-		if _slow_count % (4 if slow else 3) != 0:
-			return
 	if dummy:
 		p[1] = dummy.think()
 	if stranger:

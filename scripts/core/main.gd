@@ -116,6 +116,9 @@ func _show_now(screen: String, data: Dictionary) -> void:
 		layer.layer = 20
 		layer.process_mode = Node.PROCESS_MODE_ALWAYS
 		add_child(layer)
+		# The pause menu underneath must not keep focus: Up and Down would move its hidden
+		# selection, and Enter would choose it (Quit Arcade), instead of reaching the list.
+		get_viewport().gui_release_focus()
 		_overlay = _make_screen(screen, data)
 		layer.add_child(_overlay)
 		return
@@ -176,3 +179,5 @@ func close_overlay() -> void:
 	if _overlay:
 		_overlay.get_parent().queue_free()
 		_overlay = null
+		if match_node and match_node.paused:
+			match_node.hud.show_pause(true)

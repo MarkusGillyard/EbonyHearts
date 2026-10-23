@@ -155,6 +155,7 @@ def main():
     ap.add_argument("--shots", default="")
     ap.add_argument("--every", type=float, default=20.0)
     ap.add_argument("--window", default="Mortal Slopbat")
+    ap.add_argument("--finisher-shots", action="store_true", help="screenshot every 0.3 s while a finisher plays")
     a = ap.parse_args()
     drv = Driver(a.window, a.shots or "/tmp")
     p = Player(drv, a.finisher, a.range)
@@ -162,6 +163,8 @@ def main():
     last_line = time.time()
     last_enter = 0.0
     last_shot = 0.0
+    last_fshot = 0.0
+    fshots = 0
     state = None
     pos = 0
     shots = 0
@@ -188,6 +191,10 @@ def main():
                 last_enter = time.time()
         elif state:
             p.act(state)
+        if a.shots and a.finisher_shots and state and state.get("phase") == 4 and time.time() - last_fshot > 0.3:
+            drv.shot("fin_%03d" % fshots)
+            fshots += 1
+            last_fshot = time.time()
         if a.shots and time.time() - last_shot > a.every:
             drv.shot("auto_%03d" % shots)
             shots += 1

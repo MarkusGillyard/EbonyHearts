@@ -344,3 +344,30 @@ func test_determinism() -> void:
 			out.append([h.f(0).pos, h.f(1).pos, h.f(0).health, h.f(1).health, h.f(0).state, h.f(1).state])
 		traces.append(out)
 	assert_eq(traces[0], traces[1], "the same inputs give the same match")
+
+
+func test_thrower_hit_mid_throw_lets_go() -> void:
+	var h := SimHarness.new()
+	h.place(0.7)
+	h.step(H.R, H.LP)
+	h.idle(8)
+	assert_eq(h.f(1).state, Fighter.S.THROWN, "the throw has hold of its victim")
+	# Something else hits the thrower (a returning sickle, a falling anchor).
+	h.f(0).take_stun(20, "hit")
+	h.idle(2)
+	assert_eq(h.f(0).throw_victim, null, "the thrower lets go")
+	assert_eq(h.f(1).thrown_by, null)
+	assert_ne(h.f(1).state, Fighter.S.THROWN, "and the victim is free")
+	assert_true(h.until(func(): return h.f(1).is_actionable(), 400), "and back on their feet")
+
+
+func test_harmless_hits_stay_harmless() -> void:
+	var d := SimHarness.dummy_def("pusher", {"moves": {"gust": {"kind": "special", "startup": 3, "active": 3,
+		"recovery": 10, "level": "mid", "damage": 0, "hitstun": 10, "hitboxes": [{"rect": [0.2, 0.5, 1.0, 1.0]}]}},
+		"commands": [["F,F+HK", "gust"]]})
+	var h := SimHarness.new(d)
+	h.place(1.0)
+	h.motion(0, [H.R, 0, H.R], H.HK)
+	h.idle(10)
+	assert_eq(h.count("hit"), 1, "the gust connects")
+	assert_eq(h.f(1).health, 1000, "and does no damage, even as the first hit of a combo")

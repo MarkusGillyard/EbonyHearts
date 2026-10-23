@@ -196,3 +196,36 @@ func test_boss_cannot_be_thrown() -> void:
 	h.step(H.R, H.LP)
 	h.idle(5)
 	assert_eq(h.count("throw"), 0)
+
+
+func test_deciding_ko_clears_the_losers_projectiles() -> void:
+	var h := _match()
+	h.sim.wins = [1, 0]
+	h.place(5.0)
+	h.motion(1, [H.D, H.L], H.HP)
+	h.idle(14)
+	assert_eq(h.sim.projectiles.size(), 1, "the loser-to-be has a shot in flight")
+	h.f(1).health = 0
+	h.idle(1)
+	assert_eq(h.sim.phase, FightSim.Phase.FINISH)
+	h.idle(4)
+	assert_eq(h.sim.projectiles.size(), 0, "it dies with the round")
+	assert_eq(h.f(0).health, h.f(0).max_health(), "and the winner is untouched")
+
+
+func test_flawless_match_means_no_damage_all_match() -> void:
+	var h := _match()
+	h.f(0).health -= 50
+	h.f(0).damage_taken += 50
+	_ko(h, 1)
+	assert_true(h.until(func(): return h.sim.round_num == 2 and h.sim.phase == FightSim.Phase.FIGHT, 900))
+	_ko(h, 1)
+	assert_eq(h.sim.phase, FightSim.Phase.FINISH, "the second knockout decides it")
+	assert_true(h.until(func(): return h.f(1).state == Fighter.S.DIZZY, 400), "the loser stands dizzy")
+	h.place(0.85)
+	h.f(1).set_state(Fighter.S.DIZZY)
+	h.step(0, H.HP)
+	assert_true(h.until(func(): return h.sim.phase == FightSim.Phase.MATCH_END, 1500), "a blow ends the match")
+	var me := h.find("match_end")
+	assert_eq(me["winner"], 0)
+	assert_false(me["flawless"], "a last round without a scratch is not a flawless match")

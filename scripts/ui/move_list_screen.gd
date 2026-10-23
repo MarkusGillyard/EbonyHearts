@@ -21,7 +21,7 @@ func configure(data: Dictionary) -> void:
 func build() -> void:
 	if overlay:
 		var dim := ColorRect.new()
-		dim.color = Color(0, 0, 0, 0.88)
+		dim.color = Color(0, 0, 0, 0.96)
 		dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 		add_child(dim)
 	else:
