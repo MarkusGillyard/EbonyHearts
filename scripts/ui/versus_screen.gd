@@ -61,6 +61,24 @@ func build() -> void:
 		prog.position = Vector2(660, 70)
 		prog.size = Vector2(600, 40)
 		add_child(prog)
+	elif cfg.get("mode", "") == "survival":
+		var wave := Game.survival_waves() + 1
+		var boss: bool = str(cfg["p2"]) == "slopbat"
+		var prog := UiKit.title("WAVE %d" % wave, 54, UiKit.RUST.lightened(0.2) if boss else UiKit.AMBER)
+		prog.position = Vector2(560, 50)
+		prog.size = Vector2(800, 70)
+		add_child(prog)
+		var lvl := UiKit.label(Game.DIFFICULTIES[int(cfg.get("difficulty", 0))], 24, UiKit.DIM, HORIZONTAL_ALIGNMENT_CENTER)
+		lvl.position = Vector2(660, 125)
+		lvl.size = Vector2(600, 40)
+		add_child(lvl)
+		if boss:
+			var bl := UiKit.label(str(Content.story.get("boss_intro", "")), 28, UiKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+			bl.position = Vector2(400, 640)
+			UiKit.wrap(bl, Vector2(1120, 44))
+			add_child(bl)
+			Audio.play("screech", -6.0)
+			_left = 4.6
 	Audio.play("gong", -6.0, 0.8)
 	Audio.play_music("music_select")
 

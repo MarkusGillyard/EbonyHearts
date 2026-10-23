@@ -26,6 +26,9 @@ var _look := Vector3.ZERO
 var _look_v := Vector3.ZERO
 var _shake := 0.0
 var _shake_t := 0.0
+## A short displacement along the direction of a blow, sprung back: the camera takes the hit too.
+var _kick := Vector3.ZERO
+var _kick_v := Vector3.ZERO
 var _zoom := 0.0
 var _zoom_target := 0.0
 var _zoom_focus := -1
@@ -40,6 +43,15 @@ func _ready() -> void:
 	fov = VFOV
 	near = 0.1
 	far = 300.0
+	if Settings.get_value("graphics") != "low":
+		# The stage softens a few metres behind the fighting plane: depth, and the fighters stand
+		# out from whatever is behind them. The distance follows the camera in _apply().
+		var attr := CameraAttributesPractical.new()
+		attr.dof_blur_far_enabled = true
+		attr.dof_blur_far_distance = 9.0
+		attr.dof_blur_far_transition = 6.0
+		attr.dof_blur_amount = 0.055
+		attributes = attr
 
 
 func snap() -> void:
@@ -65,6 +77,12 @@ func release_zoom() -> void:
 func add_shake(amount: float) -> void:
 	if shake_enabled:
 		_shake = maxf(_shake, amount)
+
+
+## Nudges the camera `amount` metres along `dir` (world space); it springs back within a few frames.
+func kick(dir: Vector3, amount: float) -> void:
+	if shake_enabled and dir.length() > 0.001:
+		_kick_v += dir.normalized() * amount * 40.0
 
 
 func set_override(pos: Vector3, look: Vector3, weight := 1.0) -> void:
@@ -130,6 +148,10 @@ func step(delta: float) -> void:
 	_spring(delta, pos_t, look_t)
 	_shake_t += delta
 	_shake = maxf(0.0, _shake - delta * 0.14)
+	var wk := 22.0
+	var ak := -_kick * wk * wk - _kick_v * 2.0 * wk
+	_kick_v += ak * delta
+	_kick += _kick_v * delta
 	_apply()
 
 
@@ -145,7 +167,9 @@ func _spring(delta: float, pos_t: Vector3, look_t: Vector3) -> void:
 
 
 func _apply() -> void:
-	var off := Vector3.ZERO
+	var off := _kick
 	if _shake > 0.0:
-		off = Vector3(sin(_shake_t * 61.0), sin(_shake_t * 47.0 + 1.3), 0.0) * _shake
+		off += Vector3(sin(_shake_t * 61.0), sin(_shake_t * 47.0 + 1.3), 0.0) * _shake
 	global_transform = Transform3D(Basis.looking_at(_look - _pos, Vector3.UP), _pos + off)
+	if attributes:
+		(attributes as CameraAttributesPractical).dof_blur_far_distance = _pos.z + 3.4

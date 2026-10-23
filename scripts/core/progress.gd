@@ -23,6 +23,8 @@ static func fresh() -> Dictionary:
 	return {
 		"version": VERSION,
 		"arcade": {},
+		"survival": {},
+		"trials": {},
 		"endings": [],
 		"unlocks": [],
 		"stranger": 0,
@@ -65,17 +67,50 @@ func save() -> bool:
 	return true
 
 
-func record_arcade(fighter: String, difficulty: int, seconds: float) -> void:
+func record_arcade(fighter: String, difficulty: int, seconds: float, score := 0) -> void:
 	var a: Dictionary = data["arcade"]
 	var key := "%s:%d" % [fighter, difficulty]
 	var best: float = float(a.get(key, {}).get("best", 0.0))
 	var clears: int = int(a.get(key, {}).get("clears", 0))
-	a[key] = {"clears": clears + 1, "best": seconds if best <= 0.0 else minf(best, seconds)}
+	var best_score: int = maxi(int(a.get(key, {}).get("score", 0)), score)
+	a[key] = {"clears": clears + 1, "best": seconds if best <= 0.0 else minf(best, seconds), "score": best_score}
 	if not ("ending:" + fighter) in data["endings"]:
 		data["endings"].append("ending:" + fighter)
 	unlock("costume:" + fighter)
 	unlock("arena:roost")
 	save()
+
+
+## A survival run's end: the most waves cleared with `fighter`; returns true for a new best.
+func record_survival(fighter: String, waves: int) -> bool:
+	var s: Dictionary = data["survival"]
+	var best := int(s.get(fighter, 0))
+	if waves > best:
+		s[fighter] = waves
+		save()
+		return true
+	save()
+	return false
+
+
+## Marks a combo trial complete; returns true the first time.
+func trial_done(fighter: String, trial_name: String) -> bool:
+	var t: Dictionary = data["trials"]
+	var done: Array = t.get(fighter, [])
+	if trial_name in done:
+		return false
+	done.append(trial_name)
+	t[fighter] = done
+	save()
+	return true
+
+
+func trials_done(fighter: String) -> Array:
+	return (data["trials"] as Dictionary).get(fighter, [])
+
+
+func best_survival(fighter: String) -> int:
+	return int((data["survival"] as Dictionary).get(fighter, 0))
 
 
 func cleared(fighter: String, difficulty := -1) -> bool:

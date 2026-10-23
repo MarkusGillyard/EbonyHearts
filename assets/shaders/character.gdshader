@@ -25,6 +25,12 @@ uniform float cloth_sat = 1.0;
 uniform float detail_strength = 1.0;
 // Brightness of surfaces lit from within (detail kind 7, "glow" in the sculpt materials).
 uniform float glow_energy = 1.6;
+// The fighter's own colour, caught along the edges of the body like a back light, so each
+// silhouette reads against every stage.
+uniform vec3 accent_color : source_color = vec3(1.0, 0.6, 0.3);
+uniform float accent_strength = 0.3;
+// Dirt and wear: it gathers low down (boots, hems, knees) and in the creases.
+uniform float grime = 0.4;
 
 varying vec4 v_params;
 varying vec4 v_bind;
@@ -120,20 +126,60 @@ void fragment() {
 	float det = dot(sx, r1);
 	vec3 surf_grad = sign(det) * (dFdx(h * amp) * r1 + dFdy(h * amp) * r2);
 	NORMAL = normalize(abs(det) * NORMAL - surf_grad);
-	float var_ = noise(v_bind.xyz * 40.0) * 0.08 - 0.04;
-	vec3 col = base * (1.0 + var_);
-	if (kind > 0.5 && kind < 1.5) {
-		// Skin: a little redness where it is thin, and less where it is in occlusion.
-		col *= mix(vec3(0.92, 0.86, 0.84), vec3(1.0), v_albedo.a);
+	// Broader detail that survives at fighting distance: creases and folds in cloth, scuffs on
+	// leather, a faint mottling of the skin. A gentle bump, far larger than the pores and weave.
+	vec3 bp = v_bind.xyz;
+	float fold = 0.0;
+	float fold_amp = 0.0;
+	if (kind > 1.5 && kind < 4.5) {
+		// Folds run mostly across the limb: stretched noise, two scales.
+		fold = noise(bp * vec3(16.0, 40.0, 16.0)) * 0.6 + noise(bp * vec3(34.0, 90.0, 34.0)) * 0.4;
+		fold_amp = kind < 2.5 ? 0.0035 : (kind < 3.5 ? 0.0025 : 0.003);
+	} else if (kind > 4.5 && kind < 5.5) {
+		fold = noise(bp * 28.0) * 0.5 + noise(bp * 70.0) * 0.5;
+		fold_amp = 0.0018;
+	} else if (kind > 0.5 && kind < 1.5) {
+		fold = noise(bp * 24.0);
+		fold_amp = 0.0006;
 	}
+	float far_fade = 1.0 - smoothstep(0.01, 0.03, footprint);
+	fold_amp *= far_fade * detail_strength;
+	if (fold_amp > 0.0) {
+		vec3 fold_grad = sign(det) * (dFdx(fold * fold_amp) * r1 + dFdy(fold * fold_amp) * r2);
+		NORMAL = normalize(abs(det) * NORMAL - fold_grad);
+	}
+	float var_ = noise(bp * 40.0) * 0.08 - 0.04;
+	vec3 col = base * (1.0 + var_);
+	float ao = v_albedo.a;
+	if (kind > 0.5 && kind < 1.5) {
+		// Skin: mottled, warmer and redder where it is thin and in the creases, never flat.
+		col *= 1.0 + (noise(bp * 11.0) - 0.5) * 0.09 + (noise(bp * 3.5) - 0.5) * 0.06;
+		col *= mix(vec3(1.0, 0.84, 0.8), vec3(1.0), ao);
+	} else if (kind > 4.5 && kind < 5.5) {
+		// Leather: pale scuffs where it has rubbed.
+		col = mix(col, col * 1.4 + vec3(0.02), smoothstep(0.58, 0.8, noise(bp * 19.0)) * 0.45);
+	} else if (kind > 1.5 && kind < 4.5) {
+		// Cloth: the folds catch dirt and shadow.
+		col *= 1.0 - (0.5 - fold) * 0.18;
+	}
+	// Grime low down and in the creases; the colour muddies and the surface dulls.
+	float lowness = 1.0 - smoothstep(0.02, 0.38, bp.y);
+	float dirt = grime * (lowness * (0.3 + 0.7 * noise(bp * 9.0)) * (kind < 6.5 ? 1.0 : 0.3) + (1.0 - ao) * 0.4);
+	dirt = clamp(dirt, 0.0, 1.0);
+	col = mix(col, col * vec3(0.55, 0.5, 0.44), dirt * 0.5);
 	float grain = noise(v_bind.xyz * 70.0);
 	vec3 tinted = tint_color * (0.75 + grain * 0.5);
 	ALBEDO = mix(col, tinted, tint);
-	ROUGHNESS = mix(clamp(v_params.x + (h - 0.5) * 0.08, 0.05, 1.0), mix(0.95, 0.2, tint_gloss), tint);
+	float rough = v_params.x + (h - 0.5) * 0.08 + (noise(bp * 27.0) - 0.5) * 0.14 + dirt * 0.3;
+	if (kind > 0.5 && kind < 1.5) {
+		// Skin is never uniformly glossy: duller in the hollows, a little sheen on the high points.
+		rough += (0.5 - ao) * 0.25;
+	}
+	ROUGHNESS = mix(clamp(rough, 0.05, 1.0), mix(0.95, 0.2, tint_gloss), tint);
 	METALLIC = v_params.w * (1.0 - tint);
 	SPECULAR = v_params.y > 0.5 ? 0.35 : 0.5;
 	AO = v_albedo.a;
-	AO_LIGHT_AFFECT = 0.35;
+	AO_LIGHT_AFFECT = 0.45;
 	SSS_STRENGTH = v_params.y * 0.32 * (1.0 - tint);
 	// Sheen: Godot's rim widens with roughness, so keep it faint on rough cloth.
 	RIM = v_params.z * 0.12;
@@ -142,4 +188,8 @@ void fragment() {
 	if (kind > 6.5) {
 		EMISSION += col * glow_energy * (1.0 - tint);
 	}
+	// The accent: strongest where the surface turns away from the camera, like a rim light in
+	// the fighter's colour; metal and glowing parts keep their own light.
+	float fres = pow(1.0 - clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0), 3.5);
+	EMISSION += accent_color * fres * accent_strength * (1.0 - tint) * (0.4 + 0.6 * ao) * (1.0 - v_params.w) * (kind > 6.5 ? 0.0 : 1.0);
 }

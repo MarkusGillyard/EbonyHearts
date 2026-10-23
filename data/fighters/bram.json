@@ -161,7 +161,13 @@
 			],
 			"sfx": {
 				"swing": "medium"
-			}
+			},
+			"motion": [
+				[
+					6,
+					0.2
+				]
+			]
 		},
 		"bram_baton": {
 			"name": "Night Stick: rising baton",

@@ -36,6 +36,8 @@ var values := {
 	"gore": "full",
 	"input_display": false,
 	"motion_smoothing": true,
+	## Vignette and grain over fights.
+	"post_fx": true,
 	"difficulty": 1,
 }
 var keys := {"kb_left": DEFAULT_KEYS["kb_left"].duplicate(), "kb_right": DEFAULT_KEYS["kb_right"].duplicate()}

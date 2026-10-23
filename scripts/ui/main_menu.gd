@@ -3,9 +3,11 @@ extends Screen
 
 const ITEMS := [
 	["Arcade", "arcade", "Climb a tower of the Slopbat's chosen to the roost itself. Your choice of tower sets the difficulty."],
+	["Survival", "survival", "An endless ladder: one round a fight, your health carried on with a little given back after each win, and the Slopbat waiting every fifth wave. How far can you climb?"],
 	["Versus", "versus", "Two players on one machine. Any fighter, any stage, mirror matches welcome."],
 	["Training", "training", "Practise against a dummy that stands, blocks, jumps or fights back. Move lists, frame data and hitboxes."],
 	["Tutorial", "tutorial", "Learn to move, block, strike, combo, throw and finish, one step at a time."],
+	["Trials", "trials", "Every fighter's combos, one at a time, checked as you land them. Clear them all with every fighter."],
 	["Extras", "extras", "Endings you have earned, your records, and anything else you have found."],
 	["Settings", "settings", "Video, sound, gore, effects and controls."],
 	["Quit", "quit", "Leave the Sump."],
@@ -55,6 +57,9 @@ func _choose(id: String) -> void:
 		"arcade":
 			Game.config["mode"] = "arcade"
 			Game.goto("select", {"mode": "arcade"})
+		"survival":
+			Game.config["mode"] = "survival"
+			Game.goto("select", {"mode": "survival"})
 		"versus":
 			Game.config["mode"] = "versus"
 			Game.goto("devices", {})
@@ -64,6 +69,9 @@ func _choose(id: String) -> void:
 		"tutorial":
 			Game.config = Game.config.merged({"mode": "tutorial", "p1": "ashka", "p2": "gorm", "stage": "rendering_yards", "rounds_to_win": 1, "mirror_dark": false}, true)
 			Game.goto("match")
+		"trials":
+			Game.config["mode"] = "trials"
+			Game.goto("select", {"mode": "trials"})
 		"extras":
 			Game.goto("extras", {})
 		"settings":

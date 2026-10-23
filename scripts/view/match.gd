@@ -21,6 +21,7 @@ var brains: Array = [null, null]
 var dummy: TrainingDummy
 var stranger: StrangerRules
 var tutorial: Node
+var trials: Node
 var mode := "cpu"
 var config := {}
 var paused := false
@@ -29,11 +30,15 @@ var slow := false
 var _step_once := false
 var _slow_count := 0
 var _ko_slow := 0
+## Frames the whole fight holds still on the deciding blow before the slow-motion fall.
+var _ko_freeze := 0
 var _ended := false
 var _pending_pads := [Vector3i.ZERO, Vector3i.ZERO]
 var _stepped := 0
 var ticks_run := 0
 var sim_usec := 0
+## Seconds left on the clock at the end of each round, summed (the arcade's time bonus).
+var _time_left := 0
 ## With --trace=path every tick's input, states and events are written as JSON lines.
 var _trace: FileAccess
 static var _trace_file: FileAccess
@@ -51,18 +56,21 @@ func start(cfg: Dictionary) -> void:
 	mode = str(config.get("mode", "cpu"))
 	Settings.set_solo(not Game.two_players())
 	sim = FightSim.new()
-	sim.training = mode in ["training", "tutorial", "stranger"]
+	sim.training = mode in ["training", "tutorial", "stranger", "trials"]
 	sim.rounds_to_win = int(config.get("rounds_to_win", 2))
 	sim.finishers_enabled = mode != "stranger"
 	var stage := str(config.get("stage", "rendering_yards"))
 	if Content.fighter(config["p1"]).move("stage_vat") and stage == "rendering_yards":
 		sim.stage_finisher = "stage_vat"
-	sim.intro = mode not in ["training", "tutorial", "stranger"]
+	sim.intro = mode not in ["training", "tutorial", "stranger", "trials"]
 	sim.setup(Content.fighter(config["p1"]), Content.fighter(config["p2"]))
-	if mode == "arcade" and config.has("p2_health"):
+	if mode in ["arcade", "survival"] and config.has("p2_health"):
 		# The arcade sets the Slopbat's health by tower.
 		sim.fighters[1].health_max = int(config["p2_health"])
 		sim.fighters[1].health = sim.fighters[1].max_health()
+	if mode == "survival" and int(config.get("p1_health", 0)) > 0:
+		# Survival carries health from fight to fight.
+		sim.fighters[0].health = mini(sim.fighters[0].max_health(), int(config["p1_health"]))
 	if mode == "stranger":
 		# No announcer and no rounds: he is simply there.
 		sim.phase = FightSim.Phase.FIGHT
@@ -103,13 +111,14 @@ func start(cfg: Dictionary) -> void:
 	director = FinisherDirector.new()
 	add_child(director)
 	director.setup(self)
+	add_child(PostFx.new())
 	hud = Hud.new()
 	add_child(hud)
 	hud.setup(sim, mode, config)
 	hud.input_display = Settings.get_value("input_display") or mode == "training"
 	var diff := int(config.get("difficulty", Settings.get_value("difficulty")))
 	for i in 2:
-		if Game.is_cpu(i) and mode not in ["training", "tutorial", "stranger"]:
+		if Game.is_cpu(i) and mode not in ["training", "tutorial", "stranger", "trials"]:
 			if sim.fighters[i].def.boss:
 				brains[i] = BossBrain.new(sim, i, diff)
 			else:
@@ -126,6 +135,12 @@ func start(cfg: Dictionary) -> void:
 		tutorial = load("res://scripts/ui/tutorial.gd").new()
 		add_child(tutorial)
 		tutorial.setup(self)
+	if mode == "trials":
+		dummy = TrainingDummy.new(sim, 1)
+		sim.infinite_run = true
+		trials = load("res://scripts/ui/trials.gd").new()
+		add_child(trials)
+		trials.setup(self)
 	Audio.play_music(arena.music)
 	get_window().focus_exited.connect(_on_focus_lost)
 	Input.joy_connection_changed.connect(_on_joy_changed)
@@ -189,7 +204,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			toggle_pause()
 		get_viewport().set_input_as_handled()
-	elif not OS.is_debug_build() and not mode in ["training", "tutorial"] and not "--debug-keys" in OS.get_cmdline_user_args():
+	elif not OS.is_debug_build() and not mode in ["training", "tutorial", "trials"] and not "--debug-keys" in OS.get_cmdline_user_args():
 		return
 	elif event.is_action_pressed("debug_boxes"):
 		debug_draw.visible = not debug_draw.visible
@@ -205,7 +220,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		slow = not slow
 	elif event.is_action_pressed("input_display"):
 		hud.input_display = not hud.input_display
-	elif event.is_action_pressed("training_reset") and mode == "training":
+	elif event.is_action_pressed("training_reset") and mode in ["training", "trials"]:
 		reset_positions()
 	elif event.is_action_pressed("training_dummy") and dummy:
 		dummy.next_mode()
@@ -233,6 +248,10 @@ func reset_positions() -> void:
 
 func _physics_process(_delta: float) -> void:
 	if sim == null or paused:
+		return
+	if _ko_freeze > 0 and not debug_pause:
+		# The knockout blow hangs in the air; the pads are left alone so presses stay latched.
+		_ko_freeze -= 1
 		return
 	if not debug_pause and (slow or _ko_slow > 0):
 		_slow_count += 1
@@ -418,22 +437,47 @@ func _on_event(e: Dictionary) -> void:
 		stranger.on_event(e)
 	if tutorial:
 		tutorial.on_event(e)
+	if trials:
+		trials.on_event(e)
 	_sound(e)
 	match e["type"]:
 		"hit":
 			var v := views[e["who"]]
 			var att := sim.fighters[e["by"]]
+			var dir := signf(sim.fighters[e["who"]].pos.x - att.pos.x)
 			var strength := clampf(float(e["damage"]) / 100.0, 0.15, 1.3)
-			v.impact(signf(sim.fighters[e["who"]].pos.x - att.pos.x), strength, int(e["level"]), false)
-			if e["damage"] >= 95:
-				camera.add_shake(0.02 + strength * 0.02)
+			var heavy: bool = str(e.get("effect", "")) in ["launch", "knockdown", "sweep", "crumple"] or e.get("throw", false)
+			v.impact(dir, strength, int(e["level"]), false)
+			# Every blow moves the camera a little; the big ones move it a lot, along the blow.
+			camera.add_shake(0.004 + strength * 0.022 + (0.014 if heavy else 0.0) + (0.01 if e.get("counter", false) else 0.0))
+			camera.kick(Vector3(dir, -0.25 if heavy else 0.0, 0.0), 0.02 + strength * 0.045 + (0.02 if heavy else 0.0))
 		"block":
 			views[e["who"]].impact(signf(sim.fighters[e["who"]].pos.x - sim.fighters[e["by"]].pos.x), 0.35, MoveDef.Level.MID, true)
+			camera.add_shake(0.004)
+		"armor":
+			camera.add_shake(0.012)
+		"throw":
+			camera.add_shake(0.008)
+		"clash":
+			camera.add_shake(0.02)
 		"ko":
-			_ko_slow = 50 if not e.get("finish", false) else 30
-			camera.add_shake(0.05)
+			# The deciding blow freezes the fight for a moment, the camera closes in on the
+			# beaten fighter, and the fall plays out in slow motion.
+			var finish: bool = e.get("finish", false)
+			_ko_freeze = 14 if not finish else 18
+			_ko_slow = 50 if not finish else 34
+			camera.add_shake(0.07)
+			camera.punch_in(0.32 if finish else 0.26, int(e["who"]))
+		"finish_prompt":
+			# The finish is played at the normal framing, so the distance can be judged.
+			camera.release_zoom()
+		"round_end":
+			if int(e.get("winner", -1)) == 0:
+				_time_left += sim.timer_seconds()
 		"round_start":
 			camera.release_zoom()
+			_ko_freeze = 0
+			_ko_slow = 0
 			for v in views:
 				v.sync_from_sim(true)
 			camera.snap()
@@ -442,4 +486,5 @@ func _on_event(e: Dictionary) -> void:
 			var w: int = e["winner"]
 			finished.emit({"winner": w, "wins": sim.wins.duplicate(), "p1": sim.fighters[0].def.id, "p2": sim.fighters[1].def.id,
 				"finisher": e.get("finisher", ""), "flawless": e.get("flawless", false), "mode": mode,
-				"stranger_line": e.get("stranger_line", "")})
+				"stranger_line": e.get("stranger_line", ""), "health": [sim.fighters[0].health, sim.fighters[1].health],
+				"time_left": _time_left})

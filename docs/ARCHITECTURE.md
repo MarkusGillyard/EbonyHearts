@@ -25,9 +25,9 @@ devices, and nothing visual changes the simulation.** Every outcome is an event 
 | `scripts/combat/` | `FightSim` (phases, collision, hit and block, throws, projectiles, KO and finish flow), `Fighter` (one fighter's state machine), `MoveDef`, `FighterDef`, `Command` (arcade notation and motion matching), `InputBuffer`, `Projectile`. Pure data and arithmetic; tests run it headless. |
 | `scripts/ai/` | `CpuBrain`, `BossBrain`, `TrainingDummy`, `StrangerRules`, all producing ordinary pad input through `PadIntent`. |
 | `scripts/anim/` | `Rig` (joints and two-bone IK), `Pose`, `PoseLibrary`, `CharacterModel` (the sculpted, skinned body), `ClothSheet` (Verlet cloth and hair), `Shapes`. |
-| `scripts/view/` | `Match` (steps the sim, owns the scene, pause and device handling), `FighterView`, `FightCamera`, `Arena` and `arenas/*`, `Vfx`, `FinisherDirector`, `Props`, `DebugDraw`. |
-| `scripts/ui/` | `Hud`, every menu screen (each a `Screen`), `FighterPreview`, the tutorial. |
-| `scripts/core/` | Autoloads: `Content` (data), `Settings`, `Progress` (saves), `Audio`, `Game` (flow, arcade ladder); `Main` (screen host); `PadReader`. |
+| `scripts/view/` | `Match` (steps the sim, owns the scene, pause and device handling, the knockout freeze and slow motion), `FighterView`, `FightCamera` (framing, shake, the sprung kick, depth of field), `Arena` and `arenas/*`, `Vfx` (sparks, rings, flashes, blood, projectiles), `PostFx` (vignette and grain), `FinisherDirector`, `Props`, `DebugDraw`. |
+| `scripts/ui/` | `Hud`, every menu screen (each a `Screen`), `FighterPreview`, the tutorial, the trials runner. |
+| `scripts/core/` | Autoloads: `Content` (data), `Settings`, `Progress` (saves), `Audio`, `Game` (flow, the arcade ladder and its scoring, the survival ladder); `Main` (screen host); `PadReader`. |
 
 ## Combat timing
 
@@ -54,10 +54,24 @@ devices, and nothing visual changes the simulation.** Every outcome is an event 
   more specific command.
 - **Combos.** Damage scales from the third hit (10% per hit, to 40%); juggle points (an uppercut
   costs 3) end a juggle at 7 and juggled bodies fall faster with every hit, so there are no
-  infinites. Chains cost run meter per link, as in MK3.
+  infinites. Chains cost run meter per link, as in MK3. Push-back on hit is scaled by
+  `CHAIN_OPENER_PUSH` (0.6) for a move with chain links and `COMBO_PUSH` (0.35) from the second
+  hit of a combo on. A `combo_end` event is emitted when a hit fighter returns to neutral or
+  lands from a knockdown.
+- **Trials** (`data/trials.json`, `TrialCheck`, `scripts/ui/trials.gd`): a trial is a list of
+  commands and the hits that must land as one combo; `TrialCheck.feed` watches the events.
+  `test_trials` performs every trial headless from touching distance, dialling each link once
+  the blow before it has landed, so the shipped list only holds combos that connect.
 - **Rounds.** 90 seconds; two wins (one long round for the boss). The deciding KO leads to the
   dizzy FINISH phase (7 s); double KOs and draws award nothing, and a match never exceeds nine
   rounds.
+- **Counter hits and hit-stop.** A hit on a fighter whose own attack has not reached its first
+  active frame is a counter: damage x1.15 (before scaling), hit-stun +4, hit-stop +2. Default
+  hit-stop is 5, 8 or 11 ticks by damage, +2 for launches, knockdowns and sweeps. Hit events carry
+  `counter` and `ko` (the blow emptied the health bar), which the presentation reads.
+- **Survival** (`Game.configure_wave`) is a one-round match per wave with `p1_health` carried
+  in (applied by `Match.start`), `difficulty` by wave and the boss every fifth wave; the arcade's
+  points come from `Game.fight_score(result)`, with the result's `health` and `time_left`.
 
 ## Drawing a fighter
 
@@ -77,6 +91,17 @@ claws, rings) are meshed separately at a finer voxel, over the box their surface
 occupies (sampled first, since a cuff cut from a whole arm inherits the arm's box) and within a
 fixed grid budget, so a build peaks at about 1.3 GB. `test_content` fails when a model is older
 than its look.
+
+## The frame
+
+`Match` holds the fight still for 14 frames on the deciding blow (18 before a finish), then
+steps the simulation every third frame for 50, while `FightCamera` closes in on the loser;
+`round_start` undoes both. The camera's shake is a small sine on top of its sprung position and
+its kick a sprung displacement along the blow, both off with the screen-shake setting. On the
+high graphics setting the camera carries `CameraAttributesPractical` with far depth of field
+starting 3.4 m behind the fighting plane (the distance follows the camera every frame). `PostFx`
+is a `CanvasLayer` under the HUD with one full-screen quad multiplying a vignette and a grain
+(`assets/shaders/post.gdshader`); Settings "post_fx" hides it.
 
 ## Saves and settings
 

@@ -76,6 +76,9 @@ func setup(f: Fighter, common_poses: Dictionary) -> void:
 	rig.build(def)
 	_build_model()
 	_build_props()
+	# The fighter's own colour (the look's "glow") catches along the edges of the body.
+	set_shader("accent_color", Color(str(def.look.get("glow", "#ffffff"))))
+	set_shader("accent_strength", float(def.look.get("accent", 0.24)))
 	_whip = MeshInstance3D.new()
 	var wm := CylinderMesh.new()
 	wm.top_radius = 0.009
@@ -275,6 +278,16 @@ func update_visual(frac: float, delta: float) -> void:
 	if _facing < 0:
 		_out.mirror_into(_mirror)
 		shown = _mirror
+	# Life in the hips: a step's rise and fall while walking, a slow settle while standing. The
+	# feet are planted, so only the body moves and the legs take up the difference.
+	var bob := 0.0
+	if fighter.state in [Fighter.S.WALK_F, Fighter.S.WALK_B]:
+		var stride := 0.6 * rig.h / 1.8
+		bob = (absf(sin(absf(p2.x) / stride * PI)) - 0.5) * 0.02 * rig.h
+	elif fighter.state in [Fighter.S.IDLE, Fighter.S.INTRO, Fighter.S.WIN]:
+		bob = sin(_time * TAU * 1.1) * 0.004 * rig.h
+	if bob != 0.0:
+		shown.pos["hips"] = (shown.pos["hips"] as Vector3) + Vector3(0, bob, 0)
 	var extra := _procedural(delta, frozen)
 	var feet := _plant_feet(delta, shown)
 	rig.apply(shown, feet[0], feet[1], extra)
@@ -282,7 +295,7 @@ func update_visual(frac: float, delta: float) -> void:
 	_update_props(shown)
 	if _flash > 0.0:
 		set_shader("flash", _flash)
-		_flash = maxf(0.0, _flash - delta * 8.0)
+		_flash = maxf(0.0, _flash - delta * 6.0)
 		if _flash <= 0.0:
 			set_shader("flash", 0.0)
 	var t_cloth := Time.get_ticks_usec()
@@ -510,9 +523,10 @@ func impact(dir: float, strength: float, level: int, blocked: bool) -> void:
 	(_spring["head"] as Array)[1] += Vector3(-s * head_k * 9.0, 0, 0)
 	(_spring["chest"] as Array)[1] += Vector3(-s * chest_k * 6.0, 0, 0)
 	(_spring["hips"] as Array)[1] += Vector3(-s * 2.0 * (1.6 if level == MoveDef.Level.LOW else 0.6), 0, 0)
-	_shake = clampf(0.004 + strength * 0.012, 0.0, 0.02)
-	if not blocked and strength > 0.6:
-		flash(0.22)
+	_shake = clampf(0.004 + strength * 0.014, 0.0, 0.024)
+	if not blocked:
+		# Every blow lights the body for a frame or two; heavy ones whiten it.
+		flash(0.05 + clampf(strength, 0.0, 1.3) * 0.14)
 
 
 # --- Feet ---------------------------------------------------------------------------------------

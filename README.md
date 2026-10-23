@@ -9,7 +9,7 @@ Third-party components keep their own licenses; see [THIRD_PARTY_NOTICES.md](THI
 
 | | |
 |---|---|
-| Version | 1.0.2 |
+| Version | 1.1.0 |
 | Engine | Godot 4.7.2-stable (GDScript, Forward+, falls back to OpenGL 3) |
 | Tested on | Linux Mint 22.3 (X11, Cinnamon), x86_64, NVIDIA GeForce RTX 2060 (driver 595), Ryzen 7 5700G |
 | Settings | `~/.local/share/MortalSlopbat/settings.cfg` |
@@ -20,8 +20,8 @@ Other distributions, Wayland sessions, other GPUs and physical gamepads have not
 ## Playing the Linux build
 
 ```bash
-tar -xzf MortalSlopbat-1.0.2-linux-x86_64.tar.gz
-./MortalSlopbat-1.0.2-linux-x86_64/MortalSlopbat.sh
+tar -xzf MortalSlopbat-1.1.0-linux-x86_64.tar.gz
+./MortalSlopbat-1.1.0-linux-x86_64/MortalSlopbat.sh
 ```
 
 The archive holds a self-contained executable: no Godot editor, network or account is needed.
@@ -63,6 +63,8 @@ Menus: arrows or WASD to move, Enter (or J/U) to choose, Backspace or Esc to go 
   being grabbed to break it).
 - **Specials** use short motions such as Down, Forward + High Punch. Every fighter's full list,
   with frame data, is under Pause → Move List, Training and Extras → Move Lists.
+- **Counter hits.** A blow that lands while the other fighter is winding up an attack of their
+  own does more damage and keeps them reeling longer; the HUD calls it out.
 - **Finishing.** Win the deciding round by knockout and the loser stands dizzy: FINISH HIM, HER
   or IT. Step to the right distance and enter your **Sloptality**, or just hit them.
 
@@ -70,11 +72,18 @@ Menus: arrows or WASD to move, Enter (or J/U) to choose, Backspace or Esc to go 
 
 - **Arcade**: choose Novice, Warrior or Master (which also sets how hard the CPU fights), climb
   past your rival to the Slopbat's roost, and see your fighter's ending. Losing offers a continue.
+  Every fight scores points (health left, time left, flawless victories, Sloptalities); the best
+  total per fighter and tower is kept.
+- **Survival**: an endless ladder, one round a fight. Your health carries on with a share of it
+  given back after every win (more for a flawless one); the opponents get harder every three
+  waves and the Slopbat waits on every fifth. Most waves cleared per fighter is kept.
 - **Versus**: two players, any pairing (mirror matches use the alternate colours), any stage.
 - **Training**: a dummy that stands, crouches, blocks, jumps or fights back (Tab), with resets
   (F4), hitboxes (F1), frame data (F2), states (F3) and input history (F8).
 - **Tutorial**: a guided five minutes covering movement, blocking, strikes, a special, a combo, a
   throw and a finisher.
+- **Trials**: every fighter's combos, one at a time against their rival, each hit ticked off as
+  it lands. Progress is kept per fighter.
 - **Extras**: endings you have earned, records, move lists and the credits.
 
 Clearing arcade with a fighter unlocks their alternate colours (High Kick on the select screen)
@@ -98,6 +107,8 @@ Development flags (after `--`): `--match=p1,p2,mode[,stage[,difficulty]]` jumps 
 (for example `-- --match=ashka,gorm,versus,drowned_chapel`), `--screen=name` opens a screen,
 `--profile=name` keeps progress in a separate test profile, `--trace=path` writes every tick as
 JSON lines, `--bench=seconds` prints frame-time statistics and quits, `--uncapped` turns VSync off.
+The Graphics setting "Low" also turns off the depth of field behind the fighting plane; "Vignette
+and grain" turns off the frame's finish.
 
 ## Regenerating assets
 
