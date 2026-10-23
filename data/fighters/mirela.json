@@ -6,7 +6,7 @@
 	"style": "Baguazhang palms and the dirge",
 	"stats": {
 		"height": 1.82,
-		"health": 1000,
+		"health": 1040,
 		"walk_f": 2.4,
 		"walk_b": 2.0,
 		"run_speed": 5.0
@@ -287,7 +287,7 @@
 			"active": 8,
 			"recovery": 24,
 			"level": "mid",
-			"damage": 40,
+			"damage": 55,
 			"hitboxes": [
 				{
 					"rect": [

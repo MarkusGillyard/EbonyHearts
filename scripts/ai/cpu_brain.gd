@@ -31,6 +31,7 @@ var _reach_cache := {}
 var _recent: Array = []
 ## Tick at which to start an anti-air timed to meet a jump seen coming in (-1: none planned).
 var _aa_at := -1
+var _aa_move := ""
 var _aa_ready := true
 ## How the CPU was hit lately ("low", "jump" or "other", newest first), so it adapts to habits.
 var _hit_by: Array = []
@@ -95,8 +96,7 @@ func think() -> Vector3i:
 	if _aa_at >= 0 and sim.tick_count >= _aa_at:
 		_aa_at = -1
 		if o.is_airborne() and dist < 2.6:
-			var aas: Array = ai.get("anti_air", ["uppercut"])
-			intent.command(_notation(aas[rng.randi_range(0, aas.size() - 1)]))
+			intent.command(_notation(_aa_move))
 			return intent.next(m.facing)
 	# A stunned, dazed or reeled-in opponent is an opening: take it.
 	if o.state == Fighter.S.HITSTUN and o.stun_kind in ["dazed", "pulled", "break"] and o.stun > 8 and dist < 1.6:
@@ -279,7 +279,8 @@ func _plan_anti_air(m: Fighter, seen: Dictionary) -> void:
 		return
 	var t := (v.y + sqrt(disc)) / g
 	var aas: Array = ai.get("anti_air", ["uppercut"])
-	var mv := m.def.move(str(aas[0]))
+	_aa_move = str(aas[rng.randi_range(0, aas.size() - 1)])
+	var mv := m.def.move(_aa_move)
 	var startup := mv.startup if mv else 8
 	var ticks_left := int(t * 60.0) - (sim.tick_count - int(seen["tick"]))
 	_aa_at = sim.tick_count + maxi(0, ticks_left - startup + 1)
