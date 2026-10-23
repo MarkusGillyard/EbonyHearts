@@ -1,5 +1,5 @@
 {
-	"about": "Combo trials per fighter: `steps` are the commands entered in order (each as soon as it can come out: a chain link once the blow before it has landed, a special in a cancel window after contact, anything else once the fighter is free again); `moves` are the hits that must land as one combo, in order. tests/test_trials.gd performs every trial headless against the fighter's rival from touching distance.",
+	"about": "Combo trials per fighter: `steps` are the commands entered in order (each as soon as it can come out: a chain link once the blow before it has landed, a special in a cancel window after contact, anything else once the fighter is free again); `moves` are the hits that must land as one combo, in order. The test suite performs every trial headless against the fighter's rival from touching distance, so only combos that connect are listed.",
 	"ashka": [
 		{
 			"name": "Lantern Lash",
