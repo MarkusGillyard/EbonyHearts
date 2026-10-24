@@ -19,6 +19,10 @@ Other distributions, Wayland sessions, other GPUs and physical gamepads have not
 
 ## Playing the Linux build
 
+Download `MortalSlopbat-1.1.0-linux-x86_64.tar.gz` and its `.sha256` from this repository's
+[Releases](https://github.com/MarkusGillyard/Slopbat/releases) page (the repository is private), or
+build it yourself ([Building from source](#building-from-source)).
+
 ```bash
 tar -xzf MortalSlopbat-1.1.0-linux-x86_64.tar.gz
 ./MortalSlopbat-1.1.0-linux-x86_64/MortalSlopbat.sh
