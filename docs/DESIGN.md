@@ -80,7 +80,7 @@ Yards also has a stage finisher (D,D,D+LP up close).
 
 ## Roster
 
-| Fighter | Look | Style and role | Specials (planned) | Sloptality |
+| Fighter | Look | Style and role | Specials | Sloptality |
 |---|---|---|---|---|
 | **Ashka Rook** (she), the Last Lamplighter, 1.74 m | Lean, athletic, brown skin, black ponytail, amber eyes; dark leather sleeveless vest, rust-red silk fight shorts with gold trim and waistband, bone-white hand and shin wraps, gold arm band, a small brass lamp charm | Muay Thai and lamp-fire. All-rounder | Ember Shot (fireball), Wick Knee (flying knee), Elbow Rush, Rising Knee (anti-air) | Last Light: burns the opponent to ash |
 | **Gorm Tallow** (he), the Renderer, 2.12 m | Huge, bald, pale ruddy skin, heavy jaw; bare barrel chest under a thick rubberised leather apron, rolled canvas trousers, heavy boots, iron vambraces | Sumo and catch wrestling. Grappler: slow, armoured, devastating up close | Vat Press (command grab), Tallow Hide (armour), Rendering Charge (armoured shoulder), Ground Slap (low shockwave) | Rendered Down: lifts and slams, then stamps them flat |
