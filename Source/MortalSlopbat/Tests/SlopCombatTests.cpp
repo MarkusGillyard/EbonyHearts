@@ -294,6 +294,36 @@ bool FSlopCounterHit::RunTest(const FString&)
 	return true;
 }
 
+SLOP_TEST(FSlopAshkaTeep, "Combat.Hit.AshkaTeepPushesAway")
+bool FSlopAshkaTeep::RunTest(const FString&)
+{
+	// Forward + low kick is Ashka's teep: a mid push kick that does little damage and drives the
+	// opponent far back, Muay Thai's tool for keeping distance; the plain low kick pushes a little.
+	const auto PushOf = [this](int32 Dirs, FName Expect, int32& OutDamage)
+	{
+		FSimHarness H(GetContent().Fighter(TEXT("ashka")));
+		H.Place(0.9);
+		const double X0 = H.F(1).Pos.X;
+		H.Step(Dirs, LK);
+		H.Until([&] { return H.Count(EEvent::Hit) > 0; }, 30);
+		const FSimEvent* E = H.Find(EEvent::Hit);
+		if (!TestNotNull(FString::Printf(TEXT("%s landed"), *Expect.ToString()), E))
+		{
+			return 0.0;
+		}
+		TestEqual(TEXT("the move"), E->Move, Expect);
+		OutDamage = E->Damage;
+		H.Idle(40);
+		return H.F(1).Pos.X - X0;
+	};
+	int32 TeepDamage = 0, KickDamage = 0;
+	const double Teep = PushOf(R, TEXT("ashka_teep"), TeepDamage);
+	const double Kick = PushOf(0, TEXT("lk"), KickDamage);
+	TestTrue(FString::Printf(TEXT("the teep pushes far (%.2f m against the low kick's %.2f m)"), Teep, Kick), Teep > Kick * 2.0 && Teep > 0.8);
+	TestTrue("the teep does less damage than the low kick", TeepDamage < KickDamage);
+	return true;
+}
+
 // --- Damage, chains and run -----------------------------------------------------------------------
 
 SLOP_TEST(FSlopChainMeter, "Combat.Chains.CostRunMeterAndNeedIt")

@@ -735,6 +735,78 @@
 					]
 				]
 			}
+		},
+		"ashka_teep": {
+			"name": "Teep",
+			"startup": 8,
+			"active": 3,
+			"recovery": 14,
+			"level": "mid",
+			"damage": 40,
+			"hitstun": 16,
+			"blockstun": 12,
+			"push_hit": 1.4,
+			"push_block": 1.0,
+			"tags": [
+				"poke"
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.42,
+						0.74,
+						0.6,
+						0.3
+					]
+				}
+			],
+			"hurtboxes": [
+				{
+					"frames": [
+						5,
+						16
+					],
+					"rect": [
+						0.2,
+						0.7,
+						0.62,
+						0.35
+					]
+				}
+			],
+			"anim": {
+				"tip": "foot_l",
+				"keys": [
+					[
+						4,
+						"ashka_teep_load",
+						"out"
+					],
+					[
+						8,
+						"ashka_teep_hit",
+						"snap"
+					],
+					[
+						11,
+						"ashka_teep_hit",
+						"linear"
+					],
+					[
+						17,
+						"ashka_teep_load",
+						"inout"
+					],
+					[
+						25,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "medium"
+			}
 		}
 	},
 	"commands": [
@@ -753,6 +825,10 @@
 		[
 			"D,U+HK",
 			"rising_knee"
+		],
+		[
+			"F+LK",
+			"ashka_teep"
 		]
 	],
 	"finisher": {
@@ -774,7 +850,8 @@
 			"crouch_lk": 0.8,
 			"ember_shot": 1.0,
 			"wick_knee": 0.5,
-			"elbow_rush": 0.7
+			"elbow_rush": 0.7,
+			"ashka_teep": 0.8
 		},
 		"anti_air": [
 			"rising_knee",

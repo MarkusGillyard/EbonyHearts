@@ -780,7 +780,7 @@ namespace Slop
 		auto PoseExists = [&](FName Pose)
 		{
 			const FString P = Pose.ToString();
-			return (F.Poses.IsValid() && F.Poses->HasField(P)) || (CommonPoses.IsValid() && CommonPoses->HasField(P));
+			return (F.Poses.IsValid() && F.Poses->HasField(P)) || (F.PoseStyle.IsValid() && F.PoseStyle->HasField(P)) || (CommonPoses.IsValid() && CommonPoses->HasField(P));
 		};
 		for (const FCommand& C : F.Commands)
 		{
