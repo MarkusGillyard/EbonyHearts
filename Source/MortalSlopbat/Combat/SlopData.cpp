@@ -605,6 +605,7 @@ namespace Slop
 				Basics->SetObjectField(TEXT("moves"), Overlay(Moves, Over));
 			}
 		}
+		FightersMocap = LoadJson(DataDir / TEXT("fighters_mocap.json"));
 		Story = LoadJson(DataDir / TEXT("story.json"), &Errors);
 		Trials = LoadJson(DataDir / TEXT("trials.json"), &Errors);
 		if (Trials.IsValid())
@@ -643,6 +644,17 @@ namespace Slop
 				}
 			}
 			D->SetObjectField(TEXT("poses"), Poses);
+			// Performances converted from motion capture (Tools/mocap): fields laid over the fighter.
+			if (FightersMocap.IsValid())
+			{
+				if (const TSharedPtr<FJsonObject> Over = Obj(FightersMocap, *Id.ToString()))
+				{
+					for (const auto& KV : Over->Values)
+					{
+						D->SetField(KV.Key, KV.Value);
+					}
+				}
+			}
 			// Style refinements made after the port, kept apart from the original's own poses
 			// (poses/<id>_style.json: fields laid over the poses they name).
 			if (TSharedPtr<FJsonObject> Style = LoadJson(DataDir / TEXT("poses") / (Id.ToString() + TEXT("_style.json"))))
@@ -788,6 +800,13 @@ namespace Slop
 			F.bHasFinisher = F.FinisherCmd.bValid;
 		}
 		F.Poses = Obj(D, TEXT("poses"));
+		if (const TSharedPtr<FJsonObject> States = Obj(D, TEXT("state_anim")))
+		{
+			for (const auto& KV : States->Values)
+			{
+				ParseKeys(States, *KV.Key, F.StateAnims.Add(FName(*KV.Key)));
+			}
+		}
 		F.PoseStyle = Obj(D, TEXT("pose_style"));
 		F.Look = Obj(D, TEXT("look"));
 		F.AI = Obj(D, TEXT("ai"));

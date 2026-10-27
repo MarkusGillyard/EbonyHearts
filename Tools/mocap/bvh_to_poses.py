@@ -7,7 +7,8 @@
 Each converted take becomes one pose per game frame (`mc_<move>_<frame>`, in
 Content/Data/poses_mocap.json, authored for the 1.8 m base body like the shared poses) and an
 animation key list for the move (Content/Data/basics_style.json for the shared basics, or the
-fighter's style file for a fighter's own move). Strikes keep their startup, active and recovery
+fighter's own data for a fighter's own move). Intro and win performances go to
+Content/Data/fighters_mocap.json, laid over each fighter at load. Strikes keep their startup, active and recovery
 frames: the take is cut at the strike's start, contact and return, then each phase is stretched or
 compressed onto the move's frames (startup compressed, as every fighting game does).
 
@@ -45,6 +46,16 @@ CLIPS = {
     "roundhouse": ("Male2_G9_RoundhouseRight", "RightFoot", (13, 4, 22), {}, "basics"),
     "hk": ("Male2_G2_FrontKick", "RightFoot", (9, 4, 16), {}, "basics"),
     "ashka_teep": ("Male2_G17_PushKickLeft", "LeftFoot", (8, 3, 14), {}, "ashka"),
+}
+
+# fighter -> state -> (take, first and last take frames). Played at the take's own speed (two game
+# frames a take frame), turned 45 degrees toward the camera as fighting games show a win.
+STATES = {
+    "ashka": {"intro": ("Male2_D1_StandToReady", 0, 80), "win": ("Male2_D8_BowToReady", 0, 128)},
+    "bram": {"intro": ("Male2_D1_StandToReady", 0, 80), "win": ("Male2_D11_ReadyToTaunt1ToReady", 0, 130)},
+    "gorm": {"intro": ("Male2_D1_StandToReady", 0, 80), "win": ("Male2_D10_Victory2", 0, 130)},
+    "mirela": {"intro": ("Male2_D1_StandToReady", 0, 80), "win": ("Male2_D8_BowToReady", 0, 128)},
+    "nix": {"intro": ("Male2_D1_StandToReady", 0, 80), "win": ("Male2_D12_ReadyToTaunt1ToReady", 0, 130)},
 }
 
 # Left out: the uppercut (the take's furthest reach is its overhead follow-through, not the blow,
@@ -248,6 +259,25 @@ def convert(move, spec):
     return poses, keys, dest
 
 
+def convert_state(fighter, state, spec):
+    name, a, b = spec
+    take = Take(name)
+    w = take.at(a)
+    toes = add(norm(sub(w["LeftToeBase_end"], w["LeftFoot"])), norm(sub(w["RightToeBase_end"], w["RightFoot"])))
+    f0 = norm((toes[0], 0.0, toes[2]))
+    r0 = cross(f0, (0.0, 1.0, 0.0))
+    c = math.cos(math.radians(45.0))
+    fwd = norm(sub(scale(f0, c), scale(r0, c)))
+    origin = (w["Hips"][0], 0.0, w["Hips"][2])
+    poses, keys = {}, []
+    for i, t in enumerate(range(a, b + 1)):
+        n = "mc_%s_%s_%03d" % (fighter, state, i)
+        poses[n] = pose(take, t, origin, fwd, {})
+        keys.append([6 + 2 * i, n, "linear" if i else "inout"])
+    print("%-11s %-30s frames %d-%d (%.1f s)" % (fighter + " " + state, name, a, b, (b - a) * take.clip.dt))
+    return poses, keys
+
+
 def write_poses(path, poses):
     with open(path, "w") as f:
         f.write("{\n" + ",\n".join('\t"%s": %s' % (k, json.dumps(v)) for k, v in poses.items()) + "\n}\n")
@@ -268,6 +298,12 @@ def main():
             basics[move] = {"anim": {"tip": {"LeftHand": "hand_l", "RightHand": "hand_r", "LeftFoot": "foot_l", "RightFoot": "foot_r"}[spec[1]], "keys": keys}}
         else:
             fighter_keys.setdefault(dest, {})[move] = keys
+    states = {}
+    for fighter, by_state in STATES.items():
+        for state, spec in by_state.items():
+            poses, keys = convert_state(fighter, state, spec)
+            all_poses.update(poses)
+            states.setdefault(fighter, {})[state] = keys
     write_poses(os.path.join(DATA, "poses_mocap.json"), all_poses)
     with open(os.path.join(DATA, "basics_style.json"), "w") as f:
         json.dump(basics, f, indent="\t")
@@ -278,6 +314,9 @@ def main():
         for move, keys in moves.items():
             d["moves"][move]["anim"]["keys"] = keys
         open(p, "w").write(json.dumps(d, indent="\t", ensure_ascii=False) + "\n")
+    # The intro and win performances, laid over each fighter's data at load (one line a fighter).
+    with open(os.path.join(DATA, "fighters_mocap.json"), "w") as f:
+        f.write("{\n" + ",\n".join('\t"%s": %s' % (k, json.dumps({"state_anim": v})) for k, v in sorted(states.items())) + "\n}\n")
     print("%d poses" % len(all_poses))
 
 

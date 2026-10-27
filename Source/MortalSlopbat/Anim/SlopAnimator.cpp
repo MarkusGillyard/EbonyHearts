@@ -532,11 +532,25 @@ namespace Slop::Anim
 			HoldPose(TEXT("stance"), 7.0);
 			break;
 		case EState::Intro:
-			HoldPose(TEXT("intro"), 10.0);
-			break;
 		case EState::Win:
-			HoldPose(TEXT("win"), 14.0);
+		{
+			// A captured performance where the fighter has one (going into the stance, a bow, a
+			// taunt), else the held pose.
+			const FName State = F.State == EState::Win ? FName(TEXT("win")) : FName(TEXT("intro"));
+			if (const TArray<FAnimKey>* Raw = F.Def->StateAnims.Find(State))
+			{
+				if (SetSource(FString::Printf(TEXT("state:%s:%d"), *State.ToString(), SimTick - F.SF), 0.0))
+				{
+					AnimKeys(*Raw, OwnedKeys);
+				}
+				FPoseLibrary::Sample(OwnedKeys, T, Snap, Src);
+			}
+			else
+			{
+				HoldPose(State, F.State == EState::Win ? 14.0 : 10.0);
+			}
 			break;
+		}
 		case EState::Crouch:
 		case EState::PreJump:
 		case EState::Land:

@@ -228,6 +228,9 @@ namespace Slop
 		TSharedPtr<FJsonObject> Poses;
 		// Fields laid over named poses after the port (poses/<id>_style.json), in those poses' units.
 		TSharedPtr<FJsonObject> PoseStyle;
+		// Keyed animation for a state in place of its held pose ("intro", "win"), frames counted
+		// from entering the state (fighter JSON "state_anim"; written by Tools/mocap).
+		TMap<FName, TArray<FAnimKey>> StateAnims;
 		TSharedPtr<FJsonObject> Look;
 		TSharedPtr<FJsonObject> AI;
 		TSharedPtr<FJsonObject> Raw;
@@ -266,6 +269,8 @@ namespace Slop
 		// (poses_common_style.json); CommonPosesOriginal is the original game's set.
 		TSharedPtr<FJsonObject> CommonPoses;
 		TSharedPtr<FJsonObject> CommonPosesOriginal;
+		// Per fighter, fields from motion capture laid over its data (fighters_mocap.json).
+		TSharedPtr<FJsonObject> FightersMocap;
 		TSharedPtr<FJsonObject> Trials;
 		TArray<FString> Errors;
 		FString Dir;
