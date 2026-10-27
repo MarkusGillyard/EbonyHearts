@@ -45,6 +45,7 @@ Tools/make_release.sh Shipping    # archive with readme, licences, version and c
 |---|---|
 | `Docs/Design.md` | The game's design (from the original) and the rebuild's art direction; the roster sheet |
 | `Docs/Preservation.md` | Every feature of the original and its disposition here |
+| `Docs/Martial-arts.md` | The study of real martial arts and fighting games behind the combat's look and feel, with the ranked changes |
 | `Docs/Architecture.md` | Code layout, content pipeline, commands, development flags, saves |
 | `Docs/Assets.md` | Third-party assets, licences and notices; `SourceArt/ThirdParty/ledger.json` is the full record |
 | `Docs/Validation.md` | Tests, playthroughs, controller and performance evidence, known limits |

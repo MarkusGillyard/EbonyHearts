@@ -8,9 +8,9 @@ types beyond containers and maths, so they run headless in tests exactly as they
 
 | Folder | What it holds |
 |---|---|
-| `Combat/` | The simulation, ported from the original's `FightSim`: fighters, moves, hit and hurt boxes, blocking, throws, juggles, counter hits, projectiles, rounds, finishers. Fixed 60 Hz ticks, integer frame counts. `SlopData` loads and validates `Content/Data` (the original's JSON, unchanged); malformed data stops the game at a data-error screen rather than playing wrong. `SlopInput` is the command parser and its six-tick buffer. |
+| `Combat/` | The simulation, ported from the original's `FightSim`: fighters, moves, hit and hurt boxes, blocking, throws, juggles, counter hits, projectiles, rounds, finishers. Fixed 60 Hz ticks, integer frame counts. `SlopData` loads and validates `Content/Data` (the original's JSON; since the port it has gained presentation fields only: each fighter's `motion` and each weapon move's `sfx.hit`); malformed data stops the game at a data-error screen rather than playing wrong. `SlopInput` is the command parser and its six-tick buffer. |
 | `AI/` | The CPU brain (every read of the opponent passes through its reaction delay, so it never answers a move it could not yet have seen), the Slopbat's patterns, the training dummy, the stranger's rules. |
-| `Anim/` | The original's pose library, IK rig and animator, ported and checked joint by joint against a dump from the Godot build (`Tools/reference`). `SlopMeshRig` maps the solved rig onto the 53-bone skeleton the fighters are skinned to. |
+| `Anim/` | The original's pose library, IK rig and animator, ported and checked joint by joint against a dump from the Godot build (`Tools/reference`). On top of the port: follow-through (each part chases the pose on its own spring; the arm carrying a blow is exempt), strikes that arrive at speed and drive through, hit-stop that lingers instead of freezing, reactions shaped by the blow's direction, a stance and walk with each style's rhythm, hands carried with the chest, and a turn-round on cross-over. Style refinements to the original's poses are kept apart, in `poses/<id>_style.json` and `poses_common_style.json`, laid over them at load; the port test builds without them. `SlopMeshRig` maps the solved rig onto the 53-bone skeleton the fighters are skinned to. |
 | `Core/` | Game instance (screens, matches, settings, saves), the input router (keyboard halves and pads, menus and fights, rebinding, device assignment, unplug), audio, the arcade and survival flow, save files, the frame-time recorder. |
 | `View/` | What is drawn: the match actor (clock, events, presentation), fighters, the fight camera, stages, effects, finisher choreography, tutorial and trials guides, the menu showroom. |
 | `UI/` | Slate screens and the HUD, drawn on a 1920 x 1080 canvas scaled to the window. Menus are driven by the input router, never by Slate focus. |
@@ -28,13 +28,25 @@ them in the order they come back, so they can swap (Versus's device screen shows
 Triggers are read as axes with hysteresis.
 
 **Presentation.** The simulation emits events (hit, block, throw, KO, line spoken...); the match
-turns them into sound, camera shake and kick, hit-stop, impact effects and finisher scenes. Stages
+turns them into sound (pitched by where a blow lands, with the weapon's own material), camera kick
+on heavy blows and counters and shake only on knockdowns and launches, impact effects and finisher
+scenes. Stages
 are data: `Content/Data/Stages/<id>.json` places the imported meshes and lights and drives fog,
 flicker, sway, glows and weather.
 
 **Rendering.** Deferred, Vulkan SM6, no Lumen, no Nanite, no virtual shadow maps, no ray tracing,
-no static lighting (all lights are dynamic and few cast shadows), TAA, screen-space reflections,
-manual exposure per stage, volumetric fog on the High preset.
+no static lighting (all lights are dynamic and few cast shadows), TSR, screen-space reflections,
+manual exposure per stage, volumetric fog on High and Epic (High is the engine's High scalability
+level, Epic its highest).
+
+**Frame pacing.** The frame cap follows the display by default: a frame on every refresh up to
+100 Hz, every second or third above (82.5 fps at 165 Hz), so frames land evenly with VSync.
+Dynamic resolution lowers the render scale (to half at most) as far as needed to hold that rate and
+TSR rebuilds the image at full size, its history kept at output size (`[SystemSettings]` in
+`DefaultEngine.ini`). The Vulkan RHI's own CPU frame pacer is off: on Linux it assumes a 60 Hz
+display and held VSync'd frames to 60. The display's refresh comes from SDL (`DisplayRefresh`).
+Full screen is checked against the window system for the first seconds after start and asked again
+when the window manager missed it (`KeepWindowMode`).
 
 ## Content pipeline
 
@@ -71,9 +83,11 @@ attached (Vulkan presentation would block without one); offscreen runs have no p
 Development flags (not in Shipping builds): `-SlopMatch=p1,p2,mode[,stage[,difficulty]]`,
 `-SlopShots=ticks`, `-SlopShotEvery=seconds`, `-SlopShotPrefix=name`, `-SlopQuitAt=tick`,
 `-SlopQuitAfter=seconds`, `-SlopTour=fighter [-SlopBoxes]` (every ground move from both sides
-with boxes and screenshots), `-SlopPortraits[=ids]`, `-debugkeys` (F1 boxes, F2 frames, F3
-states, F5 freeze, F6 step, F7 slow, F8 inputs in any mode; in Training and Trials they work
-without it).
+with boxes and screenshots), `-SlopPortraits[=ids]`, `-SlopPoses=pose,pose,...` (the first
+fighter shows each named pose in turn, 1.5 s apiece, for reviewing poses in a match),
+`-SlopExec=seconds:command;...` (console commands at set times, e.g. `45:ProfileGPU` for a GPU
+breakdown mid-fight), `-debugkeys` (F1 boxes, F2 frames, F3 states, F5 freeze, F6 step, F7 slow,
+F8 inputs in any mode; in Training and Trials they work without it).
 
 Test automation flags, in any build so the Shipping package itself can be qualified:
 `-SlopUi=delay:action,...` (menu actions as if pressed: up, down, left, right, confirm, back,

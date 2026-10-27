@@ -50,21 +50,22 @@ The Verified column says how it was checked; an empty cell means it has not been
 | Block button (high/mid/overhead standing, low/mid crouching), works from behind | `fight_sim.gd` | Preserve | Tests |
 | Run meter, dial-a-combos costing meter per link, chain opener and combo push-back | `fighter.gd`, `fight_sim.gd` | Preserve | Tests; every trial |
 | Throws, throw breaks, simultaneous throws break, command grabs beat block | `fight_sim.gd` | Preserve | Tests |
-| Counter hits (+15 %, +4 stun, +2 hit-stop) | `fight_sim.gd` | Preserve | Test |
+| Counter hits (+15 %, +4 stun, +2 hit-stop) | `fight_sim.gd` | Improve: the extra freeze is the victim's alone (+4) in place of +4 stun and +2 freeze for both, so the blow reads bigger and frame advantage is unchanged | Test |
 | Juggle points (limit 7), damage scaling from the third hit to 40 % | `fight_sim.gd` | Preserve | Tests |
 | Chip only from specials and projectiles; one projectile each; clashes | `fight_sim.gd` | Preserve | Tests |
 | Armour, parry, buff, teleport, pull, crumple, daze, air-to-air knockdown | `fight_sim.gd`, fighter data | Preserve | Parry/armour/teleport tests |
 | KO freeze (14/18 ticks), slow motion, camera punch-in; FINISH dizzy 7 s; Sloptalities by range; stage finisher | `match.gd`, `fight_sim.gd`, `finisher_director.gd` | Preserve | Round tests; seen in screenshots |
 | Post-KO input | `fighter.gd` | Improve: the original let dial-a-combo links keep chaining through the round end; now nothing chains after a knockout | Test |
 | CPU reaction delay | `cpu_brain.gd` | Improve: the original read some opponent states and all distances live; now everything is seen through the delay | Identical-seed test |
-| Impact presentation (hit-stop, body flash, ring, sparks, light, blood by gore setting, dust, camera shake and kick) | `vfx.gd`, `fight_camera.gd`, `fighter_view.gd` | Preserve | Seen in screenshots |
+| Impact presentation (hit-stop, body flash, ring, sparks, light, blood by gore setting, dust, camera shake and kick) | `vfx.gd`, `fight_camera.gd`, `fighter_view.gd` | Improve: the victim's shake fades over the freeze (vertical in the air), bodies keep moving slightly through it, the flash only on counters and heavy blows, the camera still on light and medium blows; sound by where a blow lands and the weapon's material | Seen in recordings |
+| Animation: key poses, eases, crossfades, mirroring, planted feet, hit springs | `fighter_view.gd`, `pose_library.gd` | Preserve (the rig matches joint by joint) and improve: follow-through, strikes that drive through contact, reactions by the blow's direction (the hit springs had pitched the head toward the attacker), stance and walk rhythm by style, hands carried with the chest, a turn-round on cross-over, head-shot knockouts with the fencing response, a technical stand-up; per-fighter stance refinements in `poses/<id>_style.json` (Thai guard, Prize Ring guard, sumo squat, bagua twist, ichimonji, a fixed diving helmet) | Tests (attacking arm on its pose, blow directions, continuous turn); seen in recordings |
 
 ## Progression and settings
 
 | Item | Evidence | Disposition | Verified |
 |---|---|---|---|
 | Records per fighter and tower, survival best, trials done, endings, unlocks (costumes, Roost), stats, tutorial flag, stranger memory | `scripts/core/progress.gd` | Preserve format (version 1); stored in `~/.local/share/MortalSlopbat/UE5/`; the original's `progress.json` is read once and never written | Tests (records, damage, interrupted writes, later versions, migration) |
-| Settings: full screen, VSync, graphics, volumes, shake, flashes, effects, gore, input display, smoothing, post effects, difficulty, key rebinding, device assignment | `scripts/core/settings.gd` | Preserve and improve: resolution, frame cap, text size, dead zone, vibration, button names, pad rebinding, voice volume, display changes revert unless kept | Tests (round trip, bad values, reserved inputs); a change saved in a scripted flow; the revert timer and display modes not seen on a real display |
+| Settings: full screen, VSync, graphics, volumes, shake, flashes, effects, gore, input display, smoothing, post effects, difficulty, key rebinding, device assignment | `scripts/core/settings.gd` | Preserve and improve: resolution, frame cap (following the display by default), dynamic render resolution, an Epic graphics level, text size, dead zone, vibration, button names, pad rebinding, voice volume, display changes revert unless kept | Tests (round trip, bad values, reserved inputs); a change saved in a scripted flow; the revert timer, the display modes and F11 checked on a 3440 x 1440 display at 165 Hz |
 
 ## Platform
 

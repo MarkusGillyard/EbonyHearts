@@ -7,15 +7,15 @@ for sessions, `Saved/Logs/tests.log` for the last test run.
 
 ## Automated tests
 
-`run_tests` (Unreal automation, headless): **69 tests, all passing** on the final source.
+`run_tests` (Unreal automation, headless): **70 tests, all passing** on the final source.
 
 | Area | What the tests hold |
 |---|---|
 | Timing and input | Same inputs at 30/60/144 Hz and uneven frame times give the same match; the clock's catch-up and overload; the 6-tick buffer and its expiry; presses during hit-stop kept; held directions; motions from either side and through a crossover; opposite directions cancel; one press starts one move. |
-| Combat | Active windows from the first frame; whiffs out of range; highs, lows, overheads and guards from either side; chip only from specials and projectiles; throws, breaks, back throws, command grabs beating block; trades; counter hits; damage scaling; juggle limit; run-meter costs; projectiles one at a time and clashing; parry, armour, teleport; bodies never overlap or leave the stage. |
+| Combat | A counter hit's extra freeze falls on the victim alone and leaves frame advantage as it was; active windows from the first frame; whiffs out of range; highs, lows, overheads and guards from either side; chip only from specials and projectiles; throws, breaks, back throws, command grabs beating block; trades; counter hits; damage scaling; juggle limit; run-meter costs; projectiles one at a time and clashing; parry, armour, teleport; bodies never overlap or leave the stage. |
 | Match rules | KO and the next round, double KO, timeout and draw, deciding KO with finisher, the finish window timing out, restart clearing everything, input after KO changing nothing, flawless, no match running forever. |
 | Roster and AI | All data loads and validates; every trial possible; CPU against CPU in every pairing; the CPU never reacts before its delay; the boss can't be thrown, fights to an end, and storms only below half health; the stranger's memory only moves forward. |
-| Animation | The ported rig matches the Godot original joint by joint on every pose of every fighter; the animator follows every state of a match; through the follow-through the arm carrying a blow stays exactly on its authored pose until the blow is over; turning round after a cross-over moves no joint more than 30 cm in a frame and ends facing the new way. |
+| Animation | The ported rig matches the Godot original joint by joint on every pose of every fighter; the animator follows every state of a match; through the follow-through the arm carrying a blow stays exactly on its authored pose until the blow is over; a straight drives the struck head away, a hook turns the face the way the fist travels, an uppercut lifts the chin and a body shot folds the torso, from either side; turning round after a cross-over moves no joint more than 30 cm in a frame and ends facing the new way. |
 | Content | Every fighter has a body that maps onto the rig, the character material on every slot and a portrait; every stage piece the data places exists with its materials and surface textures. |
 | Saves | Settings round trip and bad values; rebinding never binds twice; reserved keys and pad buttons refused (directions, menu keys, F-keys); progress records, a damaged file set aside, the original game's file read once and never written; an interrupted write recovered; a damaged settings file set aside; a later version's progress copied aside. |
 | Flow | Arcade ladders, scoring and the end; Survival waves, carried health and the boss. |
@@ -48,13 +48,36 @@ figures; every menu and overlay; HUD readouts in training and trials.
 |---|---|
 | Virtual Xbox 360 pad (uinput) on the real input path (SDL 3, engine, router), monitor attached | Passed: title to an arcade fight and back to the menu and out, controller only; the pad unplugged mid-fight paused the match; plugged back, it took the same slot and the pause menu worked. (`Tools/playtest/vpad.py --xbox`, `Tools/playtest/scripts/pad_arcade_flow.txt`.) |
 | Virtual DualShock 4 (uinput) | Not usable: SDL reads Sony pads through hidraw, which a uinput device lacks, so it is ignored. |
-| Real DualShock 4 over Bluetooth (paired with FLOWBOX) | Detected by the game ("PS4 Controller", rumble supported, slot 1). **No button on it was pressed** in this work: menus, fighting, rumble and reconnecting on the real pad are **unverified**. |
+| Real DualShock 4 over Bluetooth (paired with FLOWBOX) | Played by Markus on 27 October (2.1.0): menus and fights, about four minutes, with the PlayStation button names shown; no fault with the pad was reported. After a night idle, BlueZ listed it as connected with no kernel input device until the stale link was dropped and the PS button pressed (a Bluetooth stack state, not the game's). Rumble and reconnecting mid-fight on the real pad are not confirmed. |
 | DualSense, USB connection, two physical pads, keyboard plus pad | **Unverified** (no hardware handled). |
 
 Rumble is implemented through the engine's force-feedback interface for the struck player's pad;
 whether it is felt on a real pad is unverified.
 
 ## Performance
+
+### On Markus's monitor (2.2.0)
+
+Shipping package of commit `1667c91`, unpacked fresh, full screen (borderless) on a 3440 x 1440
+display at 165 Hz (DP, X11, Cinnamon, no variable refresh), default settings: graphics High, VSync
+on, frame cap following the display (82.5 fps, every second refresh), dynamic resolution. The CPU
+played an arcade fight for about 90 s (`-SlopAutoPlay=2 -SlopFrameStats`).
+
+| Measure | Settled play |
+|---|---|
+| Frames, time | 7,007 frames, 85 s |
+| Frame time median / p95 / p99 / max | 12.12 / 12.12 / 12.12 / 21.3 ms |
+| Average FPS, 1% low | 82.5, 79.3 |
+| Pacing | 99.9 % of frames within 1 ms of the median; no frame over 25 ms |
+| GPU frame time median / p95 | 10.85 / 11.15 ms |
+| Render scale (dynamic resolution) | median 60 %, lowest 50 % |
+| Resident memory | peak 1,534 MB |
+
+Before the frame-pacing work, 2.1.0 on the same display ran its fights at about 50 fps, unevenly
+(GPU about 20 ms at full resolution on the Epic level, 33 frames over 25 ms in two minutes), and
+with VSync on at 165 Hz it was held to 60 by the Vulkan CPU pacer.
+
+### Unattended session at 1080p (2.0.0)
 
 Shipping package of commit `f175b91` (the release differs from it only in the HUD's layout on
 non-16:9 screens), 30-minute unattended session (`Tools/perf/soak.sh`, the CPU
@@ -93,13 +116,14 @@ folder and run from there with the editor closed (below).
 
 ## Display and what offscreen means
 
-For the later part of the work FLOWBOX's monitor was switched off (X reported no monitors), and a
+For the 2.0.0 session above FLOWBOX's monitor was switched off (X reported no monitors), and a
 Vulkan window cannot present without one, so the game was run with Unreal's `-RenderOffscreen`:
 the same renderer and GPU, rendering every frame at 1920 x 1080, without presenting it. In that
-mode SDL uses its dummy video and audio drivers, so pads and sound are not available; the pad
-tests above were run earlier with the monitor on. Timings offscreen leave out presentation and
-VSync, so a windowed session is worth one more measurement (`Tools/perf/soak.sh` with the monitor
-on).
+mode SDL uses its dummy video and audio drivers, so pads and sound are not available. The 2.2.0
+figures were taken on the real display, presenting with VSync. On that display (3440 x 1440, 21:9)
+the menus keep their 16:9 layout centred, the fight camera fills the width and the HUD keeps its
+16:9 width; switching to a window and back in Settings (with the keep-or-revert prompt), and F11,
+were checked.
 
 ## Found and fixed during validation
 
@@ -115,10 +139,22 @@ on).
   held inputs; text size and vibration did nothing; the right-hand keyboard player had no Back.
 - An offscreen run with no frame cap let the driver's memory grow to 7-10 GB within a minute; the
   frame cap now always applies, and the capped game holds about 1.4 GB on the title screen.
+- On Markus's monitor (Cinnamon, X11) the game came up as an ordinary decorated window while the
+  engine recorded full screen: the window manager misses the request the engine makes while the
+  window is hidden. The game now checks the window against its display after start and asks again.
+- On a 165 Hz display VSync'd frames were held to exactly 60: the Vulkan RHI's CPU frame pacer
+  assumes 60 Hz on Linux. It is off; the frame cap follows the display.
+- At 3440 x 1440 the GPU needed about 20 ms a frame on the old Epic level (about 50 fps, uneven).
+  TSR's history at twice the output size cost 3.5 ms alone; it now stays at output size, High uses
+  the engine's High level, and dynamic resolution holds the frame rate.
+- Since the port the hit-reaction springs had pitched a struck head toward the attacker before it
+  rebounded; they now drive it away (a test holds every blow direction).
+- Hands were placed in the fighter's root space, so they hung where the pose put them while the
+  body bobbed, leaned or recoiled; they now move with the chest (the arm carrying a blow excepted).
 
 ## Not verified
 
-- Physical PS4 and PS5 pads, USB and Bluetooth, rumble, two pads (above).
+- DualSense, USB connection, rumble and reconnection on a real pad, two physical pads (above).
 - Windowed presentation timings with VSync (above).
 - Audio by ear: levels, mix and the layering were checked in code and logs only.
 - Other aspect ratios on a real display. At 1920 x 1200 (offscreen) the menus letterbox, the

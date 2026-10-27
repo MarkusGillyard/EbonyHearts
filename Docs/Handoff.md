@@ -12,8 +12,9 @@ evidence behind every claim here.
 | Game | Complete: six fighters, the Slopbat and the stranger; four stages; Arcade, Survival, Versus, Training, Tutorial, Trials, Extras, Settings; saves and settings; controllers and keyboard. |
 | Art | All eight fighters built from CC0 MakeHuman bodies with scripted costumes (`Tools/blender`); four stage sets built in Blender (`Tools/blender/stages`); CC0 surfaces, props, skies and sounds. |
 | Tests | Automation tests (`run_tests`), scripted flows for every mode (`Tools/playtest`), unattended packaged sessions (`Tools/perf/soak.sh`). |
-| Package | `MortalSlopbat-2.0.0-linux-x86_64.tar.gz` (498 MB, SHA-256 `4bbb5e1a3c2c758a834ce3e5812d8477d889c1bdb451263705b1cc1775d8a315`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `f1e9e4b`; unpack and run `./MortalSlopbat.sh`. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
-| Saves | None exist yet for this version: test runs used separate profiles and were cleared, so the first launch starts fresh (the Godot game's own files in `~/.local/share/MortalSlopbat/` are untouched). |
+| Combat feel | 2.2.0 applies the presentation changes ranked by the study in `Docs/Martial-arts.md` (strikes, hit-stop, reactions, styles, sound) and one rule change (counter-hit freeze on the victim); frame data otherwise unchanged. |
+| Package | `MortalSlopbat-2.2.0-linux-x86_64.tar.gz` (498 MB, SHA-256 `c6b05337cf88e2cef5fd3170ced9e8613b6cb0ed8fef0f471d0ffd05f4cec5d0`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `1667c91`; unpack and run `./MortalSlopbat.sh`. The earlier 2.0.0 archive is kept beside it. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
+| Saves | Markus's own settings and progress from playing 2.1.0 are in `~/.local/share/MortalSlopbat/UE5/` (settings version 1: its default cap of 60 becomes Match the display when 2.2.0 loads it). Test runs used separate profiles, cleared afterwards. The Godot game's own files in `~/.local/share/MortalSlopbat/` are untouched. |
 
 ## Picking it up
 
@@ -36,12 +37,17 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
 
 ## Open
 
-- **Physical controllers.** A DualShock 4 is paired over Bluetooth with FLOWBOX and the game
-  detects it, but no button on a real pad has been pressed in this work. DualSense, USB, rumble
-  and real two-pad play are untested (`Docs/Validation.md`).
-- **Windowed performance.** The monitor was switched off for the later part of the work, so the
-  final figures were taken rendering offscreen on the same GPU (no presentation, no VSync). A
-  windowed run with the monitor on is worth repeating once (`Tools/perf/soak.sh`).
+- **Licensed motion capture and a realism pass on the art.** Surveys of mocap and asset sources
+  whose licences allow use in the game were under way; nothing has been downloaded. The study
+  recommends mocap for idles, walks, falls, get-ups and pose reference, not for playing strikes.
+- **The study's other rule changes** (not done): a teep and a shin check for Ashka, period throws
+  for Bram (chancery, cross-buttock), more push-out on Gorm's thrusts, optional leg damage. Each
+  touches balance and the Trials, so each needs a playtest.
+- **Costume secondary motion** (coat tails, veil, ponytail, chain) and damage that builds up on the
+  body: need rig bones and material work.
+- **Physical controllers.** Markus played menus and fights on his DualShock 4 over Bluetooth with
+  2.1.0. Rumble on it, reconnecting mid-fight, DualSense, USB and two physical pads are
+  unconfirmed (`Docs/Validation.md`).
 - **Audio by ear.** Mixing, levels and the layering of the original's sounds with the CC0 impacts
   have been checked in code and logs, not listened to.
 - **Art rough spots** noted by the fighter builds (`SourceArt/Fighters/README.md`): Mirela's skirt
