@@ -95,6 +95,9 @@
 						"inout"
 					]
 				]
+			},
+			"sfx": {
+				"swing": "light"
 			}
 		},
 		"dax_crack": {
@@ -166,7 +169,10 @@
 				7.5,
 				3.2
 			],
-			"hitstop": 26
+			"hitstop": 26,
+			"sfx": {
+				"swing": "heavy"
+			}
 		},
 		"dax_palm": {
 			"name": "Palm",
@@ -217,7 +223,10 @@
 				7.0,
 				3.4
 			],
-			"hitstop": 22
+			"hitstop": 22,
+			"sfx": {
+				"swing": "heavy"
+			}
 		}
 	},
 	"commands": [],
