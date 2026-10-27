@@ -133,6 +133,37 @@ void ASlopVfx::Flash(const FVector& P, const FLinearColor& C, float Intensity)
 	Flashes.Add({L, 0.12, 0.0, Intensity});
 }
 
+// How each projectile kind looks, after the original's table: fire and energy glow and light
+// their surroundings; thrown steel, tar and the anchor are solid and unlit; the ground slap and
+// the wind are only dust and streaks along their path.
+namespace
+{
+	enum class EProjSolid : uint8 { None, Blade, Harpoon, Anchor, Tar };
+	struct FProjLook { FLinearColor Core; float Glow; float Light; float CoreSize; EProjSolid Solid; int32 Trail; float TrailEvery = 0.03f; float TrailSize = 0.f; };
+
+	const FProjLook& LookOf(FName Kind)
+	{
+		// Trail: -1 none, else the particle kind (cast) streamed behind it.
+		static const TMap<FName, FProjLook> Looks = {
+			{TEXT("ember"), {FLinearColor(1.f, 0.55f, 0.15f), 8.f, 9.f, 1.f, EProjSolid::None, 1}},
+			{TEXT("flare"), {FLinearColor(1.f, 0.22f, 0.12f), 9.f, 10.f, 0.8f, EProjSolid::None, 1}},
+			{TEXT("orb"), {FLinearColor(0.8f, 0.9f, 1.f), 6.f, 6.f, 1.f, EProjSolid::None, -1}},
+			{TEXT("wave"), {FLinearColor(0.55f, 0.8f, 1.f), 0.5f, 5.f, 0.25f, EProjSolid::None, 5}},
+			{TEXT("bubble"), {FLinearColor(0.55f, 0.95f, 0.85f), 0.22f, 2.f, 0.9f, EProjSolid::None, -1}},
+			{TEXT("storm"), {FLinearColor(0.6f, 1.f, 0.4f), 9.f, 12.f, 1.f, EProjSolid::None, 4}},
+			{TEXT("tar"), {FLinearColor(0.05f, 0.08f, 0.04f), 0.f, 0.f, 0.f, EProjSolid::Tar, 4}},
+			{TEXT("sickle"), {FLinearColor(0.75f, 0.8f, 0.85f), 0.f, 0.f, 0.f, EProjSolid::Blade, -1}},
+			{TEXT("harpoon"), {FLinearColor(0.8f, 0.62f, 0.3f), 0.f, 0.f, 0.f, EProjSolid::Harpoon, -1}},
+			{TEXT("anchor"), {FLinearColor(0.25f, 0.25f, 0.27f), 0.f, 0.f, 0.f, EProjSolid::Anchor, 3}},
+			{TEXT("quake"), {FLinearColor(0.55f, 0.45f, 0.32f), 0.f, 0.f, 0.f, EProjSolid::None, 3, 0.015f, 0.09f}},
+			{TEXT("gust"), {FLinearColor(0.75f, 0.82f, 0.8f), 0.f, 0.f, 0.f, EProjSolid::None, 3, 0.008f, 0.13f}},
+		};
+		static const FProjLook Default = {FLinearColor(0.9f, 0.85f, 0.6f), 6.f, 6.f, 1.f, EProjSolid::None, -1};
+		const FProjLook* L = Looks.Find(Kind);
+		return L ? *L : Default;
+	}
+}
+
 void ASlopVfx::OnEvent(const FSimEvent& E)
 {
 	ASlopMatch* M = Match.Get();
@@ -176,6 +207,12 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 		}
 		Spawn(EKind::Disc, P, FVector::ZeroVector, 0.07, 0.2 + S * 0.2, 1.0, 0, 0);
 		Flash(P, FLinearColor(1.f, 0.8f, 0.55f), 2.5f + S * 5.f);
+		if (E.bKO)
+		{
+			// The deciding blow, as in the original: a wide white ring and a bright flash.
+			Spawn(EKind::Ring, P, FVector::ZeroVector, 0.34, 0.2, 7.5, 0, 0);
+			Flash(P, FLinearColor(1.f, 0.9f, 0.7f), 14.f);
+		}
 		if (Gore != TEXT("off") && !E.bProj && E.Damage > 0)
 		{
 			const int32 N = Gore == TEXT("low") ? 3 : 6 + (int32)(S * 10);
@@ -216,8 +253,25 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 		}
 		break;
 	case EEvent::ProjectileEnd:
-		Burst(EKind::Ember, FVector(E.Point.X, E.Point.Y, 0.2), 10, 3.0, 0.25, 0.025);
+	{
+		// It breaks up into what it was made of: fire into embers, steel into sparks, tar into
+		// slime, the bubble into spray, the anchor and the ground's shock into dust.
+		const FProjLook& L = LookOf(E.Kind);
+		const EKind K = L.Glow > 0.f && E.Kind != TEXT("bubble") && E.Kind != TEXT("wave") ? EKind::Ember
+			: (L.Solid == EProjSolid::Blade || L.Solid == EProjSolid::Harpoon) ? EKind::Spark
+			: E.Kind == TEXT("bubble") || E.Kind == TEXT("wave") ? EKind::Pale
+			: L.Solid == EProjSolid::Tar ? EKind::Slop : EKind::Dust;
+		Burst(K, FVector(E.Point.X, E.Point.Y, 0.2), 10, K == EKind::Dust ? 1.4 : 3.0, 0.25, K == EKind::Dust ? 0.07 : 0.025);
 		break;
+	}
+	case EEvent::ThrowBreak:
+	{
+		// Two grips torn apart: a quick flash between them.
+		const FVector Mid((M->Sim.Fighters[0].Pos.X + M->Sim.Fighters[1].Pos.X) * 0.5, 1.3, 0.1);
+		Flash(Mid, FLinearColor(1.f, 1.f, 1.f), 4.f);
+		Burst(EKind::Pale, Mid, 8, 2.2, 0.25, 0.015);
+		break;
+	}
 	case EEvent::Teleport:
 		if (E.Who >= 0)
 		{
@@ -227,37 +281,6 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 		break;
 	default:
 		break;
-	}
-}
-
-// How each projectile kind looks, after the original's table: fire and energy glow and light
-// their surroundings; thrown steel, tar and the anchor are solid and unlit; the ground slap and
-// the wind are only dust and streaks along their path.
-namespace
-{
-	enum class EProjSolid : uint8 { None, Blade, Harpoon, Anchor, Tar };
-	struct FProjLook { FLinearColor Core; float Glow; float Light; float CoreSize; EProjSolid Solid; int32 Trail; float TrailEvery = 0.03f; float TrailSize = 0.f; };
-
-	const FProjLook& LookOf(FName Kind)
-	{
-		// Trail: -1 none, else the particle kind (cast) streamed behind it.
-		static const TMap<FName, FProjLook> Looks = {
-			{TEXT("ember"), {FLinearColor(1.f, 0.55f, 0.15f), 8.f, 9.f, 1.f, EProjSolid::None, 1}},
-			{TEXT("flare"), {FLinearColor(1.f, 0.22f, 0.12f), 9.f, 10.f, 0.8f, EProjSolid::None, 1}},
-			{TEXT("orb"), {FLinearColor(0.8f, 0.9f, 1.f), 6.f, 6.f, 1.f, EProjSolid::None, -1}},
-			{TEXT("wave"), {FLinearColor(0.55f, 0.8f, 1.f), 0.5f, 5.f, 0.25f, EProjSolid::None, 5}},
-			{TEXT("bubble"), {FLinearColor(0.55f, 0.95f, 0.85f), 0.22f, 2.f, 0.9f, EProjSolid::None, -1}},
-			{TEXT("storm"), {FLinearColor(0.6f, 1.f, 0.4f), 9.f, 12.f, 1.f, EProjSolid::None, 4}},
-			{TEXT("tar"), {FLinearColor(0.05f, 0.08f, 0.04f), 0.f, 0.f, 0.f, EProjSolid::Tar, 4}},
-			{TEXT("sickle"), {FLinearColor(0.75f, 0.8f, 0.85f), 0.f, 0.f, 0.f, EProjSolid::Blade, -1}},
-			{TEXT("harpoon"), {FLinearColor(0.8f, 0.62f, 0.3f), 0.f, 0.f, 0.f, EProjSolid::Harpoon, -1}},
-			{TEXT("anchor"), {FLinearColor(0.25f, 0.25f, 0.27f), 0.f, 0.f, 0.f, EProjSolid::Anchor, 3}},
-			{TEXT("quake"), {FLinearColor(0.55f, 0.45f, 0.32f), 0.f, 0.f, 0.f, EProjSolid::None, 3, 0.015f, 0.09f}},
-			{TEXT("gust"), {FLinearColor(0.75f, 0.82f, 0.8f), 0.f, 0.f, 0.f, EProjSolid::None, 3, 0.008f, 0.13f}},
-		};
-		static const FProjLook Default = {FLinearColor(0.9f, 0.85f, 0.6f), 6.f, 6.f, 1.f, EProjSolid::None, -1};
-		const FProjLook* L = Looks.Find(Kind);
-		return L ? *L : Default;
 	}
 }
 
