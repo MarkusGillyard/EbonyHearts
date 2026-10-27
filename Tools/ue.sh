@@ -28,6 +28,10 @@ run_tests() {
 	echo "passed: $(grep -c "Result={Success}" "$log")  failed: $(grep -c "Result={Fail}" "$log")"
 	grep -E "Result=\{Fail" "$log" | sed -E 's/.*Name=\{([^}]*)\}.*/FAIL \1/'
 	grep -E "^.*LogAutomationController: Error" "$log" | sed -E 's/.*Error: //' | head -40
+	# Fails when any test failed or none ran, so `run_tests && git commit` cannot commit a failure.
+	local failed passed
+	failed=$(grep -c "Result={Fail}" "$log" 2>/dev/null); passed=$(grep -c "Result={Success}" "$log" 2>/dev/null)
+	[ "${failed:-0}" -eq 0 ] && [ "${passed:-0}" -gt 0 ]
 }
 # Runs the game from the editor build in a window. Extra arguments pass through (e.g. -SlopMatch=...).
 # With no monitor attached (display switched off) a window's Vulkan presentation blocks forever;
