@@ -13,7 +13,7 @@ evidence behind every claim here.
 | Art | All eight fighters built from CC0 MakeHuman bodies with scripted costumes (`Tools/blender`); four stage sets built in Blender (`Tools/blender/stages`); CC0 surfaces, props, skies and sounds. |
 | Tests | Automation tests (`run_tests`), scripted flows for every mode (`Tools/playtest`), unattended packaged sessions (`Tools/perf/soak.sh`). |
 | Combat feel | 2.2.0 applies the presentation changes ranked by the study in `Docs/Martial-arts.md` (strikes, hit-stop, reactions, styles, sound) and one rule change (counter-hit freeze on the victim); frame data otherwise unchanged. 2.3.0 to 2.5.0 bring in motion capture: strikes, footwork, the block, Daxion's evade, intros and wins. |
-| Package | `MortalSlopbat-2.5.2-linux-x86_64.tar.gz` (498 MB, SHA-256 `c4a626df68e725ad2ca7879a6c6a9bac6eeeb294f82f9ee56444d54ddd23ce4b`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `a944464` (training options, measured advantage, record and playback, planted feet, the deeper crouch, the keen's rings); unpack and run `./MortalSlopbat.sh`. Earlier archives (2.0.0 to 2.5.1) are kept beside it. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
+| Package | `MortalSlopbat-2.5.3-linux-x86_64.tar.gz` (498 MB, SHA-256 `7f9cfd6abcd0bbef61f4843b760d9275fcfb8e7a4305a4ee3e686c308c76365c`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `c8fce5d` (2.5.2 with knocked-down bodies on the floor, throws that keep the bodies apart, and weapons and footsteps levelled with the fists); unpack and run `./MortalSlopbat.sh`. Earlier archives (2.0.0 to 2.5.2) are kept beside it. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
 | Saves | Markus's own settings and progress from playing 2.1.0 are in `~/.local/share/MortalSlopbat/UE5/` (settings version 1: its default cap of 60 becomes Match the display when 2.2.0 loads it). Test runs used separate profiles, cleared afterwards. The Godot game's own files in `~/.local/share/MortalSlopbat/` are untouched. |
 
 ## Picking it up
@@ -51,6 +51,14 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   through it). Still off, and left because the boxes are rules: standing, Gorm's sumo stance, Nix,
   Mirela and the Slopbat sit 16-39 cm under a hurtbox drawn for upright fighters, so a high attack
   passing just over those heads still hits.
+- **Bodies against the floor and each other (2.5.3 tests).** Knocked down, the spine now rests
+  9-11 cm up (it floated at 15-18); thrown, the two bodies' spines and heads stay 11 cm or more
+  apart (the chancery had the victim's head inside Bram, the back throws clipped heads); fighters
+  pushed together stay 31 cm clear. Bram's cross-buttock is the closest, at 11 cm, as it rolls the
+  victim over his back.
+- **The mix, measured (2.5.3).** `Tools/audio_levels.py` reads every sound's peak and loudness:
+  the Kenney files are peak-normalised, so the short weapon contacts played 4-10 dB under the
+  fists. They were raised as far as their peaks allow; nobody has listened since.
 - **Training (2.5.2).** Training Options in the pause menu (dummy, boxes, frame data, states, input
   display, slow motion) for the controller; the frame view shows the measured advantage of the last
   exchange; the dummy can record ten seconds of the player's control and play it back. The listed
