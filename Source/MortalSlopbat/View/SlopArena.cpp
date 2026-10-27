@@ -298,6 +298,9 @@ void ASlopArena::Lights(const TArray<TSharedPtr<FJsonValue>>& List)
 			Dl->SetDynamicShadowDistanceMovableLight(bHigh ? 4000.f : 2500.f);
 			Dl->SetDynamicShadowCascades(bHigh ? 3 : 2);
 			Dl->SetCastShadows(bShadows);
+			// Screen-space contact shadows ground the fighters' feet and darken the folds of their
+			// bodies where the shadow maps are too coarse.
+			Dl->ContactShadowLength = bShadows ? 0.03f : 0.f;
 			// The shadowing key is the one directional light that lights translucency and fog.
 			Dl->SetForwardShadingPriority(bShadows ? 1 : 0);
 			Dl->SetRelativeRotation(StageDir(O, TEXT("dir")).Rotation());
@@ -323,6 +326,7 @@ void ASlopArena::Lights(const TArray<TSharedPtr<FJsonValue>>& List)
 			Pl->SetAttenuationRadius(StageNum(O, TEXT("radius_m"), 6.0) * 100.0);
 			Pl->SetSourceRadius(StageNum(O, TEXT("source_radius_m"), 0.1) * 100.0);
 			Pl->SetCastShadows(bShadows && bHigh);
+			Pl->ContactShadowLength = bShadows && bHigh ? 0.02f : 0.f;
 			Pl->SetRelativeLocation(StagePos(O, TEXT("pos")));
 			Light = Pl;
 		}

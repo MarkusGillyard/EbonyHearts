@@ -347,6 +347,8 @@
     0.007
    ],
    "roughness": 0.08,
+   "ripple": 0.01,
+   "ripple_scale": 0.008,
    "opacity": 1.0,
    "note": "tar pools on the ledge: black, glossy, a faint green sheen, slow bubbles"
   },
@@ -358,6 +360,8 @@
     0.01
    ],
    "roughness": 0.2,
+   "ripple": 0.02,
+   "ripple_scale": 0.01,
    "opacity": 1.0,
    "emissive_color": [
     0.4,

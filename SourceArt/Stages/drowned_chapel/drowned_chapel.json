@@ -536,6 +536,8 @@
     0.06
    ],
    "roughness": 0.04,
+   "ripple": 0.03,
+   "ripple_scale": 0.012,
    "opacity": 0.35,
    "note": "a 3.5 cm sheet over the flags: clear, reflective, ripples and drip rings; no collision"
   }

@@ -481,6 +481,8 @@
     0.013
    ],
    "roughness": 0.05,
+   "ripple": 0.025,
+   "ripple_scale": 0.006,
    "opacity": 1.0,
    "note": "black bog water with a little green scum; gentle swell; reflections matter"
   }

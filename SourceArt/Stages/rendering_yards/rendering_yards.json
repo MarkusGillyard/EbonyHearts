@@ -632,6 +632,8 @@
     0.012
    ],
    "roughness": 0.03,
+   "ripple": 0.035,
+   "ripple_scale": 0.02,
    "opacity": 0.5,
    "note": "rain puddles on the plates: near-black, glossy, ripples from the drizzle"
   }

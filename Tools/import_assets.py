@@ -503,11 +503,37 @@ def stage_glow_material():
 
 def water_material():
     """M_Water: still dark water, tar and puddles: near-black, glossy, so the screen-space
-    reflections carry the lights; an optional faint glow (the Roost's tar falls)."""
+    reflections carry the lights; an optional faint glow (the Roost's tar falls). Broad, faint
+    ripples (world-space noise of size 1/RippleScale cm drifting slowly, RippleStrength) and a
+    roughness floor make the reflections waver as standing water does instead of mirroring like
+    glass; strong or fine ripples read as wet cobbles instead."""
     m = fresh_material("/Game/Slop/Materials/M_Water")
     col = vector(m, "Color", (0.02, 0.02, 0.02, 1), -600, 0)
     output(col, "", unreal.MaterialProperty.MP_BASE_COLOR)
-    output(scalar(m, "Roughness", 0.05, -600, 150), "", unreal.MaterialProperty.MP_ROUGHNESS)
+    rough = expr(m, unreal.MaterialExpressionMax, -350, 150)
+    link(scalar(m, "Roughness", 0.05, -600, 150), "", rough, "A")
+    link(const(m, 0.09, -600, 200), "", rough, "B")
+    output(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    wp = expr(m, unreal.MaterialExpressionWorldPosition, -1300, 600)
+    t = expr(m, unreal.MaterialExpressionTime, -1300, 700)
+    drift = mul(m, t, vector(m, "RippleDrift", (0.25, 0.15, 0.3, 0), -1300, 760), -1100, 700)
+    pos = add(m, mul(m, wp, scalar(m, "RippleScale", 0.012, -1300, 650), -1100, 600), drift, -950, 640)
+    ripples = expr(m, unreal.MaterialExpressionVectorNoise, -800, 640)
+    ripples.set_editor_property("noise_function", unreal.VectorNoiseFunction.VNF_GRADIENT_ALU)
+    link(pos, "", ripples, "")
+    r3 = expr(m, unreal.MaterialExpressionComponentMask, -650, 640)
+    r3.set_editor_property("r", True)
+    r3.set_editor_property("g", True)
+    r3.set_editor_property("b", False)
+    r3.set_editor_property("a", False)
+    link(ripples, "", r3, "")
+    tilt = mul(m, r3, scalar(m, "RippleStrength", 0.03, -650, 720), -500, 660)
+    nrm = expr(m, unreal.MaterialExpressionAppendVector, -350, 660)
+    link(tilt, "", nrm, "A")
+    link(const(m, 1.0, -500, 760), "", nrm, "B")
+    nn = expr(m, unreal.MaterialExpressionNormalize, -200, 660)
+    link(nrm, "", nn, "")
+    output(nn, "", unreal.MaterialProperty.MP_NORMAL)
     output(scalar(m, "Specular", 0.5, -600, 250), "", unreal.MaterialProperty.MP_SPECULAR)
     em = mul(m, vector(m, "EmissiveColor", (0, 0, 0, 1), -600, 350), scalar(m, "Emissive", 0.0, -600, 480), -350, 400)
     output(em, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
@@ -584,6 +610,7 @@ SLOT_EXTRA = {
     "ashka_cloth": {"ClothDetail": 0.35},
     # The stranger in white stays clean.
     "daxion_cloth": {"ClothDetail": 0.15},
+    "mirela_gown": {"ClothDetail": 0.25},
 }
 
 
@@ -788,6 +815,8 @@ def stage_materials(st, d, dest):
         mi = material_instance(f"MI_{st}_{w['material']}", water, dest)
         MEL.set_material_instance_vector_parameter_value(mi, "Color", colour(w["color"]))
         MEL.set_material_instance_scalar_parameter_value(mi, "Roughness", w.get("roughness", 0.05))
+        MEL.set_material_instance_scalar_parameter_value(mi, "RippleStrength", w.get("ripple", 0.03))
+        MEL.set_material_instance_scalar_parameter_value(mi, "RippleScale", w.get("ripple_scale", 0.012))
         if "emissive" in w:
             MEL.set_material_instance_vector_parameter_value(mi, "EmissiveColor", colour(w.get("emissive_color", (1, 1, 1))))
             MEL.set_material_instance_scalar_parameter_value(mi, "Emissive", w["emissive"])
