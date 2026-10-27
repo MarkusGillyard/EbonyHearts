@@ -329,6 +329,65 @@ bool FSlopBossPatterns::RunTest(const FString&)
 	return true;
 }
 
+// The Slopbat keeps its distance with tar and wind, but it should not keep firing: after each
+// one it waits a while and never repeats the same one straight away, against a CPU that comes
+// at it or a player who only blocks.
+SLOP_TEST(FSlopBossRanged, "AI.BossDoesNotSpamRangedAttacks")
+bool FSlopBossRanged::RunTest(const FString&)
+{
+	const int32 Wait[] = {150, 120, 95};
+	for (int32 Opp = 0; Opp < 2; ++Opp)
+	{
+		for (int32 Level = 0; Level < 3; ++Level)
+		{
+			int32 Ranged = 0, Repeats = 0, MinGap = MAX_int32, Ticks = 0;
+			for (const FName& Id : FContent::Roster())
+			{
+				FFightSim Sim;
+				Sim.bIntro = false;
+				Sim.RoundsToWin = 1;
+				Sim.Setup(GetContent().Fighter(Id), GetContent().Fighter(TEXT("slopbat")));
+				FCpuBrain Cpu(Sim, 0, Level, 55);
+				FTrainingDummy Blocker(Sim, 0);
+				Blocker.SetMode(2);
+				FBossBrain Boss(Sim, 1, Level);
+				FName Last;
+				int32 LastAt = -1;
+				for (int32 T = 0; T < 60 * 60 * 2 && Sim.Phase != EPhase::MatchEnd; ++T)
+				{
+					FPadState Pads[2] = {Opp == 0 ? Cpu.Think() : Blocker.Think(), Boss.Think()};
+					Sim.Step(Pads);
+					++Ticks;
+					for (const FSimEvent& E : Sim.Events)
+					{
+						if (E.Type != EEvent::Move || E.Who != 1)
+						{
+							continue;
+						}
+						if (E.Move == TEXT("tar_spit") || E.Move == TEXT("wing_gust"))
+						{
+							++Ranged;
+							Repeats += E.Move == Last;
+							if (LastAt >= 0)
+							{
+								MinGap = FMath::Min(MinGap, E.Tick - LastAt);
+							}
+							LastAt = E.Tick;
+						}
+						Last = E.Move;
+					}
+				}
+			}
+			const TCHAR* Who = Opp == 0 ? TEXT("a CPU") : TEXT("a blocker");
+			UE_LOG(LogSlop, Display, TEXT("Slopbat at level %d against %s: %.1f ranged attacks a minute, shortest gap %d ticks"), Level, Who, Ranged * 3600.0 / FMath::Max(Ticks, 1), MinGap);
+			TestTrue(FString::Printf(TEXT("level %d against %s fires at all"), Level, Who), Ranged > 0);
+			TestEqual(FString::Printf(TEXT("level %d against %s never fires the same one twice running"), Level, Who), Repeats, 0);
+			TestTrue(FString::Printf(TEXT("level %d against %s waits at least %d ticks between them"), Level, Who, Wait[Level]), MinGap >= Wait[Level]);
+		}
+	}
+	return true;
+}
+
 SLOP_TEST(FSlopStranger, "AI.StrangerMemoryOnlyMovesForward")
 bool FSlopStranger::RunTest(const FString&)
 {

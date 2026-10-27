@@ -679,13 +679,26 @@ namespace Slop
 		: Sim(InSim), Index(InIndex)
 	{
 		static const FLevel Levels[] = {
-			{22, 720, 660, 0.25, 26, 0.15},
-			{16, 560, 520, 0.45, 20, 0.3},
-			{12, 440, 420, 0.65, 15, 0.45},
+			{22, 720, 660, 0.25, 26, 0.15, 150},
+			{16, 560, 520, 0.45, 20, 0.3, 120},
+			{12, 440, 420, 0.65, 15, 0.45, 95},
 		};
 		L = Levels[FMath::Clamp(Difficulty, 0, 2)];
 		Rng.Initialize(4242 + Difficulty);
 		DiveCd = L.DiveCd / 2;
+	}
+
+	static const TCHAR* const BossTar = TEXT("D,F+HP");
+	static const TCHAR* const BossGust = TEXT("B,F+HK");
+
+	void FBossBrain::Do(const TCHAR* Command)
+	{
+		Intent.Command(Command);
+		LastCommand = Command;
+		if (LastCommand == BossTar || LastCommand == BossGust)
+		{
+			RangedCd = L.RangedCd + Rng.RandRange(0, 45);
+		}
 	}
 
 	FPadState FBossBrain::Think()
@@ -705,6 +718,7 @@ namespace Slop
 		}
 		--DiveCd;
 		--StormCd;
+		--RangedCd;
 		if (Intent.Busy())
 		{
 			return Intent.Next(M.Facing);
@@ -717,7 +731,7 @@ namespace Slop
 		const bool bLow = double(M.Health) / M.MaxHealth() < 0.5;
 		if (bSeenAir && Dist < 2.4 && Rng.FRand() < L.Aa * 0.2)
 		{
-			Intent.Command(TEXT("D+HP"));
+			Do(TEXT("D+HP"));
 			return Intent.Next(M.Facing);
 		}
 		if (--ThinkT > 0)
@@ -733,34 +747,32 @@ namespace Slop
 		if (bLow && StormCd <= 0 && Dist < 3.0)
 		{
 			StormCd = L.StormCd + Rng.RandRange(0, 120);
-			Intent.Command(TEXT("B,B+HP"));
+			Do(TEXT("B,B+HP"));
 			return Intent.Next(M.Facing);
 		}
 		if (DiveCd <= 0 && O.State != EState::Down && O.State != EState::WakeUp)
 		{
 			DiveCd = L.DiveCd + Rng.RandRange(0, 180) - (bLow ? 120 : 0);
-			Intent.Command(TEXT("D,U+HK"));
+			Do(TEXT("D,U+HK"));
 			return Intent.Next(M.Facing);
 		}
 		const double R = Rng.FRand();
-		if (Dist > 3.2)
+		// Tar and wind keep its distance, but each is followed by a wait and neither comes twice
+		// running: meanwhile it walks in, so a gust that drove the opponent off is followed up.
+		const auto CanFire = [this](const TCHAR* Command) { return RangedCd <= 0 && LastCommand != Command; };
+		if (Dist > 1.5)
 		{
-			if (R < 0.45) Intent.Command(TEXT("D,F+HP"));
-			else if (R < 0.65) Intent.Command(TEXT("B,F+HK"));
-			else { Walk = 6; WalkT = Rng.RandRange(20, 40); }
-		}
-		else if (Dist > 1.5)
-		{
-			if (R < 0.3) Intent.Command(TEXT("D,F+HP"));
-			else if (R < 0.5) Intent.Command(TEXT("B,F+HK"));
-			else { Walk = 6; WalkT = Rng.RandRange(12, 26); }
+			const bool bFar = Dist > 3.2;
+			const TCHAR* Pick = R < (bFar ? 0.45 : 0.3) ? BossTar : (R < (bFar ? 0.65 : 0.5) ? BossGust : nullptr);
+			if (Pick && CanFire(Pick)) Do(Pick);
+			else { Walk = 6; WalkT = bFar ? Rng.RandRange(20, 40) : Rng.RandRange(12, 26); }
 		}
 		else
 		{
-			if (R < 0.18) Intent.Command(TEXT("F,F+LP"));
-			else if (R < 0.55) { Intent.Command(TEXT("HP")); Intent.Hold(5, 9); Intent.Command(TEXT("HP")); }
-			else if (R < 0.75) Intent.Command(TEXT("D+LK"));
-			else if (R < 0.85) Intent.Command(TEXT("B,F+HK"));
+			if (R < 0.18) Do(TEXT("F,F+LP"));
+			else if (R < 0.55) { Do(TEXT("HP")); Intent.Hold(5, 9); Intent.Command(TEXT("HP")); }
+			else if (R < 0.75) Do(TEXT("D+LK"));
+			else if (R < 0.85 && CanFire(BossGust)) Do(BossGust);
 			else { Walk = 4; WalkT = Rng.RandRange(10, 20); }
 		}
 		return Intent.Busy() ? Intent.Next(M.Facing) : FPadIntent::Pad(5, M.Facing);
