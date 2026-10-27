@@ -1,0 +1,87 @@
+{
+	"build": {
+		"shoulders": 1.03,
+		"chest": 0.98,
+		"waist": 0.9,
+		"limbs": 1.0,
+		"hips": 1.0
+	},
+	"materials": {
+		"skin": {
+			"color": "#9c6a48"
+		},
+		"hair": {
+			"color": "#16100c",
+			"roughness": 0.45
+		},
+		"brows": {
+			"color": "#16100c"
+		},
+		"eyes": {
+			"color": "#c98a2c",
+			"emission": 0.3
+		},
+		"vest": {
+			"color": "#2c211b",
+			"kind": "leather",
+			"roughness": 0.5
+		},
+		"shorts": {
+			"color": "#93301a",
+			"kind": "silk",
+			"roughness": 0.4
+		},
+		"trim": {
+			"color": "#d6a238",
+			"kind": "silk",
+			"roughness": 0.35
+		},
+		"wraps": {
+			"color": "#d8ccb2",
+			"kind": "fabric",
+			"roughness": 0.92
+		},
+		"band": {
+			"color": "#b8872f",
+			"kind": "metal",
+			"roughness": 0.35
+		},
+		"ember": {
+			"color": "#ff8a2a",
+			"kind": "metal",
+			"roughness": 0.2
+		}
+	},
+	"hair": {
+		"style": "long",
+		"strands": 320,
+		"volume": 0.75
+	},
+	"cloth": [
+		{
+			"kind": "hair",
+			"joint": "head",
+			"material": "hair",
+			"top": 0.065,
+			"back": 0.075,
+			"width": 0.05,
+			"length": 0.3,
+			"cols": 5,
+			"rows": 8,
+			"shape": 0.05,
+			"damping": 0.93
+		}
+	],
+	"sculpt": {
+		"figure": "female",
+		"muscle": 0.85,
+		"face": {
+			"jaw": 0.96,
+			"cheek": 1.05,
+			"eye_open": 0.9,
+			"tilt": 6.5,
+			"brow": 0.5
+		}
+	},
+	"glow": "#ff8a2a"
+}

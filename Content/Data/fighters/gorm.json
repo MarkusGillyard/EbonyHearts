@@ -1,0 +1,715 @@
+{
+	"id": "gorm",
+	"name": "Gorm Tallow",
+	"title": "The Renderer",
+	"pronoun": "him",
+	"style": "Sumo and catch wrestling",
+	"stats": {
+		"height": 2.12,
+		"health": 1000,
+		"walk_f": 1.9,
+		"walk_b": 1.6,
+		"run_speed": 4.4,
+		"jump_vy": 8.0,
+		"jump_vx": 2.2,
+		"push_w": 0.42
+	},
+	"basic_tweaks": {
+		"hp": {
+			"startup": 6,
+			"damage": 60,
+			"recovery": 12
+		},
+		"hp2": {
+			"startup": 6,
+			"damage": 55,
+			"chain": [
+				{
+					"input": "HP",
+					"move": "gorm_hammer",
+					"window": [
+						6,
+						16
+					],
+					"cost": 12
+				}
+			]
+		},
+		"lp": {
+			"damage": 50
+		},
+		"lp2": {
+			"damage": 45
+		},
+		"hk": {
+			"startup": 11,
+			"damage": 90,
+			"recovery": 18
+		},
+		"lk": {
+			"startup": 8,
+			"damage": 70,
+			"chain": [
+				{
+					"input": "HK",
+					"move": "gorm_belly",
+					"window": [
+						8,
+						18
+					],
+					"cost": 12
+				}
+			]
+		},
+		"roundhouse": {
+			"startup": 17,
+			"damage": 105,
+			"recovery": 26,
+			"anim": {
+				"tip": "foot_r",
+				"keys": [
+					[
+						11,
+						"rh_turn",
+						"out"
+					],
+					[
+						17,
+						"rh_hit",
+						"snap"
+					],
+					[
+						21,
+						"rh_hit",
+						"linear"
+					],
+					[
+						31,
+						"rh_follow",
+						"out"
+					],
+					[
+						43,
+						"stance",
+						"inout"
+					]
+				]
+			}
+		},
+		"sweep": {
+			"startup": 14,
+			"damage": 85,
+			"recovery": 28,
+			"anim": {
+				"tip": "foot_r",
+				"keys": [
+					[
+						8,
+						"sweep_load",
+						"out"
+					],
+					[
+						14,
+						"sweep_hit",
+						"snap"
+					],
+					[
+						18,
+						"sweep_hit",
+						"linear"
+					],
+					[
+						30,
+						"sweep_follow",
+						"out"
+					],
+					[
+						42,
+						"crouch",
+						"inout"
+					]
+				]
+			}
+		},
+		"uppercut": {
+			"startup": 10,
+			"damage": 130
+		},
+		"throw_f": {
+			"throw": {
+				"frames": 44,
+				"damage_frame": 28,
+				"damage": 140,
+				"release": [
+					3.6,
+					3.6
+				],
+				"recover": 10,
+				"path": [
+					[
+						0,
+						0.62,
+						0.0
+					],
+					[
+						10,
+						0.5,
+						0.2
+					],
+					[
+						20,
+						0.62,
+						0.85
+					],
+					[
+						28,
+						0.95,
+						0.7
+					],
+					[
+						34,
+						1.1,
+						0.3
+					]
+				]
+			}
+		}
+	},
+	"moves": {
+		"gorm_hammer": {
+			"name": "Tallow Mill: hammer",
+			"startup": 10,
+			"active": 4,
+			"recovery": 22,
+			"level": "overhead",
+			"damage": 85,
+			"hitboxes": [
+				{
+					"rect": [
+						0.25,
+						0.9,
+						0.7,
+						1.0
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						5,
+						"gorm_hammer_load",
+						"out"
+					],
+					[
+						10,
+						"gorm_hammer_hit",
+						"snap"
+					],
+					[
+						14,
+						"gorm_hammer_hit",
+						"linear"
+					],
+					[
+						35,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "chain",
+			"hitstun": 26,
+			"blockstun": 14,
+			"effect": "knockdown",
+			"launch": [
+				2.4,
+				3.2
+			],
+			"hitstop": 11,
+			"push_block": 0.7,
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"gorm_belly": {
+			"name": "Vat Stir: belly",
+			"startup": 9,
+			"active": 5,
+			"recovery": 18,
+			"level": "mid",
+			"damage": 80,
+			"hitboxes": [
+				{
+					"rect": [
+						0.15,
+						0.85,
+						0.65,
+						0.75
+					]
+				}
+			],
+			"anim": {
+				"tip": "hips",
+				"keys": [
+					[
+						4,
+						"gorm_belly_load",
+						"out"
+					],
+					[
+						9,
+						"gorm_belly_hit",
+						"snap"
+					],
+					[
+						13,
+						"gorm_belly_hit",
+						"linear"
+					],
+					[
+						31,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "chain",
+			"hitstun": 24,
+			"blockstun": 13,
+			"push_hit": 1.1,
+			"push_block": 1.0,
+			"motion": [
+				[
+					9,
+					0.45
+				]
+			],
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"vat_press": {
+			"name": "Vat Press",
+			"kind": "grab",
+			"startup": 7,
+			"active": 3,
+			"recovery": 32,
+			"level": "throw",
+			"requires": "",
+			"hitboxes": [
+				{
+					"rect": [
+						0.15,
+						0.4,
+						0.8,
+						1.4
+					]
+				}
+			],
+			"throw": {
+				"frames": 76,
+				"damage_frame": 60,
+				"damage": 210,
+				"release": [
+					1.2,
+					2.2
+				],
+				"recover": 12,
+				"path": [
+					[
+						0,
+						0.72,
+						0.15
+					],
+					[
+						18,
+						0.45,
+						1.85
+					],
+					[
+						40,
+						0.35,
+						2.05
+					],
+					[
+						56,
+						0.85,
+						0.6
+					],
+					[
+						60,
+						0.95,
+						0.1
+					],
+					[
+						76,
+						1.05,
+						0.0
+					]
+				]
+			},
+			"anim": {
+				"keys": [
+					[
+						4,
+						"grab_reach",
+						"snap"
+					],
+					[
+						10,
+						"grab_reach",
+						"linear"
+					],
+					[
+						40,
+						"stance",
+						"inout"
+					]
+				],
+				"hold": [
+					[
+						8,
+						"grab_hold",
+						"out"
+					],
+					[
+						22,
+						"gorm_lift",
+						"inout"
+					],
+					[
+						42,
+						"gorm_lift",
+						"linear"
+					],
+					[
+						58,
+						"gorm_slam",
+						"snap"
+					],
+					[
+						76,
+						"stance",
+						"inout"
+					]
+				],
+				"victim": [
+					[
+						6,
+						"thrown_hold",
+						"out"
+					],
+					[
+						22,
+						"thrown_lift",
+						"inout"
+					],
+					[
+						44,
+						"thrown_lift",
+						"linear"
+					],
+					[
+						58,
+						"air_fall",
+						"snap"
+					]
+				]
+			},
+			"tags": [
+				"grab"
+			],
+			"sfx": {
+				"swing": "grab"
+			}
+		},
+		"tallow_hide": {
+			"name": "Tallow Hide",
+			"kind": "special",
+			"startup": 14,
+			"active": 0,
+			"recovery": 22,
+			"level": "none",
+			"effects": {
+				"buff": "armor",
+				"buff_frame": 14,
+				"buff_ticks": 300,
+				"buff_hits": 2
+			},
+			"anim": {
+				"keys": [
+					[
+						8,
+						"gorm_hide_load",
+						"out"
+					],
+					[
+						14,
+						"gorm_hide",
+						"snap"
+					],
+					[
+						26,
+						"gorm_hide",
+						"linear"
+					],
+					[
+						36,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"tags": [
+				"buff"
+			],
+			"sfx": {
+				"swing": "steam"
+			}
+		},
+		"rendering_charge": {
+			"name": "Rendering Charge",
+			"startup": 12,
+			"active": 10,
+			"recovery": 26,
+			"level": "mid",
+			"damage": 95,
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						0.8,
+						0.65,
+						1.1
+					]
+				}
+			],
+			"anim": {
+				"tip": "chest",
+				"keys": [
+					[
+						5,
+						"gorm_charge_load",
+						"out"
+					],
+					[
+						12,
+						"gorm_charge",
+						"snap"
+					],
+					[
+						22,
+						"gorm_charge",
+						"linear"
+					],
+					[
+						43,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "special",
+			"hitstun": 26,
+			"blockstun": 16,
+			"effect": "knockdown",
+			"launch": [
+				3.6,
+				3.6
+			],
+			"hitstop": 11,
+			"chip": 15,
+			"push_block": 0.9,
+			"motion": [
+				[
+					4,
+					0.0
+				],
+				[
+					22,
+					2.6
+				],
+				[
+					30,
+					2.75
+				]
+			],
+			"props": {
+				"armor": [
+					4,
+					12
+				]
+			},
+			"tags": [
+				"rush",
+				"armor"
+			],
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"ground_slap": {
+			"name": "Ground Slap",
+			"kind": "special",
+			"startup": 16,
+			"active": 0,
+			"recovery": 26,
+			"level": "none",
+			"projectile": {
+				"frame": 16,
+				"kind": "quake",
+				"offset": [
+					0.9,
+					0.14
+				],
+				"speed": 6.5,
+				"size": [
+					0.55,
+					0.3
+				],
+				"life": 42,
+				"level": "low",
+				"damage": 85,
+				"chip": 12,
+				"effect": "sweep",
+				"launch": [
+					0.6,
+					3.2
+				],
+				"ground": "roll",
+				"hitstun": 26,
+				"blockstun": 16
+			},
+			"anim": {
+				"keys": [
+					[
+						9,
+						"gorm_slap_load",
+						"out"
+					],
+					[
+						16,
+						"gorm_slap",
+						"snap"
+					],
+					[
+						30,
+						"gorm_slap",
+						"linear"
+					],
+					[
+						42,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"tags": [
+				"projectile",
+				"low"
+			],
+			"sfx": {
+				"swing": "stamp"
+			}
+		},
+		"rendered_down": {
+			"name": "Rendered Down",
+			"kind": "finisher",
+			"total": 270,
+			"anim": {
+				"keys": [
+					[
+						10,
+						"grab_reach",
+						"out"
+					],
+					[
+						30,
+						"gorm_lift",
+						"inout"
+					],
+					[
+						70,
+						"gorm_lift",
+						"linear"
+					],
+					[
+						86,
+						"gorm_slam",
+						"snap"
+					],
+					[
+						120,
+						"stance",
+						"inout"
+					],
+					[
+						150,
+						"gorm_stomp_load",
+						"out"
+					],
+					[
+						168,
+						"gorm_stomp",
+						"snap"
+					],
+					[
+						220,
+						"gorm_stomp",
+						"linear"
+					],
+					[
+						270,
+						"win",
+						"inout"
+					]
+				]
+			}
+		}
+	},
+	"commands": [
+		[
+			"B,F+LP",
+			"vat_press"
+		],
+		[
+			"D,D+BL",
+			"tallow_hide"
+		],
+		[
+			"B,F+HK",
+			"rendering_charge"
+		],
+		[
+			"D,D+HP",
+			"ground_slap"
+		]
+	],
+	"finisher": {
+		"input": "F,D,F+HP",
+		"range": "close",
+		"move": "rendered_down"
+	},
+	"ai": {
+		"range": 0.9,
+		"aggression": 0.6,
+		"zoning": 0.1,
+		"anti_air": [
+			"uppercut"
+		],
+		"grab": "B,F+LP",
+		"combos": [
+			[
+				"HP",
+				"HP",
+				"HP"
+			],
+			[
+				"LK",
+				"HK"
+			]
+		],
+		"weights": {}
+	}
+}

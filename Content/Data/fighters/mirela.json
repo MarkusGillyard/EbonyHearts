@@ -1,0 +1,576 @@
+{
+	"id": "mirela",
+	"name": "Mirela Sorrow",
+	"title": "The Keening Widow",
+	"pronoun": "her",
+	"style": "Baguazhang palms and the dirge",
+	"stats": {
+		"height": 1.82,
+		"health": 1040,
+		"walk_f": 2.4,
+		"walk_b": 2.0,
+		"run_speed": 5.0
+	},
+	"basic_tweaks": {
+		"hp": {
+			"chain": [
+				{
+					"input": "LP",
+					"move": "mirela_double",
+					"window": [
+						5,
+						15
+					],
+					"cost": 12
+				},
+				{
+					"input": "HP",
+					"move": "hp2",
+					"window": [
+						5,
+						15
+					],
+					"cost": 6
+				}
+			]
+		},
+		"lk": {
+			"chain": [
+				{
+					"input": "B+HK",
+					"move": "mirela_crescent",
+					"window": [
+						7,
+						17
+					],
+					"cost": 12
+				}
+			]
+		}
+	},
+	"moves": {
+		"mirela_double": {
+			"name": "Mourning Palms: double palm",
+			"startup": 6,
+			"active": 3,
+			"recovery": 13,
+			"level": "mid",
+			"damage": 50,
+			"hitboxes": [
+				{
+					"rect": [
+						0.22,
+						1.0,
+						0.5,
+						0.45
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						3,
+						"mirela_double_load",
+						"out"
+					],
+					[
+						6,
+						"mirela_double_hit",
+						"snap"
+					],
+					[
+						9,
+						"mirela_double_hit",
+						"linear"
+					],
+					[
+						22,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "chain",
+			"hitstun": 20,
+			"blockstun": 11,
+			"chain": [
+				{
+					"input": "HP",
+					"move": "mirela_circle",
+					"window": [
+						6,
+						17
+					],
+					"cost": 12
+				}
+			],
+			"sfx": {
+				"swing": "light"
+			}
+		},
+		"mirela_circle": {
+			"name": "Mourning Palms: circling palm",
+			"startup": 9,
+			"active": 4,
+			"recovery": 20,
+			"level": "mid",
+			"damage": 70,
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						0.95,
+						0.55,
+						0.6
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						5,
+						"mirela_circle_load",
+						"out"
+					],
+					[
+						9,
+						"mirela_circle_hit",
+						"snap"
+					],
+					[
+						13,
+						"mirela_circle_hit",
+						"linear"
+					],
+					[
+						33,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "chain",
+			"hitstun": 26,
+			"blockstun": 13,
+			"effect": "knockdown",
+			"launch": [
+				3.4,
+				3.0
+			],
+			"push_block": 0.8,
+			"cancel": [
+				10,
+				22
+			],
+			"sfx": {
+				"swing": "medium"
+			}
+		},
+		"mirela_crescent": {
+			"name": "Veil Kick: crescent",
+			"startup": 10,
+			"active": 4,
+			"recovery": 18,
+			"level": "high",
+			"damage": 75,
+			"hitboxes": [
+				{
+					"rect": [
+						0.3,
+						1.25,
+						0.7,
+						0.45
+					]
+				}
+			],
+			"anim": {
+				"tip": "foot_l",
+				"keys": [
+					[
+						5,
+						"hk_chamber",
+						"out"
+					],
+					[
+						10,
+						"mirela_crescent_hit",
+						"snap"
+					],
+					[
+						14,
+						"mirela_crescent_hit",
+						"linear"
+					],
+					[
+						32,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "chain",
+			"hitstun": 26,
+			"blockstun": 13,
+			"effect": "knockdown",
+			"launch": [
+				3.0,
+				3.6
+			],
+			"sfx": {
+				"swing": "medium"
+			}
+		},
+		"lament": {
+			"name": "Lament",
+			"kind": "special",
+			"startup": 13,
+			"active": 0,
+			"recovery": 22,
+			"level": "none",
+			"projectile": {
+				"frame": 13,
+				"kind": "wave",
+				"offset": [
+					0.55,
+					1.0
+				],
+				"speed": 5.4,
+				"size": [
+					0.55,
+					1.6
+				],
+				"life": 130,
+				"strength": 2,
+				"level": "mid",
+				"damage": 75,
+				"chip": 14,
+				"hitstun": 28,
+				"blockstun": 18
+			},
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						7,
+						"mirela_lament_load",
+						"out"
+					],
+					[
+						13,
+						"mirela_lament",
+						"snap"
+					],
+					[
+						26,
+						"mirela_lament",
+						"linear"
+					],
+					[
+						35,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"tags": [
+				"projectile"
+			],
+			"sfx": {
+				"swing": "cast_wave"
+			}
+		},
+		"keen": {
+			"name": "Keen",
+			"startup": 14,
+			"active": 8,
+			"recovery": 24,
+			"level": "mid",
+			"damage": 55,
+			"hitboxes": [
+				{
+					"rect": [
+						0.35,
+						0.8,
+						1.7,
+						1.0
+					]
+				}
+			],
+			"anim": {
+				"tip": "head",
+				"keys": [
+					[
+						8,
+						"mirela_keen_load",
+						"out"
+					],
+					[
+						14,
+						"mirela_keen",
+						"snap"
+					],
+					[
+						34,
+						"mirela_keen",
+						"linear"
+					],
+					[
+						46,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "special",
+			"hitstun": 70,
+			"blockstun": 14,
+			"effect": "daze",
+			"chip": 6,
+			"tags": [
+				"far"
+			],
+			"sfx": {
+				"swing": "scream"
+			},
+			"props": {
+				"proj_invuln": [
+					1,
+					24
+				]
+			}
+		},
+		"grave_float": {
+			"name": "Grave Float",
+			"startup": 36,
+			"active": 12,
+			"recovery": 14,
+			"level": "overhead",
+			"damage": 70,
+			"hitboxes": [
+				{
+					"rect": [
+						0.1,
+						-0.2,
+						0.7,
+						0.85
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						8,
+						"jump",
+						"out"
+					],
+					[
+						16,
+						"mirela_float",
+						"inout"
+					],
+					[
+						32,
+						"mirela_float",
+						"linear"
+					],
+					[
+						36,
+						"mirela_float_dive",
+						"snap"
+					],
+					[
+						48,
+						"mirela_float_dive",
+						"linear"
+					],
+					[
+						61,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "special",
+			"hitstun": 24,
+			"blockstun": 14,
+			"lift": [
+				[
+					4,
+					0.0
+				],
+				[
+					16,
+					1.5
+				],
+				[
+					32,
+					1.6
+				],
+				[
+					42,
+					0.9
+				],
+				[
+					50,
+					0.0
+				]
+			],
+			"motion": [
+				[
+					16,
+					0.4
+				],
+				[
+					36,
+					1.3
+				],
+				[
+					48,
+					1.6
+				]
+			],
+			"props": {
+				"proj_invuln": [
+					4,
+					32
+				],
+				"airborne": [
+					4,
+					50
+				]
+			},
+			"tags": [
+				"anti_zone"
+			],
+			"sfx": {
+				"swing": "medium"
+			}
+		},
+		"veil_step": {
+			"name": "Veil Step",
+			"kind": "special",
+			"startup": 1,
+			"active": 0,
+			"recovery": 0,
+			"total": 22,
+			"level": "none",
+			"motion": [
+				[
+					3,
+					0.0
+				],
+				[
+					14,
+					-1.7
+				]
+			],
+			"props": {
+				"invuln": [
+					2,
+					13
+				]
+			},
+			"anim": {
+				"keys": [
+					[
+						4,
+						"mirela_veil_step",
+						"out"
+					],
+					[
+						14,
+						"mirela_veil_step",
+						"linear"
+					],
+					[
+						22,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"tags": [
+				"escape"
+			],
+			"sfx": {
+				"swing": "whoosh_light"
+			}
+		},
+		"last_note": {
+			"name": "The Last Note",
+			"kind": "finisher",
+			"total": 260,
+			"anim": {
+				"keys": [
+					[
+						12,
+						"mirela_keen_load",
+						"out"
+					],
+					[
+						30,
+						"mirela_keen",
+						"snap"
+					],
+					[
+						200,
+						"mirela_keen",
+						"linear"
+					],
+					[
+						260,
+						"win",
+						"inout"
+					]
+				]
+			}
+		}
+	},
+	"commands": [
+		[
+			"D,F+HP",
+			"lament"
+		],
+		[
+			"B,F+HP",
+			"keen"
+		],
+		[
+			"D,U+LP",
+			"grave_float"
+		],
+		[
+			"B,B+LK",
+			"veil_step"
+		]
+	],
+	"finisher": {
+		"input": "D,D,B+HP",
+		"range": "sweep",
+		"move": "last_note"
+	},
+	"ai": {
+		"range": 2.0,
+		"aggression": 0.5,
+		"zoning": 0.75,
+		"anti_air": [
+			"keen",
+			"uppercut"
+		],
+		"combos": [
+			[
+				"HP",
+				"LP",
+				"HP"
+			],
+			[
+				"LK",
+				"B+HK"
+			]
+		],
+		"weights": {}
+	}
+}

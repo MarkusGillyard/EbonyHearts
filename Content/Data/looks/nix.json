@@ -1,0 +1,124 @@
+{
+	"build": {
+		"shoulders": 0.96,
+		"chest": 0.9,
+		"waist": 0.86,
+		"limbs": 0.92,
+		"hips": 0.92
+	},
+	"materials": {
+		"skin": {
+			"color": "#b48c72"
+		},
+		"brows": {
+			"color": "#15110f"
+		},
+		"eyes": {
+			"color": "#8ad62a",
+			"emission": 2.6
+		},
+		"wrap": {
+			"color": "#2e3032",
+			"kind": "fabric",
+			"roughness": 0.9
+		},
+		"wrap_dark": {
+			"color": "#161718",
+			"kind": "fabric",
+			"roughness": 0.85
+		},
+		"hood": {
+			"color": "#232527",
+			"kind": "fabric",
+			"roughness": 0.92
+		},
+		"mask": {
+			"color": "#1a1b1c",
+			"kind": "fabric",
+			"roughness": 0.9
+		},
+		"trousers": {
+			"color": "#28292b",
+			"kind": "fabric",
+			"roughness": 0.9
+		},
+		"feet": {
+			"color": "#3b3936",
+			"kind": "fabric",
+			"roughness": 0.85
+		},
+		"sash": {
+			"color": "#7aab26",
+			"kind": "silk",
+			"roughness": 0.5
+		},
+		"wood": {
+			"color": "#3a2a1c",
+			"roughness": 0.7
+		},
+		"steel": {
+			"color": "#9aa3a8",
+			"roughness": 0.28,
+			"metallic": 0.9
+		}
+	},
+	"cloth": [
+		{
+			"kind": "skirt",
+			"joint": "hips",
+			"material": "sash",
+			"top": 0.035,
+			"rx": 0.083,
+			"rz": 0.078,
+			"length": 0.21,
+			"flare": 0.01,
+			"cols": 2,
+			"rows": 5,
+			"gap": 0.935,
+			"yaw": -44,
+			"shape": 0.06,
+			"damping": 0.95,
+			"thickness": 0.005,
+			"folds": 0.003,
+			"fold_count": 2
+		},
+		{
+			"kind": "skirt",
+			"joint": "hips",
+			"material": "sash",
+			"top": 0.035,
+			"rx": 0.085,
+			"rz": 0.08,
+			"length": 0.16,
+			"flare": 0.012,
+			"cols": 2,
+			"rows": 5,
+			"gap": 0.935,
+			"yaw": -62,
+			"shape": 0.06,
+			"damping": 0.95,
+			"thickness": 0.005,
+			"folds": 0.003,
+			"fold_count": 2
+		}
+	],
+	"props": [
+		{
+			"kind": "sickle",
+			"joint": "hand_r",
+			"offset": [0.04, -0.08, 0.02],
+			"rot": [0, 0, -90],
+			"tip": 0.4
+		}
+	],
+	"sculpt": {
+		"figure": "male",
+		"muscle": 0.55,
+		"face": {
+			"eye_open": 0.82,
+			"tilt": 4.0,
+			"brow": 1.1
+		}
+	},
+	"glow": "#8ad62a"
+}
