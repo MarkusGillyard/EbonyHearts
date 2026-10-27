@@ -497,7 +497,9 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 		{
 			// The synthesised body of the blow, pitched by where it lands (a face hit sharp, a body
 			// hit deeper, a leg kick low), and a recorded contact for what lands it: a fist or shin
-			// on the face, a thud in the body, or the weapon's own wood, brass or steel.
+			// on the face, a thud in the body, or the weapon's own wood, brass or steel. The Kenney
+			// files are all peak-normalised, so the short wood and metal hits measure 4-10 dB under
+			// the punches (Tools/audio_levels.py); they are raised as far as their peaks allow.
 			const FMoveDef* M = Sim.Fighters[E.By].Def->Move(E.Move);
 			const FName Mat = M ? M->HitSound : NAME_None;
 			const bool bHeavy = E.Damage >= 70;
@@ -505,20 +507,20 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 			A->Play(E.Damage < 55 ? TEXT("hit_light") : (E.Damage < 95 ? TEXT("hit_medium") : TEXT("hit_heavy")), -2.f, R * Pitch);
 			if (Mat == TEXT("wood"))
 			{
-				A->Play(bHeavy ? TEXT("kenney:impactWood_heavy") : TEXT("kenney:impactWood_medium"), -3.f, R);
+				A->Play(bHeavy ? TEXT("kenney:impactWood_heavy") : TEXT("kenney:impactWood_medium"), -1.f, R);
 			}
 			else if (Mat == TEXT("metal"))
 			{
-				A->Play(bHeavy ? TEXT("kenney:impactMetal_heavy") : TEXT("kenney:impactPlate_medium"), -4.f, R);
+				A->Play(bHeavy ? TEXT("kenney:impactMetal_heavy") : TEXT("kenney:impactPlate_medium"), -1.f, R);
 			}
 			else if (Mat == TEXT("blade"))
 			{
-				A->Play(TEXT("kenney:impactMetal_light"), -5.f, R * 1.15f);
+				A->Play(TEXT("kenney:impactMetal_light"), -3.f, R * 1.15f);
 				A->Play(TEXT("kenney:impactPunch_medium"), -7.f, R);
 			}
 			else if (Mat == TEXT("chain"))
 			{
-				A->Play(TEXT("kenney:impactMetal_medium"), -5.f, R * 1.1f);
+				A->Play(TEXT("kenney:impactMetal_medium"), -2.f, R * 1.1f);
 			}
 			else if (E.Level == ELevel::High)
 			{
@@ -545,8 +547,9 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 		const FMoveDef* M = Sim.Fighters[E.By].Def->Move(E.Move);
 		const FName Mat = M ? M->HitSound : NAME_None;
 		A->Play(TEXT("block"), -3.f, R);
-		A->Play(Mat == TEXT("wood") ? TEXT("kenney:impactWood_light") : (Mat == TEXT("metal") || Mat == TEXT("blade") || Mat == TEXT("chain") ? TEXT("kenney:impactPlate_light") : TEXT("kenney:impactSoft_medium")),
-			-6.f, R);
+		const bool bWeapon = Mat == TEXT("wood") || Mat == TEXT("metal") || Mat == TEXT("blade") || Mat == TEXT("chain");
+		A->Play(Mat == TEXT("wood") ? TEXT("kenney:impactWood_light") : (bWeapon ? TEXT("kenney:impactPlate_light") : TEXT("kenney:impactSoft_medium")),
+			bWeapon ? -3.f : -6.f, R);
 		break;
 	}
 	case EEvent::Armor: A->Play(TEXT("armor"), -2.f); break;
@@ -555,7 +558,7 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 	case EEvent::Land:
 		if (E.bSoft)
 		{
-			A->Play(Arena->Footstep, -14.f, R);
+			A->Play(Arena->Footstep, -14.f + Arena->FootstepDb, R);
 		}
 		else
 		{
@@ -565,7 +568,7 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 		break;
 	case EEvent::Projectile: A->Play(TEXT("cast_") + E.Kind.ToString(), -4.f); break;
 	case EEvent::Clash: A->Play(TEXT("burst"), -2.f); break;
-	case EEvent::Jump: A->Play(Arena->Footstep, -12.f, 1.1f); break;
+	case EEvent::Jump: A->Play(Arena->Footstep, -12.f + Arena->FootstepDb, 1.1f); break;
 	case EEvent::KO: A->Play(TEXT("ko_hit"), 0.f); break;
 	case EEvent::RoundStart: A->Play(TEXT("gong"), -4.f); break;
 	case EEvent::Fight: A->Play(TEXT("fight"), -2.f); break;

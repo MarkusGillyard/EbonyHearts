@@ -136,6 +136,7 @@ bool ASlopArena::Build(FName Stage, bool bHighGraphics)
 	FString Step;
 	D->TryGetStringField(TEXT("footstep"), Step);
 	Footstep = Step == TEXT("wood") ? TEXT("kenney:footstep_wood") : TEXT("kenney:footstep_concrete");
+	FootstepDb = Step == TEXT("wood") ? -2.5f : 2.5f;
 
 	// What each piece is made of decides whether it casts a shadow: glass, flames and water don't.
 	TMap<FString, bool> Shadowless;

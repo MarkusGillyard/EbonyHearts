@@ -22,6 +22,8 @@ public:
 	void Step(double Delta, const FVector& CameraPos);
 	FString Music = TEXT("music_yards");
 	FString Footstep = TEXT("kenney:footstep_concrete");
+	// Evens the two footstep families out (the wood set is 5 dB louder; Tools/audio_levels.py).
+	float FootstepDb = 2.5f;
 	FName StageId;
 	// Off (the comfort setting) turns the Roost's lightning strobe into a slow swell.
 	bool bStrobe = true;
