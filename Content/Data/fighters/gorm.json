@@ -26,7 +26,8 @@
 		"hp": {
 			"startup": 6,
 			"damage": 60,
-			"recovery": 12
+			"recovery": 12,
+			"push_block": 0.6
 		},
 		"hp2": {
 			"startup": 6,
@@ -41,13 +42,16 @@
 					],
 					"cost": 12
 				}
-			]
+			],
+			"push_block": 0.62
 		},
 		"lp": {
-			"damage": 50
+			"damage": 50,
+			"push_block": 0.6
 		},
 		"lp2": {
-			"damage": 45
+			"damage": 45,
+			"push_block": 0.62
 		},
 		"hk": {
 			"startup": 11,
@@ -286,7 +290,7 @@
 			"hitstun": 24,
 			"blockstun": 13,
 			"push_hit": 1.1,
-			"push_block": 1.0,
+			"push_block": 1.4,
 			"motion": [
 				[
 					9,

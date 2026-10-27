@@ -52,6 +52,7 @@ The Verified column says how it was checked; an empty cell means it has not been
 | Throws, throw breaks, simultaneous throws break, command grabs beat block | `fight_sim.gd` | Preserve | Tests |
 | Counter hits (+15 %, +4 stun, +2 hit-stop) | `fight_sim.gd` | Improve: the extra freeze is the victim's alone (+4) in place of +4 stun and +2 freeze for both, so the blow reads bigger and frame advantage is unchanged | Test |
 | Ashka's moves | `data/fighters/ashka.json` | Improve: a teep (forward + low kick), the push kick Muay Thai keeps distance with; low damage, a long push, minus 4 on block | Test; every trial and CPU pairing still pass |
+| Gorm's thrusts | `data/fighters/gorm.json` | Improve: his palm strikes and belly bump drive a blocking opponent further back (0.6 m and 1.4 m), sumo's push-out; on hit, and so his combos, unchanged | Every trial and CPU pairing still pass |
 | Juggle points (limit 7), damage scaling from the third hit to 40 % | `fight_sim.gd` | Preserve | Tests |
 | Chip only from specials and projectiles; one projectile each; clashes | `fight_sim.gd` | Preserve | Tests |
 | Armour, parry, buff, teleport, pull, crumple, daze, air-to-air knockdown | `fight_sim.gd`, fighter data | Preserve | Parry/armour/teleport tests |
