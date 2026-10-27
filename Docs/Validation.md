@@ -58,6 +58,11 @@ whether it is felt on a real pad is unverified.
 
 ### On Markus's monitor (2.2.0)
 
+2.3.0 (commit `f156369`, with the motion-captured strikes) measured the same way: 7,008 frames over
+85 s at a 12.12 ms median, every frame within 1 ms of it, 1% low 81.3, GPU 10.91 ms median at a
+61 % render scale, peak resident memory 1,519 MB, no frame over 25 ms (`Saved/Perf/monitor-2.3.0`).
+The 2.2.0 figures:
+
 Shipping package of commit `1667c91`, unpacked fresh, full screen (borderless) on a 3440 x 1440
 display at 165 Hz (DP, X11, Cinnamon, no variable refresh), default settings: graphics High, VSync
 on, frame cap following the display (82.5 fps, every second refresh), dynamic resolution. The CPU
