@@ -447,7 +447,8 @@ for lx in (-3.9, 3.9):
     st.prop("hanging_industrial_lamp", (lx, 5.05, CAT_Z - 0.26), rot_z=0)
 
 # wet floor: puddles off the strip that pick up the furnace and slop glows
-PUD = st.water("WATER_puddle", (0.012, 0.014, 0.012), 0.03, 0.5, "rain puddles on the plates: near-black, glossy, ripples from the drizzle")
+PUD = st.water("WATER_puddle", (0.012, 0.014, 0.012), 0.03, 0.5, "rain puddles on the plates: near-black, glossy, ripples from the drizzle",
+               ripple=0.035, ripple_scale=0.02)
 pud = st.part("puddles", PUD, floor=True, smooth=False)
 for k, (px_, py_, pr_) in enumerate([(-5.6, 1.9, 0.75), (-1.0, 1.6, 0.5), (2.1, 2.2, 0.85), (6.3, 1.75, 0.6), (-9.8, 2.1, 0.9),
                                      (10.5, 2.3, 0.7), (-4.8, -2.4, 0.55), (5.2, -3.6, 0.7), (-11.5, -2.9, 0.8), (12.0, -1.8, 0.6),

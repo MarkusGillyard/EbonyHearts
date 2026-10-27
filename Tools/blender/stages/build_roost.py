@@ -26,7 +26,7 @@ LAKE_Z = -2.2
 LEDGE_BACK = 2.9
 LEDGE_FRONT = -4.3
 
-FLOOR = st.surface("Rock035", tint=(0.42, 0.48, 0.44), rough=0.55)
+FLOOR = st.surface("Rock035", tint=(0.42, 0.48, 0.44), rough=0.75)
 ROCK = st.surface("dark_rock", tint=(0.36, 0.4, 0.36), rough=0.8)
 ROCK_FAR = st.surface("dark_rock__far", tint=(0.2, 0.24, 0.2), rough=0.9)
 MUD = st.surface("brown_mud_03", tint=(0.3, 0.32, 0.26), rough=0.45)
@@ -35,12 +35,14 @@ GOLD = st.surface("Metal042A", tint=(1.0, 0.78, 0.42), rough=0.7, metal=1.0)
 WOOD = st.surface("Wood051", tint=(0.32, 0.26, 0.21), rough=1.2)
 IRON = st.surface("Metal055A", tint=(0.25, 0.24, 0.22), rough=1.0, metal=1.0)
 LEATHER = st.surface("Leather021", tint=(0.6, 0.5, 0.42), rough=1.0)
-LAKE = st.glow("GLOW_slop_lake", (0.32, 0.9, 0.08), 0.65, "the slop lake: slow churning noise with dark crusted patches, bubbles, pulses with the lake lights", pattern=0.85, scale=0.3)
+LAKE = st.glow("GLOW_slop_lake", (0.32, 0.9, 0.08), 0.28, "the slop lake: slow churning noise with dark crusted patches, bubbles, pulses with the lake lights", pattern=0.85, scale=0.3,
+               liquid=((0.012, 0.03, 0.008), 0.12, 0.02, 0.004))
 CRACK = st.glow("GLOW_crack", (0.42, 0.95, 0.12), 2.2, "slop glowing through cracks in the ledge (good candidates for decals)")
 BOLT = st.glow("GLOW_lightning", (0.7, 1.0, 0.55), 40.0, "lightning bolts far back: visible only during flashes (see fx)")
-TAR = st.water("WATER_tar", (0.008, 0.011, 0.007), 0.08, 1.0, "tar pools on the ledge: black, glossy, a faint green sheen, slow bubbles")
+TAR = st.water("WATER_tar", (0.008, 0.011, 0.007), 0.08, 1.0, "tar pools on the ledge: black, glossy, a faint green sheen, slow bubbles",
+                ripple=0.01, ripple_scale=0.008)
 TARFALL = st.water("WATER_tarfall", (0.01, 0.014, 0.01), 0.2, 1.0, "tar falls: scrolling downward flow, a faint green glow on the edges, two-sided",
-                   emissive=((0.4, 0.9, 0.15), 0.07))
+                   emissive=((0.4, 0.9, 0.15), 0.07), ripple=0.02, ripple_scale=0.01)
 
 floor = st.part("ledge", FLOOR, floor=True, sharp=35)
 rocks = st.part("rocks", ROCK, sharp=62)

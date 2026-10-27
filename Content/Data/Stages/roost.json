@@ -312,9 +312,19 @@
     0.9,
     0.08
    ],
-   "strength": 0.65,
+   "strength": 0.28,
    "pattern": 0.85,
    "pattern_scale": 0.3,
+   "liquid": {
+    "color": [
+     0.012,
+     0.03,
+     0.008
+    ],
+    "roughness": 0.12,
+    "ripple": 0.02,
+    "ripple_scale": 0.004
+   },
    "note": "the slop lake: slow churning noise with dark crusted patches, bubbles, pulses with the lake lights"
   },
   {
@@ -408,7 +418,7 @@
     0.48,
     0.44
    ],
-   "roughness": 0.55,
+   "roughness": 0.75,
    "metallic": 0.0,
    "normal_strength": 1.0
   },

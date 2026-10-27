@@ -506,7 +506,9 @@ def water_material():
     reflections carry the lights; an optional faint glow (the Roost's tar falls). Broad, faint
     ripples (world-space noise of size 1/RippleScale cm drifting slowly, RippleStrength) and a
     roughness floor make the reflections waver as standing water does instead of mirroring like
-    glass; strong or fine ripples read as wet cobbles instead."""
+    glass; strong or fine ripples read as wet cobbles instead. A glowing liquid (the Roost's slop
+    lake) glows from below through churning noise (Pattern 0..1 at PatternScale per metre, with
+    dark crusted patches) under the same lit, glossy surface; Intensity is what the stage pulses."""
     m = fresh_material("/Game/Slop/Materials/M_Water")
     col = vector(m, "Color", (0.02, 0.02, 0.02, 1), -600, 0)
     output(col, "", unreal.MaterialProperty.MP_BASE_COLOR)
@@ -536,7 +538,20 @@ def water_material():
     output(nn, "", unreal.MaterialProperty.MP_NORMAL)
     output(scalar(m, "Specular", 0.5, -600, 250), "", unreal.MaterialProperty.MP_SPECULAR)
     em = mul(m, vector(m, "EmissiveColor", (0, 0, 0, 1), -600, 350), scalar(m, "Emissive", 0.0, -600, 480), -350, 400)
-    output(em, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    em = mul(m, em, scalar(m, "Intensity", 1.0, -600, 540), -200, 420)
+    churn = mul(m, t, vector(m, "PatternDrift", (0.02, 0.01, 0.1, 0), -1300, 1000), -1100, 960)
+    gscale = mul(m, scalar(m, "PatternScale", 1.0, -1300, 880), const(m, 0.01, -1300, 930), -1150, 900)
+    gpos = add(m, mul(m, wp, gscale, -1000, 880), churn, -850, 920)
+    noise = expr(m, unreal.MaterialExpressionNoise, -700, 920)
+    noise.set_editor_property("scale", 1.0)
+    noise.set_editor_property("quality", 1)
+    noise.set_editor_property("levels", 3)
+    noise.set_editor_property("output_min", 0.0)
+    noise.set_editor_property("output_max", 1.0)
+    link(gpos, "", noise, "")
+    nf = lerp(m, const(m, 0.1, -550, 880), const(m, 1.7, -550, 940), noise, -400, 920)
+    pf = lerp(m, const(m, 1.0, -400, 860), nf, scalar(m, "Pattern", 0.0, -400, 1000), -250, 900)
+    output(mul(m, em, pf, -100, 500), "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     MEL.recompile_material(m)
     EAL.save_loaded_asset(m)
 
@@ -776,6 +791,20 @@ def prop_material(name):
     return None
 
 
+def water_params(mi, w):
+    """An M_Water instance from a stage's water entry (or a glow's `liquid`)."""
+    MEL.set_material_instance_vector_parameter_value(mi, "Color", colour(w["color"]))
+    MEL.set_material_instance_scalar_parameter_value(mi, "Roughness", w.get("roughness", 0.05))
+    MEL.set_material_instance_scalar_parameter_value(mi, "RippleStrength", w.get("ripple", 0.03))
+    MEL.set_material_instance_scalar_parameter_value(mi, "RippleScale", w.get("ripple_scale", 0.012))
+    if "emissive" in w:
+        MEL.set_material_instance_vector_parameter_value(mi, "EmissiveColor", colour(w.get("emissive_color", (1, 1, 1))))
+        MEL.set_material_instance_scalar_parameter_value(mi, "Emissive", w["emissive"])
+    if w.get("pattern"):
+        MEL.set_material_instance_scalar_parameter_value(mi, "Pattern", float(w["pattern"]))
+        MEL.set_material_instance_scalar_parameter_value(mi, "PatternScale", w.get("pattern_scale", 1.0))
+
+
 def stage_materials(st, d, dest):
     """One material instance per material name the stage FBX uses, from the stage's JSON."""
     out = {}
@@ -798,7 +827,16 @@ def stage_materials(st, d, dest):
         set_two_sided(mi, sd.get("two_sided", False))
         out[name] = mi
     glow = EAL.load_asset("/Game/Slop/Materials/M_StageGlow")
+    water = EAL.load_asset("/Game/Slop/Materials/M_Water")
     for g in d.get("glows", []):
+        if "liquid" in g:
+            # A glowing liquid: the water's lit, rippled surface over the glow.
+            mi = material_instance(f"MI_{st}_{g['material']}", water, dest)
+            MEL.clear_all_material_instance_parameters(mi)
+            water_params(mi, dict(g["liquid"], emissive_color=g["color"], emissive=g.get("strength", 1.0),
+                                  pattern=g.get("pattern", 0.0), pattern_scale=g.get("pattern_scale", 1.0)))
+            out[g["material"]] = mi
+            continue
         mi = material_instance(f"MI_{st}_{g['material']}", glow, dest)
         MEL.set_material_instance_vector_parameter_value(mi, "Color", colour(g["color"]))
         MEL.set_material_instance_scalar_parameter_value(mi, "Intensity", g.get("strength", 1.0))
@@ -810,16 +848,9 @@ def stage_materials(st, d, dest):
             MEL.set_material_instance_scalar_parameter_value(mi, "Pattern", float(pat))
             MEL.set_material_instance_scalar_parameter_value(mi, "PatternScale", g.get("pattern_scale", 1.0))
         out[g["material"]] = mi
-    water = EAL.load_asset("/Game/Slop/Materials/M_Water")
     for w in d.get("water", []):
         mi = material_instance(f"MI_{st}_{w['material']}", water, dest)
-        MEL.set_material_instance_vector_parameter_value(mi, "Color", colour(w["color"]))
-        MEL.set_material_instance_scalar_parameter_value(mi, "Roughness", w.get("roughness", 0.05))
-        MEL.set_material_instance_scalar_parameter_value(mi, "RippleStrength", w.get("ripple", 0.03))
-        MEL.set_material_instance_scalar_parameter_value(mi, "RippleScale", w.get("ripple_scale", 0.012))
-        if "emissive" in w:
-            MEL.set_material_instance_vector_parameter_value(mi, "EmissiveColor", colour(w.get("emissive_color", (1, 1, 1))))
-            MEL.set_material_instance_scalar_parameter_value(mi, "Emissive", w["emissive"])
+        water_params(mi, w)
         set_two_sided(mi, "tarfall" in w["material"])
         out[w["material"]] = mi
     for mi in out.values():

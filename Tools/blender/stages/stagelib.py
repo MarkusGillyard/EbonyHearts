@@ -669,9 +669,11 @@ class Stage:
             self.surfaces[name]["emissive"] = emissive[1]
         return name
 
-    def glow(self, name, color, nits, note=None, pattern=0.0, scale=2.0):
+    def glow(self, name, color, nits, note=None, pattern=0.0, scale=2.0, liquid=None):
         """`pattern` (0..1) breaks the preview emission up with noise, as the Unreal material's
-        animated pattern would; the JSON carries the mean colour and strength."""
+        animated pattern would; the JSON carries the mean colour and strength. `liquid` = (colour,
+        roughness, ripple, ripple_scale): a glowing liquid, lit and rippled like water above the
+        glow (Unreal builds it from the water material)."""
         assert name.startswith("GLOW_")
         self.glows[name] = {"material": name, "color": [round(c, 4) for c in color], "strength": nits}
         self._glow_pattern = getattr(self, "_glow_pattern", {})
@@ -680,15 +682,20 @@ class Stage:
             # For the Unreal material: noise amount (0..1) at `scale` per metre, or "ribs" every `scale` m.
             self.glows[name]["pattern"] = pattern
             self.glows[name]["pattern_scale"] = scale
+        if liquid:
+            self.glows[name]["liquid"] = {"color": [round(c, 4) for c in liquid[0]], "roughness": liquid[1],
+                                          "ripple": liquid[2], "ripple_scale": liquid[3]}
         if note:
             self.glows[name]["note"] = note
         return name
 
-    def water(self, name, color, roughness, opacity, note=None, emissive=None):
-        """`emissive` = (colour, nits): a faint glow the Unreal water/tar material should add."""
+    def water(self, name, color, roughness, opacity, note=None, emissive=None, ripple=0.03, ripple_scale=0.012):
+        """`emissive` = (colour, nits): a faint glow the Unreal water/tar material should add.
+        `ripple` tilts the surface by up to that much in noise `1/ripple_scale` cm across."""
         assert name.startswith("WATER_")
         self.waters[name] = {"material": name, "color": [round(c, 4) for c in color],
-                             "roughness": roughness, "opacity": opacity}
+                             "roughness": roughness, "ripple": ripple, "ripple_scale": ripple_scale,
+                             "opacity": opacity}
         if emissive:
             self.waters[name]["emissive_color"] = list(emissive[0])
             self.waters[name]["emissive"] = emissive[1]
