@@ -56,7 +56,8 @@ whether it is felt on a real pad is unverified.
 
 ## Performance
 
-Shipping package of commit `16cb3e3`, 30-minute unattended session (`Tools/perf/soak.sh`, the CPU
+Shipping package of commit `16cb3e3` (the release differs from it only in the HUD's layout on
+non-16:9 screens), 30-minute unattended session (`Tools/perf/soak.sh`, the CPU
 playing arcade ladders with fighters picked at random), High preset, 1920 x 1080, frame cap 60,
 rendered offscreen (see "Display" below: no presentation, no VSync). Frame times are written by the
 game for every frame of every match; `Tools/perf/summarize.py` computes the figures; resident and
@@ -120,5 +121,6 @@ on).
 - Physical PS4 and PS5 pads, USB and Bluetooth, rumble, two pads (above).
 - Windowed presentation timings with VSync (above).
 - Audio by ear: levels, mix and the layering were checked in code and logs only.
-- 16:10 and other aspect ratios were reasoned about (the fight camera frames for 16:9 and wider
-  screens see more stage; menus scale to fit) but not looked at on a real display.
+- Other aspect ratios on a real display. At 1920 x 1200 (offscreen) the menus letterbox, the
+  fight camera frames both fighters and the HUD fits with a margin above and below (fixed: it
+  had run off both sides); 4:3 and ultrawide follow the same rules but were not rendered.
