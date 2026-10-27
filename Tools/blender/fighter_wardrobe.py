@@ -111,14 +111,17 @@ def nonarm_masks(ctx, objs):
 def wrap_skirt(ctx, key, surface, z_top, z_hem, open_frac=0.14, open_at="front", gap=0.012,
                flare=0.03, folds=(0.006, 7), slit_z=None, share=(0.85, 0.45, 0.2), thickness=0.004,
                nu=40, row=0.028, y_c=None, objs=None, tatter=None, hips_z=None, weight_mode="legs",
-               snug_rows=1, arc=None, side=None, calf_share=0.0):
+               snug_rows=1, arc=None, calf_share=0.0):
     """A sheet hanging round a vertical axis from z_top to z_hem: each column hangs from the
     widest point above it (so it drapes over hips, belly or shoulders), flares and folds
     towards the hem. `open_frac` of the circumference is left open at the front (coats,
     gowns, cloaks) or back (aprons); a back slit runs up to slit_z. Legs mode weights: body
     weights above the hips, then a blend from pelvis to the thigh on that side whose share
     falls from share[0] at the front edges through share[1] at the sides to share[2] at the
-    back. `tatter` = (depth, teeth) cuts a ragged hem."""
+    back. `tatter` = (depth, teeth) cuts a ragged hem. `arc` = (from, to) angles (0 front, +x
+    left) makes an explicit panel instead (wrap-over skirts); `calf_share` hands the hem below
+    the knee to the shins and caps the pelvis share by height, so a long hem stays above the
+    floor in a deep crouch."""
     s, V = ctx.s, ctx.V
     if y_c is None:
         y_c = float(ctx.head("pelvis")[1])
@@ -199,6 +202,8 @@ def wrap_skirt(ctx, key, surface, z_top, z_hem, open_frac=0.14, open_at="front",
     for li, loop in enumerate(me.loops):
         p = c[loop.vertex_index]
         ph = math.atan2(p[0], -(p[1] - y_c)) % (2 * math.pi)
+        if arc is not None:     # a panel may cross the front: keep its angle continuous
+            ph = (ph - arc[0]) % (2 * math.pi) + arc[0]
         uv.data[li].uv = (ph * rm, p[2])
     if tatter:
         depth, teeth = tatter
@@ -222,8 +227,6 @@ def wrap_skirt(ctx, key, surface, z_top, z_hem, open_frac=0.14, open_at="front",
         sh = np.where(a < 0.5, share[0] + (share[1] - share[0]) * a / 0.5,
                       share[1] + (share[2] - share[1]) * (a - 0.5) / 0.5)
         left = np.clip(c[:, 0] / (0.06 * s) * 0.5 + 0.5, 0, 1)
-        if side is not None:
-            left = np.full(len(c), 1.0 if side == "l" else 0.0)
         if back_j is not None:
             left = np.where((a > 0.9) & (c[:, 2] < slit_z), (c[:, 0] > 0).astype(float), left)
         zero = np.zeros(len(c))

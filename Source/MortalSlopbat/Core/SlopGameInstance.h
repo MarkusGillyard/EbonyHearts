@@ -68,8 +68,8 @@ public:
 	// The main menu item chosen last, so coming back lands there.
 	int32 MenuChoice = 0;
 	bool bDebugKeys = false;
-	// Development: the CPU plays the first side at this level, and idle menus are confirmed, so
-	// whole modes run unattended (-SlopAutoPlay[=0..2]). -1 when off.
+	// Test automation: the CPU plays the first side at this level, and idle menus are confirmed,
+	// so whole modes run unattended (-SlopAutoPlay[=0..2], any build). -1 when off.
 	int32 AutoPlayLevel = -1;
 	TOptional<Slop::FMatchResult> LastResult;
 
@@ -80,6 +80,7 @@ private:
 	void BuildRoot();
 	void OnDeviceConnection(EInputDeviceConnectionState State, FPlatformUserId User, FInputDeviceId Device);
 	void OnActivation(bool bActive);
+	void TestCommandLine();
 	void DevCommandLine();
 
 	FTSTicker::FDelegateHandle TickHandle;
@@ -112,8 +113,9 @@ private:
 	// Development: the fighters whose portraits are still to be rendered.
 	TArray<FName> PortraitQueue;
 	int32 PortraitWait = 0;
-	// Development: scripted menu actions (-SlopUi=delay:action,...), dispatched as if pressed.
-	TArray<TPair<double, Slop::EUi>> UiScript;
+	// Test automation: scripted menu actions (-SlopUi=delay:action,...), dispatched as if pressed.
+	struct FUiStep { double Delay; Slop::EUi Action; int32 Side; };
+	TArray<FUiStep> UiScript;
 	double UiScriptAt = 0.0;
 	double AutoConfirmAt = 0.0;
 	// The performance record (-SlopFrameStats, any build): match frames to a CSV in the save folder.

@@ -1,0 +1,5 @@
+# Training: pick a fighter and a dummy and a stage; cycle the dummy's modes; reset; the move
+# list from the pause menu; back to the main menu.
+14:confirm,1.5:down,0.4:down,0.4:down,0.5:confirm,2:confirm,2:right,0.5:confirm,2:confirm,6:next,2:next,2:next,2:next,2:reset,2:pause,1:down,0.5:confirm,3:back,1:down,0.4:down,0.4:down,0.4:down,0.4:down,0.5:confirm
+-SlopFrameStats
+70

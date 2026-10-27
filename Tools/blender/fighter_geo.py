@@ -186,11 +186,14 @@ def solidify(ob, thickness, offset=-1.0, rim=True):
     mod.use_rim = rim
     mod.use_even_offset = False   # even offset explodes on the sliver triangles plane cuts leave
     mod.use_quality_normals = True
+    n_orig = len(ob.data.polygons)
     with bpy.context.temp_override(object=ob, active_object=ob):
         bpy.ops.object.modifier_move_to_index(modifier="Solid", index=0)
     apply_modifier(ob, "Solid")
     for m in arm:
         m.show_viewport = True
+    if offset < 0:
+        ob["outer_faces"] = n_orig   # the original (outer) faces come first; see Collider(outer_only)
 
 
 def trim(ob, plane_co, plane_no, region=None):
@@ -342,6 +345,19 @@ def triangulate_ngons(ob):
     bm.free()
 
 
+def orient_outward(ob, axis_xy):
+    """Flip faces so their normals point away from a vertical axis through (x, y)."""
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    for f in bm.faces:
+        c = f.calc_center_median()
+        if (c.x - axis_xy[0]) * f.normal.x + (c.y - axis_xy[1]) * f.normal.y < 0:
+            f.normal_flip()
+    bm.to_mesh(ob.data)
+    bm.free()
+    ob.data.update()
+
+
 def fill_holes(ob, vmask, rings=2):
     """Close the boundary loops made only of `vmask` vertices with a fan round a new centre
     vertex, its spokes cut `rings` times so the patch can bend. New vertices take the mean
@@ -389,8 +405,11 @@ def fill_holes(ob, vmask, rings=2):
                 if dl is not None and not v[dl].items():
                     for g, w in wsum.items():
                         v[dl][g] = w
-            fan = {g for v in new_v for g in v.link_faces}   # (subdivide invalidates c)
-            bmesh.ops.triangulate(bm, faces=[g for g in fan if len(g.verts) > 3])
+            bm.faces.index_update()
+            fan = {g.index: g for v in new_v for g in v.link_faces}   # (subdivide invalidates c)
+            # in index order: a set of faces iterates in memory order, which made the triangulation
+            # (and the decimation after it) differ from run to run
+            bmesh.ops.triangulate(bm, faces=[fan[i] for i in sorted(fan) if len(fan[i].verts) > 3])
     bm.to_mesh(ob.data)
     bm.free()
     ob.data.update()
@@ -402,13 +421,18 @@ def fill_holes(ob, vmask, rings=2):
 class Collider:
     """Nearest-surface queries against the rest pose of some meshes (world space)."""
 
-    def __init__(self, objs, face_masks=None):
+    def __init__(self, objs, face_masks=None, outer_only=False):
+        """outer_only: for shells solidified inwards use only their outer faces, so a point that
+        starts inside such a shell is pushed out through it, not in from its inner face."""
         verts, polys, off = [], [], 0
         for k, ob in enumerate(objs):
             M = np.array(ob.matrix_world)
             c = co(ob) @ M[:3, :3].T + M[:3, 3]
             verts.extend(map(tuple, c))
             fm = None if face_masks is None else face_masks[k]
+            if outer_only and ob.get("outer_faces"):
+                om = np.arange(len(ob.data.polygons)) < int(ob["outer_faces"])
+                fm = om if fm is None else (np.asarray(fm) & om)
             for fi, f in enumerate(faces(ob)):
                 if fm is None or fm[fi]:
                     polys.append(tuple(int(i) + off for i in f))

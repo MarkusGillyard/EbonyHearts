@@ -86,6 +86,12 @@ namespace SlopScreensFlowImpl
 			const FMatchConfig& C = GI->Flow.Config;
 			Cursor[0] = FMath::Max(0, Ids.IndexOfByKey(C.P1));
 			Cursor[1] = TwoSides() ? FMath::Max(0, Ids.IndexOfByKey(C.P2)) : 1;
+			if (GI->AutoPlayLevel >= 0)
+			{
+				// Unattended runs pick their fighters at random, for variety.
+				Cursor[0] = FMath::RandRange(0, Ids.Num() - 1);
+				Cursor[1] = FMath::RandRange(0, Ids.Num() - 1);
+			}
 		}
 
 		TSharedRef<SWidget> Tile(int32 I)

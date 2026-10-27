@@ -68,12 +68,18 @@ attached (Vulkan presentation would block without one); offscreen runs have no p
 
 Development flags (not in Shipping builds): `-SlopMatch=p1,p2,mode[,stage[,difficulty]]`,
 `-SlopShots=ticks`, `-SlopShotEvery=seconds`, `-SlopShotPrefix=name`, `-SlopQuitAt=tick`,
-`-SlopQuitAfter=seconds`, `-SlopUi=delay:action,...` (scripted menu actions), `-SlopAutoPlay[=level]`
-(the CPU plays the first side and idle menus are confirmed), `-SlopTour=fighter [-SlopBoxes]`
-(every ground move from both sides with boxes and screenshots), `-SlopPortraits[=ids]`,
-`-debugkeys` (F1 boxes, F2 frames, F3 states, F5 freeze, F6 step, F7 slow, F8 inputs).
-In any build: `-SlopFrameStats` (frame times to a CSV in the save folder; `Tools/perf/summarize.py`),
-`-profile=name` (separate settings and progress files).
+`-SlopQuitAfter=seconds`, `-SlopTour=fighter [-SlopBoxes]` (every ground move from both sides
+with boxes and screenshots), `-SlopPortraits[=ids]`, `-debugkeys` (F1 boxes, F2 frames, F3
+states, F5 freeze, F6 step, F7 slow, F8 inputs in any mode; in Training and Trials they work
+without it).
+
+Test automation flags, in any build so the Shipping package itself can be qualified:
+`-SlopUi=delay:action,...` (menu actions as if pressed: up, down, left, right, confirm, back,
+pause, next, prev, reset, alt; `@1` for the second player), `-SlopAutoPlay[=0..2]` (the CPU plays
+the first side, idle menus are confirmed, fighters are picked at random), `-SlopFrameStats`
+(match frame times to a CSV in the save folder, for `Tools/perf/summarize.py`), and
+`-profile=name` (separate settings and progress files). `Tools/playtest/run_flow.sh <flow>` plays
+one of the scripted flows in `Tools/playtest/flows/` in the `autotest` profile.
 
 `Tools/playtest/vpad.py` drives the game from a virtual pad (uinput) from a script; it needs a
 monitor attached. SDL reads Sony pads through hidraw, which a uinput device lacks, so the script's

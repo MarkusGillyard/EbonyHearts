@@ -379,8 +379,8 @@ int32 SSlopHud::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometr
 	{
 		PaintText(OutDrawElements, G, L, NoticeLine, SlopUI::Body(30.f), FVector2D(960.f, 820.f), SlopUI::Amber, 1);
 	}
-	// Training readouts.
-	if (M->Dummy)
+	// Training readouts (in Trials the same buttons move between trials; their prompt says so).
+	if (M->Dummy && !M->Guide)
 	{
 		PaintText(OutDrawElements, G, L, FText::Format(LOCTEXT("Dummy", "Dummy: {0}    ({1} to change, {2} to reset)"),
 			FText::FromString(M->Dummy->ModeName()), GI->Router->Glyphs() == EGlyphs::Keyboard ? FText::FromString(TEXT("Tab")) : LOCTEXT("R1", "R1"),

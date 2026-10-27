@@ -373,8 +373,8 @@
         }
       },
       "surfaces": {
-        "gown": {"slot": "gown", "set": "Fabric040", "color": "#b6b0a1", "roughness": 0.58, "metallic": 0.0, "tile_m": 0.04, "normal": 0.4, "contrast": 0.5},
-        "underdress": {"slot": "gown", "set": "Fabric040", "color": "#a7a193", "roughness": 0.6, "metallic": 0.0, "tile_m": 0.04, "normal": 0.35, "contrast": 0.5},
+        "gown": {"slot": "gown", "set": "Fabric040", "color": "#b6b0a1", "roughness": 0.58, "metallic": 0.0, "tile_m": 0.025, "normal": 0.35, "contrast": 0.4},
+        "underdress": {"slot": "gown", "set": "Fabric040", "color": "#a7a193", "roughness": 0.6, "metallic": 0.0, "tile_m": 0.025, "normal": 0.3, "contrast": 0.4},
         "lace": {"slot": "gown", "set": "Fabric040", "color": "#121115", "roughness": 0.5, "metallic": 0.0, "tile_m": 0.03, "normal": 0.3, "contrast": 0.4},
         "gloves": {"slot": "leather", "set": "Leather026", "color": "#141317", "roughness": 0.42, "metallic": 0.0, "tile_m": 0.15, "normal": 0.6},
         "boots": {"slot": "leather", "set": "Leather026", "color": "#18161a", "roughness": 0.45, "metallic": 0.0, "tile_m": 0.2, "normal": 0.8},
@@ -392,7 +392,7 @@
       "sole_m": 0.025,
       "macros": {
         "gender": 1.0,
-        "age": 0.68,
+        "age": 0.74,
         "muscle": 0.75,
         "weight": 0.65,
         "proportions": 0.5,
@@ -415,12 +415,26 @@
         "mouth/mouth-upperlip-volume-decr-incr": -0.2,
         "eyes/eye-height2-decr-incr": -0.3,
         "hands/hand-scale-decr-incr": 0.3,
-        "arms/lowerarm-muscle-decr-incr": 0.4
+        "arms/lowerarm-muscle-decr-incr": 0.4,
+        "head/head-age-decr-incr": 0.7,
+        "head/head-square": 0.3,
+        "eyes/eye-bag-decr-incr": 0.5,
+        "eyes/eye-eyefold-down-up": -0.3,
+        "eyebrows/eyebrows-trans-down-up": -0.25,
+        "mouth/mouth-laugh-lines-in-out": 0.6,
+        "mouth/mouth-angles-down-up": -0.25,
+        "cheek/cheek-volume-decr-incr": -0.25,
+        "nose/nose-hump-decr-incr": 0.3
       },
       "skin": {
         "mhmat": "middleage_caucasian_male",
         "color": "#b5806a",
-        "clean_scalp": false
+        "clean_scalp": false,
+        "blend": {"mhmat": "old_caucasian_male", "amount": 0.6},
+        "detail": 1.6,
+        "roughness": 0.62,
+        "flush": {"color": "#b8503c", "amount": 0.45},
+        "scalp_paint": true
       },
       "eyes": {
         "mesh": "high-poly",
@@ -430,7 +444,8 @@
       },
       "brows": {
         "asset": "eyebrow005",
-        "color": "#5c5047"
+        "color": "#5c5047",
+        "match": "opaque"
       },
       "lashes": {
         "asset": "eyelashes01",
@@ -440,7 +455,13 @@
         "asset": "short02",
         "color": "#6e6256",
         "roughness": 0.55,
-        "contrast": 0.7
+        "contrast": 0.9,
+        "match": "opaque"
+      },
+      "beard": {
+        "color": "#5f5449",
+        "roughness": 0.85,
+        "kind": "fur"
       },
       "outfit": "bram",
       "slots": {

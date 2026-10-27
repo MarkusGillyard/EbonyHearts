@@ -229,12 +229,30 @@ def skin_textures(fid, cfg, built, out_dir, size):
     src = mhmat_texture(core.find_asset(sk["mhmat"] + ".mhmat", "skins"))
     rgba = load_rgba(src, size)
     lin = srgb_to_lin(rgba[..., :3])
+    notes = []
+    if sk.get("blend"):          # mix in an older MakeHuman skin (same UV layout) for lines and wear
+        src2 = mhmat_texture(core.find_asset(sk["blend"]["mhmat"] + ".mhmat", "skins"))
+        a2 = float(sk["blend"]["amount"])
+        lin = lin * (1 - a2) + srgb_to_lin(load_rgba(src2, size)[..., :3]) * a2
+        notes.append("blended %.0f%% of %s" % (a2 * 100, os.path.basename(src2)))
     cover = raster(uv_tris(body), size) >= 0
     target = srgb_to_lin(hex_srgb(sk["color"]))
     mean = lin[cover].mean(0)
     lin = np.clip(lin * (target / mean), 0, 1)
-    notes = ["tinted %s -> %s (per-channel gain %s)" % (os.path.basename(src), sk["color"],
-                                                        np.round(target / mean, 3).tolist())]
+    notes.insert(0, "tinted %s -> %s (per-channel gain %s)" % (os.path.basename(src), sk["color"],
+                                                               np.round(target / mean, 3).tolist()))
+    if sk.get("flush") and "flush" in body.data.attributes:
+        # weathering: cheeks, nose, ears and brow pushed towards a ruddy colour (mask from the build)
+        fl = raster_scalar(body, attribute_values(body, "flush"), size)
+        fl = blur(fl, 3)[..., None] * float(sk["flush"]["amount"])
+        fc = srgb_to_lin(hex_srgb(sk["flush"]["color"]))
+        L = luminance(lin)[..., None]
+        lin = np.clip(lin * (1 - fl) + fc * (L / (luminance(target) + 1e-6)) * fl, 0, 1)
+        notes.append("weathered flush %s on cheeks, nose, ears and brow" % sk["flush"]["color"])
+    if sk.get("scalp_paint") and "hair" in built["objects"]:
+        # short hair shows the scalp between its cards: paint the scalp under it in the hair colour
+        lin = paint_scalp(cfg, built, body, lin, size)
+        notes.append("scalp under the hair painted %s" % cfg["hair"]["color"])
     if sk.get("clean_scalp"):
         lin = clean_scalp(built, body, lin, size)
         notes.append("painted scalp hair replaced by forehead skin tone")
@@ -266,7 +284,7 @@ def skin_textures(fid, cfg, built, out_dir, size):
     hp = L - blur(L, 6)
     h = blur(hp, 1)
     gy, gx = np.gradient(h)
-    k = 6.0
+    k = 6.0 * sk.get("detail", 1.0)
     n = np.stack([-gx * k * size / 2048, -gy * k * size / 2048, np.ones_like(h)], -1)
     n /= np.linalg.norm(n, axis=-1, keepdims=True)
     n[..., 1] *= -1           # DirectX: green points down
@@ -274,6 +292,74 @@ def skin_textures(fid, cfg, built, out_dir, size):
     rough = np.clip(r0 + 0.6 * (blur(L, 3) - L) / (L.mean() + 1e-6), r0 - 0.17, r0 + 0.2)
     orm = np.stack([np.clip(1 - 2.0 * np.clip(blur(L, 2) - L, 0, 1), 0.6, 1), rough, np.zeros_like(L)], -1)
     return write_set(fid, "skin", out_dir, base, n * 0.5 + 0.5, orm, emis, alpha=None), notes
+
+
+def attribute_values(ob, name):
+    a = np.empty(len(ob.data.vertices), np.float32)
+    ob.data.attributes[name].data.foreach_get("value", a)
+    return a
+
+
+def raster_scalar(ob, values, size):
+    """Per-vertex values interpolated over the object's UV triangles into a size x size map."""
+    me = ob.data
+    uv = np.empty(len(me.loops) * 2)
+    me.uv_layers.active.data.foreach_get("uv", uv)
+    uv = uv.reshape(-1, 2) * size
+    lv = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", lv)
+    out = np.zeros((size, size))
+    for p in me.polygons:
+        ls = list(p.loop_indices)
+        vals = values[lv[ls]]
+        if vals.max() <= 0:
+            continue
+        for k in range(1, len(ls) - 1):
+            t = uv[[ls[0], ls[k], ls[k + 1]]]
+            tv = vals[[0, k, k + 1]]
+            x0, y0 = np.maximum(np.floor(t.min(0)).astype(int), 0)
+            x1, y1 = np.minimum(np.ceil(t.max(0)).astype(int), size - 1)
+            if x1 < x0 or y1 < y0:
+                continue
+            xs, ys = np.meshgrid(np.arange(x0, x1 + 1) + 0.5, np.arange(y0, y1 + 1) + 0.5)
+            (ax, ay), (bx, by), (cx, cy) = t
+            d = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy)
+            if abs(d) < 1e-12:
+                continue
+            w0 = ((by - cy) * (xs - cx) + (cx - bx) * (ys - cy)) / d
+            w1 = ((cy - ay) * (xs - cx) + (ax - cx) * (ys - cy)) / d
+            w2 = 1 - w0 - w1
+            m = (w0 >= -1e-3) & (w1 >= -1e-3) & (w2 >= -1e-3)
+            sub = out[y0:y1 + 1, x0:x1 + 1]
+            sub[m] = np.maximum(sub[m], (w0 * tv[0] + w1 * tv[1] + w2 * tv[2])[m])
+    return out
+
+
+def strand_noise(shape, rng, along=0, length=12):
+    """Unit-variance noise smeared along one axis: hair strands rather than blotches."""
+    n = rng.random(shape)
+    for _ in range(2):
+        pad = [(0, 0), (0, 0)]
+        pad[along] = (length // 2, length // 2)
+        c_ = np.cumsum(np.pad(n, pad, mode="edge"), axis=along)
+        n = (np.take(c_, np.arange(length, c_.shape[along]), axis=along)
+             - np.take(c_, np.arange(0, c_.shape[along] - length), axis=along)) / length
+    return (n - n.mean()) / (n.std() + 1e-9)
+
+
+def paint_scalp(cfg, built, body, lin, size):
+    hair = built["objects"]["hair"]
+    coll = geo.Collider([hair])
+    V = geo.co(body)
+    W = geo.weights(body)
+    head = W.get("head", np.zeros(len(V)))
+    d = np.array([coll.nearest(p)[2] or 1.0 for p in V])
+    vm = (head > 0.5) & (d < 0.012)
+    m = raster(face_tris(body, geo.face_mask(geo.faces(body), vm, "any")), size) >= 0
+    m = blur(m.astype(float), 3)[..., None]
+    col = srgb_to_lin(hex_srgb(cfg["hair"]["color"])) * 0.7
+    strands = np.clip(1.0 + 0.35 * strand_noise((size, size), np.random.default_rng(11)), 0.45, 1.6)[..., None]
+    return lin * (1 - m * 0.9) + col * strands * m * 0.9
 
 
 def paint_veins(lin, cover, spec, size):
@@ -324,9 +410,12 @@ def clean_scalp(built, body, lin, size):
 
 # ----------------------------------------------------------------------------- face / hair atlas
 
-def recolour(lin, target, gamma=1.0):
+def recolour(lin, target, gamma=1.0, alpha=None):
+    """Recolour keeping the luminance pattern; the median texel (of the opaque ones when an
+    alpha is given) lands on the target colour."""
     L = luminance(lin)
-    mL = float(np.median(L[L > 0.02])) if (L > 0.02).any() else 0.5
+    ref = (L > 0.02) if alpha is None else (alpha > 0.5)
+    mL = float(np.median(L[ref])) if ref.any() else 0.5
     return np.clip(np.asarray(target)[None, None, :] * ((np.maximum(L, 1e-4) / mL) ** gamma)[..., None], 0, 1)
 
 
@@ -372,7 +461,8 @@ def face_atlas(fid, cfg, built, out_dir, slot, size):
                     lin_to_srgb(e * iris[..., None])
         else:
             col = srgb_to_lin(hex_srgb(cfg[key]["color"]))
-            lin = recolour(lin, col, cfg[key].get("contrast", 0.9 if key == "hair" else 0.6))
+            lin = recolour(lin, col, cfg[key].get("contrast", 0.9 if key == "hair" else 0.6),
+                           alpha=a[..., 3] if cfg[key].get("match") == "opaque" else None)
             rough = cfg[key].get("roughness", 0.45 if key == "hair" else 0.7)
         Y, X = int(y0 * size), int(x0 * size)
         base[Y:Y + ph, X:X + pw, :3] = lin_to_srgb(lin)
@@ -380,9 +470,88 @@ def face_atlas(fid, cfg, built, out_dir, slot, size):
         orm[Y:Y + ph, X:X + pw, 1] = rough
         notes.append("%s: %s -> tile %s" % (key, os.path.relpath(srcs[key], core.PROJECT), (x0, y0, w, h)))
         remap_uv(objs[key], x0, y0, w, h)
+    if has_hair and cfg.get("beard"):
+        for key, tile, dense in (("beard", (0.5, 0.0, 0.25, 0.25), True), ("beard_outer", (0.75, 0.0, 0.25, 0.25), False)):
+            if key not in objs:
+                continue
+            x0, y0, w, h = tile
+            remap_uv(objs[key], x0, y0, w, h)
+            X, Y, pw, ph = int(x0 * size), int(y0 * size), int(w * size), int(h * size)
+            cov = (raster(uv_tris(objs[key]), size) >= 0)[Y:Y + ph, X:X + pw]
+            mu, mv = (np.asarray(objs[key]["uv_span_m"], float) / [pw, ph])
+            rgb, alpha = fur_tile(cfg["beard"], cov, mu, mv, dense, seed=5 if dense else 9)
+            base[Y:Y + ph, X:X + pw, :3] = lin_to_srgb(rgb)
+            base[Y:Y + ph, X:X + pw, 3] = alpha
+            orm[Y:Y + ph, X:X + pw, 1] = cfg["beard"].get("roughness", 0.85)
+            notes.append("%s: generated fur strands %s, alpha edges -> tile %s" % (key, cfg["beard"]["color"], tile))
     normal = np.zeros((size, size, 3)) + [0.5, 0.5, 1.0]
     files = write_set(fid, slot, out_dir, base, normal, orm, emis if emis.any() else None, alpha=True)
     return files, notes
+
+
+def edge_distance(cov, mu, mv, max_m=0.012):
+    """Approximate distance (metres) from each covered texel to the edge of the coverage, for
+    texels mu x mv metres (4-neighbour relaxation)."""
+    d = np.where(cov, np.inf, 0.0)
+    steps = int(max_m / min(mu, mv)) + 2
+    for _ in range(steps):
+        nd = d.copy()
+        nd[1:, :] = np.minimum(nd[1:, :], d[:-1, :] + mv)
+        nd[:-1, :] = np.minimum(nd[:-1, :], d[1:, :] + mv)
+        nd[:, 1:] = np.minimum(nd[:, 1:], d[:, :-1] + mu)
+        nd[:, :-1] = np.minimum(nd[:, :-1], d[:, 1:] + mu)
+        d = nd
+    d[~cov] = 0.0
+    return np.minimum(d, max_m)
+
+
+def fur_tile(spec, cov, mu, mv, dense, seed):
+    """Beard fur for one shell: strands 0.9 mm wide and 6-14 mm long hanging down the tile
+    (v is height on the face), some grey, darker between them. The dense core layer is opaque
+    6 mm inside its outline and breaks into single strands towards it; the outer layer is
+    strands only. Alpha fades out at the outline, so the shell's edge is a ragged fur edge."""
+    ph, pw = cov.shape
+    rng = np.random.default_rng(seed)
+    d = edge_distance(cov, mu, mv)
+    col = srgb_to_lin(hex_srgb(spec["color"]))
+    grey = srgb_to_lin(hex_srgb("#857e75"))
+    area = cov.sum() * mu * mv
+    n = int(area / (0.0009 * 0.010) * (1.6 if dense else 0.9))
+    x0 = rng.random(n) * pw
+    y0 = rng.random(n) * ph
+    L = np.maximum((rng.uniform(0.006, 0.014, n) / mv).astype(int), 2)
+    centre = np.abs(x0 - pw / 2) * mu < 0.04          # the moustache: strands fan outwards
+    slant = (rng.normal(0, 0.18, n) + np.where(centre, 0.35 * np.sign(x0 - pw / 2), 0.0)) * mv / mu
+    val = rng.uniform(0.7, 1.3, n)
+    gr = rng.random(n) < 0.08
+    idx = np.repeat(np.arange(n), L)
+    t = np.arange(idx.size) - np.repeat(np.cumsum(L) - L, L)
+    ys = (y0[idx] - t).astype(int)
+    xs = x0[idx] + slant[idx] * t
+    ok = (ys >= 0) & (ys < ph) & (xs >= 0) & (xs < pw - 1)
+    ys, xs, idx, t = ys[ok], xs[ok], idx[ok], t[ok]
+    xi = xs.astype(int)
+    fade = 1.0 - 0.45 * (t / L[idx]) ** 2
+    a_str = np.zeros((ph, pw))
+    np.maximum.at(a_str, (ys, xi), fade)
+    np.maximum.at(a_str, (ys, xi + 1), fade * 0.6)
+    v_map = np.full((ph, pw), 0.0)
+    g_map = np.zeros((ph, pw))
+    v_map[ys, xi] = val[idx] * fade
+    g_map[ys, xi] = gr[idx]
+    edge = np.clip(d / (0.006 if dense else 0.004), 0, 1)
+    edge = edge * edge * (3 - 2 * edge)
+    strand_col = (col[None, None, :] * v_map[..., None] * (1 - g_map[..., None] * 0.8)
+                  + grey[None, None, :] * g_map[..., None] * 0.8)
+    if dense:
+        under = col[None, None, :] * 0.7
+        rgb = under * (1 - a_str[..., None]) + strand_col * a_str[..., None]
+        alpha = np.maximum(edge, a_str * (d > 0.0004))
+    else:
+        rgb = col[None, None, :] * 0.8 * (1 - a_str[..., None]) + strand_col * a_str[..., None]
+        alpha = a_str * edge
+    alpha = np.where(cov, np.clip(alpha, 0, 1), 0.0)
+    return np.clip(rgb, 0, 1), alpha
 
 
 def tint_iris(lin, eyes):
@@ -678,7 +847,7 @@ def texture_and_materials(fid, cfg, built, out_dir):
         surf = built["surface"][ob.name]
         if surf == "body" or cfg.get("surfaces", {}).get(surf, {}).get("slot") == "skin":
             groups["skin"].append(ob)
-        elif surf in ("eyes", "brows", "lashes", "hair"):
+        elif surf in ("eyes", "brows", "lashes", "hair", "beard"):
             groups[face_slot].append(ob)
         else:
             groups[cfg["surfaces"][surf]["slot"]].append(ob)

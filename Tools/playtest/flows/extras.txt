@@ -1,0 +1,4 @@
+# Extras: endings, records, move lists (paging through fighters), credits, and back.
+14:confirm,1.5:up,0.4:up,0.4:up,0.5:confirm,2:confirm,3:back,1:down,0.5:confirm,3:back,1:down,0.5:confirm,2:right,2:right,2:back,1:down,0.4:down,0.5:confirm,3:back,1:back
+-SlopFrameStats
+60

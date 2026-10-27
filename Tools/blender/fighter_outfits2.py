@@ -78,7 +78,7 @@ def side_mask_pts(c, side):
 
 
 def leg_shell(ctx, key, surface, z_top, z_bottom, offset, folds=0.004, gather=None, smooth=8, gap=0.008,
-              thickness=0.004, medial=0.4):
+              thickness=0.004, medial=0.4, decimate=1.0):
     """Trousers / leggings from z_top down to z_bottom (cut across the shins)."""
     s, V = ctx.s, ctx.V
     z = V[:, 2]
@@ -107,7 +107,8 @@ def leg_shell(ctx, key, surface, z_top, z_bottom, offset, folds=0.004, gather=No
         geo.set_co(ob, c)
 
     field = wd.f_and(wd.f_plane((0, 0, z_top), (0, 0, -1)), wd.f_plane((0, 0, z_bottom), (0, 0, 1)))
-    return wd.field_shell(ctx, key, surface, sel, bag, field, smooth=smooth, gap=gap, thickness=thickness, extra=shape)
+    return wd.field_shell(ctx, key, surface, sel, bag, field, smooth=smooth, gap=gap, thickness=thickness, extra=shape,
+                          decimate=decimate)
 
 
 def gloves(ctx, key_fmt, surface, cuff_t, offset, fingers=True, thickness=0.0016, decimate=1.0):
@@ -388,8 +389,8 @@ def mirela(ctx):
     """Ivory mourning gown that reads as cloth at fight distance: an ash-ivory gown with a high
     collar, puffed (leg-of-mutton) sleeves and black cuffs; a black overbust corset with seams
     and ivory piping over the bust and waist; black close lace from the corset to the throat;
-    a long skirt of two wrap-over panels (closed at the front, each riding its own shin below
-    the knee) tucked under the corset."""
+    a long skirt of two wrap-over panels (closed at the front, the hem riding the shins below
+    the knee so it stays above the floor in a deep crouch) tucked under the corset."""
     H, s, V = ctx.H, ctx.s, ctx.V
     z = V[:, 2]
     hf = wd.head_frame(ctx)
@@ -402,7 +403,8 @@ def mirela(ctx):
                             neck_top=z_collar, smooth=22, gap=0.010)
     gigot(ctx, gown, 0.036, folds=0.005)
     gloves(ctx, "glove_%s", "gloves", 0.60, 0.0022, fingers=True, decimate=0.55)
-    leg_shell(ctx, "leggings", "underdress", 0.50 * H, 0.07 * H, 0.010, folds=0.002, gap=0.006, smooth=18, medial=0.6)
+    leg_shell(ctx, "leggings", "underdress", 0.50 * H, 0.07 * H, 0.010, folds=0.002, gap=0.006, smooth=18, medial=0.6,
+              decimate=0.7)
     boots(ctx, "boots", "boots", 0.11, 0.02)
     # black cuffs at the sleeve ends, choker at the collar top
     for side in ("l", "r"):
@@ -413,14 +415,12 @@ def mirela(ctx):
     t_ch = (z_collar - nb[2]) / (nt[2] - nb[2])
     wd.ring_band(ctx, "choker", "lace", nk, nb, nt, [t_ch - 0.05, t_ch - 0.01, t_ch + 0.03], [0.036, 0.040, 0.036])
     # long skirt: two wrap-over panels, closed at the front and overlapping at the back; the top
-    # sits at the waist, under the corset (no ledge)
+    # sits at the waist, under the corset (no ledge). Where they overlap the panels carry the same
+    # leg weights, so they move together and the front stays closed.
     objs = [ctx.body, ctx.parts["leggings"], ctx.parts["gown"]]
-    skirts = []
     for side, arc, gap in (("l", (-0.30, math.pi + 0.18), 0.005), ("r", (math.pi - 0.18, 2 * math.pi + 0.30), 0.011)):
-        ob, _, _, _ = wd.wrap_skirt(ctx, "skirt_" + side, "gown", 0.585 * H, 0.085 * H, gap=gap, flare=0.17,
-                                    folds=(0.013, 10), share=(0.75, 0.45, 0.2), thickness=0.004, row=0.035, objs=objs,
-                                    arc=arc, side=side, calf_share=0.9, nu=28)
-        skirts.append(ob)
+        wd.wrap_skirt(ctx, "skirt_" + side, "gown", 0.585 * H, 0.085 * H, gap=gap, flare=0.17, folds=(0.013, 10),
+                      share=(0.75, 0.45, 0.2), thickness=0.004, row=0.035, objs=objs, arc=arc, calf_share=0.9, nu=28)
     # overbust corset: black, with vertical seams, a front point, ivory piping along both edges
     z0, z1 = 0.535 * H, 0.745 * H
     yc = float(ctx.head("spine_02")[1])
@@ -448,45 +448,83 @@ def mirela(ctx):
 
     corset = wd.field_shell(ctx, "corset", "corset", tors, 0.024 * s,
                             lambda c: np.minimum(c[:, 2] - bottom_edge(c), top_edge(c) - c[:, 2]),
-                            smooth=20, gap=0.024, thickness=0.004, extra=seams, hide=False)
+                            smooth=20, gap=0.024, thickness=0.004, extra=seams, hide=False,
+                            collider=geo.Collider(ctx.colliders, outer_only=True))
 
-    def on_corset(key, field, lift, thick):
-        """A strip of the corset's outer surface, lifted off it: piping that follows it exactly."""
-        ob = geo.duplicate(corset, key)
-        me = ob.data
-        cen = np.array([tuple(p.center) for p in me.polygons])
-        nr = np.array([tuple(p.normal) for p in me.polygons])
-        rad = cen - (0.0, yc, 0.0)
-        rad[:, 2] = 0
-        rad /= np.linalg.norm(rad, axis=1)[:, None] + 1e-9
-        geo.keep_faces(ob, (nr * rad).sum(1) > 0.2)
-        geo.cut_field(ob, field)
-        geo.offset_along(ob, geo.vnormals(ob), lift * s)
+    # ivory piping along both edges and ten piped seams (centre front busk, side and back
+    # seams), laid as strips on the corset's outer surface
+    outer = geo.Collider([corset], outer_only=True)
+
+    def hit(a, zz):
+        d = Vector((math.sin(a), -math.cos(a), 0.0))
+        loc, n, _, _ = outer.tree.ray_cast(Vector((0.0, yc, zz)) + d * 0.6, -d)
+        return (None, None) if loc is None else (loc, n)
+
+    def strip(key, paths, width, thick):
+        sv_all, sf_all = [], []
+        for pts in paths:
+            if len(pts) < 2:
+                continue
+            sv, sf = fo.ribbon(pts, width * s, outer)
+            sf_all += [tuple(i + len(sv_all) for i in f) for f in sf]
+            sv_all += sv
+        ob = geo.new_mesh_object(key, sv_all, sf_all, ctx.rig)
+        geo.orient_outward(ob, (0.0, yc))
+        geo.transfer_weights(ctx.body, ob)
         if thick:
             geo.solidify(ob, thick * s)
         ctx.add(key, ob, "trim", collide=False)
 
-    for key, edge in (("corset_trim_top", top_edge), ("corset_trim_bottom", bottom_edge)):
-        on_corset(key, lambda c, e=edge: 0.011 * s - np.abs(c[:, 2] - e(c)), 0.0025, 0.003)
-    seam_a = np.array([-math.pi + k * 2 * math.pi / 10 for k in range(10)])
-
-    def seam_field(c):
-        ang = np.arctan2(c[:, 0], -(c[:, 1] - yc))
-        dd = np.abs(((ang[:, None] - seam_a[None] + math.pi) % (2 * math.pi)) - math.pi).min(1)
-        dist = dd * np.hypot(c[:, 0], c[:, 1] - yc)
-        return np.minimum(0.003 * s - dist, np.minimum(c[:, 2] - bottom_edge(c) - 0.009 * s, top_edge(c) - 0.009 * s - c[:, 2]))
-
-    on_corset("corset_seams", seam_field, 0.0035, 0.0)
+    for key, edge, sgn, zs in (("corset_trim_top", top_edge, -1, z1 - 0.05 * s),
+                               ("corset_trim_bottom", bottom_edge, 1, z0 + 0.04 * s)):
+        pts = []
+        for a in np.linspace(-math.pi, math.pi, 97):
+            loc, n = hit(a, zs)
+            if loc is None:
+                continue
+            ze = edge(np.array(loc)[None])[0] + sgn * 0.0055 * s
+            loc, n = hit(a, ze)
+            if loc is not None:
+                pts.append(np.array(loc + n * 0.0025 * s))
+        strip(key, [pts], 0.011, 0.003)
+    paths = []
+    for k in range(10):
+        a = -math.pi + k * 2 * math.pi / 10
+        pts = []
+        for zz in np.arange(z0 - 0.04 * s, z1 + 0.02 * s, 0.012 * s):
+            loc, n = hit(a, zz)
+            if loc is None:
+                continue
+            p = np.array(loc)[None]
+            if bottom_edge(p)[0] + 0.011 * s <= zz <= top_edge(p)[0] - 0.011 * s:
+                pts.append(np.array(loc + n * 0.0025 * s))
+        paths.append(pts)
+    strip("corset_seams", paths, 0.007, 0.0)
+    # the long hair lies on the back: lift it clear of the corset and its piping (smoothly)
+    hair = ctx.parts.get("hair")
+    if hair is not None:
+        lay = geo.Collider([corset] + [ctx.parts[k] for k in ("corset_trim_top", "corset_trim_bottom", "corset_seams")],
+                           outer_only=True)
+        c0 = geo.co(hair)
+        zone = c0[:, 2] < z1 + 0.06 * s
+        geo.push_out(hair, lay, 0.008 * s, vmask=zone)
+        d = geo.co(hair) - c0
+        nbr = geo.neighbours(hair)
+        for _ in range(4):
+            d = np.array([d[n].mean(0) if len(n) else d[i] for i, n in enumerate(nbr)]) * 0.5 + d * 0.5
+        geo.set_co(hair, c0 + d)
+        geo.push_out(hair, lay, 0.006 * s, vmask=zone)
     # black close lace from the corset up to the collar, over the chest, shoulders and upper back
     x_sh = abs(ctx.head("upperarm_l")[0])
     ysel = ((z >= z1 - 0.02 * s) & (z <= z_collar + 0.02 * s) & (ctx.w("head") < 0.45) & (ctx.arm_w < 0.5)
             & (np.abs(V[:, 0]) < x_sh * 0.95))
-    z_arm = float(ctx.head("upperarm_l")[2]) - 0.05 * s
+    pit = V[(ctx.w("upperarm_l") > 0.4) & (V[:, 0] > 0) & (V[:, 0] < x_sh)]
+    z_pit = float(pit[:, 2].min()) if len(pit) else z1
     yfield = wd.f_and(lambda c: c[:, 2] - (top_edge(c) + 0.004 * s), wd.f_plane((0, 0, z_collar + 0.002 * s), (0, 0, -1)),
                       lambda c: x_sh * 0.78 - np.abs(c[:, 0]),
-                      wd.f_or(wd.f_plane((0, 0, z_arm), (0, 0, 1)), lambda c: x_sh * 0.6 - np.abs(c[:, 0])))
-    wd.field_shell(ctx, "yoke", "yoke_lace", ysel, 0.014 * s, yfield, smooth=22, gap=0.006, thickness=0.0,
-                   hide=False, largest=True)
+                      wd.f_or(wd.f_plane((0, 0, z_pit + 0.012 * s), (0, 0, 1)), lambda c: x_sh * 0.6 - np.abs(c[:, 0])))
+    wd.field_shell(ctx, "yoke", "yoke_lace", ysel, 0.016 * s, yfield, smooth=22, gap=0.007, thickness=0.0,
+                   hide=False, largest=True, collider=geo.Collider(ctx.colliders, outer_only=True))
     # black lace veil over the hair and shoulders, open at the face
     objs = [ctx.body] + [ctx.parts[k] for k in ("hair", "gown") if k in ctx.parts]
     wd.wrap_skirt(ctx, "veil", "veil", hf["top"] + 0.004 * s, nb[2] - 0.035 * s, open_frac=0.36, gap=0.010, flare=0.015,
@@ -537,7 +575,9 @@ def bram(ctx):
         wd.ring_band(ctx, "cuff_" + side, "coat_dark", am, el, wr, [0.80, 0.86, 0.94], [0.019, 0.021, 0.024])
     # peaked watch cap over the hair, rigid on the head
     cap(ctx, hf)
-    # clean-shaven: the mutton chops read as a dark smudge in-engine and were removed
+    # mutton chops: thick sideburns down the jaw joined by a moustache, the chin clear
+    mutton_chops(ctx, hf)
+    flush_mask(ctx, hf)
     # hardwood baton in the right hand, lantern at the left hip
     centre, across, fwd, pn = palm_frame(ctx, "r")
     c0 = centre + pn * 0.022 * s
@@ -553,6 +593,72 @@ def bram(ctx):
                   lc, (0, 0, 1), 10, rigid="pelvis")
     wd.tube_part(ctx, "lantern_hook", "iron", [lc + np.array([0, 0, 0.1 * s]), lc + np.array([-0.02 * s, 0, 0.13 * s]),
                                                 np.array([lc[0] - 0.04 * s, lc[1], 0.555 * H])], 0.003 * s, 5, rigid="pelvis")
+
+
+def mutton_chops(ctx, hf):
+    """Two fur shells over the jaw, cheeks and upper lip: a dense core 3 mm off the skin and
+    sparse outer strands 9 mm off it, cut along an outline in (angle round the head, height)
+    and given cylindrical UVs, so fighter_tex can draw vertical strands with alpha edges into
+    their hairface tiles (a masked fur edge, not a painted patch)."""
+    s, V = ctx.s, ctx.V
+    hc = hf["c"]
+    ez = hf["eye_z"]
+    r0 = 0.08 * s
+
+    def coords(c):
+        A = np.degrees(np.abs(np.arctan2(c[:, 0] - hc[0], -(c[:, 1] - hc[1]))))
+        return A, (c[:, 2] - ez) / s
+
+    def outline(c):           # metres, >= 0 inside
+        A, dz = coords(c)
+        top = np.where(A >= 70, -0.002, np.where(A >= 20, -0.056 + (A - 20) / 50 * 0.054, -0.060 + A / 20 * 0.004))
+        # moustache over the upper lip, joined to the chops at the mouth corners; below that the
+        # chops' front edge runs from the mouth corner back to the jaw angle (chin and jaw front clear)
+        bot = np.where(A < 14, -0.083, np.where(A < 30, -0.083 - (A - 14) / 16 * 0.02,
+                                                np.where(A < 55, -0.103 - (A - 30) / 25 * 0.1, -0.2)))
+        return np.minimum(np.minimum(top - dz, dz - bot) * s, np.radians(84 - A) * r0)
+
+    A, _ = coords(V)
+    out_dir = np.stack([V[:, 0] - hc[0], V[:, 1] - hc[1], np.zeros(len(V))], 1)
+    out_dir /= np.linalg.norm(out_dir, axis=1)[:, None] + 1e-9
+    facing = (ctx.N * out_dir).sum(1) > 0.15            # skin, not the inside of the mouth
+    sel = (ctx.w("head") >= 0.5) & (outline(V) > -0.01 * s) & facing & (A < 95)
+    body_only = geo.Collider([ctx.body])
+    zv = V[sel, 2]
+    z_lo, z_hi = float(zv.min()) - 0.01 * s, float(zv.max()) + 0.01 * s
+    a_max = 95.0
+    for key, off, shrink in (("beard", 0.003, 0.0), ("beard_outer", 0.009, 0.004)):
+        ob = wd.field_shell(ctx, key, "beard", sel, off * s, lambda c, k=shrink: outline(c) - k * s, smooth=3,
+                            gap=off * 0.6, thickness=0.0, hide=False, collider=body_only, collide=False)
+        c = geo.co(ob)
+        me = ob.data
+        lv = np.empty(len(me.loops), np.int64)
+        me.loops.foreach_get("vertex_index", lv)
+        p = c[lv]
+        a = np.degrees(np.arctan2(p[:, 0] - hc[0], -(p[:, 1] - hc[1])))
+        uv = np.stack([(a + a_max) / (2 * a_max), (p[:, 2] - z_lo) / (z_hi - z_lo)], 1)
+        me.uv_layers.active.data.foreach_set("uv", np.clip(uv, 0, 1).ravel())
+        rad = float(np.mean(np.hypot(c[:, 0] - hc[0], c[:, 1] - hc[1])))
+        ob["uv_span_m"] = [np.radians(2 * a_max) * rad, z_hi - z_lo]   # metres across u and v (for the texture)
+
+
+def flush_mask(ctx, hf):
+    """Weathering mask for the skin texture (mesh attribute 'flush', not exported): cheeks, nose,
+    ears and a little of the brow, where an outdoor face reddens."""
+    s, V = ctx.s, ctx.V
+    hc, ez = hf["c"], hf["eye_z"]
+    head = ctx.w("head")
+    front = hf["front"]
+    blobs = [((0.045, front + 0.035, ez - 0.042), 0.024), ((-0.045, front + 0.035, ez - 0.042), 0.024),
+             ((0.0, front, ez - 0.035), 0.022), ((0.0, front + 0.02, ez + 0.045), 0.035),
+             ((0.078, hc[1] + 0.02, ez - 0.01), 0.03), ((-0.078, hc[1] + 0.02, ez - 0.01), 0.03)]
+    m = np.zeros(len(V))
+    for (x, y, zz), r in blobs:
+        p = np.array([x * s if abs(x) > 0 else hc[0], y, zz])
+        m = np.maximum(m, np.exp(-(np.linalg.norm(V - p, axis=1) / (r * s)) ** 2))
+    m *= np.clip(head * 1.5 - 0.3, 0, 1)
+    a = ctx.body.data.attributes.get("flush") or ctx.body.data.attributes.new("flush", "FLOAT", "POINT")
+    a.data.foreach_set("value", m.astype(np.float32))
 
 
 def cap(ctx, hf):

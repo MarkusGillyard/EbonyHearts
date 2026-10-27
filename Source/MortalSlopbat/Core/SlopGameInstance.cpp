@@ -109,6 +109,7 @@ void USlopGameInstance::OnStart()
 		FrameStats = MakeUnique<FFrameStats>(Path);
 		UE_LOG(LogSlop, Log, TEXT("Frame stats to %s"), *Path);
 	}
+	TestCommandLine();
 	DevCommandLine();
 	if (!Screen.IsValid())
 	{
@@ -353,24 +354,25 @@ void USlopGameInstance::OnActivation(bool bActive)
 void USlopGameInstance::DispatchUi()
 {
 	TArray<FUiEvent> Events = Router->TakeUi();
-#if !UE_BUILD_SHIPPING
-	if (UiScript.Num() > 0 && Now() >= UiScriptAt + UiScript[0].Key)
+	// Test automation (any build; see TestCommandLine).
+	if (UiScript.Num() > 0 && Now() >= UiScriptAt + UiScript[0].Delay)
 	{
 		FUiEvent E;
-		E.Action = UiScript[0].Value;
+		E.Action = UiScript[0].Action;
+		E.Side = UiScript[0].Side;
+		E.Device = E.Side;
 		Events.Add(E);
-		UE_LOG(LogSlop, Log, TEXT("Ui script: %d"), (int32)E.Action);
+		UE_LOG(LogSlop, Log, TEXT("Ui script: %d (side %d)"), (int32)E.Action, E.Side);
 		UiScriptAt = Now();
 		UiScript.RemoveAt(0);
 	}
-	if (AutoPlayLevel >= 0 && !(Match && !Match->HasEnded()) && !Overlay.IsValid() && Now() >= AutoConfirmAt)
+	if (AutoPlayLevel >= 0 && UiScript.Num() == 0 && !(Match && !Match->HasEnded()) && !Overlay.IsValid() && Now() >= AutoConfirmAt)
 	{
 		FUiEvent E;
 		E.Action = EUi::Confirm;
 		Events.Add(E);
 		AutoConfirmAt = Now() + 2.0;
 	}
-#endif
 	for (const FUiEvent& E : Events)
 	{
 		if (Overlay.IsValid())
@@ -544,6 +546,48 @@ void USlopGameInstance::RequestShot(int32 Tick, const FString& Name)
 	ShotTicks.Sort([](const TPair<int32, FString>& A, const TPair<int32, FString>& B) { return A.Key < B.Key; });
 }
 
+void USlopGameInstance::TestCommandLine()
+{
+	// Unattended runs of any build, the Shipping package included: scripted menu actions and the
+	// CPU playing the first side. Command line only; nothing in the game's own menus.
+	const TCHAR* Cmd = FCommandLine::Get();
+	if (FParse::Param(Cmd, TEXT("SlopAutoPlay")) || FParse::Value(Cmd, TEXT("SlopAutoPlay="), AutoPlayLevel))
+	{
+		FParse::Value(Cmd, TEXT("SlopAutoPlay="), AutoPlayLevel);
+		AutoPlayLevel = FMath::Clamp(AutoPlayLevel < 0 ? 2 : AutoPlayLevel, 0, 2);
+		AutoConfirmAt = Now() + 12.0;
+	}
+	FString UiArg;
+	if (FParse::Value(Cmd, TEXT("SlopUi="), UiArg, false))
+	{
+		// delay:action pairs, the delay in seconds after the previous one; actions as named below,
+		// "@1" after one for the second player's side ("confirm@1").
+		static const TMap<FString, EUi> Names = {
+			{TEXT("up"), EUi::Up}, {TEXT("down"), EUi::Down}, {TEXT("left"), EUi::Left}, {TEXT("right"), EUi::Right},
+			{TEXT("confirm"), EUi::Confirm}, {TEXT("back"), EUi::Back}, {TEXT("pause"), EUi::Pause}, {TEXT("next"), EUi::Next},
+			{TEXT("prev"), EUi::Prev}, {TEXT("reset"), EUi::Reset}, {TEXT("alt"), EUi::Alt}};
+		TArray<FString> Parts;
+		UiArg.ParseIntoArray(Parts, TEXT(","));
+		for (const FString& P : Parts)
+		{
+			FString D, A, Side;
+			if (P.Split(TEXT(":"), &D, &A))
+			{
+				int32 S = 0;
+				if (A.Split(TEXT("@"), &A, &Side))
+				{
+					S = FMath::Clamp(FCString::Atoi(*Side), 0, 1);
+				}
+				if (const EUi* U = Names.Find(A))
+				{
+					UiScript.Add({FCString::Atod(*D), *U, S});
+				}
+			}
+		}
+		UiScriptAt = Now();
+	}
+}
+
 void USlopGameInstance::DevCommandLine()
 {
 #if !UE_BUILD_SHIPPING
@@ -627,32 +671,6 @@ void USlopGameInstance::DevCommandLine()
 		}
 		Root->SetVisibility(EVisibility::Collapsed);
 		OpenShowroom();
-	}
-	if (FParse::Param(Cmd, TEXT("SlopAutoPlay")) || FParse::Value(Cmd, TEXT("SlopAutoPlay="), AutoPlayLevel))
-	{
-		FParse::Value(Cmd, TEXT("SlopAutoPlay="), AutoPlayLevel);
-		AutoPlayLevel = FMath::Clamp(AutoPlayLevel < 0 ? 2 : AutoPlayLevel, 0, 2);
-		AutoConfirmAt = Now() + 12.0;
-	}
-	FString UiArg;
-	if (FParse::Value(Cmd, TEXT("SlopUi="), UiArg, false))
-	{
-		// delay:action pairs, the delay in seconds after the previous one; actions as named below.
-		static const TMap<FString, EUi> Names = {
-			{TEXT("up"), EUi::Up}, {TEXT("down"), EUi::Down}, {TEXT("left"), EUi::Left}, {TEXT("right"), EUi::Right},
-			{TEXT("confirm"), EUi::Confirm}, {TEXT("back"), EUi::Back}, {TEXT("pause"), EUi::Pause}, {TEXT("next"), EUi::Next},
-			{TEXT("prev"), EUi::Prev}, {TEXT("reset"), EUi::Reset}, {TEXT("alt"), EUi::Alt}};
-		TArray<FString> Parts;
-		UiArg.ParseIntoArray(Parts, TEXT(","));
-		for (const FString& P : Parts)
-		{
-			FString D, A;
-			if (P.Split(TEXT(":"), &D, &A) && Names.Contains(A))
-			{
-				UiScript.Add({FCString::Atod(*D), Names[A]});
-			}
-		}
-		UiScriptAt = Now();
 	}
 	FString Shots;
 	if (FParse::Value(Cmd, TEXT("SlopShots="), Shots, false))

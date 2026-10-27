@@ -1,0 +1,4 @@
+# Settings: the Sound page, master volume down two steps, back out; the change is saved.
+14:confirm,1.5:up,0.4:up,0.5:confirm,2:next,1:left,0.5:left,1.5:back,1:back
+-SlopFrameStats
+30

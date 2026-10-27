@@ -1,0 +1,4 @@
+# Survival, the CPU playing: wave after wave until a loss, then the results and back round again.
+14:confirm,1.5:down,0.5:confirm
+-SlopAutoPlay=2
+420
