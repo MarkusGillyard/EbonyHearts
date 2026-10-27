@@ -14,6 +14,14 @@
 		"jump_vx": 2.2,
 		"push_w": 0.42
 	},
+	"motion": {
+		"bounce": 0.5,
+		"rock": 0.4,
+		"pace": 0.7,
+		"walk_bob": 0.08,
+		"step_lift": 0.15,
+		"walk_twist": 0.3
+	},
 	"basic_tweaks": {
 		"hp": {
 			"startup": 6,

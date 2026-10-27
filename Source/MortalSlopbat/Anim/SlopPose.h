@@ -66,7 +66,8 @@ namespace Slop::Anim
 	class FPoseLibrary
 	{
 	public:
-		void Build(const FFighterDef& Def, const TSharedPtr<FJsonObject>& Common);
+		// `bStyle` false leaves out the style refinements, giving the original game's poses.
+		void Build(const FFighterDef& Def, const TSharedPtr<FJsonObject>& Common, bool bStyle = true);
 		bool Has(FName Name) const { return Src.Contains(Name); }
 		const FPose& Get(FName Name);
 		void Keys(const TArray<FAnimKey>& Raw, TArray<FPoseKey>& Out);

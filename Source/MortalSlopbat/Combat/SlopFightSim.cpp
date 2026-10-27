@@ -593,12 +593,14 @@ namespace Slop
 				HS += 2;
 			}
 		}
-		// A counter hit: the blow lands while the other fighter winds up an attack of their own.
+		// A counter hit: the blow lands while the other fighter winds up an attack of their own. The
+		// victim alone freezes longer, so the blow reads bigger; the stun it would have added instead
+		// is left off, which keeps the frame advantage of a counter exactly as it was.
 		const bool bCounter = !P && D.State == EState::Move && D.Move && D.Move->IsAttack() && D.MF < D.Move->Startup && D.MoveContact.IsNone();
+		const int32 CounterFreeze = bCounter ? 4 : 0;
 		if (bCounter)
 		{
 			Damage = FMath::RoundToInt(Damage * 1.15);
-			HS += 2;
 		}
 		if (P)
 		{
@@ -717,7 +719,6 @@ namespace Slop
 		}
 		const int32 N = D.ComboHits + 1;
 		const double K = N <= 2 ? 1.0 : FMath::Max(0.4, 1.0 - 0.1 * (N - 2));
-		const int32 StunBonus = bCounter ? 4 : 0;
 		// Scaling never takes a damaging hit below 1, but a hit that does none stays harmless.
 		const int32 Dmg = Damage > 0 ? FMath::Max(1, FMath::RoundToInt(Damage * K)) : 0;
 		D.Health = FMath::Max(0, D.Health - Dmg);
@@ -728,7 +729,7 @@ namespace Slop
 		D.LastHitLevel = Level;
 		FVector2D Launch = PD ? PD->Launch : M.Launch;
 		const FVector2D Jug = PD ? PD->Juggle : M.Juggle;
-		const int32 Hitstun = (PD ? PD->Hitstun : M.Hitstun) + StunBonus;
+		const int32 Hitstun = PD ? PD->Hitstun : M.Hitstun;
 		if (D.IsAirborne())
 		{
 			D.JugglePoints += P ? 1 : M.JuggleCost;
@@ -789,7 +790,7 @@ namespace Slop
 			}
 			D.Push((PD ? PD->PushHit : M.PushHit) * Dir * PushK, A.Index);
 		}
-		D.Hitstop = HS;
+		D.Hitstop = HS + CounterFreeze;
 		if (!P)
 		{
 			A.Hitstop = HS;

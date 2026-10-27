@@ -11,6 +11,13 @@
 		"walk_b": 2.0,
 		"run_speed": 5.6
 	},
+	"motion": {
+		"bounce": 0.3,
+		"rock": 0.6,
+		"pace": 0.85,
+		"walk_bob": 0.5,
+		"walk_twist": 0.6
+	},
 	"basic_tweaks": {
 		"hp": {
 			"startup": 4,

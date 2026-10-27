@@ -11,6 +11,15 @@
 		"walk_b": 2.0,
 		"run_speed": 5.0
 	},
+	"motion": {
+		"bounce": 0.25,
+		"rock": 0.5,
+		"pace": 0.7,
+		"walk_bob": 0.2,
+		"step_lift": 0.4,
+		"walk_twist": 1.2,
+		"circle_walk": 1.0
+	},
 	"basic_tweaks": {
 		"hp": {
 			"chain": [

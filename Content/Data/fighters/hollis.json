@@ -13,6 +13,15 @@
 		"jump_vy": 8.2,
 		"push_w": 0.34
 	},
+	"motion": {
+		"bounce": 0.2,
+		"rock": 0.3,
+		"pace": 0.6,
+		"walk_bob": 1.4,
+		"step_lift": 0.5,
+		"walk_twist": 0.25,
+		"head_locked": true
+	},
 	"basic_tweaks": {
 		"hp": {
 			"startup": 5,

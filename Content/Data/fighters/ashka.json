@@ -12,6 +12,12 @@
 		"walk_b": 2.05,
 		"run_speed": 5.4
 	},
+	"motion": {
+		"bounce": 0.35,
+		"rock": 2.4,
+		"pace": 0.8,
+		"walk_bob": 0.6
+	},
 	"basic_tweaks": {
 		"hp2": {
 			"chain": [

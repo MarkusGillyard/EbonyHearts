@@ -119,6 +119,10 @@ private:
 	int32 QuitAtTick = -1;
 	// Development: console commands run at set times after start (-SlopExec=40:ProfileGPU;60:stat unit).
 	TArray<TPair<double, FString>> ExecAt;
+	// Development: the first fighter shows these poses in turn, 1.5 s each (-SlopPoses=down,rise_1).
+	TArray<FName> PoseCycle;
+	double PoseCycleAt = 0.0;
+	int32 PoseCycleIndex = 0;
 	double QuitAtSeconds = -1.0;
 	// Development: the fighters whose portraits are still to be rendered.
 	TArray<FName> PortraitQueue;

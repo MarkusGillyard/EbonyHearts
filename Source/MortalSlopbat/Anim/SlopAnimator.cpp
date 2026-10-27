@@ -75,7 +75,7 @@ namespace Slop::Anim
 		// Each fighter keeps its own rhythm in the stance: taller bodies a little slower, and the
 		// two sides out of step with each other.
 		const uint32 Hash = GetTypeHash(InFighter.Def->Id) + uint32(InFighter.Index) * 2654435761u;
-		Pace = 1.15 * FMath::Sqrt(1.8 / FMath::Max(InFighter.Def->Height, 0.5)) * (0.92 + 0.16 * double(Hash % 1000) / 1000.0);
+		Pace = 1.15 * FMath::Sqrt(1.8 / FMath::Max(InFighter.Def->Height, 0.5)) * (0.92 + 0.16 * double(Hash % 1000) / 1000.0) * InFighter.Def->Motion.Pace;
 		IdlePhase = double((Hash / 1000) % 628) / 100.0;
 		SyncFromSim(true);
 		Update(1.0, 0.0);
@@ -97,6 +97,11 @@ namespace Slop::Anim
 		if ((F.State == EState::Move || F.State == EState::Finisher) && (F.Move != LastMove || LastState != F.State))
 		{
 			MoveTick = F.Sim ? F.Sim->TickCount : 0;
+			PoseLead = 0.0;
+		}
+		else if (LastState != F.State)
+		{
+			PoseLead = 0.0;
 		}
 		LastState = F.State;
 		LastMove = F.Move;
@@ -155,7 +160,23 @@ namespace Slop::Anim
 		}
 		if (bFrozen && Shake > 0.0)
 		{
-			P.X += FMath::Sin(Time * 95.0) * Shake;
+			// Sakurai's recipe: the struck body shakes, fading over the freeze, side to side on the
+			// ground and up and down in the air (so the feet stay out of the floor).
+			const double Amp = Shake * FMath::Clamp(double(F.Hitstop) / ShakeFrames, 0.0, 1.0);
+			const double S = FMath::Sin(Time * 95.0) * Amp;
+			if (F.IsAirborne())
+			{
+				P.Y += S;
+			}
+			else
+			{
+				P.X += S;
+			}
+		}
+		if (bFrozen && Delta > 0.0)
+		{
+			const bool bStruck = F.State == EState::HitStun || F.State == EState::BlockStun;
+			PoseLead = FMath::Min(PoseLead + Delta * 60.0 * (bStruck ? 0.5 : 0.3), bStruck ? 2.5 : 1.0);
 		}
 		if (Delta > 0.0)
 		{
@@ -169,6 +190,11 @@ namespace Slop::Anim
 		{
 			const FQuat From = FromAxes(FVector(0, 0, TurnFrom), FVector(0, 1, 0), FVector(-TurnFrom, 0, 0));
 			Look = AxisAngle(FVector(0, 1, 0), TurnSign * UE_DOUBLE_PI * TurnE) * From;
+		}
+		if (F.Def->Motion.CircleWalk > 0.0 && WalkW > 0.0)
+		{
+			// Walking the circle: the shown body arcs toward and away from the camera along its path.
+			P.Z += FMath::Sin(P2.X / (0.9 * Rig.H) * UE_DOUBLE_PI) * 0.05 * Rig.H * WalkW * F.Def->Motion.CircleWalk;
 		}
 		Root = FXf(Look, P + LiftExtra) * AirTilt(Delta, bFrozen);
 		WorldScale = ExtraScale;
@@ -205,6 +231,12 @@ namespace Slop::Anim
 		Procedural(Delta, bFrozen, Extra);
 		Life(Delta, bFrozen, P2.X, Display, Extra);
 		CarryArms(Torso, Rig.TorsoXf(Display, Extra), Display);
+		if (F.Def->Motion.bHeadLocked)
+		{
+			// A helmet bolted to its breastplate: the head goes only where the chest goes.
+			Display.R(ERot::Neck) = Display.R(ERot::Head) = FQuat::Identity;
+			Extra[(int32)EJoint::Neck] = Extra[(int32)EJoint::Head] = FQuat::Identity;
+		}
 		FVector Ankles[2];
 		double Yaws[2];
 		PlantFeet(Delta, Display, Ankles, Yaws);
@@ -403,27 +435,31 @@ namespace Slop::Anim
 		}
 		const double H = Rig.H;
 		const double Side = Facing > 0 ? 1.0 : -1.0;
+		const FMotionStyle& Style = F.Def->Motion;
 		HandOff[0] = HandOff[1] = FVector::ZeroVector;
 		if (IdleW > 0.0)
 		{
 			const double Down = 0.5 - 0.5 * FMath::Cos(IdlePhase);
 			const double Late = 0.5 - 0.5 * FMath::Cos(IdlePhase - 0.9);
-			Pose.P(EPos::Hips).Y -= Down * 0.013 * H * IdleW;
-			Pose.P(EPos::Hips).Z += FMath::Sin(IdlePhase * 0.5) * 0.007 * H * IdleW;
-			Extra[(int32)EJoint::Chest] = Extra[(int32)EJoint::Chest] * EulerRad(FVector(-Late * 0.045 * IdleW, FMath::Sin(IdlePhase * 0.5) * 0.03 * IdleW * Side, 0.0));
-			Extra[(int32)EJoint::Head] = Extra[(int32)EJoint::Head] * EulerRad(FVector(Late * 0.03 * IdleW, 0.0, 0.0));
+			const double Bounce = IdleW * Style.Bounce;
+			const double Rock = IdleW * Style.Rock;
+			Pose.P(EPos::Hips).Y -= Down * 0.013 * H * Bounce;
+			Pose.P(EPos::Hips).Z += FMath::Sin(IdlePhase * 0.5) * 0.007 * H * Rock;
+			Extra[(int32)EJoint::Chest] = Extra[(int32)EJoint::Chest] * EulerRad(FVector(-Late * 0.045 * Bounce + FMath::Sin(IdlePhase * 0.5 - 0.4) * 0.02 * Rock,
+				FMath::Sin(IdlePhase * 0.5) * 0.03 * Rock * Side, 0.0));
+			Extra[(int32)EJoint::Head] = Extra[(int32)EJoint::Head] * EulerRad(FVector(Late * 0.03 * Bounce, 0.0, 0.0));
 			for (int32 S = 0; S < 2; ++S)
 			{
 				const double Ph = IdlePhase - 1.1 - 0.5 * S;
-				HandOff[S] += FVector(0.0, -(0.5 - 0.5 * FMath::Cos(Ph)) * 0.012 * H, FMath::Sin(Ph) * 0.005 * H) * IdleW;
+				HandOff[S] += FVector(0.0, -(0.5 - 0.5 * FMath::Cos(Ph)) * 0.012 * H * Bounce, FMath::Sin(Ph) * 0.005 * H * IdleW);
 			}
 		}
 		if (WalkW > 0.0)
 		{
 			const double Stride = 0.6 * H / 1.8;
 			const double Ph = FMath::Abs(X) / Stride * UE_DOUBLE_PI;
-			Pose.P(EPos::Hips).Y += (FMath::Abs(FMath::Sin(Ph)) - 0.5) * 0.024 * H * WalkW;
-			const double Twist = FMath::Sin(Ph) * WalkW;
+			Pose.P(EPos::Hips).Y += (FMath::Abs(FMath::Sin(Ph)) - 0.5) * 0.024 * H * WalkW * Style.WalkBob;
+			const double Twist = FMath::Sin(Ph) * WalkW * Style.WalkTwist;
 			Extra[(int32)EJoint::Hips] = Extra[(int32)EJoint::Hips] * EulerRad(FVector(0.0, -Twist * 0.07 * Side, Twist * 0.035));
 			Extra[(int32)EJoint::Chest] = Extra[(int32)EJoint::Chest] * EulerRad(FVector(0.0, Twist * 0.11 * Side, -Twist * 0.03));
 			Extra[(int32)EJoint::Head] = Extra[(int32)EJoint::Head] * EulerRad(FVector(0.0, -Twist * 0.05 * Side, 0.0));
@@ -538,8 +574,19 @@ namespace Slop::Anim
 				{
 					const TArray<FPoseKey>* MK = Lib.MoveKeys(F.Move->Id);
 					OwnedKeys = MK ? *MK : TArray<FPoseKey>();
+					// The key a blow lands on arrives at speed instead of easing to a stop.
+					static const FName SnapEase(TEXT("snap")), StrikeEase(TEXT("strike"));
+					for (FPoseKey& K : OwnedKeys)
+					{
+						if (K.Ease == SnapEase && FMath::Abs(K.F - double(F.Move->Startup)) < 0.5)
+						{
+							K.Ease = StrikeEase;
+						}
+					}
 				}
-				FPoseLibrary::Sample(OwnedKeys, double(F.MF) - 1.0 + Frac, Snap, Src);
+				const double TM = double(F.MF) - 1.0 + Frac + PoseLead;
+				FPoseLibrary::Sample(OwnedKeys, TM, Snap, Src);
+				DriveThrough(TM);
 			}
 			break;
 		case EState::BlockStun:
@@ -575,7 +622,7 @@ namespace Slop::Anim
 					OwnedKeys.Add({Total, &Lib.Get(Back), TEXT("inout")});
 				}
 			}
-			FPoseLibrary::Sample(OwnedKeys, T, Snap, Src);
+			FPoseLibrary::Sample(OwnedKeys, T + PoseLead, Snap, Src);
 			break;
 		}
 		case EState::Juggle:
@@ -588,8 +635,12 @@ namespace Slop::Anim
 			break;
 		}
 		case EState::Down:
-		case EState::KO:
 			HoldPose(TEXT("down"), 6.0);
+			break;
+		case EState::KO:
+			// Knocked out by a blow to the head, the body falls as a unit and one forearm stays
+			// rigidly raised (the "fencing response" seen in about two-thirds of filmed knockouts).
+			HoldPose(F.LastHitLevel == ELevel::High && Lib.Has(TEXT("ko_fence")) ? FName(TEXT("ko_fence")) : FName(TEXT("down")), 6.0);
 			break;
 		case EState::WakeUp:
 			if (SetSource(FString::Printf(TEXT("wake:%d"), SimTick - F.SF), 0.0))
@@ -748,8 +799,10 @@ namespace Slop::Anim
 		return FXf(FQuat::Identity, Pivot) * FXf(AxisAngle(FVector(1, 0, 0), FMath::DegreesToRadians(Spin)), FVector::ZeroVector) * FXf(FQuat::Identity, -Pivot);
 	}
 
-	void FAnimator::Impact(double Dir, double Strength, ELevel Level, bool bBlocked)
+	void FAnimator::Impact(double Dir, double Strength, ELevel Level, bool bBlocked, const FVector& StrikeDir, bool bCounter)
 	{
+		PoseLead = 0.0;
+		ShakeFrames = FMath::Max(1.0, double(Fighter->Hitstop));
 		if (Fighter->IsAirborne())
 		{
 			AirPitchV += 180.0 * FMath::Clamp(Strength, 0.3, 1.5);
@@ -759,24 +812,119 @@ namespace Slop::Anim
 		const double S = Strength * (bBlocked ? 0.35 : 1.0) * Back;
 		const double HeadK = Level == ELevel::High ? 1.6 : 0.7;
 		const double ChestK = Level == ELevel::Low ? 0.4 : 1.0;
-		Spring[1][1] += FVector(-S * HeadK * 9.0, 0, 0);
-		Spring[0][1] += FVector(-S * ChestK * 6.0, 0, 0);
-		Spring[2][1] += FVector(-S * 2.0 * (Level == ELevel::Low ? 1.6 : 0.6), 0, 0);
-		Shake = FMath::Clamp(0.004 + Strength * 0.014, 0.0, 0.024);
-		if (!bBlocked)
+		// Positive pitch tips a joint back, away from the attacker (the port had these signs reversed,
+		// so a blow nodded the head into the fist; Anim.BlowsMoveTheHeadTheWayTheyTravel holds them).
+		// A body shot moves the head less than a blow to it.
+		const double HeadPitch = Level == ELevel::Mid && !bBlocked ? 0.4 : 1.0;
+		Spring[1][1] += FVector(S * HeadK * 9.0 * HeadPitch, 0, 0);
+		Spring[0][1] += FVector(S * ChestK * 6.0, 0, 0);
+		Spring[2][1] += FVector(S * 2.0 * (Level == ELevel::Low ? 1.6 : 0.6), 0, 0);
+		if (!bBlocked && !StrikeDir.IsNearlyZero())
 		{
-			// Every blow lights the body for a frame or two; heavy ones whiten it.
+			// The geometry of the blow, in the struck body's own frame: a hook (travelling across the
+			// body) turns the head away and bends it to the side, the largest rotational load; an
+			// uppercut (travelling up) throws the chin back; a straight drives the head back alone.
+			const FVector L = Root.Q.Inverse().RotateVector(StrikeDir.GetSafeNormal());
+			const double K = FMath::Abs(S);
+			if (FMath::Abs(L.X) > 0.35 && Level != ELevel::Low)
+			{
+				const double Side = FMath::Sign(L.X) * FMath::Min(1.0, FMath::Abs(L.X) * 1.4);
+				const double HeadOnly = Level == ELevel::High ? 1.0 : 0.45;
+				Spring[1][1] += FVector(0, -Side * K * 11.0 * HeadOnly, -Side * K * 5.0 * HeadOnly);
+				Spring[0][1] += FVector(0, -Side * K * 3.5, -Side * K * 1.5);
+			}
+			if (L.Y > 0.4)
+			{
+				Spring[1][1] += FVector(K * 7.0 * L.Y, 0, 0);
+				Spring[0][1] += FVector(K * 2.0 * L.Y, 0, 0);
+			}
+		}
+		if (!bBlocked && Level == ELevel::Mid)
+		{
+			// A body shot folds the torso around the fist and nods the head forward.
+			Spring[0][1] += FVector(-FMath::Abs(S) * 9.0, 0, 0);
+			Spring[1][1] += FVector(-FMath::Abs(S) * 4.0, 0, 0);
+		}
+		Shake = FMath::Clamp(0.004 + Strength * 0.014, 0.0, 0.024);
+		if (!bBlocked && (bCounter || Strength >= 0.8))
+		{
+			// Counters and heavy blows light the body for a frame or two.
 			Flash(0.05 + FMath::Clamp(Strength, 0.0, 1.3) * 0.14);
 		}
+	}
+
+	bool FAnimator::StrikeKeys(EPos& OutTip, int32& OutHit) const
+	{
+		const FFighter& F = *Fighter;
+		if (F.State != EState::Move || !F.Move || F.ThrowVictim >= 0)
+		{
+			return false;
+		}
+		const FName Tip = F.Move->Tip;
+		if (Tip == FName(TEXT("hand_l"))) OutTip = EPos::HandL;
+		else if (Tip == FName(TEXT("hand_r"))) OutTip = EPos::HandR;
+		else if (Tip == FName(TEXT("foot_l"))) OutTip = EPos::FootL;
+		else if (Tip == FName(TEXT("foot_r"))) OutTip = EPos::FootR;
+		else return false;
+		for (int32 I = 1; I < OwnedKeys.Num(); ++I)
+		{
+			if (FMath::Abs(OwnedKeys[I].F - double(F.Move->Startup)) < 0.5)
+			{
+				OutHit = I;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// A blow drives on through the target instead of stopping on it: across the active frames the
+	// striking hand or foot travels on a few centimetres along its line and the hips follow, then
+	// both settle back onto the authored pose. Only the shown pose moves; the hitboxes are the data's.
+	void FAnimator::DriveThrough(double T)
+	{
+		EPos Tip;
+		int32 Hit;
+		const FMoveDef* M = Fighter->Move;
+		if (!M || M->Active <= 0 || !StrikeKeys(Tip, Hit))
+		{
+			return;
+		}
+		const FVector D = OwnedKeys[Hit].Pose->P(Tip) - OwnedKeys[Hit - 1].Pose->P(Tip);
+		const double Len = D.Size();
+		const double U = (T - double(M->Startup)) / (double(M->Active) + 1.0);
+		if (Len < 0.02 || U <= 0.0 || U >= 1.0)
+		{
+			return;
+		}
+		const double Reach = FMath::Min(0.055 * Rig.H / 1.8, 0.14 * Len) * FMath::Sin(UE_DOUBLE_PI * FMath::Pow(U, 0.6));
+		const FVector Along = D / Len * Reach;
+		Src.P(Tip) += Along;
+		Src.P(EPos::Hips) += FVector(Along.X, 0.0, Along.Z) * 0.3;
+	}
+
+	FVector FAnimator::StrikeDirection() const
+	{
+		EPos Tip;
+		int32 Hit;
+		if (!StrikeKeys(Tip, Hit))
+		{
+			return FVector::ZeroVector;
+		}
+		FVector D = OwnedKeys[Hit].Pose->P(Tip) - OwnedKeys[Hit - 1].Pose->P(Tip);
+		if (Facing < 0)
+		{
+			D.X = -D.X;
+		}
+		return Root.Q.RotateVector(D).GetSafeNormal();
 	}
 
 	void FAnimator::Recoil(double Strength)
 	{
 		// The blow's reaction back through the striker: the chest and hips give a little.
 		const double S = FMath::Clamp(Strength, 0.0, 1.3);
-		Spring[0][1] += FVector(-S * 2.4, 0, 0);
-		Spring[2][1] += FVector(-S * 0.8, 0, 0);
-		Spring[1][1] += FVector(-S * 1.2, 0, 0);
+		Spring[0][1] += FVector(S * 2.4, 0, 0);
+		Spring[2][1] += FVector(S * 0.8, 0, 0);
+		Spring[1][1] += FVector(S * 1.2, 0, 0);
 	}
 
 	// --- Feet ------------------------------------------------------------------------------------------------
@@ -815,7 +963,7 @@ namespace Slop::Anim
 				const double E = FPose::Ease(TEXT("inout"), K);
 				const FVector Lead = FVector(VisVel.X, 0, 0) * Ft.Dur * (1.0 - K) * 0.5;
 				FVector P = FMath::Lerp(Ft.From, Want + Lead, E);
-				P.Y = Want.Y + FMath::Sin(K * UE_DOUBLE_PI) * FMath::Min(0.05 + Speed * 0.02, 0.1) * Rig.H / 1.8;
+				P.Y = Want.Y + FMath::Sin(K * UE_DOUBLE_PI) * FMath::Min(0.05 + Speed * 0.02, 0.1) * Rig.H / 1.8 * F.Def->Motion.StepLift;
 				Ft.Pos = P;
 				Ft.Yaw = LerpAngle(Ft.FromYaw, WantYaw, E);
 				if (K >= 1.0)

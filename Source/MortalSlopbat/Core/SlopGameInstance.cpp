@@ -23,6 +23,7 @@
 #include "View/SlopMatch.h"
 #include "View/SlopShowroom.h"
 #include "View/SlopDevTour.h"
+#include "View/SlopFighterActor.h"
 #include "Widgets/SWindow.h"
 #if PLATFORM_LINUX
 THIRD_PARTY_INCLUDES_START
@@ -593,6 +594,13 @@ bool USlopGameInstance::Tick(float Dt)
 	{
 		QuitAtSeconds = Now() + 1.0;
 	}
+	if (PoseCycle.Num() > 0 && Match && Match->Views[0] && Now() >= PoseCycleAt)
+	{
+		const FName Pose = PoseCycle[PoseCycleIndex++ % PoseCycle.Num()];
+		Match->Views[0]->Anim.PoseOverride = Pose;
+		PoseCycleAt = Now() + 1.5;
+		UE_LOG(LogSlop, Log, TEXT("Pose: %s"), *Pose.ToString());
+	}
 	for (int32 I = ExecAt.Num() - 1; I >= 0; --I)
 	{
 		if (Now() >= ExecAt[I].Key && GEngine)
@@ -845,6 +853,17 @@ void USlopGameInstance::DevCommandLine()
 	if (FParse::Value(Cmd, TEXT("SlopShotEvery="), ShotEvery))
 	{
 		NextShotAt = Now() + ShotEvery;
+	}
+	FString PoseArg;
+	if (FParse::Value(Cmd, TEXT("SlopPoses="), PoseArg, false))
+	{
+		TArray<FString> Parts;
+		PoseArg.ParseIntoArray(Parts, TEXT(","));
+		for (const FString& P : Parts)
+		{
+			PoseCycle.Add(FName(*P));
+		}
+		PoseCycleAt = Now() + 3.0;
 	}
 	FString Exec;
 	if (FParse::Value(Cmd, TEXT("SlopExec="), Exec, false))

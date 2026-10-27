@@ -557,7 +557,33 @@ namespace Slop
 		Fighters.Reset();
 		Errors.Reset();
 		Basics = LoadJson(DataDir / TEXT("basics.json"), &Errors);
-		CommonPoses = LoadJson(DataDir / TEXT("poses_common.json"), &Errors);
+		CommonPosesOriginal = LoadJson(DataDir / TEXT("poses_common.json"), &Errors);
+		CommonPoses = CommonPosesOriginal;
+		if (const TSharedPtr<FJsonObject> Style = LoadJson(DataDir / TEXT("poses_common_style.json")))
+		{
+			if (CommonPosesOriginal.IsValid())
+			{
+				CommonPoses = MakeShared<FJsonObject>();
+				CommonPoses->Values = CommonPosesOriginal->Values;
+				for (const auto& KV : Style->Values)
+				{
+					const TSharedPtr<FJsonObject> Over = KV.Value->AsObject();
+					TSharedPtr<FJsonObject> Merged = MakeShared<FJsonObject>();
+					if (const TSharedPtr<FJsonObject> Old = Obj(CommonPosesOriginal, *KV.Key))
+					{
+						Merged->Values = Old->Values;
+					}
+					if (Over.IsValid())
+					{
+						for (const auto& FV : Over->Values)
+						{
+							Merged->SetField(FString(*FV.Key), FV.Value);
+						}
+					}
+					CommonPoses->SetObjectField(KV.Key, Merged);
+				}
+			}
+		}
 		Story = LoadJson(DataDir / TEXT("story.json"), &Errors);
 		Trials = LoadJson(DataDir / TEXT("trials.json"), &Errors);
 		if (Trials.IsValid())
@@ -596,6 +622,12 @@ namespace Slop
 				}
 			}
 			D->SetObjectField(TEXT("poses"), Poses);
+			// Style refinements made after the port, kept apart from the original's own poses
+			// (poses/<id>_style.json: fields laid over the poses they name).
+			if (TSharedPtr<FJsonObject> Style = LoadJson(DataDir / TEXT("poses") / (Id.ToString() + TEXT("_style.json"))))
+			{
+				D->SetObjectField(TEXT("pose_style"), Style);
+			}
 			TSharedPtr<FFighterDef> F = ParseFighter(D);
 			if (F.IsValid())
 			{
@@ -627,6 +659,18 @@ namespace Slop
 		F.Blurb = Str(D, TEXT("blurb"));
 		F.bBoss = Bool(D, TEXT("boss"), false);
 		F.bHidden = Bool(D, TEXT("hidden"), F.bBoss);
+		if (const TSharedPtr<FJsonObject> Mo = Obj(D, TEXT("motion")))
+		{
+			FMotionStyle& M = F.Motion;
+			M.Bounce = Num(Mo, TEXT("bounce"), M.Bounce);
+			M.Rock = Num(Mo, TEXT("rock"), M.Rock);
+			M.Pace = Num(Mo, TEXT("pace"), M.Pace);
+			M.WalkBob = Num(Mo, TEXT("walk_bob"), M.WalkBob);
+			M.StepLift = Num(Mo, TEXT("step_lift"), M.StepLift);
+			M.WalkTwist = Num(Mo, TEXT("walk_twist"), M.WalkTwist);
+			M.CircleWalk = Num(Mo, TEXT("circle_walk"), M.CircleWalk);
+			M.bHeadLocked = Bool(Mo, TEXT("head_locked"), M.bHeadLocked);
+		}
 		const TSharedPtr<FJsonObject> S = Obj(D, TEXT("stats"));
 		F.Height = Num(S, TEXT("height"), F.Height);
 		F.Health = Int(S, TEXT("health"), F.Health);
@@ -723,6 +767,7 @@ namespace Slop
 			F.bHasFinisher = F.FinisherCmd.bValid;
 		}
 		F.Poses = Obj(D, TEXT("poses"));
+		F.PoseStyle = Obj(D, TEXT("pose_style"));
 		F.Look = Obj(D, TEXT("look"));
 		F.AI = Obj(D, TEXT("ai"));
 		return FP;

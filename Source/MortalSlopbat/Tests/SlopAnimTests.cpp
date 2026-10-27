@@ -32,8 +32,9 @@ bool FSlopRigMatchesOriginal::RunTest(const FString&)
 		{
 			continue;
 		}
+		// The original's poses, without the style refinements made since the port.
 		FPoseLibrary Lib;
-		Lib.Build(*Def, GetContent().CommonPoses);
+		Lib.Build(*Def, GetContent().CommonPosesOriginal, false);
 		FRig Rig;
 		Rig.Build(*Def);
 		FQuat Extra[(int32)EJoint::Count];
@@ -186,6 +187,71 @@ bool FSlopAttackingArmOnPose::RunTest(const FString&)
 	}
 	TestTrue("attacks were checked", Checked > 30);
 	TestEqual("the attacking hand left its pose", Off, 0);
+	return true;
+}
+
+SLOP_TEST(FSlopBlowDirections, "Anim.BlowsMoveTheHeadTheWayTheyTravel")
+bool FSlopBlowDirections::RunTest(const FString&)
+{
+	// A straight drives the struck head away from the attacker, a hook turns the face the way the
+	// fist travels, an uppercut lifts the chin and a body shot folds the torso; on either side.
+	FFightSim Sim;
+	Sim.bIntro = false;
+	Sim.Setup(GetContent().Fighter(TEXT("ashka")), GetContent().Fighter(TEXT("gorm")));
+	FPadState Pads[2];
+	for (int32 T = 0; T < 600 && Sim.Phase != EPhase::Fight; ++T)
+	{
+		Sim.Step(Pads);
+	}
+	struct FCase { const TCHAR* Name; ELevel Level; FVector Strike; };
+	for (int32 Side = 0; Side < 2; ++Side)
+	{
+		// Fighter 1 stands on the right, so a blow pushes it toward +x.
+		const double Dir = Side == 1 ? 1.0 : -1.0;
+		const FCase Cases[] = {{TEXT("straight"), ELevel::High, FVector(Dir, 0, 0)}, {TEXT("hook toward the camera"), ELevel::High, FVector(0, 0, 1)},
+			{TEXT("hook away from the camera"), ELevel::High, FVector(0, 0, -1)}, {TEXT("uppercut"), ELevel::High, FVector(Dir * 0.3, 1, 0)},
+			{TEXT("body shot"), ELevel::Mid, FVector(Dir, 0, 0)}};
+		for (const FCase& C : Cases)
+		{
+			FAnimator A;
+			A.Setup(Sim.Fighters[Side], GetContent().CommonPoses);
+			for (int32 K = 0; K < 30; ++K)
+			{
+				A.Update(1.0, 1.0 / 60.0);
+			}
+			const auto Head = [&A]() { return A.WorldPoint(A.Rig.Xf[(int32)EJoint::Head].P); };
+			const auto Face = [&A]() { return (A.Root.Q * A.Rig.Xf[(int32)EJoint::Head].Q).RotateVector(FVector(0, 0, -1)); };
+			const FVector H0 = Head(), F0 = Face();
+			A.Impact(Dir, 1.0, C.Level, false, C.Strike);
+			for (int32 K = 0; K < 5; ++K)
+			{
+				A.Update(1.0, 1.0 / 60.0);
+			}
+			const FVector H1 = Head(), F1 = Face();
+			const FString What = FString::Printf(TEXT("side %d, %s (head moved %.3f, %.3f, %.3f m; face moved %.3f, %.3f, %.3f)"), Side, C.Name,
+				H1.X - H0.X, H1.Y - H0.Y, H1.Z - H0.Z, F1.X - F0.X, F1.Y - F0.Y, F1.Z - F0.Z);
+			if (FCString::Strcmp(C.Name, TEXT("straight")) == 0)
+			{
+				TestTrue(What + TEXT(": head driven away from the attacker"), (H1.X - H0.X) * Dir > 0.01);
+			}
+			else if (FCString::Strcmp(C.Name, TEXT("hook toward the camera")) == 0)
+			{
+				TestTrue(What + TEXT(": face turned toward the camera"), F1.Z - F0.Z > 0.05);
+			}
+			else if (FCString::Strcmp(C.Name, TEXT("hook away from the camera")) == 0)
+			{
+				TestTrue(What + TEXT(": face turned away from the camera"), F1.Z - F0.Z < -0.05);
+			}
+			else if (FCString::Strcmp(C.Name, TEXT("uppercut")) == 0)
+			{
+				TestTrue(What + TEXT(": chin lifted"), F1.Y - F0.Y > 0.05);
+			}
+			else
+			{
+				TestTrue(What + TEXT(": torso folded toward the blow, face down"), (H1.X - H0.X) * Dir < -0.005 && F1.Y - F0.Y < -0.03);
+			}
+		}
+	}
 	return true;
 }
 

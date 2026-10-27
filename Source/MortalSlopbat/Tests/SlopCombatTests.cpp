@@ -285,6 +285,11 @@ bool FSlopCounterHit::RunTest(const FString&)
 		TestTrue("it is a counter hit", E->bCounter);
 		const int32 Base = H.F(0).Def->Move(TEXT("hp"))->Damage;
 		TestEqual("15% more damage", E->Damage, FMath::RoundToInt(Base * 1.15));
+		// The victim alone freezes 4 frames longer, in place of the 4 frames of stun a counter
+		// used to add: the blow reads bigger and the frame advantage is unchanged.
+		const FMoveDef* M = H.F(0).Def->Move(TEXT("hp"));
+		TestEqual("the victim freezes longer", H.F(1).Hitstop - H.F(0).Hitstop, 4);
+		TestEqual("advantage as before: freeze plus stun", H.F(1).Hitstop + H.F(1).Stun - H.F(0).Hitstop, M->Hitstun + 4);
 	}
 	return true;
 }

@@ -150,8 +150,16 @@ namespace Slop::Anim
 	double FPose::Ease(FName Kind, double T)
 	{
 		T = FMath::Clamp(T, 0.0, 1.0);
-		static const FName Linear(TEXT("linear")), In(TEXT("in")), Out(TEXT("out")), Snap(TEXT("snap")), Hold(TEXT("hold"));
+		static const FName Linear(TEXT("linear")), In(TEXT("in")), Out(TEXT("out")), Snap(TEXT("snap")), Hold(TEXT("hold")), Strike(TEXT("strike"));
 		if (Kind == Linear) return T;
+		if (Kind == Strike)
+		{
+			// A blow arriving at speed (a Hermite curve leaving at 0.8 and arriving at 1.2 times the
+			// average speed): a real fist still has most of its speed at contact, where an ease-out
+			// would stop it dead on the target.
+			const double T2 = T * T, T3 = T2 * T;
+			return (T3 - 2.0 * T2 + T) * 0.8 + (-2.0 * T3 + 3.0 * T2) + (T3 - T2) * 1.2;
+		}
 		if (Kind == In) return T * T;
 		if (Kind == Out) return 1.0 - (1.0 - T) * (1.0 - T);
 		if (Kind == Snap) return 1.0 - FMath::Pow(1.0 - T, 3.0);
@@ -164,7 +172,7 @@ namespace Slop::Anim
 	static const TCHAR* PatchedPoses[] = {TEXT("guard_hit"), TEXT("guard_hit_low"), TEXT("hit_head"), TEXT("hit_body"), TEXT("hit_gut"), TEXT("hit_low"),
 		TEXT("hit_back"), TEXT("parried"), TEXT("crumple"), TEXT("throw_break"), TEXT("thrown_hold"), TEXT("rise_2")};
 
-	void FPoseLibrary::Build(const FFighterDef& Def, const TSharedPtr<FJsonObject>& InCommon)
+	void FPoseLibrary::Build(const FFighterDef& Def, const TSharedPtr<FJsonObject>& InCommon, bool bStyle)
 	{
 		Common = InCommon;
 		CommonScale = Def.Height / 1.8;
@@ -200,6 +208,32 @@ namespace Slop::Anim
 			{
 				Src.Add(FName(*KV.Key), KV.Value->AsObject());
 				SrcScale.Add(FName(*KV.Key), 1.0);
+			}
+		}
+		if (bStyle && Def.PoseStyle.IsValid())
+		{
+			for (const auto& KV : Def.PoseStyle->Values)
+			{
+				const FName Name(*KV.Key);
+				const TSharedPtr<FJsonObject> Over = KV.Value->AsObject();
+				if (!Over.IsValid())
+				{
+					continue;
+				}
+				TSharedPtr<FJsonObject> Merged = MakeShared<FJsonObject>();
+				if (const TSharedPtr<FJsonObject>* Was = Src.Find(Name))
+				{
+					Merged->Values = (*Was)->Values;
+				}
+				else
+				{
+					SrcScale.Add(Name, 1.0);
+				}
+				for (const auto& FV : Over->Values)
+				{
+					Merged->SetField(FString(*FV.Key), FV.Value);
+				}
+				Src.Add(Name, Merged);
 			}
 		}
 		TArray<FName> Names;

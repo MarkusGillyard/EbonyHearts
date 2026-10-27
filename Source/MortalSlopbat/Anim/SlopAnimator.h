@@ -22,8 +22,12 @@ namespace Slop::Anim
 		void SyncFromSim(bool bTeleport = false);
 		// `Frac` is how far rendering is between the previous tick and the current one.
 		void Update(double Frac, double Delta);
-		// Kicks the hit-reaction springs. `Dir` is +1 when the blow pushes toward +x.
-		void Impact(double Dir, double Strength, ELevel Level, bool bBlocked);
+		// Kicks the hit-reaction springs. `Dir` is +1 when the blow pushes toward +x; `StrikeDir`, the
+		// world direction the striking hand or foot was travelling (zero when unknown), turns the head
+		// for a hook and lifts the chin for an uppercut.
+		void Impact(double Dir, double Strength, ELevel Level, bool bBlocked, const FVector& StrikeDir = FVector::ZeroVector, bool bCounter = false);
+		// The world direction the current attack's striking hand or foot travels into the blow.
+		FVector StrikeDirection() const;
 		// The jolt back through the attacker's body when a blow lands or is blocked.
 		void Recoil(double Strength);
 		void Flash(double Amount) { FlashAmount = FMath::Max(FlashAmount, Amount); }
@@ -66,6 +70,8 @@ namespace Slop::Anim
 		void PlantFeet(double Delta, const FPose& Pose, FVector OutAnkles[2], double OutYaw[2]);
 		double MoveSink(double Frac) const;
 		void FollowThrough(double Delta, bool bFrozen);
+		void DriveThrough(double T);
+		bool StrikeKeys(EPos& OutTip, int32& OutHit) const;
 		bool ArmExempt(int32 AuthoredSide) const;
 		bool CanTurn() const;
 		void Life(double Delta, bool bFrozen, double X, FPose& Pose, FQuat Extra[(int32)EJoint::Count]);
@@ -118,6 +124,10 @@ namespace Slop::Anim
 		FVector VisVel = FVector::ZeroVector;
 		FVector LastRoot = FVector::ZeroVector;
 		double Shake = 0;
+		double ShakeFrames = 1;
+		// Frames the shown pose runs ahead of the simulation after a freeze: hit-stop holds the
+		// simulation, but a struck body starts into its recoil and a striking one keeps driving.
+		double PoseLead = 0;
 		int32 MoveTick = 0;
 		EState LastState = EState::Count;
 		const FMoveDef* LastMove = nullptr;

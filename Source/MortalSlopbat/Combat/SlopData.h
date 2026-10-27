@@ -172,6 +172,26 @@ namespace Slop
 
 	// Static description of one fighter: data/fighters/<id>.json on top of the shared basic moves
 	// in data/basics.json (authored for a 1.8 m body and scaled to this fighter).
+	// How a fighter's stance and walk move: the animator's stance and walk layers, scaled per style
+	// (fighter JSON "motion"; 1 is the shared default). Presentation only.
+	struct FMotionStyle
+	{
+		// The stance: how far the weight sinks and rises, how far it rocks between the feet, and the
+		// rhythm's rate.
+		double Bounce = 1.0;
+		double Rock = 1.0;
+		double Pace = 1.0;
+		// The walk: how much the body rides each step, how high the feet lift, how far the hips and
+		// shoulders counter-turn.
+		double WalkBob = 1.0;
+		double StepLift = 1.0;
+		double WalkTwist = 1.0;
+		// The shown body curves toward and away from the camera as it walks (Baguazhang's circle).
+		double CircleWalk = 0.0;
+		// The head moves only with the chest (a diving helmet fixed to its breastplate).
+		bool bHeadLocked = false;
+	};
+
 	struct FFighterDef
 	{
 		static constexpr double BaseHeight = 1.8;
@@ -195,6 +215,7 @@ namespace Slop
 		bool bBoss = false;
 		bool bHidden = false;
 		bool bUnthrowable = false;
+		FMotionStyle Motion;
 		TMap<FName, TSharedRef<FMoveDef>> Moves;
 		// Ground and air commands, highest priority first.
 		TArray<FCommand> Commands;
@@ -203,6 +224,8 @@ namespace Slop
 		FCommand FinisherCmd;
 		FName FinisherRange = TEXT("close");
 		TSharedPtr<FJsonObject> Poses;
+		// Fields laid over named poses after the port (poses/<id>_style.json), in those poses' units.
+		TSharedPtr<FJsonObject> PoseStyle;
 		TSharedPtr<FJsonObject> Look;
 		TSharedPtr<FJsonObject> AI;
 		TSharedPtr<FJsonObject> Raw;
@@ -237,7 +260,10 @@ namespace Slop
 		TMap<FName, TSharedRef<FFighterDef>> Fighters;
 		TSharedPtr<FJsonObject> Basics;
 		TSharedPtr<FJsonObject> Story;
+		// The shared poses, with the style refinements made since the port laid over them
+		// (poses_common_style.json); CommonPosesOriginal is the original game's set.
 		TSharedPtr<FJsonObject> CommonPoses;
+		TSharedPtr<FJsonObject> CommonPosesOriginal;
 		TSharedPtr<FJsonObject> Trials;
 		TArray<FString> Errors;
 		FString Dir;
