@@ -395,6 +395,43 @@ bool FSlopDummyRecord::RunTest(const FString&)
 	return true;
 }
 
+// The dummy's two practice modes: hit once, it blocks the next blow that follows a gap; held, it
+// breaks the throw.
+SLOP_TEST(FSlopDummyPractice, "AI.DummyBlocksAfterHitAndBreaksThrows")
+bool FSlopDummyPractice::RunTest(const FString&)
+{
+	const FFighterDef* Ashka = GetContent().Fighter(TEXT("ashka"));
+	const FFighterDef* Bram = GetContent().Fighter(TEXT("bram"));
+	FSimHarness H(Ashka, Bram);
+	FTrainingDummy D(H.Sim, 1);
+	const auto Tick = [&H, &D](int32 Dirs, int32 Press)
+	{
+		FPadState Pads[2];
+		Pads[0] = {Dirs, Press, Press};
+		Pads[1] = D.Think();
+		H.Sim.Step(Pads);
+		H.Log.Append(H.Sim.Events);
+	};
+	D.SetMode(FTrainingDummy::Modes().IndexOfByKey(TEXT("Block After Hit")));
+	H.Place(0.75);
+	int32 At = H.Log.Num();
+	Tick(0, HP);
+	for (int32 T = 0; T < 30; ++T) Tick(0, 0);
+	TestEqual("the first jab lands on a dummy standing still", H.Count(EEvent::Hit, At), 1);
+	At = H.Log.Num();
+	Tick(0, HP);
+	for (int32 T = 0; T < 30; ++T) Tick(0, 0);
+	TestEqual("a jab after a gap is blocked", H.Count(EEvent::Block, At), 1);
+	TestEqual("and does not land", H.Count(EEvent::Hit, At), 0);
+	D.SetMode(FTrainingDummy::Modes().IndexOfByKey(TEXT("Break Throws")));
+	H.Place(0.7);
+	At = H.Log.Num();
+	Tick(PadRight, LP);
+	for (int32 T = 0; T < 20; ++T) Tick(0, 0);
+	TestEqual("a throw on it is broken", H.Count(EEvent::ThrowBreak, At), 1);
+	return true;
+}
+
 // A grab beats a block, so against a player who only blocks the Bite was most of the damage the
 // Slopbat did. It now waits between bites (and the bite can be broken, see Rounds).
 SLOP_TEST(FSlopBossBites, "AI.BossWaitsBetweenBites")

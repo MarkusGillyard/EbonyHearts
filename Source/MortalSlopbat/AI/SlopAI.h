@@ -155,7 +155,8 @@ namespace Slop
 	};
 
 	// The training partner: stands, crouches, blocks (all, random height, low only), jumps in
-	// place, fights back as the CPU at Warrior, or plays back what the player recorded on it.
+	// place, fights back as the CPU at Warrior, or plays back what the player recorded on it; it can
+	// also stand until hit and then block (so a gap in a combo shows), or break every throw.
 	// Recording hands the player's own pad to the dummy for up to ten seconds (the player's fighter
 	// stands meanwhile); directions are kept relative to the way the dummy faced, so a recording
 	// still walks in and out the right way after the fighters change sides.
@@ -186,6 +187,8 @@ namespace Slop
 		int32 SwitchT = 0;
 		TArray<FPadState> Tape;
 		int32 PlayAt = 0;
+		int32 GuardT = 0;
+		FPadState BlockAll() const;
 	};
 
 	// The optional encounter with the stranger in white. He cannot be hurt and does not fight; he

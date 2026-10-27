@@ -790,8 +790,24 @@ namespace Slop
 	const TArray<FString>& FTrainingDummy::Modes()
 	{
 		static const TArray<FString> M = {TEXT("Stand"), TEXT("Crouch"), TEXT("Block All"), TEXT("Block Random"), TEXT("Crouch Block"), TEXT("Jump"), TEXT("CPU"),
-			TEXT("Record"), TEXT("Playback")};
+			TEXT("Record"), TEXT("Playback"), TEXT("Block After Hit"), TEXT("Break Throws")};
 		return M;
+	}
+
+	// Reads the attacker's move as it happens, so every block is correct.
+	FPadState FTrainingDummy::BlockAll() const
+	{
+		const FFighter& F = Sim.Fighters[Index];
+		const FFighter& O = Sim.Fighters[1 - Index];
+		bool bLowNow = O.State == EState::Move && O.Move && O.Move->Level == ELevel::Low;
+		for (const FProjectile& P : Sim.Projectiles)
+		{
+			if (P.Owner != Index)
+			{
+				bLowNow = bLowNow || P.Def().Level == ELevel::Low;
+			}
+		}
+		return FPadIntent::Pad(bLowNow ? 2 : 5, F.Facing, 0, BtnBL);
 	}
 
 	FString FTrainingDummy::ModeName() const
@@ -861,17 +877,22 @@ namespace Slop
 		}
 		if (Name == TEXT("Block All"))
 		{
-			// Reads the attacker's move as it happens, so every block is correct.
-			const FFighter& O = Sim.Fighters[1 - Index];
-			bool bLowNow = O.State == EState::Move && O.Move && O.Move->Level == ELevel::Low;
-			for (const FProjectile& P : Sim.Projectiles)
+			return BlockAll();
+		}
+		if (Name == TEXT("Block After Hit"))
+		{
+			// Once hit, it blocks everything for a second after it can: what still lands was a true
+			// combo, what it blocks had a gap.
+			if (F.State == EState::HitStun || F.State == EState::Juggle || F.State == EState::Fall)
 			{
-				if (P.Owner != Index)
-				{
-					bLowNow = bLowNow || P.Def().Level == ELevel::Low;
-				}
+				GuardT = 60;
 			}
-			return FPadIntent::Pad(bLowNow ? 2 : 5, F.Facing, 0, BtnBL);
+			return GuardT-- > 0 ? BlockAll() : FPadState();
+		}
+		if (Name == TEXT("Break Throws"))
+		{
+			// A punch on every other tick while held, so the press lands inside the break window.
+			return FPadIntent::Pad(5, F.Facing, F.State == EState::Thrown && Sim.TickCount % 2 == 0 ? BtnLP : 0);
 		}
 		if (Name == TEXT("Block Random"))
 		{
