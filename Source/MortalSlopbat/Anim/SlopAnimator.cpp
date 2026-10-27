@@ -630,7 +630,9 @@ namespace Slop::Anim
 		case EState::BlockStun:
 		case EState::HitStun:
 		{
-			const FName React = ReactionFor(F.StunKind);
+			// Standing and kicked in the legs, the leg buckles under the blow (the original showed a
+			// body flinch); a library built without the style poses keeps the original's reaction.
+			const FName React = F.StunKind == EStun::Low && Lib.Has(TEXT("hit_leg")) ? FName(TEXT("hit_leg")) : ReactionFor(F.StunKind);
 			const double Total = double(F.Stun + F.SF);
 			if (SetSource(FString::Printf(TEXT("stun:%d:%s"), SimTick - F.SF, StunKey(F.StunKind)), 0.0))
 			{
