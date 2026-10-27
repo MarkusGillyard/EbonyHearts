@@ -12,7 +12,8 @@ evidence behind every claim here.
 | Game | Complete: six fighters, the Slopbat and the stranger; four stages; Arcade, Survival, Versus, Training, Tutorial, Trials, Extras, Settings; saves and settings; controllers and keyboard. |
 | Art | All eight fighters built from CC0 MakeHuman bodies with scripted costumes (`Tools/blender`); four stage sets built in Blender (`Tools/blender/stages`); CC0 surfaces, props, skies and sounds. |
 | Tests | Automation tests (`run_tests`), scripted flows for every mode (`Tools/playtest`), unattended packaged sessions (`Tools/perf/soak.sh`). |
-| Package | `Tools/make_release.sh Shipping` after `package_linux Shipping`; the archive and its checksum are under `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`. |
+| Package | `MortalSlopbat-2.0.0-linux-x86_64.tar.gz` (498 MB, SHA-256 `4bbb5e1a3c2c758a834ce3e5812d8477d889c1bdb451263705b1cc1775d8a315`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `f1e9e4b`; unpack and run `./MortalSlopbat.sh`. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
+| Saves | None exist yet for this version: test runs used separate profiles and were cleared, so the first launch starts fresh (the Godot game's own files in `~/.local/share/MortalSlopbat/` are untouched). |
 
 ## Picking it up
 
