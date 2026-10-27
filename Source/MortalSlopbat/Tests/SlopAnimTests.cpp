@@ -448,6 +448,73 @@ bool FSlopBodiesApart::RunTest(const FString&)
 	return true;
 }
 
+// Knocked down, a body lies on the floor and gets up off it: through the fall, the time down and
+// the rise, the spine and head neither sink below the floor nor float above it.
+SLOP_TEST(FSlopFloorHolds, "Anim.KnockdownsStayAboveTheFloor")
+bool FSlopFloorHolds::RunTest(const FString&)
+{
+	const FFighterDef* Attacker = GetContent().Fighter(TEXT("bram"));
+	TArray<FName> Ids = FContent::Roster();
+	Ids.Append(FContent::Special());
+	for (const FName& Id : Ids)
+	{
+		for (const TCHAR* Blow : {TEXT("sweep"), TEXT("uppercut")})
+		{
+			FFightSim Sim;
+			Sim.bIntro = false;
+			Sim.bTraining = true;
+			Sim.Setup(Attacker, GetContent().Fighter(Id));
+			FAnimator A;
+			A.Setup(Sim.Fighters[1], GetContent().CommonPoses);
+			FPadState Pads[2];
+			for (int32 T = 0; T < 600 && (Sim.Phase != EPhase::Fight || T < 30); ++T)
+			{
+				Sim.Step(Pads);
+				A.SyncFromSim();
+				A.Update(1.0, 1.0 / 60.0);
+			}
+			Sim.Fighters[0].Pos = FVector2D(-0.5, 0.0);
+			Sim.Fighters[1].Pos = FVector2D(0.5, 0.0);
+			Sim.Fighters[0].StartMove(*Attacker->Move(Blow));
+			Sim.Fighters[0].SetState(EState::Move);
+			double Lowest = 1e9;
+			FString Where;
+			bool bDowned = false;
+			for (int32 T = 0; T < 300; ++T)
+			{
+				Sim.Step(Pads);
+				A.SyncFromSim();
+				A.Update(1.0, 1.0 / 60.0);
+				const FFighter& F = Sim.Fighters[1];
+				bDowned |= F.State == EState::Down;
+				if (!bDowned && F.State != EState::Fall && F.State != EState::Juggle)
+				{
+					continue;
+				}
+				for (int32 J = 0; J <= (int32)EJoint::Head; ++J)
+				{
+					const double Y = A.WorldPoint(A.Rig.Xf[J].P).Y;
+					if (Y < Lowest)
+					{
+						Lowest = Y;
+						Where = FString::Printf(TEXT("%s in %s"), JointName((EJoint)J), StateName(F.State));
+					}
+				}
+				if (bDowned && F.IsActionable())
+				{
+					break;
+				}
+			}
+			TestTrue(FString::Printf(TEXT("%s: knocked down by a %s"), *Id.ToString(), Blow), bDowned);
+			// Lying on the back, the spine and head rest a few centimetres up (about 9 cm for a
+			// 1.8 m body); the original's pose left them floating 15 cm up.
+			TestTrue(FString::Printf(TEXT("%s after a %s: lowest %s at %+.3f m, on the floor"), *Id.ToString(), Blow, *Where, Lowest),
+				Lowest > -0.02 && Lowest < 0.075 * A.Rig.H);
+		}
+	}
+	return true;
+}
+
 // Walking and running play their step cycles by the distance covered, so a foot on the ground stays
 // where it was put: while a foot is planted it should hardly move across the floor (the captured
 // cycles; the sumo shuffle, the circle walk and the diver's plod are the fighters' own and logged).
