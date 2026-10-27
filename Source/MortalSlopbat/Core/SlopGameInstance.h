@@ -14,6 +14,7 @@ class SBox;
 class SWidget;
 class FSlopScreen;
 class SSlopHud;
+namespace Slop { class IBrain; }
 
 // The game's one long-lived object: settings, progress, the flow from screen to screen, the
 // input router, audio, and the match when one is running. Screens are Slate widgets hosted in
@@ -88,8 +89,11 @@ private:
 	FText NoticeText;
 	double NoticeUntil = 0.0;
 	int32 LastSerial = 0;
-	// Development: screenshots at given ticks and an exit tick (non-shipping builds).
-	TArray<int32> ShotTicks;
+	// Development: screenshots at given ticks (with names) and an exit tick (non-shipping builds).
+	TArray<TPair<int32, FString>> ShotTicks;
+	Slop::IBrain* Tour = nullptr;
+	FName TourFighter;
+	void RequestShot(int32 Tick, const FString& Name);
 	FString ShotPrefix;
 	int32 QuitAtTick = -1;
 	double QuitAtSeconds = -1.0;

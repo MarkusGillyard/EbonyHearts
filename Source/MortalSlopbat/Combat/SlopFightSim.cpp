@@ -2,10 +2,6 @@
 
 namespace Slop
 {
-	static double MoveTowardD(double From, double To, double Delta)
-	{
-		return FMath::Abs(To - From) <= Delta ? To : From + FMath::Sign(To - From) * Delta;
-	}
 
 	static double SignD(double V) { return V > 0.0 ? 1.0 : (V < 0.0 ? -1.0 : 0.0); }
 
@@ -40,7 +36,7 @@ namespace Slop
 			Vel.Y -= Gravity * DT;
 			if (Decel > 0.0 && FMath::Abs(Vel.X) > MinSpeed)
 			{
-				Vel.X = MoveTowardD(Vel.X, MinSpeed * Facing, Decel * DT);
+				Vel.X = MoveToward(Vel.X, MinSpeed * Facing, Decel * DT);
 			}
 		}
 		Pos += Vel * DT;

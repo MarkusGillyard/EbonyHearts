@@ -33,7 +33,9 @@ void ASlopVfx::Setup(ASlopMatch* InMatch)
 		{TEXT("Sphere"), FLinearColor(0.32f, 0.02f, 0.01f), 1.f, false}, // blood
 		{TEXT("Sphere"), FLinearColor(0.3f, 0.28f, 0.24f), 0.6f, true}, // dust
 		{TEXT("Sphere"), FLinearColor(0.4f, 1.f, 0.2f), 6.f, true},    // slop
-		{TEXT("Cylinder"), FLinearColor(1.f, 0.9f, 0.7f), 6.f, true},   // ring
+		{TEXT("Plane"), FLinearColor(1.f, 0.88f, 0.65f), 3.f, true},   // ring (camera-facing quad)
+		{TEXT("Plane"), FLinearColor(1.f, 0.85f, 0.6f), 2.f, true},    // soft flash disc
+		{TEXT("Cube"), FLinearColor(0.9f, 0.9f, 0.86f), 2.f, true},    // pale flakes (salt, ash, tallow)
 	};
 	for (int32 K = 0; K < (int32)EKind::Count; ++K)
 	{
@@ -43,7 +45,17 @@ void ASlopVfx::Setup(ASlopMatch* InMatch)
 		C->SetMobility(EComponentMobility::Movable);
 		C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		C->SetCastShadow(false);
-		UMaterialInstanceDynamic* M = UMaterialInstanceDynamic::Create(Specs[K].bAdd ? Add : Opaque, this);
+		C->NumCustomDataFloats = 1;
+		UMaterialInterface* Base = Specs[K].bAdd ? Add : Opaque;
+		if (K == (int32)EKind::Ring)
+		{
+			Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Slop/Materials/M_Ring.M_Ring"));
+		}
+		else if (K == (int32)EKind::Disc)
+		{
+			Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Slop/Materials/M_SoftDisc.M_SoftDisc"));
+		}
+		UMaterialInstanceDynamic* M = UMaterialInstanceDynamic::Create(Base, this);
 		M->SetVectorParameterValue(TEXT("Color"), Specs[K].Color);
 		M->SetScalarParameterValue(TEXT("Intensity"), Specs[K].Intensity);
 		C->SetMaterial(0, M);
@@ -71,6 +83,32 @@ void ASlopVfx::Burst(EKind K, const FVector& P, int32 N, double Speed, double Li
 		const FVector Dir = (FMath::VRand() + Bias).GetSafeNormal();
 		Spawn(K, P, Dir * Speed * FMath::FRandRange(0.4, 1.0), Life * FMath::FRandRange(0.6, 1.0), Size * FMath::FRandRange(0.6, 1.2));
 	}
+}
+
+void ASlopVfx::BurstColor(const FVector& P, const FLinearColor& C, int32 N, double Speed, double Life)
+{
+	// The nearest of the effect families to the colour asked for.
+	const FLinearColor H = C.LinearRGBToHSV();
+	EKind K = EKind::Ember;
+	if (H.B > 0.75f && H.G < 0.25f) K = EKind::Pale;
+	else if (H.R > 70.f && H.R < 160.f) K = EKind::Slop;
+	else if (H.G < 0.3f) K = EKind::Dust;
+	Burst(K, P, N, Speed, Life, 0.03, FVector(0, 0.5, 0));
+}
+
+void ASlopVfx::DustAt(const FVector& P)
+{
+	Burst(EKind::Dust, FVector(P.X, 0.05, 0.1), 14, 1.6, 0.9, 0.09, FVector(0, 0.6, 0));
+}
+
+void ASlopVfx::BloodAt(const FVector& P, double Dir, double Amount)
+{
+	if (Gore == TEXT("off"))
+	{
+		Burst(EKind::Pale, P, (int32)(12 * Amount), 2.5, 0.6, 0.025, FVector(Dir, 0.4, 0));
+		return;
+	}
+	Burst(EKind::Blood, P, (int32)((Gore == TEXT("low") ? 6 : 20) * Amount), 3.0, 0.7, 0.035, FVector(Dir, 0.5, 0));
 }
 
 void ASlopVfx::Flash(const FVector& P, const FLinearColor& C, float Intensity)
@@ -108,8 +146,9 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 		const FFighter& A = M->Sim.Fighters[FMath::Clamp(E.By, 0, 1)];
 		const FVector Along(A.Facing, 0.15, 0);
 		Burst(EKind::Spark, P, 10 + (int32)(S * 14), 5.0 + S * 4.0, 0.22, 0.025, Along);
-		Spawn(EKind::Ring, P, FVector::ZeroVector, 0.16 + S * 0.06, 0.06, 5.0 + S * 5.0, 0, 0);
-		Flash(P, FLinearColor(1.f, 0.8f, 0.55f), 3000.f + S * 5000.f);
+		Spawn(EKind::Ring, P, FVector::ZeroVector, 0.16 + S * 0.06, 0.12, 3.0 + S * 2.0, 0, 0);
+		Spawn(EKind::Disc, P, FVector::ZeroVector, 0.09, 0.25 + S * 0.25, 1.0, 0, 0);
+		Flash(P, FLinearColor(1.f, 0.8f, 0.55f), 4.f + S * 8.f);
 		if (Gore != TEXT("off") && !E.bProj && E.Damage > 0)
 		{
 			const int32 N = Gore == TEXT("low") ? 3 : 6 + (int32)(S * 10);
@@ -119,15 +158,15 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 	}
 	case EEvent::Block:
 		Burst(EKind::Spark, P, 8, 4.0, 0.16, 0.02);
-		Spawn(EKind::Ring, P, FVector::ZeroVector, 0.12, 0.05, 4.0, 0, 0);
-		Flash(P, FLinearColor(0.7f, 0.85f, 1.f), 2000.f);
+		Spawn(EKind::Ring, P, FVector::ZeroVector, 0.12, 0.1, 2.5, 0, 0);
+		Flash(P, FLinearColor(0.7f, 0.85f, 1.f), 3.f);
 		break;
 	case EEvent::Armor:
 		Burst(EKind::Ember, P, 12, 3.0, 0.3, 0.025);
 		break;
 	case EEvent::Clash:
 		Burst(EKind::Ember, P, 24, 6.0, 0.35, 0.03);
-		Flash(P, FLinearColor(1.f, 0.6f, 0.2f), 9000.f);
+		Flash(P, FLinearColor(1.f, 0.6f, 0.2f), 12.f);
 		break;
 	case EEvent::Land:
 		if (!E.bSoft && E.Who >= 0)
@@ -189,7 +228,7 @@ void ASlopVfx::SyncProjectiles()
 			N.Light->SetupAttachment(N.Mesh);
 			N.Light->SetLightColor(C);
 			N.Light->SetIntensityUnits(ELightUnits::Candelas);
-			N.Light->SetIntensity(1500.f);
+			N.Light->SetIntensity(6.f);
 			N.Light->SetAttenuationRadius(300.f);
 			N.Light->SetCastShadows(false);
 			N.Light->RegisterComponent();
@@ -235,7 +274,7 @@ void ASlopVfx::Step(double Delta)
 				P.V = FVector::ZeroVector;
 				P.Gravity = 0;
 			}
-			P.Size += P.Grow * Delta * 0.1;
+			P.Size += P.Grow * Delta * ((K == (int32)EKind::Ring || K == (int32)EKind::Disc) ? 1.0 : 0.1);
 		}
 		UInstancedStaticMeshComponent* C = Ism[K];
 		TArray<FTransform> T;
@@ -246,11 +285,12 @@ void ASlopVfx::Step(double Delta)
 			double S = P.Size * (K == (int32)EKind::Ring ? 1.0 : FMath::Max(0.15, Fade));
 			FVector Scale(S);
 			FRotator R = P.R;
-			if (K == (int32)EKind::Ring)
+			if (K == (int32)EKind::Ring || K == (int32)EKind::Disc)
 			{
-				// A flat disc facing the camera (the cylinder's axis along X) that widens.
-				Scale = FVector(S, S, 0.006);
-				R = FRotator(90, 0, 0);
+				// Quads facing the camera (which looks along +X); they widen and fade.
+				static const FRotator Facing = FRotationMatrix::MakeFromZ(FVector(-1, 0, 0)).Rotator();
+				R = Facing;
+				Scale = FVector(S, S, 1.0);
 			}
 			else if (K == (int32)EKind::Spark)
 			{
@@ -265,6 +305,10 @@ void ASlopVfx::Step(double Delta)
 		if (T.Num() > 0)
 		{
 			C->AddInstances(T, false, false, false);
+			for (int32 I = 0; I < A.Num(); ++I)
+			{
+				C->SetCustomDataValue(I, 0, (float)(1.0 - A[I].Age / A[I].Life), I == A.Num() - 1);
+			}
 		}
 	}
 	for (int32 I = Flashes.Num() - 1; I >= 0; --I)

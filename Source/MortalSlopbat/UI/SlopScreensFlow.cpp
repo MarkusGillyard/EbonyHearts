@@ -16,7 +16,7 @@
 
 using namespace Slop;
 
-namespace
+namespace SlopScreensFlowImpl
 {
 	const FFighterDef* Def(FName Id) { return GetContent().Fighter(Id); }
 	TSharedPtr<FJsonObject> StoryOf(FName Fighter) { return Json::Obj(Json::Obj(GetContent().Story, TEXT("fighters")), *Fighter.ToString()); }
@@ -1050,6 +1050,8 @@ namespace
 		}
 	};
 }
+
+using namespace SlopScreensFlowImpl;
 
 namespace SlopScreens
 {

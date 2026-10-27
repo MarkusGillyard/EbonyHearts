@@ -6,6 +6,8 @@
 #include "Core/SlopLog.h"
 #include "Misc/Paths.h"
 
+namespace SlopAnimTestSuite
+{
 using namespace Slop;
 using namespace Slop::Anim;
 
@@ -135,6 +137,8 @@ bool FSlopAnimatorRuns::RunTest(const FString&)
 	TestEqual("no frame produced a broken pose", BadFrames, 0);
 	TestTrue("the match went through many states", StatesSeen.Num() >= 10);
 	return true;
+}
+
 }
 
 #undef SLOP_TEST

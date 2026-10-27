@@ -6,6 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/Texture2D.h"
+#include "Engine/TextureCube.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Anim/SlopMeshRig.h"
 #include "Core/SlopLog.h"
@@ -119,8 +120,10 @@ void ASlopArena::Common(const FLinearColor& FogColor, float FogDensity, const FL
 	Sky->SetupAttachment(Root);
 	Sky->SetMobility(EComponentMobility::Movable);
 	Sky->SourceType = ESkyLightSourceType::SLS_SpecifiedCubemap;
+	// A CC0 night sky (Poly Haven, lakeside_night) gives the ambient and reflections their shape.
+	Sky->SetCubemap(LoadObject<UTextureCube>(nullptr, TEXT("/Game/Slop/Skies/HDR_lakeside_night.HDR_lakeside_night")));
 	Sky->SetLightColor(Ambient);
-	Sky->SetIntensity(AmbientIntensity);
+	Sky->SetIntensity(AmbientIntensity * 3.f);
 	Sky->bLowerHemisphereIsBlack = false;
 	Sky->RegisterComponent();
 }
@@ -177,9 +180,9 @@ void ASlopArena::BuildYards()
 	Common(FLinearColor(0.05f, 0.07f, 0.05f), 0.02f, FLinearColor(0.35f, 0.45f, 0.4f), 0.35f);
 	Cube(FVector(0, -0.25, 0), FVector(30, 0.5, 14), Surface(TEXT("MetalPlates013"), FLinearColor(0.5f, 0.5f, 0.48f), 6.f, 1.f, 1.f));
 	Cube(FVector(0, 5, -7), FVector(40, 12, 0.5), Surface(TEXT("factory_brick"), FLinearColor(0.35f, 0.3f, 0.28f), 6.f));
-	Sun(this, Root, FRotator(-38, 140, 0), FLinearColor(1.f, 0.78f, 0.55f), 3.5f, true);
-	Light(FVector(-3, 3, 4), FLinearColor(0.45f, 1.f, 0.35f), 4000.f, 12.f);
-	Light(FVector(4, 2, -3), FLinearColor(1.f, 0.45f, 0.15f), 3000.f, 10.f);
+	Sun(this, Root, FRotator(-38, 140, 0), FLinearColor(1.f, 0.78f, 0.55f), 2.6f, true);
+	Light(FVector(-3, 3, 4), FLinearColor(0.45f, 1.f, 0.35f), 30.f, 12.f);
+	Light(FVector(4, 2, -3), FLinearColor(1.f, 0.45f, 0.15f), 25.f, 10.f);
 }
 
 void ASlopArena::BuildChapel()
@@ -189,8 +192,8 @@ void ASlopArena::BuildChapel()
 	Common(FLinearColor(0.04f, 0.06f, 0.09f), 0.025f, FLinearColor(0.4f, 0.45f, 0.6f), 0.35f);
 	Cube(FVector(0, -0.25, 0), FVector(30, 0.5, 14), Surface(TEXT("monastery_stone_floor"), FLinearColor(0.5f, 0.52f, 0.55f), 6.f));
 	Cube(FVector(0, 5, -7), FVector(40, 12, 0.5), Surface(TEXT("medieval_blocks_03"), FLinearColor(0.35f, 0.37f, 0.4f), 6.f));
-	Sun(this, Root, FRotator(-45, 160, 0), FLinearColor(0.7f, 0.8f, 1.f), 3.f, true);
-	Light(FVector(0, 2.5, 3), FLinearColor(1.f, 0.7f, 0.4f), 3000.f, 10.f);
+	Sun(this, Root, FRotator(-45, 160, 0), FLinearColor(0.7f, 0.8f, 1.f), 2.4f, true);
+	Light(FVector(0, 2.5, 3), FLinearColor(1.f, 0.7f, 0.4f), 25.f, 10.f);
 }
 
 void ASlopArena::BuildMarket()
@@ -199,9 +202,9 @@ void ASlopArena::BuildMarket()
 	Footstep = TEXT("kenney:footstep_wood");
 	Common(FLinearColor(0.05f, 0.06f, 0.07f), 0.03f, FLinearColor(0.35f, 0.4f, 0.5f), 0.35f);
 	Cube(FVector(0, -0.25, 0), FVector(30, 0.5, 14), Surface(TEXT("weathered_planks"), FLinearColor(0.5f, 0.45f, 0.4f), 6.f));
-	Sun(this, Root, FRotator(-40, 150, 0), FLinearColor(0.6f, 0.7f, 0.9f), 2.5f, true);
-	Light(FVector(-2, 3, 2), FLinearColor(1.f, 0.65f, 0.3f), 3500.f, 10.f);
-	Light(FVector(3, 3, 2), FLinearColor(1.f, 0.65f, 0.3f), 3500.f, 10.f);
+	Sun(this, Root, FRotator(-40, 150, 0), FLinearColor(0.6f, 0.7f, 0.9f), 2.2f, true);
+	Light(FVector(-2, 3, 2), FLinearColor(1.f, 0.65f, 0.3f), 30.f, 10.f);
+	Light(FVector(3, 3, 2), FLinearColor(1.f, 0.65f, 0.3f), 30.f, 10.f);
 }
 
 void ASlopArena::BuildRoost()
@@ -211,5 +214,5 @@ void ASlopArena::BuildRoost()
 	Common(FLinearColor(0.03f, 0.06f, 0.03f), 0.03f, FLinearColor(0.3f, 0.45f, 0.3f), 0.3f);
 	Cube(FVector(0, -0.25, 0), FVector(30, 0.5, 14), Surface(TEXT("dark_rock"), FLinearColor(0.35f, 0.38f, 0.33f), 6.f));
 	Sun(this, Root, FRotator(-50, 150, 0), FLinearColor(0.55f, 1.f, 0.5f), 2.f, true);
-	Light(FVector(0, 4, -2), FLinearColor(0.4f, 1.f, 0.3f), 5000.f, 14.f);
+	Light(FVector(0, 4, -2), FLinearColor(0.4f, 1.f, 0.3f), 40.f, 14.f);
 }

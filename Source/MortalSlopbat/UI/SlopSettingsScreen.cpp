@@ -16,7 +16,7 @@
 
 using namespace Slop;
 
-namespace
+namespace SlopSettingsImpl
 {
 	// One adjustable line of the settings screen.
 	struct FRow
@@ -493,6 +493,8 @@ namespace
 		}
 	};
 }
+
+using namespace SlopSettingsImpl;
 
 namespace SlopScreens
 {

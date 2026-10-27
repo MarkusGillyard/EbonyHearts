@@ -30,6 +30,8 @@ public:
 
 private:
 	UWorld* World() const;
+	void IndexFamilies();
+	bool bIndexed = false;
 	float BusVolume(ESlopBus Bus) const;
 	UPROPERTY()
 	TObjectPtr<UGameInstance> Owner;

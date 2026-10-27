@@ -6,6 +6,8 @@
 #include "Tests/SlopSimHarness.h"
 #include "Core/SlopLog.h"
 
+namespace SlopAITestSuite
+{
 using namespace Slop;
 using namespace Slop::Test;
 
@@ -389,6 +391,8 @@ bool FSlopStranger::RunTest(const FString&)
 	TestEqual("holding Block bows out", (int32)Sim.Phase, (int32)EPhase::MatchEnd);
 	TestEqual("with his line", Rules.LastLine(), FString(TEXT("Go.")));
 	return true;
+}
+
 }
 
 #undef SLOP_TEST

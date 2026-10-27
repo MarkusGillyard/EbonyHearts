@@ -43,7 +43,7 @@ void FSlopScreen::Sound(const TCHAR* Name)
 	}
 }
 
-namespace
+namespace SlopScreensImpl
 {
 	FText Upper(const FString& S) { return FText::FromString(S.ToUpper()); }
 	const FFighterDef* Def(FName Id) { return GetContent().Fighter(Id); }
@@ -364,6 +364,10 @@ namespace
 				M->SetPaused(true);
 				GI->ShowOverlay(SlopScreens::Pause());
 			}
+			else if (E.Action == EUi::Next && M->Guide)
+			{
+				M->Guide->Skip();
+			}
 			else if (E.Action == EUi::Next && M->Dummy)
 			{
 				M->Dummy->NextMode();
@@ -641,6 +645,8 @@ namespace
 		return S;
 	}
 }
+
+using namespace SlopScreensImpl;
 
 namespace SlopScreens
 {

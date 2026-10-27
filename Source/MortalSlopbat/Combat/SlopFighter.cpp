@@ -2,10 +2,6 @@
 
 namespace Slop
 {
-	static double MoveToward(double From, double To, double Delta)
-	{
-		return FMath::Abs(To - From) <= Delta ? To : From + FMath::Sign(To - From) * Delta;
-	}
 
 	// Hurtboxes for a 1.8 m fighter: [back, up, width, height] from the root, facing right.
 	static const FRect BoxStand[] = {FRect(-0.2, 0.0, 0.42, 0.95), FRect(-0.22, 0.9, 0.46, 0.62), FRect(-0.13, 1.45, 0.28, 0.38)};

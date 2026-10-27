@@ -8,6 +8,12 @@
 namespace Slop
 {
 	constexpr double DT = 1.0 / 60.0;
+
+	// Moves From toward To by at most Delta (Godot's move_toward, which the rules were written with).
+	inline double MoveToward(double From, double To, double Delta)
+	{
+		return FMath::Abs(To - From) <= Delta ? To : From + FMath::Sign(To - From) * Delta;
+	}
 	constexpr int32 TicksPerSecond = 60;
 
 	// Buttons, as bits. Order follows the arcade panel.

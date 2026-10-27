@@ -18,8 +18,17 @@ void USlopAudio::Init(UGameInstance* InOwner)
 	UiLimit = NewObject<USoundConcurrency>(this);
 	UiLimit->Concurrency.MaxCount = 4;
 	UiLimit->Concurrency.ResolutionRule = EMaxConcurrentResolutionRule::StopOldest;
-	// Index the Kenney families ("impactPunch_heavy" -> its five variants).
+}
+
+void USlopAudio::IndexFamilies()
+{
+	bIndexed = true;
+	// Index the Kenney families ("impactPunch_heavy" -> its five variants). A cooked game has the
+	// registry loaded already; an editor build may still be scanning, so scan this folder now.
 	IAssetRegistry& AR = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry").Get();
+#if WITH_EDITOR
+	AR.ScanPathsSynchronous({TEXT("/Game/Slop/Audio/Kenney")}, false);
+#endif
 	TArray<FAssetData> Assets;
 	AR.GetAssetsByPath(FName(TEXT("/Game/Slop/Audio/Kenney")), Assets, true);
 	for (const FAssetData& A : Assets)
@@ -75,6 +84,10 @@ USoundWave* USlopAudio::Find(const FString& Name)
 	FString Path;
 	if (Name.StartsWith(TEXT("kenney:")))
 	{
+		if (!bIndexed)
+		{
+			IndexFamilies();
+		}
 		const TArray<FString>* Fam = Families.Find(Name);
 		if (!Fam || Fam->Num() == 0)
 		{

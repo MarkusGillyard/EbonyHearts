@@ -100,6 +100,7 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 	Camera->Snap();
 	Vfx = W->SpawnActor<ASlopVfx>(P);
 	Vfx->Setup(this);
+	Director.Setup(this);
 	ApplySettings();
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
 	{
@@ -139,6 +140,14 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 				}
 			}
 		}
+	}
+	if (M == EMode::Tutorial)
+	{
+		Guide = MakeUnique<FTutorial>(this, GI());
+	}
+	else if (M == EMode::Trials)
+	{
+		Guide = MakeUnique<FTrialsRunner>(this, GI());
 	}
 	GI()->Audio->PlayMusic(Arena->Music);
 	Clock.Reset();
@@ -248,6 +257,7 @@ void ASlopMatch::Tick(float DeltaSeconds)
 		V->UpdateVisual(Frac, D);
 	}
 	Camera->Step(bPaused ? 0.0 : DeltaSeconds);
+	Director.Step(D);
 	Vfx->Step(D);
 	Arena->Step(D);
 	if (bShowBoxes)
@@ -285,6 +295,10 @@ void ASlopMatch::FixedTick()
 			Pads[I] = Brains[I]->Think();
 		}
 	}
+	if (Guide)
+	{
+		Guide->FilterPads(Pads);
+	}
 	const double T0 = FPlatformTime::Seconds();
 	Sim.Step(Pads);
 	SimMicros += (FPlatformTime::Seconds() - T0) * 1e6;
@@ -300,16 +314,48 @@ void ASlopMatch::FixedTick()
 	{
 		FrameEvents.Add(E);
 		HandleEvent(E);
+		if (Guide)
+		{
+			Guide->OnEvent(E);
+		}
 		if (OnEvent)
 		{
 			OnEvent(E);
 		}
 	}
+	if (Guide)
+	{
+		Guide->OnTick();
+	}
+}
+
+void ASlopMatch::FinishFromGuide(int32 Winner)
+{
+	if (bEnded)
+	{
+		return;
+	}
+	bEnded = true;
+	Announce(NSLOCTEXT("SlopMatch", "WellFought", "WELL FOUGHT"), NSLOCTEXT("SlopMatch", "Awaits", "The Sump awaits."));
+	Result = FMatchResult();
+	Result.Winner = Winner;
+	Result.P1 = Sim.Fighters[0].Def->Id;
+	Result.P2 = Sim.Fighters[1].Def->Id;
+	Result.Mode = Config.Mode;
+	FTimerHandle H;
+	GetWorldTimerManager().SetTimer(H, FTimerDelegate::CreateWeakLambda(this, [this]()
+	{
+		if (OnFinished)
+		{
+			OnFinished(Result);
+		}
+	}), 2.8f, false);
 }
 
 void ASlopMatch::HandleEvent(const FSimEvent& E)
 {
 	Vfx->OnEvent(E);
+	Director.OnEvent(E);
 	PlayEventSound(E);
 	switch (E.Type)
 	{

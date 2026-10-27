@@ -54,7 +54,7 @@ namespace Slop::Anim
 		static double Ease(FName Kind, double T);
 	};
 
-	struct FKey
+	struct FPoseKey
 	{
 		double F = 0;
 		const FPose* Pose = nullptr;
@@ -69,11 +69,11 @@ namespace Slop::Anim
 		void Build(const FFighterDef& Def, const TSharedPtr<FJsonObject>& Common);
 		bool Has(FName Name) const { return Src.Contains(Name); }
 		const FPose& Get(FName Name);
-		void Keys(const TArray<FAnimKey>& Raw, TArray<FKey>& Out);
-		const TArray<FKey>* MoveKeys(FName MoveId) const { return MoveKeyMap.Find(MoveId); }
+		void Keys(const TArray<FAnimKey>& Raw, TArray<FPoseKey>& Out);
+		const TArray<FPoseKey>* MoveKeys(FName MoveId) const { return MoveKeyMap.Find(MoveId); }
 		const TArray<FName>& Missing() const { return MissingNames; }
 		// Pose at fractional frame T of a key list, starting from `From` at frame 0.
-		static void Sample(const TArray<FKey>& Keys, double T, const FPose& From, FPose& Out);
+		static void Sample(const TArray<FPoseKey>& Keys, double T, const FPose& From, FPose& Out);
 
 	private:
 		const FPose& CommonPose(FName Name);
@@ -83,7 +83,7 @@ namespace Slop::Anim
 		TMap<FName, double> SrcScale;
 		TSharedPtr<FJsonObject> Common;
 		double CommonScale = 1.0;
-		TMap<FName, TArray<FKey>> MoveKeyMap;
+		TMap<FName, TArray<FPoseKey>> MoveKeyMap;
 		TArray<FName> MissingNames;
 		FPose Default;
 	};

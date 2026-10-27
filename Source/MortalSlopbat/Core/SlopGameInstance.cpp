@@ -20,6 +20,7 @@
 #include "UI/SlopScreens.h"
 #include "UI/SlopStyle.h"
 #include "View/SlopMatch.h"
+#include "View/SlopDevTour.h"
 
 #define LOCTEXT_NAMESPACE "SlopGame"
 
@@ -287,6 +288,11 @@ void USlopGameInstance::ApplySettings(bool bDisplay)
 	{
 		return;
 	}
+	// A window size given on the command line (development and capture runs) wins.
+	if (FParse::Param(FCommandLine::Get(), TEXT("windowed")) || FParse::Param(FCommandLine::Get(), TEXT("fullscreen")))
+	{
+		return;
+	}
 	if (UGameUserSettings* U = GEngine->GetGameUserSettings())
 	{
 		const EWindowMode::Type Mode = Settings.WindowMode == 0 ? EWindowMode::Windowed : (Settings.WindowMode == 1 ? EWindowMode::WindowedFullscreen : EWindowMode::Fullscreen);
@@ -411,12 +417,16 @@ bool USlopGameInstance::Tick(float Dt)
 		Overlay->Tick(Dt);
 	}
 #if !UE_BUILD_SHIPPING
+	if (Tour && Match && static_cast<FMoveTour*>(Tour)->Done() && ShotTicks.Num() == 0 && QuitAtSeconds < 0.0)
+	{
+		QuitAtSeconds = Now() + 1.0;
+	}
 	if (Match && (ShotTicks.Num() > 0 || QuitAtTick >= 0))
 	{
 		const int32 T = Match->Sim.TickCount;
-		if (ShotTicks.Num() > 0 && T >= ShotTicks[0])
+		if (ShotTicks.Num() > 0 && T >= ShotTicks[0].Key)
 		{
-			const FString Name = FString::Printf(TEXT("%s_%05d.png"), *ShotPrefix, T);
+			const FString Name = ShotTicks[0].Value.IsEmpty() ? FString::Printf(TEXT("%s_%05d.png"), *ShotPrefix, T) : ShotTicks[0].Value;
 			FScreenshotRequest::RequestScreenshot(Name, true, false);
 			UE_LOG(LogSlop, Log, TEXT("Screenshot %s"), *Name);
 			ShotTicks.RemoveAt(0);
@@ -436,12 +446,18 @@ bool USlopGameInstance::Tick(float Dt)
 	return true;
 }
 
+void USlopGameInstance::RequestShot(int32 Tick, const FString& Name)
+{
+	ShotTicks.Add({Tick, Name});
+	ShotTicks.Sort([](const TPair<int32, FString>& A, const TPair<int32, FString>& B) { return A.Key < B.Key; });
+}
+
 void USlopGameInstance::DevCommandLine()
 {
 #if !UE_BUILD_SHIPPING
 	const TCHAR* Cmd = FCommandLine::Get();
 	FString MatchArg;
-	if (FParse::Value(Cmd, TEXT("SlopMatch="), MatchArg))
+	if (FParse::Value(Cmd, TEXT("SlopMatch="), MatchArg, false))
 	{
 		// p1,p2,mode[,stage[,difficulty]]
 		TArray<FString> Parts;
@@ -466,16 +482,51 @@ void USlopGameInstance::DevCommandLine()
 			StartMatch();
 		}
 	}
+	FString TourArg;
+	if (FParse::Value(Cmd, TEXT("SlopTour="), TourArg))
+	{
+		// Every ground command of one fighter, from both sides, with boxes and a screenshot at
+		// each move's first active frame.
+		FMatchConfig& C = Flow.Config;
+		C = FMatchConfig();
+		C.Mode = EMode::Training;
+		C.P1 = FName(*TourArg);
+		C.P2 = C.P1 == TEXT("gorm") ? FName(TEXT("bram")) : FName(TEXT("gorm"));
+		C.RoundsToWin = 1;
+		StartMatch();
+		if (Match)
+		{
+			TourFighter = C.P1;
+			Match->Brains[0] = MakeUnique<FMoveTour>(Match->Sim, 0);
+			Tour = Match->Brains[0].Get();
+			Match->bShowBoxes = FParse::Param(Cmd, TEXT("SlopBoxes"));
+			TFunction<void(const FSimEvent&)> HudFn = Match->OnEvent;
+			Match->OnEvent = [this, HudFn](const FSimEvent& E)
+			{
+				if (HudFn)
+				{
+					HudFn(E);
+				}
+				if (E.Type == EEvent::Move && E.Who == 0 && Match)
+				{
+					const FMoveDef* M = Match->Sim.Fighters[0].Def->Move(E.Move);
+					const FMoveTour* T = static_cast<FMoveTour*>(Tour);
+					const int32 At = M ? (M->Active > 0 ? M->Startup : (M->Projectile.bHas ? M->Projectile.Frame + 6 : M->Startup + 8)) : 1;
+					RequestShot(Match->Sim.TickCount + At - 1, FString::Printf(TEXT("tour_%s_%s_%02d_%s.png"), *TourFighter.ToString(), T->Pass == 0 ? TEXT("L") : TEXT("R"), T->Step, *E.Move.ToString()));
+				}
+			};
+		}
+	}
 	FString Shots;
-	if (FParse::Value(Cmd, TEXT("SlopShots="), Shots))
+	if (FParse::Value(Cmd, TEXT("SlopShots="), Shots, false))
 	{
 		TArray<FString> Parts;
 		Shots.ParseIntoArray(Parts, TEXT(","));
 		for (const FString& S : Parts)
 		{
-			ShotTicks.Add(FCString::Atoi(*S));
+			ShotTicks.Add({FCString::Atoi(*S), FString()});
 		}
-		ShotTicks.Sort();
+		ShotTicks.Sort([](const TPair<int32, FString>& A, const TPair<int32, FString>& B) { return A.Key < B.Key; });
 	}
 	ShotPrefix = TEXT("shot");
 	FParse::Value(Cmd, TEXT("SlopShotPrefix="), ShotPrefix);

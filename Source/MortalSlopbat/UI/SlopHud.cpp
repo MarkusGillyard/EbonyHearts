@@ -19,6 +19,7 @@ void SSlopHud::Construct(const FArguments& InArgs)
 	if (Match.IsValid())
 	{
 		Match->OnEvent = [this](const FSimEvent& E) { OnEvent(E); };
+		Match->OnAnnounce = [this](const FText& T, const FText& S) { Announce(T, S, 2.4f, SlopUI::Accent, 104.f); };
 	}
 }
 
@@ -321,9 +322,10 @@ int32 SSlopHud::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometr
 		C.A = FMath::Clamp(SubtitleT / 0.5f, 0.f, 1.f);
 		PaintText(OutDrawElements, G, L, SubtitleText, SlopUI::Body(38.f), FVector2D(960.f, 880.f), C, 1);
 	}
-	if (!PromptText.IsEmpty())
+	const FText Prompt = M->Guide ? M->Guide->Prompt() : PromptText;
+	if (!Prompt.IsEmpty())
 	{
-		PaintText(OutDrawElements, G, L, PromptText, SlopUI::Body(26.f), FVector2D(960.f, 960.f), SlopUI::Dim, 1);
+		PaintText(OutDrawElements, G, L, Prompt, SlopUI::Body(28.f), FVector2D(960.f, M->Guide ? 930.f : 960.f), M->Guide ? SlopUI::Text : SlopUI::Dim, 1);
 	}
 	if (NoticeT > 0.f)
 	{

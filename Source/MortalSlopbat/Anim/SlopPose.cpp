@@ -210,7 +210,7 @@ namespace Slop::Anim
 		}
 		for (const auto& KV : Def.Moves)
 		{
-			TArray<FKey>& Keys = MoveKeyMap.Add(KV.Key);
+			TArray<FPoseKey>& Keys = MoveKeyMap.Add(KV.Key);
 			this->Keys(KV.Value->AnimKeys, Keys);
 		}
 	}
@@ -274,7 +274,7 @@ namespace Slop::Anim
 		return *Slot;
 	}
 
-	void FPoseLibrary::Keys(const TArray<FAnimKey>& Raw, TArray<FKey>& Out)
+	void FPoseLibrary::Keys(const TArray<FAnimKey>& Raw, TArray<FPoseKey>& Out)
 	{
 		Out.Reset();
 		for (const FAnimKey& K : Raw)
@@ -283,7 +283,7 @@ namespace Slop::Anim
 		}
 	}
 
-	void FPoseLibrary::Sample(const TArray<FKey>& Keys, double T, const FPose& From, FPose& Out)
+	void FPoseLibrary::Sample(const TArray<FPoseKey>& Keys, double T, const FPose& From, FPose& Out)
 	{
 		if (Keys.Num() == 0)
 		{
@@ -292,7 +292,7 @@ namespace Slop::Anim
 		}
 		double PrevF = 0.0;
 		const FPose* PrevP = &From;
-		for (const FKey& K : Keys)
+		for (const FPoseKey& K : Keys)
 		{
 			if (T <= K.F)
 			{

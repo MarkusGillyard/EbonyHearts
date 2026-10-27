@@ -1,6 +1,9 @@
 """Builds the game's imported content from the versioned sources. Run in the editor commandlet:
 
-    source Tools/ue.sh && editor_py "$PROJ_DIR/Tools/import_assets.py" [-- --only=audio,materials,fighters,stages]
+    source Tools/ue.sh && SLOP_IMPORT_ONLY=audio,materials editor_py "$PROJ_DIR/Tools/import_assets.py"
+
+SLOP_IMPORT_ONLY (comma list of steps: audio, materials, bodies, fighters, surfaces, props,
+stages) limits the run; without it every step runs.
 
 Sources: SourceArt/Audio (first-party), SourceArt/ThirdParty (CC0, see ledger.json),
 SourceArt/Fighters/<id>/<id>.fbx (built by Tools/blender/build_fighter.py). Everything lands
@@ -24,11 +27,8 @@ def log(msg):
 
 
 def args():
-    only = None
-    for a in sys.argv[1:]:
-        if a.startswith("--only="):
-            only = set(a[len("--only="):].split(","))
-    return only
+    only = os.environ.get("SLOP_IMPORT_ONLY", "").strip()
+    return set(only.split(",")) if only else None
 
 
 def import_files(files, dest, replace=True):
@@ -73,8 +73,11 @@ def audio():
 
 # ------------------------------------------------------------------------------ materials
 def fresh_material(path):
+    """The material at `path`, emptied for rebuilding; kept in place so instances stay parented."""
     if EAL.does_asset_exist(path):
-        EAL.delete_asset(path)
+        m = EAL.load_asset(path)
+        MEL.delete_all_material_expressions(m)
+        return m
     d, n = path.rsplit("/", 1)
     return TOOLS.create_asset(n, d, unreal.Material, unreal.MaterialFactoryNew())
 
@@ -129,6 +132,24 @@ def lerp(m, a, b, alpha, x, y, ao="", bo="", alo=""):
 
 
 WHITE = "/Engine/EngineResources/WhiteSquareTexture"
+WHITE_LINEAR = "/Game/Slop/Materials/T_WhiteLinear"
+
+
+def white_linear():
+    """A small white texture stored linear (masks), the default for ORM samplers."""
+    import struct, tempfile, zlib
+    raw = b"".join(b"\x00" + b"\xff\xff\xff" * 4 for _ in range(4))
+    def chunk(t, d):
+        return struct.pack(">I", len(d)) + t + d + struct.pack(">I", zlib.crc32(t + d) & 0xffffffff)
+    png = b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", 4, 4, 8, 2, 0, 0, 0)) + chunk(b"IDAT", zlib.compress(raw)) + chunk(b"IEND", b"")
+    d = tempfile.mkdtemp()
+    path = os.path.join(d, "T_WhiteLinear.png")
+    with open(path, "wb") as f:
+        f.write(png)
+    t = import_as(path, "/Game/Slop/Materials", "T_WhiteLinear")
+    t.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_MASKS)
+    t.set_editor_property("srgb", False)
+    EAL.save_loaded_asset(t)
 FLAT_NORMAL = "/Engine/EngineMaterials/DefaultNormal"
 GREY = "/Engine/EngineResources/DefaultTexture"
 
@@ -148,7 +169,7 @@ def character_material():
     MEL.connect_material_property(col2, "", unreal.MaterialProperty.MP_BASE_COLOR)
     normal = texparam(m, "NormalTex", FLAT_NORMAL, -1400, 150, unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
     MEL.connect_material_property(normal, "RGB", unreal.MaterialProperty.MP_NORMAL)
-    orm = texparam(m, "ORMTex", WHITE, -1400, 450, unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
+    orm = texparam(m, "ORMTex", WHITE_LINEAR, -1400, 450, unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
     rough_k = scalar(m, "Roughness", 0.6, -1100, 400)
     metal_k = scalar(m, "Metallic", 0.0, -1100, 520)
     rough = mul(m, orm, rough_k, -850, 400, "G", "")
@@ -221,7 +242,7 @@ def surface_material():
     nk = scalar(m, "NormalStrength", 1.0, -850, 330)
     nrm2 = lerp(m, flat, nrm, nk, -600, 150, "", "RGB", "")
     MEL.connect_material_property(nrm2, "", unreal.MaterialProperty.MP_NORMAL)
-    orm = sample("ORMTex", WHITE, 450, unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
+    orm = sample("ORMTex", WHITE_LINEAR, 450, unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
     rk = scalar(m, "Roughness", 1.0, -850, 450)
     MEL.connect_material_property(mul(m, orm, rk, -600, 450, "G", ""), "", unreal.MaterialProperty.MP_ROUGHNESS)
     mk = scalar(m, "Metallic", 0.0, -850, 570)
@@ -254,7 +275,64 @@ def glow_material(path, blend, two_sided=True):
     EAL.save_loaded_asset(m)
 
 
+def billboard_material(path, ring):
+    """Additive camera-facing quads: a soft disc (flashes, puffs) or a thin ring (impact rings),
+    shaped from the quad's UVs; colour x intensity x vertex alpha."""
+    m = fresh_material(path)
+    m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_ADDITIVE)
+    m.set_editor_property("two_sided", True)
+    m.set_editor_property("used_with_instanced_static_meshes", True)
+    tc = expr(m, unreal.MaterialExpressionTextureCoordinate, -1400, 0)
+    c = expr(m, unreal.MaterialExpressionConstant2Vector, -1400, 150)
+    c.set_editor_property("r", 0.5)
+    c.set_editor_property("g", 0.5)
+    dist = expr(m, unreal.MaterialExpressionDistance, -1150, 50)
+    MEL.connect_material_expressions(tc, "", dist, "A")
+    MEL.connect_material_expressions(c, "", dist, "B")
+    two = expr(m, unreal.MaterialExpressionConstant, -1150, 200)
+    two.set_editor_property("r", 2.0)
+    r = mul(m, dist, two, -950, 100)
+    if ring:
+        # |r - 0.8| narrow band.
+        k = expr(m, unreal.MaterialExpressionConstant, -950, 250)
+        k.set_editor_property("r", 0.8)
+        sub = expr(m, unreal.MaterialExpressionSubtract, -800, 150)
+        MEL.connect_material_expressions(r, "", sub, "A")
+        MEL.connect_material_expressions(k, "", sub, "B")
+        ab = expr(m, unreal.MaterialExpressionAbs, -650, 150)
+        MEL.connect_material_expressions(sub, "", ab, "")
+        w = scalar(m, "Width", 8.0, -650, 300)
+        band = mul(m, ab, w, -500, 200)
+        one_m = expr(m, unreal.MaterialExpressionOneMinus, -350, 200)
+        MEL.connect_material_expressions(band, "", one_m, "")
+        shape_in = one_m
+    else:
+        one_m = expr(m, unreal.MaterialExpressionOneMinus, -800, 150)
+        MEL.connect_material_expressions(r, "", one_m, "")
+        shape_in = one_m
+    sat = expr(m, unreal.MaterialExpressionSaturate, -200, 200)
+    MEL.connect_material_expressions(shape_in, "", sat, "")
+    pw = expr(m, unreal.MaterialExpressionPower, -50, 200)
+    MEL.connect_material_expressions(sat, "", pw, "Base")
+    ex = scalar(m, "Sharpness", 2.0, -200, 350)
+    MEL.connect_material_expressions(ex, "", pw, "Exp")
+    col = vector(m, "Color", (1, 1, 1, 1), -200, -150)
+    k2 = scalar(m, "Intensity", 2.0, -200, -50)
+    # Per-instance fade: custom data 0 (1 when unused).
+    fade = expr(m, unreal.MaterialExpressionPerInstanceCustomData, -200, 500)
+    fade.set_editor_property("data_index", 0)
+    fade.set_editor_property("const_default_value", 1.0)
+    e = mul(m, mul(m, mul(m, col, k2, 50, -100), pw, 250, 0), fade, 450, 100)
+    MEL.connect_material_property(e, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    MEL.recompile_material(m)
+    EAL.save_loaded_asset(m)
+
+
 def materials():
+    white_linear()
+    billboard_material("/Game/Slop/Materials/M_SoftDisc", False)
+    billboard_material("/Game/Slop/Materials/M_Ring", True)
     character_material()
     surface_material()
     glow_material("/Game/Slop/Materials/M_GlowAdd", unreal.BlendMode.BLEND_ADDITIVE)
@@ -339,9 +417,72 @@ def bodies():
             fighter("body_" + f[:-4], os.path.join(root, f))
 
 
+# ------------------------------------------------------------------------------ stages
+def import_as(src, dest_dir, name):
+    t = unreal.AssetImportTask()
+    t.set_editor_property("filename", src)
+    t.set_editor_property("destination_path", dest_dir)
+    t.set_editor_property("destination_name", name)
+    t.set_editor_property("automated", True)
+    t.set_editor_property("replace_existing", True)
+    t.set_editor_property("save", True)
+    TOOLS.import_asset_tasks([t])
+    paths = t.get_editor_property("imported_object_paths")
+    return EAL.load_asset(paths[0]) if paths else None
+
+
+def surfaces():
+    """SourceArt/Surfaces (prepared by Tools/prep_surfaces.py) -> /Game/Slop/Surfaces/<Set>/T_<Set>_*."""
+    root = os.path.join(SRC, "Surfaces")
+    n = 0
+    for set_id in sorted(os.listdir(root)):
+        d = os.path.join(root, set_id)
+        dest = f"/Game/Slop/Surfaces/{set_id}"
+        for suffix, name, kind in [("basecolor", "BaseColor", "srgb"), ("normal", "Normal", "normal"), ("orm", "ORM", "linear")]:
+            png = os.path.join(d, f"{set_id}_{suffix}.png")
+            if not os.path.exists(png):
+                continue
+            tex = import_as(png, dest, f"T_{set_id}_{name}")
+            if not tex:
+                log(f"{set_id}: {suffix} failed")
+                continue
+            if kind == "normal":
+                tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_NORMALMAP)
+                tex.set_editor_property("srgb", False)
+            elif kind == "linear":
+                tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_MASKS)
+                tex.set_editor_property("srgb", False)
+            tex.set_editor_property("lod_group", unreal.TextureGroup.TEXTUREGROUP_WORLD)
+            EAL.save_loaded_asset(tex)
+            n += 1
+    log(f"surfaces: {n} textures")
+
+
+def props():
+    """Poly Haven models (glTF) -> /Game/Slop/Props/<name>; skies (.hdr) -> /Game/Slop/Skies."""
+    models = os.path.join(SRC, "ThirdParty", "PolyHaven", "models")
+    for name in sorted(os.listdir(models)):
+        d = os.path.join(models, name)
+        gltf = None
+        for dd, _, fs in os.walk(d):
+            for f in fs:
+                if f.endswith(".gltf") or f.endswith(".glb"):
+                    gltf = os.path.join(dd, f)
+        if gltf:
+            got = import_files([gltf], f"/Game/Slop/Props/{name}")
+            log(f"prop {name}: {len(got)} assets")
+    skies = os.path.join(SRC, "ThirdParty", "PolyHaven", "hdris")
+    for name in sorted(os.listdir(skies)):
+        for f in os.listdir(os.path.join(skies, name)):
+            if f.endswith(".hdr"):
+                tex = import_as(os.path.join(skies, name, f), "/Game/Slop/Skies", f"HDR_{name}")
+                log(f"sky {name}: {'ok' if tex else 'failed'}")
+
+
 def main():
     only = args()
-    steps = [("audio", audio), ("materials", materials), ("bodies", bodies), ("fighters", fighters)]
+    steps = [("audio", audio), ("materials", materials), ("bodies", bodies), ("fighters", fighters),
+             ("surfaces", surfaces), ("props", props)]
     for name, fn in steps:
         if only is None or name in only:
             log("step " + name)

@@ -7,11 +7,6 @@
 
 using namespace Slop;
 
-static double MoveToward(double From, double To, double Delta)
-{
-	return FMath::Abs(To - From) <= Delta ? To : From + FMath::Sign(To - From) * Delta;
-}
-
 ASlopFightCamera::ASlopFightCamera()
 {
 	PrimaryActorTick.bCanEverTick = false;

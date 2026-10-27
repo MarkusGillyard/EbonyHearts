@@ -58,7 +58,7 @@ namespace Slop::Anim
 		FXf AirTilt(double Delta, bool bFrozen);
 		void PlantFeet(double Delta, const FPose& Pose, FVector OutAnkles[2], double OutYaw[2]);
 		double MoveSink(double Frac) const;
-		void AnimKeys(const TArray<FAnimKey>& Raw, TArray<FKey>& OutKeys) { Lib.Keys(Raw, OutKeys); }
+		void AnimKeys(const TArray<FAnimKey>& Raw, TArray<FPoseKey>& OutKeys) { Lib.Keys(Raw, OutKeys); }
 
 		struct FFoot
 		{
@@ -78,8 +78,8 @@ namespace Slop::Anim
 		FString Key;
 		double BlendT = 0;
 		double BlendLen = 0;
-		TArray<FKey> Keys;
-		TArray<FKey> OwnedKeys;
+		TArray<FPoseKey> Keys;
+		TArray<FPoseKey> OwnedKeys;
 		FPose OwnedPoses[3];
 		FFoot Feet[2];
 		FVector Lean = FVector::ZeroVector;

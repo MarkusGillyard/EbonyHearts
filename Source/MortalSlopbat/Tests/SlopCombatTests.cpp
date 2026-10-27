@@ -4,6 +4,8 @@
 
 #include "Tests/SlopSimHarness.h"
 
+namespace SlopCombatTestSuite
+{
 using namespace Slop;
 using namespace Slop::Test;
 
@@ -572,6 +574,8 @@ bool FSlopNoOverlap::RunTest(const FString&)
 	TestEqual("never outside the stage", Outside, 0);
 	TestEqual("grounded bodies do not overlap", Overlaps, 0);
 	return true;
+}
+
 }
 
 #undef SLOP_TEST

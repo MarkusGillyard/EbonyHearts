@@ -3,6 +3,8 @@
 #include "GameFramework/Actor.h"
 #include "AI/SlopAI.h"
 #include "Core/SlopFlow.h"
+#include "View/SlopFinisher.h"
+#include "View/SlopGuides.h"
 #include "SlopMatch.generated.h"
 
 class ASlopFighterActor;
@@ -62,6 +64,16 @@ public:
 	void SkipFinisher() { Sim.SkipFinisher(); }
 	// Applies the comfort and graphics settings (shake, flashes, effects, depth of field).
 	void ApplySettings();
+	// Slow motion asked for by a set piece (the stranger's blow).
+	void KoSlowExternal(int32 Ticks) { KoSlow = FMath::Max(KoSlow, Ticks); }
+	USlopGameInstance* GetGI() const { return GI(); }
+	Slop::FFinisherDirector Director;
+	// The tutorial or the trials, when running.
+	TUniquePtr<Slop::IGuide> Guide;
+	// A guide ends the match itself (the tutorial completed without a knockout).
+	void FinishFromGuide(int32 Winner);
+	void Announce(const FText& Text, const FText& Sub) { if (OnAnnounce) OnAnnounce(Text, Sub); }
+	TFunction<void(const FText&, const FText&)> OnAnnounce;
 
 	Slop::FFightSim Sim;
 	Slop::FMatchConfig Config;

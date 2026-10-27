@@ -22,12 +22,17 @@ public:
 	void Setup(ASlopMatch* InMatch);
 	void OnEvent(const Slop::FSimEvent& E);
 	void Step(double Delta);
+	// Set pieces (finishers): positions in the original's metres.
+	void BurstColor(const FVector& P, const FLinearColor& C, int32 N, double Speed, double Life);
+	void FlashAt(const FVector& P, const FLinearColor& C, float Intensity) { Flash(P, C, Intensity); }
+	void DustAt(const FVector& P);
+	void BloodAt(const FVector& P, double Dir, double Amount);
 	bool bReduced = false;
 	bool bFlashes = true;
 	FString Gore = TEXT("full");
 
 private:
-	enum class EKind : uint8 { Spark, Ember, Blood, Dust, Slop, Ring, Count };
+	enum class EKind : uint8 { Spark, Ember, Blood, Dust, Slop, Ring, Disc, Pale, Count };
 	struct FParticle { FVector P; FVector V; double Life; double Age; double Size; double Grow; double Drag; double Gravity; FRotator R; };
 	void Spawn(EKind K, const FVector& P, const FVector& V, double Life, double Size, double Grow = 0, double Drag = 2.0, double Gravity = 9.8);
 	void Burst(EKind K, const FVector& P, int32 N, double Speed, double Life, double Size, const FVector& Bias = FVector::ZeroVector);

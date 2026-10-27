@@ -4,6 +4,8 @@
 
 #include "Tests/SlopSimHarness.h"
 
+namespace SlopRoundTestSuite
+{
 using namespace Slop;
 using namespace Slop::Test;
 
@@ -348,6 +350,8 @@ bool FSlopContentValid::RunTest(const FString&)
 		TestTrue(KV.Key.ToString() + " has commands", KV.Value->Commands.Num() > 0);
 	}
 	return C.Errors.Num() == 0;
+}
+
 }
 
 #undef SLOP_TEST

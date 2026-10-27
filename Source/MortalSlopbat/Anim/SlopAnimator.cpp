@@ -9,11 +9,6 @@ namespace Slop::Anim
 		return AxisAngle(FVector(0, 1, 0), V.Y) * AxisAngle(FVector(1, 0, 0), V.X) * AxisAngle(FVector(0, 0, 1), V.Z);
 	}
 
-	static double MoveToward(double From, double To, double Delta)
-	{
-		return FMath::Abs(To - From) <= Delta ? To : From + FMath::Sign(To - From) * Delta;
-	}
-
 	static double AngleDifference(double From, double To)
 	{
 		const double D = FMath::Fmod(To - From, Tau);
@@ -256,8 +251,8 @@ namespace Slop::Anim
 			{
 				if (SetSource(FString::Printf(TEXT("move:%s:%d"), *F.Move->Id.ToString(), MoveTick), 0.0))
 				{
-					const TArray<FKey>* MK = Lib.MoveKeys(F.Move->Id);
-					OwnedKeys = MK ? *MK : TArray<FKey>();
+					const TArray<FPoseKey>* MK = Lib.MoveKeys(F.Move->Id);
+					OwnedKeys = MK ? *MK : TArray<FPoseKey>();
 				}
 				FPoseLibrary::Sample(OwnedKeys, double(F.MF) - 1.0 + Frac, Snap, Src);
 			}
