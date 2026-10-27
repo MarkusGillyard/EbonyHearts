@@ -392,6 +392,62 @@ bool FSlopHurtboxesFitBody::RunTest(const FString&)
 	return true;
 }
 
+// Two fighters walked into each other stop at their pushboxes; their bodies should then be close
+// but not inside one another (measured between the chests and the hips, less a torso's depth).
+SLOP_TEST(FSlopBodiesApart, "Anim.BodiesPushedTogetherDoNotOverlap")
+bool FSlopBodiesApart::RunTest(const FString&)
+{
+	const TArray<FName>& Roster = FContent::Roster();
+	double Tightest = 1e9;
+	FString TightestPair;
+	for (const FName& IdA : Roster)
+	{
+		for (const FName& IdB : Roster)
+		{
+			FFightSim Sim;
+			Sim.bIntro = false;
+			Sim.bTraining = true;
+			Sim.Setup(GetContent().Fighter(IdA), GetContent().Fighter(IdB));
+			FAnimator A[2];
+			A[0].Setup(Sim.Fighters[0], GetContent().CommonPoses);
+			A[1].Setup(Sim.Fighters[1], GetContent().CommonPoses);
+			FPadState Pads[2];
+			for (int32 T = 0; T < 600 && (Sim.Phase != EPhase::Fight || T < 30); ++T)
+			{
+				Sim.Step(Pads);
+				for (FAnimator& X : A) { X.SyncFromSim(); X.Update(1.0, 1.0 / 60.0); }
+			}
+			Pads[0].Dirs = PadRight;
+			Pads[1].Dirs = PadLeft;
+			for (int32 T = 0; T < 150; ++T)
+			{
+				Sim.Step(Pads);
+				for (FAnimator& X : A) { X.SyncFromSim(); X.Update(1.0, 1.0 / 60.0); }
+			}
+			Pads[0].Dirs = Pads[1].Dirs = 0;
+			for (int32 T = 0; T < 40; ++T)
+			{
+				Sim.Step(Pads);
+				for (FAnimator& X : A) { X.SyncFromSim(); X.Update(1.0, 1.0 / 60.0); }
+			}
+			const auto X = [&A](int32 I, EJoint J) { return A[I].WorldPoint(A[I].Rig.J(J).P).X; };
+			// Half the depth of a torso, front to back, scaled with height.
+			const double Depth = 0.12 * (A[0].Rig.H + A[1].Rig.H) / 1.8;
+			const double Chest = X(1, EJoint::Chest) - X(0, EJoint::Chest) - Depth;
+			const double Hips = X(1, EJoint::Hips) - X(0, EJoint::Hips) - Depth;
+			const double Gap = FMath::Abs(Sim.Fighters[1].Pos.X - Sim.Fighters[0].Pos.X);
+			TestTrue(FString::Printf(TEXT("%s v %s: bodies apart (chests %+.2f m, hips %+.2f m)"), *IdA.ToString(), *IdB.ToString(), Chest, Hips), Chest > 0.0 && Hips > 0.0);
+			if (Chest < Tightest)
+			{
+				Tightest = Chest;
+				TightestPair = FString::Printf(TEXT("%s v %s, %.2f m apart"), *IdA.ToString(), *IdB.ToString(), Gap);
+			}
+		}
+	}
+	UE_LOG(LogSlop, Display, TEXT("Bodies: tightest %s, chests %+.2f m clear"), *TightestPair, Tightest);
+	return true;
+}
+
 // Walking and running play their step cycles by the distance covered, so a foot on the ground stays
 // where it was put: while a foot is planted it should hardly move across the floor (the captured
 // cycles; the sumo shuffle, the circle walk and the diver's plod are the fighters' own and logged).
