@@ -334,6 +334,64 @@ bool FSlopStrikesReachBoxes::RunTest(const FString&)
 	return true;
 }
 
+// The body should be where it can be hit. High attacks are meant to pass over a crouching fighter,
+// so the crouching head has to sit about as low as the crouch hurtbox (within 15 cm), or a fist
+// would be seen to go through it. Standing, the low stances (sumo, ninja, the Slopbat's hunch) sit
+// under a hurtbox drawn for the original's upright fighters; those are logged, not changed, as the
+// hurtboxes are rules.
+SLOP_TEST(FSlopHurtboxesFitBody, "Anim.CrouchingHeadFitsTheHurtbox")
+bool FSlopHurtboxesFitBody::RunTest(const FString&)
+{
+	TArray<FName> Ids = FContent::Roster();
+	Ids.Append(FContent::Special());
+	for (const FName& Id : Ids)
+	{
+		const FFighterDef* Def = GetContent().Fighter(Id);
+		for (int32 bCrouch = 0; bCrouch < 2; ++bCrouch)
+		{
+			FFightSim Sim;
+			Sim.bIntro = false;
+			Sim.bTraining = true;
+			Sim.Setup(Def, GetContent().Fighter(TEXT("gorm")));
+			FAnimator A;
+			A.Setup(Sim.Fighters[0], GetContent().CommonPoses);
+			FPadState Pads[2];
+			for (int32 T = 0; T < 600 && (Sim.Phase != EPhase::Fight || T < 30); ++T)
+			{
+				Sim.Step(Pads);
+				A.SyncFromSim();
+				A.Update(1.0, 1.0 / 60.0);
+			}
+			Pads[0].Dirs = bCrouch ? PadDown : 0;
+			for (int32 T = 0; T < 40; ++T)
+			{
+				Sim.Step(Pads);
+				A.SyncFromSim();
+				A.Update(1.0, 1.0 / 60.0);
+			}
+			const FFighter& F = Sim.Fighters[0];
+			TArray<FRect> Hurt;
+			F.Hurtboxes(Hurt);
+			double Top = -1e9;
+			for (const FRect& R : Hurt)
+			{
+				Top = FMath::Max(Top, R.EndY());
+			}
+			// The head joint sits at 0.885 of the height in the rig, the crown at the full height.
+			const double Head = A.WorldPoint(A.Rig.J(EJoint::Head).P).Y + 0.115 * A.Rig.H;
+			if (bCrouch)
+			{
+				TestTrue(FString::Printf(TEXT("%s crouching: head top %.2f m, hurtbox top %.2f m"), *Id.ToString(), Head, Top), FMath::Abs(Head - Top) <= 0.15);
+			}
+			else if (FMath::Abs(Head - Top) > 0.15)
+			{
+				UE_LOG(LogSlop, Display, TEXT("Hurt: %s standing: head top %.2f m, hurtbox top %.2f m"), *Id.ToString(), Head, Top);
+			}
+		}
+	}
+	return true;
+}
+
 // Walking and running play their step cycles by the distance covered, so a foot on the ground stays
 // where it was put: while a foot is planted it should hardly move across the floor (the captured
 // cycles; the sumo shuffle, the circle walk and the diver's plod are the fighters' own and logged).
