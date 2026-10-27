@@ -75,7 +75,8 @@ void ASlopFighterActor::UpdateVisual(double Frac, double Delta)
 	const float Flash = bFlashes ? (float)Anim.FlashAmount : 0.f;
 	if (Flash != LastFlash)
 	{
-		SetScalar(TEXT("Flash"), Flash * 6.f);
+		// A blow brightens the body for a frame or two; strong enough to whiten it reads as a glitch.
+		SetScalar(TEXT("Flash"), Flash * 1.8f);
 		LastFlash = Flash;
 	}
 	SetScalar(TEXT("Glow"), (float)Anim.Glow * 3.f);

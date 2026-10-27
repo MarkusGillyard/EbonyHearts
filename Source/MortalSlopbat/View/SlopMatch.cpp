@@ -371,6 +371,10 @@ void ASlopMatch::HandleEvent(const FSimEvent& E)
 		const double Strength = FMath::Clamp(E.Damage / 100.0, 0.15, 1.3);
 		const bool bHeavy = E.Effect == TEXT("launch") || E.Effect == TEXT("knockdown") || E.Effect == TEXT("sweep") || E.Effect == TEXT("crumple") || E.bThrow;
 		Views[E.Who]->Anim.Impact(Dir, Strength, E.Level, false);
+		if (!E.bThrow)
+		{
+			Views[E.By]->Anim.Recoil(Strength);
+		}
 		// The struck player's pad feels it: in weight with the blow, longest for a knockout.
 		GI()->Router->Rumble(E.Who, E.bKO ? 1.f : (float)FMath::Clamp(0.2 + Strength * 0.5, 0.2, 0.8), E.bKO ? 0.45f : (bHeavy ? 0.22f : 0.12f));
 		// Every blow moves the camera a little; the big ones move it a lot, along the blow.
@@ -380,6 +384,7 @@ void ASlopMatch::HandleEvent(const FSimEvent& E)
 	}
 	case EEvent::Block:
 		Views[E.Who]->Anim.Impact(FMath::Sign(Sim.Fighters[E.Who].Pos.X - Sim.Fighters[E.By].Pos.X), 0.35, ELevel::Mid, true);
+		Views[E.By]->Anim.Recoil(0.5);
 		Camera->AddShake(0.004);
 		break;
 	case EEvent::Armor:

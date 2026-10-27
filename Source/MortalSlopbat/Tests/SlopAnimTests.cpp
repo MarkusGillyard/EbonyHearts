@@ -139,6 +139,101 @@ bool FSlopAnimatorRuns::RunTest(const FString&)
 	return true;
 }
 
+SLOP_TEST(FSlopAttackingArmOnPose, "Anim.AttackingArmStaysOnItsPose")
+bool FSlopAttackingArmOnPose::RunTest(const FString&)
+{
+	// The body follows through on springs, but the arm that carries a blow must be exactly where
+	// the authored pose puts it until the blow is over: the hitbox is there.
+	int32 Checked = 0;
+	int32 Off = 0;
+	for (const FName P1 : {FName(TEXT("ashka")), FName(TEXT("nix")), FName(TEXT("hollis"))})
+	{
+		FFightSim Sim;
+		Sim.Setup(GetContent().Fighter(P1), GetContent().Fighter(TEXT("gorm")));
+		FAnimator A;
+		A.Setup(Sim.Fighters[0], GetContent().CommonPoses);
+		FRandomStream Rng(11);
+		for (int32 T = 0; T < 60 * 30 && Sim.Phase != EPhase::MatchEnd; ++T)
+		{
+			FPadState Pads[2];
+			const int32 Dirs[] = {0, PadRight, PadRight, PadDown, PadLeft};
+			const int32 Btns[] = {BtnLP, BtnHP, BtnLP, BtnHP, 0};
+			Pads[0].Dirs = Dirs[Rng.RandRange(0, 4)];
+			Pads[0].Pressed = Pads[0].Held = Btns[Rng.RandRange(0, 4)];
+			Sim.Step(Pads);
+			A.SyncFromSim();
+			A.Update(1.0, 1.0 / 60.0);
+			const FFighter& F = Sim.Fighters[0];
+			if (F.State != EState::Move || !F.Move || F.ThrowVictim >= 0 || F.Move->Active <= 0 || F.MF > F.Move->LastActive()
+				|| (F.Move->Tip != FName(TEXT("hand_l")) && F.Move->Tip != FName(TEXT("hand_r"))))
+			{
+				continue;
+			}
+			const bool bRight = F.Move->Tip == FName(TEXT("hand_r"));
+			FVector Want = A.Authored().P(bRight ? EPos::HandR : EPos::HandL);
+			EPos Shown = bRight ? EPos::HandR : EPos::HandL;
+			if (F.Facing < 0)
+			{
+				Want.X = -Want.X;
+				Shown = bRight ? EPos::HandL : EPos::HandR;
+			}
+			++Checked;
+			if (!A.Shown().P(Shown).Equals(Want, 1e-4))
+			{
+				++Off;
+			}
+		}
+	}
+	TestTrue("attacks were checked", Checked > 30);
+	TestEqual("the attacking hand left its pose", Off, 0);
+	return true;
+}
+
+SLOP_TEST(FSlopTurnIsContinuous, "Anim.TurningRoundIsContinuous")
+bool FSlopTurnIsContinuous::RunTest(const FString&)
+{
+	// Crossed over while standing, a fighter turns round over a few frames instead of flipping
+	// in one: no joint jumps between frames, and the turn ends facing the new way.
+	FFightSim Sim;
+	Sim.bIntro = false;
+	Sim.Setup(GetContent().Fighter(TEXT("ashka")), GetContent().Fighter(TEXT("gorm")));
+	FAnimator A;
+	A.Setup(Sim.Fighters[0], GetContent().CommonPoses);
+	FPadState Pads[2];
+	for (int32 T = 0; T < 600 && (Sim.Phase != EPhase::Fight || T < 40); ++T)
+	{
+		Sim.Step(Pads);
+		A.SyncFromSim();
+		A.Update(1.0, 1.0 / 60.0);
+	}
+	FFighter& F = Sim.Fighters[0];
+	if (!TestEqual("standing", (int32)F.State, (int32)EState::Idle))
+	{
+		return false;
+	}
+	FVector Last[(int32)EJoint::Count];
+	for (int32 J = 0; J < (int32)EJoint::Count; ++J)
+	{
+		Last[J] = A.WorldPoint(A.Rig.Xf[J].P);
+	}
+	F.Facing = -F.Facing;
+	double Worst = 0.0;
+	for (int32 K = 0; K < 14; ++K)
+	{
+		A.Update(1.0, 1.0 / 60.0);
+		for (int32 J = 0; J < (int32)EJoint::Count; ++J)
+		{
+			const FVector W = A.WorldPoint(A.Rig.Xf[J].P);
+			Worst = FMath::Max(Worst, (W - Last[J]).Size());
+			Last[J] = W;
+		}
+	}
+	TestTrue(FString::Printf(TEXT("largest move of a joint in one frame (%.3f m) is small"), Worst), Worst < 0.3);
+	const FVector Front = A.Root.Q.RotateVector(FVector(0, 0, -1));
+	TestTrue("facing the new way", Front.X * F.Facing > 0.99);
+	return true;
+}
+
 }
 
 #undef SLOP_TEST

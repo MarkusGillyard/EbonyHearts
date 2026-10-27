@@ -72,6 +72,11 @@ namespace Slop::Anim
 			S[0] = S[1] = FVector::ZeroVector;
 		}
 		Out = Lib.Get(TEXT("stance"));
+		// Each fighter keeps its own rhythm in the stance: taller bodies a little slower, and the
+		// two sides out of step with each other.
+		const uint32 Hash = GetTypeHash(InFighter.Def->Id) + uint32(InFighter.Index) * 2654435761u;
+		Pace = 1.15 * FMath::Sqrt(1.8 / FMath::Max(InFighter.Def->Height, 0.5)) * (0.92 + 0.16 * double(Hash % 1000) / 1000.0);
+		IdlePhase = double((Hash / 1000) % 628) / 100.0;
 		SyncFromSim(true);
 		Update(1.0, 0.0);
 	}
@@ -98,6 +103,8 @@ namespace Slop::Anim
 		if (bTeleport)
 		{
 			ResetFeet();
+			bLagValid = false;
+			TurnT = 1.0;
 		}
 	}
 
@@ -114,8 +121,37 @@ namespace Slop::Anim
 		FVector P(P2.X, P2.Y - Sink - MoveSink(Frac), 0.0);
 		if (F.Facing != Facing)
 		{
+			// Crossed over while standing, walking or crouching: turn round over a few frames, the
+			// chest passing the camera. Anything else (an attack, a hit, the air) shows the new side
+			// at once, as the simulation already has it.
+			TurnFrom = Facing;
 			Facing = F.Facing;
-			ResetFeet();
+			TurnT = Delta > 0.0 && CanTurn() ? 0.0 : 1.0;
+			if (TurnT >= 1.0)
+			{
+				ResetFeet();
+			}
+			else
+			{
+				const FQuat From = FromAxes(FVector(0, 0, TurnFrom), FVector(0, 1, 0), FVector(-TurnFrom, 0, 0));
+				TurnSign = (AxisAngle(FVector(0, 1, 0), 0.5 * UE_DOUBLE_PI) * From).RotateVector(FVector(0, 0, -1)).Z > 0.0 ? 1.0 : -1.0;
+			}
+		}
+		else if (TurnT < 1.0)
+		{
+			if (!CanTurn())
+			{
+				TurnT = 1.0;
+			}
+			else if (!bFrozen)
+			{
+				TurnT += Delta / 0.12;
+			}
+			if (TurnT >= 1.0)
+			{
+				TurnT = 1.0;
+				ResetFeet();
+			}
 		}
 		if (bFrozen && Shake > 0.0)
 		{
@@ -127,7 +163,13 @@ namespace Slop::Anim
 		}
 		LastRoot = P;
 		// Basis.looking_at(facing, up): the rig's -z points along +x times facing.
-		const FQuat Look = FromAxes(FVector(0, 0, Facing), FVector(0, 1, 0), FVector(-Facing, 0, 0));
+		FQuat Look = FromAxes(FVector(0, 0, Facing), FVector(0, 1, 0), FVector(-Facing, 0, 0));
+		const double TurnE = FPose::Ease(TEXT("inout"), TurnT);
+		if (TurnT < 1.0)
+		{
+			const FQuat From = FromAxes(FVector(0, 0, TurnFrom), FVector(0, 1, 0), FVector(-TurnFrom, 0, 0));
+			Look = AxisAngle(FVector(0, 1, 0), TurnSign * UE_DOUBLE_PI * TurnE) * From;
+		}
 		Root = FXf(Look, P + LiftExtra) * AirTilt(Delta, bFrozen);
 		WorldScale = ExtraScale;
 		EvaluateSource(Frac);
@@ -137,39 +179,282 @@ namespace Slop::Anim
 		}
 		const double W = BlendLen > 0.0 ? FPose::Ease(TEXT("inout"), BlendT / BlendLen) : 1.0;
 		Out.BlendInto(Snap, Src, W);
-		FPose* ShownP = &Out;
-		if (Facing < 0)
+		FollowThrough(Delta, bFrozen);
+		// The side toward the camera; through a turn, the old side blends into the new one (the
+		// guard passes through the middle as the body comes round).
+		if (TurnT < 1.0)
 		{
-			Out.MirrorInto(Mirror);
-			ShownP = &Mirror;
+			FPose M;
+			Lagged.MirrorInto(M);
+			Display.BlendInto(TurnFrom < 0 ? M : Lagged, Facing < 0 ? M : Lagged, TurnE);
 		}
-		// Life in the hips: a step's rise and fall while walking, a slow settle while standing. The
-		// feet are planted, so only the body moves and the legs take up the difference.
-		double Bob = 0.0;
-		if (F.State == EState::WalkF || F.State == EState::WalkB)
+		else if (Facing < 0)
 		{
-			const double Stride = 0.6 * Rig.H / 1.8;
-			Bob = (FMath::Abs(FMath::Sin(FMath::Abs(P2.X) / Stride * UE_DOUBLE_PI)) - 0.5) * 0.02 * Rig.H;
+			Lagged.MirrorInto(Display);
 		}
-		else if (In(F.State, {EState::Idle, EState::Intro, EState::Win}))
+		else
 		{
-			Bob = FMath::Sin(Time * Tau * 1.1) * 0.004 * Rig.H;
+			Display = Lagged;
 		}
-		ShownP->P(EPos::Hips).Y += Bob;
+		const FXf Torso = Rig.TorsoXf(Display, nullptr);
 		FQuat Extra[(int32)EJoint::Count];
 		for (FQuat& Q : Extra)
 		{
 			Q = FQuat::Identity;
 		}
 		Procedural(Delta, bFrozen, Extra);
+		Life(Delta, bFrozen, P2.X, Display, Extra);
+		CarryArms(Torso, Rig.TorsoXf(Display, Extra), Display);
 		FVector Ankles[2];
 		double Yaws[2];
-		PlantFeet(Delta, *ShownP, Ankles, Yaws);
-		Rig.Apply(*ShownP, Ankles, Yaws, Extra);
-		Glow = ShownP->V(EVal::Glow);
+		PlantFeet(Delta, Display, Ankles, Yaws);
+		Rig.Apply(Display, Ankles, Yaws, Extra);
+		Glow = Display.V(EVal::Glow);
 		if (FlashAmount > 0.0)
 		{
 			FlashAmount = FMath::Max(0.0, FlashAmount - Delta * 6.0);
+		}
+	}
+
+	// --- Follow-through -------------------------------------------------------------------------------------
+
+	// How quickly each part of the body chases the authored pose (angular frequency, per second):
+	// the hips almost at once, then up the spine and out to the head and hands. Zero follows the
+	// pose exactly (the feet and knees, which the planting and the legs' own targets handle).
+	static double RotRate(int32 K)
+	{
+		switch ((ERot)K)
+		{
+		case ERot::Hips: return 50.0;
+		case ERot::Spine: return 42.0;
+		case ERot::Chest: return 34.0;
+		case ERot::Neck: return 29.0;
+		case ERot::Head: return 24.0;
+		case ERot::ClavL: case ERot::ClavR: return 30.0;
+		default: return 28.0;
+		}
+	}
+
+	static double PosRate(int32 K)
+	{
+		switch ((EPos)K)
+		{
+		case EPos::Hips: return 48.0;
+		case EPos::HandL: case EPos::HandR: return 34.0;
+		case EPos::ElbowL: case EPos::ElbowR: return 30.0;
+		default: return 0.0;
+		}
+	}
+
+	// The arm that carries an attack stays exactly on its authored pose until the blow is over
+	// (the hitbox is where the pose puts it), and so do both arms in a throw. `AuthoredSide` is 0
+	// for the pose's left arm.
+	bool FAnimator::ArmExempt(int32 AuthoredSide) const
+	{
+		const FFighter& F = *Fighter;
+		if (F.State == EState::Thrown || ((F.State == EState::Move || F.State == EState::Finisher) && F.ThrowVictim >= 0))
+		{
+			return true;
+		}
+		if (F.State != EState::Move || !F.Move)
+		{
+			return false;
+		}
+		const FMoveDef& M = *F.Move;
+		if (F.MF > (M.Active > 0 ? M.LastActive() : M.Startup + 6))
+		{
+			return false;
+		}
+		if (M.Tip.IsNone())
+		{
+			return true;
+		}
+		return M.Tip == (AuthoredSide == 0 ? FName(TEXT("hand_l")) : FName(TEXT("hand_r")));
+	}
+
+	void FAnimator::FollowThrough(double Delta, bool bFrozen)
+	{
+		if (!bLagValid)
+		{
+			Lagged = Out;
+			for (FVector& V : LagW)
+			{
+				V = FVector::ZeroVector;
+			}
+			for (FVector& V : LagV)
+			{
+				V = FVector::ZeroVector;
+			}
+			bLagValid = true;
+			return;
+		}
+		const bool bExempt[2] = {ArmExempt(0), ArmExempt(1)};
+		const auto ArmOf = [](int32 K, bool bRot) -> int32
+		{
+			if (bRot)
+			{
+				return K == (int32)ERot::WristL ? 0 : K == (int32)ERot::WristR ? 1 : -1;
+			}
+			return K == (int32)EPos::HandL || K == (int32)EPos::ElbowL ? 0 : K == (int32)EPos::HandR || K == (int32)EPos::ElbowR ? 1 : -1;
+		};
+		// Stuns and the start of an attack commit faster; the rest settles at the usual pace.
+		const FFighter& F = *Fighter;
+		double Stiff = 1.0;
+		if (F.State == EState::HitStun || F.State == EState::BlockStun)
+		{
+			Stiff = 1.5;
+		}
+		else if (F.State == EState::Move && F.Move && F.MF <= F.Move->Startup)
+		{
+			Stiff = 1.3;
+		}
+		const double Dt = FMath::Min(Delta, 0.05);
+		const int32 Steps = (bFrozen || Dt <= 0.0) ? 0 : FMath::Max(1, FMath::CeilToInt(Dt * 240.0));
+		const double H = Steps > 0 ? Dt / Steps : 0.0;
+		constexpr double Zeta = 0.72;
+		for (int32 K = 0; K < (int32)ERot::Count; ++K)
+		{
+			const int32 Arm = ArmOf(K, true);
+			const double Rate = RotRate(K) * Stiff;
+			if (Arm >= 0 && bExempt[Arm])
+			{
+				Lagged.Rot[K] = Out.Rot[K];
+				LagW[K] = FVector::ZeroVector;
+				continue;
+			}
+			for (int32 I = 0; I < Steps; ++I)
+			{
+				FQuat E = Out.Rot[K] * Lagged.Rot[K].Inverse();
+				if (E.W < 0.0)
+				{
+					E = FQuat(-E.X, -E.Y, -E.Z, -E.W);
+				}
+				FVector Axis;
+				double Angle;
+				E.ToAxisAndAngle(Axis, Angle);
+				const FVector Err = Angle > 1e-6 ? Axis * Angle : FVector::ZeroVector;
+				LagW[K] += (Err * Rate * Rate - LagW[K] * 2.0 * Zeta * Rate) * H;
+				const double Turn = LagW[K].Size() * H;
+				if (Turn > 1e-9)
+				{
+					Lagged.Rot[K] = (FQuat(LagW[K].GetSafeNormal(), Turn) * Lagged.Rot[K]).GetNormalized();
+				}
+			}
+		}
+		for (int32 K = 0; K < (int32)EPos::Count; ++K)
+		{
+			const int32 Arm = ArmOf(K, false);
+			const double Rate = PosRate(K) * Stiff;
+			if (Rate <= 0.0 || (Arm >= 0 && bExempt[Arm]))
+			{
+				Lagged.Pos[K] = Out.Pos[K];
+				LagV[K] = FVector::ZeroVector;
+				continue;
+			}
+			for (int32 I = 0; I < Steps; ++I)
+			{
+				LagV[K] += ((Out.Pos[K] - Lagged.Pos[K]) * Rate * Rate - LagV[K] * 2.0 * Zeta * Rate) * H;
+				Lagged.Pos[K] += LagV[K] * H;
+			}
+		}
+		for (int32 K = 0; K < (int32)EVal::Count; ++K)
+		{
+			Lagged.Val[K] = Out.Val[K];
+		}
+	}
+
+	bool FAnimator::CanTurn() const
+	{
+		const FFighter& F = *Fighter;
+		return !F.IsAirborne() && In(F.State, {EState::Idle, EState::WalkF, EState::WalkB, EState::Crouch, EState::Run, EState::Land, EState::Block, EState::CrouchBlock});
+	}
+
+	// --- Stance and walk -------------------------------------------------------------------------------------
+
+	// A fighter's weight sinks and rises in the stance and rocks between the feet; walking, the hips
+	// and shoulders counter each other and the body rides up and down on each step. The legs take up
+	// the difference (the feet are planted) and the hands trail the chest a little.
+	void FAnimator::Life(double Delta, bool bFrozen, double X, FPose& Pose, FQuat Extra[(int32)EJoint::Count])
+	{
+		const FFighter& F = *Fighter;
+		const bool bWalk = F.State == EState::WalkF || F.State == EState::WalkB;
+		double IdleTarget = 0.0;
+		if (F.State == EState::Idle)
+		{
+			IdleTarget = 1.0;
+		}
+		else if (In(F.State, {EState::Intro, EState::Win}))
+		{
+			IdleTarget = 0.45;
+		}
+		else if (F.State == EState::Crouch)
+		{
+			IdleTarget = 0.35;
+		}
+		else if (F.State == EState::Block || F.State == EState::CrouchBlock)
+		{
+			IdleTarget = 0.2;
+		}
+		if (Delta > 0.0 && !bFrozen)
+		{
+			IdleW = MoveToward(IdleW, IdleTarget, Delta * 4.0);
+			WalkW = MoveToward(WalkW, bWalk ? 1.0 : 0.0, Delta * 7.0);
+			IdlePhase = FMath::Fmod(IdlePhase + Delta * Tau * Pace, Tau * 2.0);
+		}
+		const double H = Rig.H;
+		const double Side = Facing > 0 ? 1.0 : -1.0;
+		HandOff[0] = HandOff[1] = FVector::ZeroVector;
+		if (IdleW > 0.0)
+		{
+			const double Down = 0.5 - 0.5 * FMath::Cos(IdlePhase);
+			const double Late = 0.5 - 0.5 * FMath::Cos(IdlePhase - 0.9);
+			Pose.P(EPos::Hips).Y -= Down * 0.013 * H * IdleW;
+			Pose.P(EPos::Hips).Z += FMath::Sin(IdlePhase * 0.5) * 0.007 * H * IdleW;
+			Extra[(int32)EJoint::Chest] = Extra[(int32)EJoint::Chest] * EulerRad(FVector(-Late * 0.045 * IdleW, FMath::Sin(IdlePhase * 0.5) * 0.03 * IdleW * Side, 0.0));
+			Extra[(int32)EJoint::Head] = Extra[(int32)EJoint::Head] * EulerRad(FVector(Late * 0.03 * IdleW, 0.0, 0.0));
+			for (int32 S = 0; S < 2; ++S)
+			{
+				const double Ph = IdlePhase - 1.1 - 0.5 * S;
+				HandOff[S] += FVector(0.0, -(0.5 - 0.5 * FMath::Cos(Ph)) * 0.012 * H, FMath::Sin(Ph) * 0.005 * H) * IdleW;
+			}
+		}
+		if (WalkW > 0.0)
+		{
+			const double Stride = 0.6 * H / 1.8;
+			const double Ph = FMath::Abs(X) / Stride * UE_DOUBLE_PI;
+			Pose.P(EPos::Hips).Y += (FMath::Abs(FMath::Sin(Ph)) - 0.5) * 0.024 * H * WalkW;
+			const double Twist = FMath::Sin(Ph) * WalkW;
+			Extra[(int32)EJoint::Hips] = Extra[(int32)EJoint::Hips] * EulerRad(FVector(0.0, -Twist * 0.07 * Side, Twist * 0.035));
+			Extra[(int32)EJoint::Chest] = Extra[(int32)EJoint::Chest] * EulerRad(FVector(0.0, Twist * 0.11 * Side, -Twist * 0.03));
+			Extra[(int32)EJoint::Head] = Extra[(int32)EJoint::Head] * EulerRad(FVector(0.0, -Twist * 0.05 * Side, 0.0));
+			for (int32 S = 0; S < 2; ++S)
+			{
+				HandOff[S] += FVector(0.0, -FMath::Abs(FMath::Sin(Ph - 0.7)) * 0.012 * H, 0.0) * WalkW;
+			}
+		}
+	}
+
+	// The hands and elbows are placed in the fighter's root space, so a body that sinks, twists or
+	// recoils would leave them hanging where the pose put them: carry them with the chest instead,
+	// then let them trail it (HandOff). An attacking arm stays where the attack puts it.
+	void FAnimator::CarryArms(const FXf& From, const FXf& To, FPose& Pose) const
+	{
+		const FXf D = To * From.Inverse();
+		for (int32 S = 0; S < 2; ++S)
+		{
+			// Display sides are mirrored when facing left.
+			if (ArmExempt(Facing < 0 ? 1 - S : S))
+			{
+				continue;
+			}
+			FVector& Hand = Pose.P(S == 0 ? EPos::HandL : EPos::HandR);
+			FVector& Elbow = Pose.P(S == 0 ? EPos::ElbowL : EPos::ElbowR);
+			FVector& Fingers = Pose.P(S == 0 ? EPos::FingersL : EPos::FingersR);
+			FVector& Palm = Pose.P(S == 0 ? EPos::PalmL : EPos::PalmR);
+			Hand = D * Hand + HandOff[S];
+			Elbow = D * Elbow + HandOff[S];
+			Fingers = D.Q.RotateVector(Fingers);
+			Palm = D.Q.RotateVector(Palm);
 		}
 	}
 
@@ -360,7 +645,8 @@ namespace Slop::Anim
 	{
 		const FPose& P = Lib.Get(PoseName);
 		Key = TEXT("preview:") + PoseName.ToString();
-		Snap = Src = Out = P;
+		Snap = Src = Out = Lagged = Display = P;
+		bLagValid = false;
 		BlendLen = 0.0;
 		ResetFeet();
 		FVector Ankles[2];
@@ -484,6 +770,15 @@ namespace Slop::Anim
 		}
 	}
 
+	void FAnimator::Recoil(double Strength)
+	{
+		// The blow's reaction back through the striker: the chest and hips give a little.
+		const double S = FMath::Clamp(Strength, 0.0, 1.3);
+		Spring[0][1] += FVector(-S * 2.4, 0, 0);
+		Spring[2][1] += FVector(-S * 0.8, 0, 0);
+		Spring[1][1] += FVector(-S * 1.2, 0, 0);
+	}
+
 	// --- Feet ------------------------------------------------------------------------------------------------
 
 	// Planted feet stay put in the world until the pose's target drifts too far, then take a short
@@ -497,7 +792,7 @@ namespace Slop::Anim
 		const double RootYaw = FMath::Atan2(-GZ.X, -GZ.Z);
 		const double Speed = FMath::Abs(VisVel.X);
 		const bool bLoose = In(F.State, {EState::Air, EState::Juggle, EState::Fall, EState::Down, EState::KO, EState::Thrown, EState::Run, EState::WakeUp})
-			|| F.IsAirborne() || FMath::Abs(Flip) > 1.0 || FMath::Abs(AirPitch) > 1.0;
+			|| F.IsAirborne() || FMath::Abs(Flip) > 1.0 || FMath::Abs(AirPitch) > 1.0 || TurnT < 1.0;
 		const double Thresh = 0.085 * Rig.H;
 		for (int32 I = 0; I < 2; ++I)
 		{

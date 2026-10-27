@@ -400,6 +400,14 @@ namespace Slop::Anim
 		Fist[1] = P.V(EVal::FistR);
 	}
 
+	FXf FRig::TorsoXf(const FPose& P, const FQuat* Extra) const
+	{
+		const auto E = [Extra](EJoint J) { return Extra ? Extra[(int32)J] : FQuat::Identity; };
+		return FXf(P.R(ERot::Hips) * E(EJoint::Hips), Rest[(int32)EJoint::Hips] + P.P(EPos::Hips))
+			* FXf(P.R(ERot::Spine) * E(EJoint::Spine), Rest[(int32)EJoint::Spine])
+			* FXf(P.R(ERot::Chest) * E(EJoint::Chest), Rest[(int32)EJoint::Chest]);
+	}
+
 	void FRig::Arm(int32 Side, const FPose& P)
 	{
 		const EJoint Clav = Side == 0 ? EJoint::ClavL : EJoint::ClavR;

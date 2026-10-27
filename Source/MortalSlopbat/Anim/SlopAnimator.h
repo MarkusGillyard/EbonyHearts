@@ -6,8 +6,11 @@
 namespace Slop::Anim
 {
 	// Animates one simulated fighter. Every rendered frame it picks the pose the simulation state
-	// calls for, crossfades from what was on screen, mirrors it when the fighter faces left (so the
-	// same side of the body always faces the camera, as in a sprite game), plants the feet, adds
+	// calls for, crossfades from what was on screen, lets the body follow through (each part chases
+	// the pose on its own spring, the core stiffest, so motion ripples out from the hips), mirrors it
+	// when the fighter faces left (so the same side of the body always faces the camera, as in a
+	// sprite game; crossing over while standing turns round over a few frames), gives the stance and
+	// the walk their weight and rhythm, carries the hands with the chest, plants the feet, adds
 	// hit-reaction springs and flips and spins airborne bodies. It only reads the simulation.
 	//
 	// World space here is the original's: x along the stage, y up, +z toward the camera, metres.
@@ -21,6 +24,8 @@ namespace Slop::Anim
 		void Update(double Frac, double Delta);
 		// Kicks the hit-reaction springs. `Dir` is +1 when the blow pushes toward +x.
 		void Impact(double Dir, double Strength, ELevel Level, bool bBlocked);
+		// The jolt back through the attacker's body when a blow lands or is blocked.
+		void Recoil(double Strength);
 		void Flash(double Amount) { FlashAmount = FMath::Max(FlashAmount, Amount); }
 		// Shows a named pose directly, bypassing the simulation (previews, menus, portraits).
 		void Preview(FName PoseName);
@@ -43,8 +48,10 @@ namespace Slop::Anim
 		double SpinExtra = 0.0;
 		FName PoseOverride;
 
-		// The shown pose after mirroring (rig space), for props and debug views.
-		const FPose& Shown() const { return Facing < 0 ? Mirror : Out; }
+		// The pose last given to the rig (rig space, after mirroring and the procedural layers).
+		const FPose& Shown() const { return Display; }
+		// The authored pose before follow-through (rig space, not mirrored), for tests.
+		const FPose& Authored() const { return Out; }
 		FVector WorldPoint(const FVector& RigPoint) const { return Root * RigPoint; }
 		FVector StrikePoint(FName Which) const;
 
@@ -58,6 +65,11 @@ namespace Slop::Anim
 		FXf AirTilt(double Delta, bool bFrozen);
 		void PlantFeet(double Delta, const FPose& Pose, FVector OutAnkles[2], double OutYaw[2]);
 		double MoveSink(double Frac) const;
+		void FollowThrough(double Delta, bool bFrozen);
+		bool ArmExempt(int32 AuthoredSide) const;
+		bool CanTurn() const;
+		void Life(double Delta, bool bFrozen, double X, FPose& Pose, FQuat Extra[(int32)EJoint::Count]);
+		void CarryArms(const FXf& From, const FXf& To, FPose& Pose) const;
 		void AnimKeys(const TArray<FAnimKey>& Raw, TArray<FPoseKey>& OutKeys) { Lib.Keys(Raw, OutKeys); }
 
 		struct FFoot
@@ -74,7 +86,23 @@ namespace Slop::Anim
 		FVector2D PrevPos = FVector2D::ZeroVector;
 		FVector2D CurPos = FVector2D::ZeroVector;
 		int32 Facing = 1;
-		FPose Out, Mirror, Snap, Src;
+		FPose Out, Snap, Src;
+		// Follow-through: the authored pose chased by springs (rotations with angular velocities,
+		// positions with velocities), then mirrored and layered into what the rig is given.
+		FPose Lagged, Display;
+		FVector LagW[(int32)ERot::Count];
+		FVector LagV[(int32)EPos::Count];
+		bool bLagValid = false;
+		// Turning round in place after a cross-over: 0..1 through the turn, from the old facing.
+		double TurnT = 1.0;
+		int32 TurnFrom = 1;
+		double TurnSign = 1.0;
+		// The stance and walk layers, eased in and out with the state, and their rhythm.
+		double IdleW = 0.0;
+		double WalkW = 0.0;
+		double IdlePhase = 0.0;
+		double Pace = 1.0;
+		FVector HandOff[2];
 		FString Key;
 		double BlendT = 0;
 		double BlendLen = 0;

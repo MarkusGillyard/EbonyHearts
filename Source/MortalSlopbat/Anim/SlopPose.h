@@ -116,6 +116,8 @@ namespace Slop::Anim
 		// `Extra` adds per-joint rotations on top of the pose (keyed by joint; identity when absent).
 		void Apply(const FPose& P, const FVector Feet[2], const double FootYaw[2], const FQuat Extra[(int32)EJoint::Count]);
 		const FXf& J(EJoint Joint) const { return Xf[(int32)Joint]; }
+		// Where the chest would be for a pose (with `Extra` as in Apply, or none), without posing.
+		FXf TorsoXf(const FPose& P, const FQuat* Extra) const;
 		FVector HandTip(int32 Side) const;
 		FVector FootTip(int32 Side) const;
 
