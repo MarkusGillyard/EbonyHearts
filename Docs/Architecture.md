@@ -61,7 +61,7 @@ the editor.
 | Import | All of the above, audio, skies | `editor_py Tools/import_assets.py` with `SLOP_IMPORT_ONLY=` steps | `Content/Slop/` |
 | Material slots | The imported meshes | the `slots` step, in a second editor session | `Content/Slop/` |
 | Portraits | The game itself | `run_game -SlopPortraits`, then `Tools/portraits.py`, then the `portraits` step | `SourceArt/Portraits/`, `Content/Slop/Portraits/` |
-| Motion capture | ACCAD Male 2 BVH takes (`SourceArt/ThirdParty/ACCAD`, fetched per the ledger) | `python3 -I Tools/mocap/bvh_to_poses.py` (the takes and moves are listed at its top; `--inspect <take>` prints a take's strike phases) | `Content/Data/poses_mocap.json`, `basics_style.json`, a fighter's own move keys |
+| Motion capture | ACCAD Male 2 BVH takes (`SourceArt/ThirdParty/ACCAD`, fetched per the ledger) | `python3 -I Tools/mocap/bvh_to_poses.py` (the takes, moves and states are listed at its top; `--inspect <take>` prints a take's strike phases) | `Content/Data/poses_mocap.json`, `basics_style.json`, `fighters_mocap.json` (intros and wins), a fighter's own move keys |
 
 Third-party downloads are kept out of Git (`SourceArt/ThirdParty/*/`); `SourceArt/ThirdParty/ledger.json`
 records each one's source URL, licence and file hashes so they can be fetched again.

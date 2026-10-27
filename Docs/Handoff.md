@@ -38,10 +38,12 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
 ## Open
 
 - **More motion capture.** The shared strikes and Ashka's teep come from ACCAD's Male 2 takes
-  (CC BY 3.0). The same set has a ready stance and bounce, advance and retreat footwork, blocks,
-  dodges, victories and taunts that are not used yet; it has no hit reactions or falls. Unused:
-  the uppercut take (no clean contact). A realism pass on the art (skin, cloth, props) is still to
-  do; no art assets beyond the original CC0 ones have been taken.
+  (CC BY 3.0), and so do the human fighters' round intros and wins. The same set has a bounce,
+  advance and retreat footwork, blocks and dodges not used yet; it has no hit reactions or falls.
+  Unused: the uppercut take (no clean contact).
+- **Realism of the art.** Skin has subsurface scattering and sweat, cloth has folds and wear, hair
+  is matte (`M_Character`, `M_CharacterSkin`); the meshes and textures are the original CC0 builds.
+  Real hair (grooms), cloth simulation and new props are not done.
 - **The study's other rule changes.** Ashka's teep is in (forward + low kick; a combat test holds
   it), Gorm's blocked thrusts push further, and Bram throws with a chancery and a cross-buttock.
   Not done: a shin check for Ashka, optional leg damage. Each touches balance, so each needs a playtest.
