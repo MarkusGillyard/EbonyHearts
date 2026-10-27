@@ -225,6 +225,10 @@ void SSlopHud::PaintText(FSlateWindowElementList& Out, const FGeometry& G, int32
 	{
 		return;
 	}
+	// Text is rasterised at its final scale, so an animated scale (the announcements' shrink, the
+	// combo count's pop) would make new glyphs every frame and overflow the font cache: keep to
+	// sixteenths, a handful of sizes the eye still reads as smooth.
+	Scale = FMath::RoundToFloat(Scale * 16.f) / 16.f;
 	const TSharedRef<FSlateFontMeasure> Measure = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
 	const FVector2D Size = Measure->Measure(T, F) * Scale;
 	FVector2D P = Pos;
