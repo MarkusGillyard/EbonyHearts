@@ -58,6 +58,11 @@ whether it is felt on a real pad is unverified.
 
 ### On Markus's monitor (2.2.0)
 
+2.4.0 (commit `d13999b`, with subsurface skin, cloth detail and the captured intros and wins):
+6,358 frames over 77 s and two matches at a 12.12 ms median, every frame within 1 ms of it, 1% low
+81.1, GPU 10.87 ms median at a 60 % render scale, peak resident memory 1,466 MB, no frame over
+25 ms (`Saved/Perf/monitor-2.4.0`). The skin shading's cost is absorbed by dynamic resolution.
+
 2.3.0 (commit `f156369`, with the motion-captured strikes) measured the same way: 7,008 frames over
 85 s at a 12.12 ms median, every frame within 1 ms of it, 1% low 81.3, GPU 10.91 ms median at a
 61 % render scale, peak resident memory 1,519 MB, no frame over 25 ms (`Saved/Perf/monitor-2.3.0`).
