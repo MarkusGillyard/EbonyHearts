@@ -41,8 +41,8 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   whose licences allow use in the game were under way; nothing has been downloaded. The study
   recommends mocap for idles, walks, falls, get-ups and pose reference, not for playing strikes.
 - **The study's other rule changes.** Ashka's teep is in (forward + low kick; a combat test holds
-  it), and Gorm's blocked thrusts push further. Not done: a shin check for Ashka, period throws
-  for Bram (chancery, cross-buttock), optional leg damage. Each touches balance, so each needs a playtest.
+  it), Gorm's blocked thrusts push further, and Bram throws with a chancery and a cross-buttock.
+  Not done: a shin check for Ashka, optional leg damage. Each touches balance, so each needs a playtest.
 - **Costume secondary motion** (coat tails, veil, ponytail, chain) and damage that builds up on the
   body: need rig bones and material work.
 - **Physical controllers.** Markus played menus and fights on his DualShock 4 over Bluetooth with

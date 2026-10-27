@@ -49,6 +49,228 @@
 					"cost": 12
 				}
 			]
+		},
+		"throw_f": {
+			"name": "Chancery",
+			"throw": {
+				"frames": 40,
+				"damage_frame": 26,
+				"damage": 110,
+				"release": [
+					3.2,
+					3.4
+				],
+				"recover": 10,
+				"path": [
+					[
+						0,
+						0.62,
+						0.0
+					],
+					[
+						8,
+						0.6,
+						-0.04
+					],
+					[
+						24,
+						0.6,
+						-0.04
+					],
+					[
+						28,
+						0.72,
+						0.08
+					],
+					[
+						32,
+						1.0,
+						0.25
+					]
+				]
+			},
+			"anim": {
+				"keys": [
+					[
+						3,
+						"grab_reach",
+						"snap"
+					],
+					[
+						12,
+						"grab_reach",
+						"linear"
+					],
+					[
+						27,
+						"stance",
+						"inout"
+					]
+				],
+				"hold": [
+					[
+						6,
+						"bram_chancery",
+						"out"
+					],
+					[
+						10,
+						"bram_chancery_punch",
+						"snap"
+					],
+					[
+						14,
+						"bram_chancery",
+						"inout"
+					],
+					[
+						19,
+						"bram_chancery_punch",
+						"snap"
+					],
+					[
+						23,
+						"bram_chancery",
+						"inout"
+					],
+					[
+						27,
+						"throw_toss",
+						"snap"
+					],
+					[
+						40,
+						"stance",
+						"inout"
+					]
+				],
+				"victim": [
+					[
+						6,
+						"chancery_held",
+						"out"
+					],
+					[
+						24,
+						"chancery_held",
+						"linear"
+					],
+					[
+						30,
+						"air_fall",
+						"inout"
+					]
+				]
+			}
+		},
+		"throw_b": {
+			"name": "Cross-buttock",
+			"throw": {
+				"frames": 40,
+				"damage_frame": 30,
+				"damage": 115,
+				"release": [
+					2.4,
+					3.0
+				],
+				"swap": true,
+				"recover": 12,
+				"path": [
+					[
+						0,
+						0.62,
+						0.0
+					],
+					[
+						10,
+						0.35,
+						0.15
+					],
+					[
+						18,
+						0.05,
+						0.8
+					],
+					[
+						26,
+						-0.6,
+						0.55
+					],
+					[
+						30,
+						-0.9,
+						0.12
+					]
+				]
+			},
+			"anim": {
+				"keys": [
+					[
+						3,
+						"grab_reach",
+						"snap"
+					],
+					[
+						12,
+						"grab_reach",
+						"linear"
+					],
+					[
+						27,
+						"stance",
+						"inout"
+					]
+				],
+				"hold": [
+					[
+						6,
+						"grab_hold",
+						"out"
+					],
+					[
+						12,
+						"bram_hip_load",
+						"inout"
+					],
+					[
+						20,
+						"bram_hip_throw",
+						"inout"
+					],
+					[
+						30,
+						"throw_slam",
+						"snap"
+					],
+					[
+						40,
+						"stance",
+						"inout"
+					]
+				],
+				"victim": [
+					[
+						6,
+						"thrown_hold",
+						"out"
+					],
+					[
+						12,
+						"hip_levered",
+						"inout"
+					],
+					[
+						20,
+						"thrown_lift",
+						"inout"
+					],
+					[
+						30,
+						"air_fall",
+						"inout"
+					]
+				]
+			}
 		}
 	},
 	"moves": {
