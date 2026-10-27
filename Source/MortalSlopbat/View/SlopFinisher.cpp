@@ -355,7 +355,8 @@ namespace Slop
 		}
 		else if (Id == TEXT("stage_vat"))
 		{
-			const FVector Vat(0.0, 3.3, -6.2);
+			// The Rendering Yards' centre vat: its lip 3.3 m up, 6.6 m behind the fighting line.
+			const FVector Vat(0.0, 3.3, -6.6);
 			if (T < 14)
 			{
 				CloseUp(Mid, Face, 4.4, 0, 14);

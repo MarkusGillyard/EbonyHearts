@@ -30,6 +30,12 @@ run_tests() {
 	grep -E "^.*LogAutomationController: Error" "$log" | sed -E 's/.*Error: //' | head -40
 }
 # Runs the game from the editor build in a window. Extra arguments pass through (e.g. -SlopMatch=...).
+# With no monitor attached (display switched off) a window's Vulkan presentation blocks forever;
+# render offscreen instead (screenshots and timings still come from the GPU).
+offscreen_flag() {
+	if [ "$(xrandr --listmonitors 2>/dev/null | head -1 | awk '{print $2}')" = "0" ]; then echo -RenderOffscreen -ForceRes; fi
+}
+
 run_game() {
-	capped "$UE/Engine/Binaries/Linux/UnrealEditor" "$P" -game -windowed -resx="${RESX:-1920}" -resy="${RESY:-1080}" -log -NoSplash -nosound=false "$@"
+	capped "$UE/Engine/Binaries/Linux/UnrealEditor" "$P" -game -windowed -resx="${RESX:-1920}" -resy="${RESY:-1080}" -log -NoSplash -nosound=false $(offscreen_flag) "$@"
 }

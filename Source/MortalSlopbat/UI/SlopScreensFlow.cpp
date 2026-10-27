@@ -1055,16 +1055,21 @@ using namespace SlopScreensFlowImpl;
 
 namespace SlopScreens
 {
-	TSharedPtr<FSlopScreen> Select(EMode Mode) { return MakeShared<FSelect>(Mode == EMode::Cpu ? EMode::Training : Mode); }
-	TSharedPtr<FSlopScreen> Stage() { return MakeShared<FStage>(); }
-	TSharedPtr<FSlopScreen> Tower(FName Fighter) { return MakeShared<FTower>(Fighter); }
-	TSharedPtr<FSlopScreen> FaceOff() { return MakeShared<FFaceOff>(); }
-	TSharedPtr<FSlopScreen> Devices() { return MakeShared<FDevices>(); }
-	TSharedPtr<FSlopScreen> MoveList(FName Fighter, bool bOverlay) { return MakeShared<FMoveList>(Fighter, bOverlay); }
-	TSharedPtr<FSlopScreen> Extras() { return MakeShared<FExtras>(); }
-	TSharedPtr<FSlopScreen> Ending(FName Fighter, bool bFromArcade) { return MakeShared<FEnding>(Fighter, bFromArcade); }
-	TSharedPtr<FSlopScreen> Credits() { return MakeShared<FCredits>(); }
-	TSharedPtr<FSlopScreen> TrialsPick() { return MakeShared<FSelect>(EMode::Trials); }
+	static TSharedPtr<FSlopScreen> Named(TSharedPtr<FSlopScreen> S, const TCHAR* Name)
+	{
+		S->ScreenName = Name;
+		return S;
+	}
+	TSharedPtr<FSlopScreen> Select(EMode Mode) { return Named(MakeShared<FSelect>(Mode == EMode::Cpu ? EMode::Training : Mode), TEXT("Select")); }
+	TSharedPtr<FSlopScreen> Stage() { return Named(MakeShared<FStage>(), TEXT("Stage")); }
+	TSharedPtr<FSlopScreen> Tower(FName Fighter) { return Named(MakeShared<FTower>(Fighter), TEXT("Tower")); }
+	TSharedPtr<FSlopScreen> FaceOff() { return Named(MakeShared<FFaceOff>(), TEXT("FaceOff")); }
+	TSharedPtr<FSlopScreen> Devices() { return Named(MakeShared<FDevices>(), TEXT("Devices")); }
+	TSharedPtr<FSlopScreen> MoveList(FName Fighter, bool bOverlay) { return Named(MakeShared<FMoveList>(Fighter, bOverlay), TEXT("MoveList")); }
+	TSharedPtr<FSlopScreen> Extras() { return Named(MakeShared<FExtras>(), TEXT("Extras")); }
+	TSharedPtr<FSlopScreen> Ending(FName Fighter, bool bFromArcade) { return Named(MakeShared<FEnding>(Fighter, bFromArcade), TEXT("Ending")); }
+	TSharedPtr<FSlopScreen> Credits() { return Named(MakeShared<FCredits>(), TEXT("Credits")); }
+	TSharedPtr<FSlopScreen> TrialsPick() { return Named(MakeShared<FSelect>(EMode::Trials), TEXT("Select")); }
 }
 
 #undef LOCTEXT_NAMESPACE

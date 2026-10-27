@@ -3,7 +3,9 @@
     source Tools/ue.sh && SLOP_IMPORT_ONLY=audio,materials editor_py "$PROJ_DIR/Tools/import_assets.py"
 
 SLOP_IMPORT_ONLY (comma list of steps: audio, materials, bodies, fighters, surfaces, props,
-stages) limits the run; without it every step runs.
+stages, slots) limits the run; without it every step runs. `slots` gives the imported fighters and
+stages their material instances; run it in a second editor session after importing them (edits
+made in the session that imported a mesh do not stick).
 
 Sources: SourceArt/Audio (first-party), SourceArt/ThirdParty (CC0, see ledger.json),
 SourceArt/Fighters/<id>/<id>.fbx (built by Tools/blender/build_fighter.py). Everything lands
@@ -43,6 +45,8 @@ def import_files(files, dest, replace=True):
         t.set_editor_property("save", True)
         tasks.append(t)
     TOOLS.import_asset_tasks(tasks)
+    # Interchange finishes asynchronously; anything changed before it is done gets overwritten.
+    unreal.InterchangeManager.get_interchange_manager_scripted().wait_until_all_tasks_done(False)
     out = []
     for t in tasks:
         out.extend(t.get_editor_property("imported_object_paths"))
@@ -82,6 +86,17 @@ def fresh_material(path):
     return TOOLS.create_asset(n, d, unreal.Material, unreal.MaterialFactoryNew())
 
 
+def link(a, a_out, b, b_in):
+    """Connects two expressions; the editor returns False (it does not raise) for a wrong pin name."""
+    if not MEL.connect_material_expressions(a, a_out, b, b_in):
+        raise RuntimeError(f"cannot link {a.get_class().get_name()}.{a_out!r} -> {b.get_class().get_name()}.{b_in!r}")
+
+
+def output(a, a_out, prop):
+    if not MEL.connect_material_property(a, a_out, prop):
+        raise RuntimeError(f"cannot connect {a.get_class().get_name()}.{a_out!r} to {prop}")
+
+
 def expr(m, cls, x, y):
     return MEL.create_material_expression(m, cls, x, y)
 
@@ -111,23 +126,23 @@ def texparam(m, name, default_path, x, y, sampler=None):
 
 def mul(m, a, b, x, y, ao="", bo=""):
     e = expr(m, unreal.MaterialExpressionMultiply, x, y)
-    MEL.connect_material_expressions(a, ao, e, "A")
-    MEL.connect_material_expressions(b, bo, e, "B")
+    link(a, ao, e, "A")
+    link(b, bo, e, "B")
     return e
 
 
 def add(m, a, b, x, y, ao="", bo=""):
     e = expr(m, unreal.MaterialExpressionAdd, x, y)
-    MEL.connect_material_expressions(a, ao, e, "A")
-    MEL.connect_material_expressions(b, bo, e, "B")
+    link(a, ao, e, "A")
+    link(b, bo, e, "B")
     return e
 
 
 def lerp(m, a, b, alpha, x, y, ao="", bo="", alo=""):
     e = expr(m, unreal.MaterialExpressionLinearInterpolate, x, y)
-    MEL.connect_material_expressions(a, ao, e, "A")
-    MEL.connect_material_expressions(b, bo, e, "B")
-    MEL.connect_material_expressions(alpha, alo, e, "Alpha")
+    link(a, ao, e, "A")
+    link(b, bo, e, "B")
+    link(alpha, alo, e, "Alpha")
     return e
 
 
@@ -151,6 +166,7 @@ def white_linear():
     t.set_editor_property("srgb", False)
     EAL.save_loaded_asset(t)
 FLAT_NORMAL = "/Engine/EngineMaterials/DefaultNormal"
+BLACK = "/Engine/EngineResources/Black"
 GREY = "/Engine/EngineResources/DefaultTexture"
 
 
@@ -166,9 +182,9 @@ def character_material():
     towards = vector(m, "TintColor", (0.05, 0.08, 0.05, 1), -1100, -100)
     amount = scalar(m, "TintAmount", 0.0, -1100, 0)
     col2 = lerp(m, col, towards, amount, -850, -200)
-    MEL.connect_material_property(col2, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    output(col2, "", unreal.MaterialProperty.MP_BASE_COLOR)
     normal = texparam(m, "NormalTex", FLAT_NORMAL, -1400, 150, unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
-    MEL.connect_material_property(normal, "RGB", unreal.MaterialProperty.MP_NORMAL)
+    output(normal, "RGB", unreal.MaterialProperty.MP_NORMAL)
     orm = texparam(m, "ORMTex", WHITE_LINEAR, -1400, 450, unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
     rough_k = scalar(m, "Roughness", 0.6, -1100, 400)
     metal_k = scalar(m, "Metallic", 0.0, -1100, 520)
@@ -177,11 +193,11 @@ def character_material():
     rough2 = lerp(m, rough, gloss, amount, -650, 400)
     one = expr(m, unreal.MaterialExpressionConstant, -850, 300)
     one.set_editor_property("r", 0.08)
-    MEL.connect_material_expressions(one, "", rough2, "B")
-    MEL.connect_material_property(rough2, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    link(one, "", rough2, "B")
+    output(rough2, "", unreal.MaterialProperty.MP_ROUGHNESS)
     metal = mul(m, orm, metal_k, -850, 520, "B", "")
-    MEL.connect_material_property(metal, "", unreal.MaterialProperty.MP_METALLIC)
-    MEL.connect_material_property(orm, "R", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
+    output(metal, "", unreal.MaterialProperty.MP_METALLIC)
+    output(orm, "R", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
     # Emissive: accent rim (fresnel) + flash + dissolve edge + self glow (eyes, embers).
     fres = expr(m, unreal.MaterialExpressionFresnel, -1100, 700)
     fres.set_editor_property("exponent", 3.0)
@@ -193,8 +209,14 @@ def character_material():
     fl = mul(m, flash_col, flash, -850, 1100)
     glow = scalar(m, "Glow", 0.0, -1100, 1280)
     glow_e = mul(m, col, glow, -850, 1260)
-    em = add(m, add(m, rim, fl, -450, 900), glow_e, -250, 1000)
-    # Dissolve: world-space noise against a threshold; the band just above it glows.
+    # Painted self-light (eyes, embers, runes): an emissive map x strength.
+    em_tex = texparam(m, "EmissiveTex", BLACK, -1400, 1380)
+    em_k = scalar(m, "EmissiveStrength", 1.0, -1100, 1400)
+    painted = mul(m, em_tex, em_k, -850, 1380, "RGB", "")
+    em = add(m, add(m, add(m, rim, fl, -450, 900), glow_e, -250, 1000), painted, -150, 1100)
+    # Dissolve: world-space noise against a threshold; the band just above it glows. The mask is
+    # noise + 0.5 - 1.5 x dissolve against a clip of 0.5, so nothing is cut at rest and everything
+    # is gone at 1; the base colour's alpha (lashes, brows, hair cards) cuts at one half.
     noise = expr(m, unreal.MaterialExpressionNoise, -1400, 1500)
     noise.set_editor_property("scale", 0.06)
     noise.set_editor_property("quality", 1)
@@ -202,21 +224,32 @@ def character_material():
     noise.set_editor_property("output_max", 1.0)
     dissolve = scalar(m, "Dissolve", 0.0, -1400, 1700)
     diff = expr(m, unreal.MaterialExpressionSubtract, -1100, 1550)
-    MEL.connect_material_expressions(noise, "", diff, "A")
-    MEL.connect_material_expressions(dissolve, "", diff, "B")
-    MEL.connect_material_property(diff, "", unreal.MaterialProperty.MP_OPACITY_MASK)
+    link(noise, "", diff, "A")
+    link(dissolve, "", diff, "B")
+    half = expr(m, unreal.MaterialExpressionConstant, -1250, 1620)
+    half.set_editor_property("r", 0.5)
+    k15 = expr(m, unreal.MaterialExpressionConstant, -1250, 1680)
+    k15.set_editor_property("r", 1.5)
+    mask = expr(m, unreal.MaterialExpressionSubtract, -900, 1500)
+    link(add(m, noise, half, -1050, 1480), "", mask, "A")
+    link(mul(m, dissolve, k15, -1050, 1620), "", mask, "B")
+    cut = expr(m, unreal.MaterialExpressionMin, -700, 1500)
+    link(mask, "", cut, "A")
+    link(base, "A", cut, "B")
+    output(cut, "", unreal.MaterialProperty.MP_OPACITY_MASK)
+    m.set_editor_property("opacity_mask_clip_value", 0.5)
     edge = expr(m, unreal.MaterialExpressionOneMinus, -850, 1650)
     sat = expr(m, unreal.MaterialExpressionSaturate, -1000, 1650)
     band = mul(m, diff, scalar(m, "EdgeWidth", 14.0, -1100, 1800), -1050, 1700)
-    MEL.connect_material_expressions(band, "", sat, "")
-    MEL.connect_material_expressions(sat, "", edge, "")
+    link(band, "", sat, "")
+    link(sat, "", edge, "")
     on = expr(m, unreal.MaterialExpressionCeil, -850, 1780)
-    MEL.connect_material_expressions(dissolve, "", on, "")
+    link(dissolve, "", on, "")
     edge_col = vector(m, "DissolveColor", (1, 0.45, 0.1, 1), -850, 1880)
     e1 = mul(m, mul(m, edge, on, -650, 1700), edge_col, -450, 1750)
     e2 = mul(m, e1, scalar(m, "EdgeGlow", 8.0, -650, 1880), -300, 1800)
     em2 = add(m, em, e2, -100, 1200)
-    MEL.connect_material_property(em2, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    output(em2, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     MEL.recompile_material(m)
     EAL.save_loaded_asset(m)
     log("M_Character built")
@@ -230,27 +263,27 @@ def surface_material():
     uv = mul(m, tc, tiling, -1400, 50)
     def sample(name, default, y, sampler=None):
         e = texparam(m, name, default, -1150, y, sampler)
-        MEL.connect_material_expressions(uv, "", e, "UVs")
+        link(uv, "", e, "UVs")
         return e
     base = sample("BaseColorTex", WHITE, -300)
     tint = vector(m, "Tint", (1, 1, 1, 1), -1150, -60)
     col = mul(m, base, tint, -850, -200, "RGB", "")
-    MEL.connect_material_property(col, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    output(col, "", unreal.MaterialProperty.MP_BASE_COLOR)
     nrm = sample("NormalTex", FLAT_NORMAL, 100, unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
     flat = expr(m, unreal.MaterialExpressionConstant3Vector, -850, 250)
     flat.set_editor_property("constant", unreal.LinearColor(0, 0, 1, 1))
     nk = scalar(m, "NormalStrength", 1.0, -850, 330)
     nrm2 = lerp(m, flat, nrm, nk, -600, 150, "", "RGB", "")
-    MEL.connect_material_property(nrm2, "", unreal.MaterialProperty.MP_NORMAL)
+    output(nrm2, "", unreal.MaterialProperty.MP_NORMAL)
     orm = sample("ORMTex", WHITE_LINEAR, 450, unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
     rk = scalar(m, "Roughness", 1.0, -850, 450)
-    MEL.connect_material_property(mul(m, orm, rk, -600, 450, "G", ""), "", unreal.MaterialProperty.MP_ROUGHNESS)
+    output(mul(m, orm, rk, -600, 450, "G", ""), "", unreal.MaterialProperty.MP_ROUGHNESS)
     mk = scalar(m, "Metallic", 0.0, -850, 570)
-    MEL.connect_material_property(mul(m, orm, mk, -600, 570, "B", ""), "", unreal.MaterialProperty.MP_METALLIC)
-    MEL.connect_material_property(orm, "R", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
+    output(mul(m, orm, mk, -600, 570, "B", ""), "", unreal.MaterialProperty.MP_METALLIC)
+    output(orm, "R", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
     em_col = vector(m, "EmissiveColor", (0, 0, 0, 1), -850, 700)
     em_k = scalar(m, "Emissive", 0.0, -850, 820)
-    MEL.connect_material_property(mul(m, mul(m, em_col, em_k, -600, 750), base, -400, 750, "", "RGB"), "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    output(mul(m, mul(m, em_col, em_k, -600, 750), base, -400, 750, "", "RGB"), "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     MEL.recompile_material(m)
     EAL.save_loaded_asset(m)
     log("M_Surface built")
@@ -266,21 +299,22 @@ def glow_material(path, blend, two_sided=True):
     col = vector(m, "Color", (1, 1, 1, 1), -800, 0)
     k = scalar(m, "Intensity", 1.0, -800, 200)
     vc = expr(m, unreal.MaterialExpressionVertexColor, -800, 350)
-    e = mul(m, mul(m, col, k, -500, 100), vc, -300, 200, "", "RGB")
-    MEL.connect_material_property(e, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    e = mul(m, mul(m, col, k, -500, 100), vc, -300, 200, "", "")
+    output(e, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     if blend != unreal.BlendMode.BLEND_OPAQUE:
         op = scalar(m, "Opacity", 1.0, -800, 500)
-        MEL.connect_material_property(mul(m, op, vc, -500, 500, "", "A"), "", unreal.MaterialProperty.MP_OPACITY)
+        output(mul(m, op, vc, -500, 500, "", "A"), "", unreal.MaterialProperty.MP_OPACITY)
     MEL.recompile_material(m)
     EAL.save_loaded_asset(m)
 
 
-def billboard_material(path, ring):
-    """Additive camera-facing quads: a soft disc (flashes, puffs) or a thin ring (impact rings),
-    shaped from the quad's UVs; colour x intensity x vertex alpha."""
+def billboard_material(path, ring, blend=unreal.BlendMode.BLEND_ADDITIVE):
+    """Camera-facing quads: a soft disc (flashes, puffs) or a thin ring (impact rings), shaped
+    from the quad's UVs; colour x intensity x a per-instance fade. Additive by default; the
+    translucent variant (smoke, mist) puts the shape and fade in the opacity instead."""
     m = fresh_material(path)
     m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
-    m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_ADDITIVE)
+    m.set_editor_property("blend_mode", blend)
     m.set_editor_property("two_sided", True)
     m.set_editor_property("used_with_instanced_static_meshes", True)
     tc = expr(m, unreal.MaterialExpressionTextureCoordinate, -1400, 0)
@@ -288,8 +322,8 @@ def billboard_material(path, ring):
     c.set_editor_property("r", 0.5)
     c.set_editor_property("g", 0.5)
     dist = expr(m, unreal.MaterialExpressionDistance, -1150, 50)
-    MEL.connect_material_expressions(tc, "", dist, "A")
-    MEL.connect_material_expressions(c, "", dist, "B")
+    link(tc, "", dist, "A")
+    link(c, "", dist, "B")
     two = expr(m, unreal.MaterialExpressionConstant, -1150, 200)
     two.set_editor_property("r", 2.0)
     r = mul(m, dist, two, -950, 100)
@@ -298,33 +332,142 @@ def billboard_material(path, ring):
         k = expr(m, unreal.MaterialExpressionConstant, -950, 250)
         k.set_editor_property("r", 0.8)
         sub = expr(m, unreal.MaterialExpressionSubtract, -800, 150)
-        MEL.connect_material_expressions(r, "", sub, "A")
-        MEL.connect_material_expressions(k, "", sub, "B")
+        link(r, "", sub, "A")
+        link(k, "", sub, "B")
         ab = expr(m, unreal.MaterialExpressionAbs, -650, 150)
-        MEL.connect_material_expressions(sub, "", ab, "")
+        link(sub, "", ab, "")
         w = scalar(m, "Width", 8.0, -650, 300)
         band = mul(m, ab, w, -500, 200)
         one_m = expr(m, unreal.MaterialExpressionOneMinus, -350, 200)
-        MEL.connect_material_expressions(band, "", one_m, "")
+        link(band, "", one_m, "")
         shape_in = one_m
     else:
         one_m = expr(m, unreal.MaterialExpressionOneMinus, -800, 150)
-        MEL.connect_material_expressions(r, "", one_m, "")
+        link(r, "", one_m, "")
         shape_in = one_m
     sat = expr(m, unreal.MaterialExpressionSaturate, -200, 200)
-    MEL.connect_material_expressions(shape_in, "", sat, "")
+    link(shape_in, "", sat, "")
     pw = expr(m, unreal.MaterialExpressionPower, -50, 200)
-    MEL.connect_material_expressions(sat, "", pw, "Base")
+    link(sat, "", pw, "Base")
     ex = scalar(m, "Sharpness", 2.0, -200, 350)
-    MEL.connect_material_expressions(ex, "", pw, "Exp")
+    link(ex, "", pw, "Exp")
     col = vector(m, "Color", (1, 1, 1, 1), -200, -150)
     k2 = scalar(m, "Intensity", 2.0, -200, -50)
     # Per-instance fade: custom data 0 (1 when unused).
     fade = expr(m, unreal.MaterialExpressionPerInstanceCustomData, -200, 500)
     fade.set_editor_property("data_index", 0)
     fade.set_editor_property("const_default_value", 1.0)
-    e = mul(m, mul(m, mul(m, col, k2, 50, -100), pw, 250, 0), fade, 450, 100)
-    MEL.connect_material_property(e, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    if blend == unreal.BlendMode.BLEND_ADDITIVE:
+        e = mul(m, mul(m, mul(m, col, k2, 50, -100), pw, 250, 0), fade, 450, 100)
+        output(e, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    else:
+        output(mul(m, col, k2, 50, -100), "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+        op = mul(m, mul(m, pw, fade, 250, 200), scalar(m, "Opacity", 1.0, 50, 350), 450, 250)
+        # Softened where the quad meets the floor or a wall.
+        df = expr(m, unreal.MaterialExpressionDepthFade, 450, 400)
+        link(op, "", df, "Opacity")
+        link(scalar(m, "FadeDistance", 80.0, 250, 450), "", df, "FadeDistance")
+        output(df, "", unreal.MaterialProperty.MP_OPACITY)
+    MEL.recompile_material(m)
+    EAL.save_loaded_asset(m)
+
+
+def stage_glow_material():
+    """M_StageGlow: lamps, slop, glass and fire in the sets: colour x intensity, broken up by an
+    animated noise (Pattern 0..1 at PatternScale per metre) or by horizontal paper ribs
+    (Ribs 0/1 every RibSpacing metres)."""
+    m = fresh_material("/Game/Slop/Materials/M_StageGlow")
+    m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    m.set_editor_property("two_sided", True)
+    col = mul(m, vector(m, "Color", (1, 1, 1, 1), -900, -200), scalar(m, "Intensity", 1.0, -900, -80), -650, -150)
+    # Noise: world position drifting slowly upward through 3D noise reads as churning.
+    wp = expr(m, unreal.MaterialExpressionWorldPosition, -1600, 100)
+    t = expr(m, unreal.MaterialExpressionTime, -1600, 250)
+    drift = mul(m, t, scalar(m, "PatternSpeed", 25.0, -1600, 350), -1400, 300)
+    up = expr(m, unreal.MaterialExpressionAppendVector, -1250, 300)
+    zero2 = expr(m, unreal.MaterialExpressionConstant2Vector, -1400, 420)
+    link(zero2, "", up, "A")
+    link(drift, "", up, "B")
+    pos = add(m, wp, up, -1100, 150)
+    nscale = mul(m, pos, mul(m, scalar(m, "PatternScale", 1.0, -1250, 500), scalar(m, "Centimetre", 0.01, -1250, 600), -1100, 520), -950, 200)
+    noise = expr(m, unreal.MaterialExpressionNoise, -800, 200)
+    noise.set_editor_property("scale", 1.0)
+    noise.set_editor_property("quality", 1)
+    noise.set_editor_property("levels", 3)
+    noise.set_editor_property("output_min", 0.0)
+    noise.set_editor_property("output_max", 1.0)
+    link(nscale, "", noise, "")
+    lo = expr(m, unreal.MaterialExpressionConstant, -800, 350)
+    lo.set_editor_property("r", 0.2)
+    hi = expr(m, unreal.MaterialExpressionConstant, -800, 420)
+    hi.set_editor_property("r", 1.6)
+    nf = lerp(m, lo, hi, noise, -600, 300)
+    one = expr(m, unreal.MaterialExpressionConstant, -600, 450)
+    one.set_editor_property("r", 1.0)
+    pf = lerp(m, one, nf, scalar(m, "Pattern", 0.0, -600, 520), -400, 350)
+    # Ribs: a sine along world Z.
+    z = expr(m, unreal.MaterialExpressionComponentMask, -1100, 700)
+    for c, on in (("r", False), ("g", False), ("b", True), ("a", False)):
+        z.set_editor_property(c, on)
+    link(wp, "", z, "")
+    zm = mul(m, z, scalar(m, "RibCentimetre", 0.01, -1100, 800), -950, 750)
+    sine = expr(m, unreal.MaterialExpressionSine, -800, 750)
+    link(zm, "", sine, "")
+    rib_sp = scalar(m, "RibSpacing", 0.03, -950, 870)
+    # Sine's period is fixed per expression; divide by the spacing instead.
+    div = expr(m, unreal.MaterialExpressionDivide, -900, 750)
+    link(zm, "", div, "A")
+    link(rib_sp, "", div, "B")
+    link(div, "", sine, "")
+    half = expr(m, unreal.MaterialExpressionConstant, -800, 900)
+    half.set_editor_property("r", 0.5)
+    s01 = add(m, mul(m, sine, half, -650, 800), half, -500, 820)
+    rlo = expr(m, unreal.MaterialExpressionConstant, -500, 950)
+    rlo.set_editor_property("r", 0.45)
+    rhi = expr(m, unreal.MaterialExpressionConstant, -500, 1020)
+    rhi.set_editor_property("r", 1.15)
+    rf = lerp(m, rlo, rhi, s01, -350, 900)
+    rk = lerp(m, one, rf, scalar(m, "Ribs", 0.0, -350, 1050), -200, 950)
+    e = mul(m, mul(m, col, pf, -200, 0), rk, 0, 200)
+    output(e, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    MEL.recompile_material(m)
+    EAL.save_loaded_asset(m)
+
+
+def water_material():
+    """M_Water: still dark water, tar and puddles: near-black, glossy, so the screen-space
+    reflections carry the lights; an optional faint glow (the Roost's tar falls)."""
+    m = fresh_material("/Game/Slop/Materials/M_Water")
+    col = vector(m, "Color", (0.02, 0.02, 0.02, 1), -600, 0)
+    output(col, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    output(scalar(m, "Roughness", 0.05, -600, 150), "", unreal.MaterialProperty.MP_ROUGHNESS)
+    output(scalar(m, "Specular", 0.5, -600, 250), "", unreal.MaterialProperty.MP_SPECULAR)
+    em = mul(m, vector(m, "EmissiveColor", (0, 0, 0, 1), -600, 350), scalar(m, "Emissive", 0.0, -600, 480), -350, 400)
+    output(em, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    MEL.recompile_material(m)
+    EAL.save_loaded_asset(m)
+
+
+def sky_material():
+    """M_Sky: an HDR sky on the inside of a dome, looked up by the view direction in the dome's
+    own space (turning the dome turns the sky)."""
+    m = fresh_material("/Game/Slop/Materials/M_Sky")
+    m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    m.set_editor_property("two_sided", True)
+    cam = expr(m, unreal.MaterialExpressionCameraVectorWS, -1000, 0)
+    neg = expr(m, unreal.MaterialExpressionConstant, -1000, 100)
+    neg.set_editor_property("r", -1.0)
+    view = mul(m, cam, neg, -800, 50)
+    tr = expr(m, unreal.MaterialExpressionTransform, -600, 50)
+    tr.set_editor_property("transform_source_type", unreal.MaterialVectorCoordTransformSource.TRANSFORMSOURCE_WORLD)
+    tr.set_editor_property("transform_type", unreal.MaterialVectorCoordTransform.TRANSFORM_LOCAL)
+    link(view, "", tr, "")
+    cube = expr(m, unreal.MaterialExpressionTextureSampleParameterCube, -350, 0)
+    cube.set_editor_property("parameter_name", "Sky")
+    cube.set_editor_property("texture", EAL.load_asset("/Game/Slop/Skies/HDR_lakeside_night"))
+    link(tr, "", cube, "UVs")
+    e = mul(m, mul(m, cube, scalar(m, "Intensity", 1.0, -350, 250), -100, 100, "RGB", ""), vector(m, "Tint", (1, 1, 1, 1), -350, 350), 100, 150)
+    output(e, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     MEL.recompile_material(m)
     EAL.save_loaded_asset(m)
 
@@ -333,6 +476,10 @@ def materials():
     white_linear()
     billboard_material("/Game/Slop/Materials/M_SoftDisc", False)
     billboard_material("/Game/Slop/Materials/M_Ring", True)
+    billboard_material("/Game/Slop/Materials/M_Puff", False, unreal.BlendMode.BLEND_TRANSLUCENT)
+    water_material()
+    sky_material()
+    stage_glow_material()
     character_material()
     surface_material()
     glow_material("/Game/Slop/Materials/M_GlowAdd", unreal.BlendMode.BLEND_ADDITIVE)
@@ -357,13 +504,16 @@ def texture(path_png, dest, srgb=True, normal=False):
     return t
 
 
-def fighter(fid, fbx):
+def fighter(fid, fbx, import_meshes=True):
     dest = f"/Game/Slop/Fighters/{fid}"
     folder = os.path.dirname(fbx)
-    got = import_files([fbx], dest)
-    meshes = [EAL.load_asset(p) for p in got if isinstance(EAL.load_asset(p), unreal.SkeletalMesh)]
+    if import_meshes:
+        got = import_files([fbx], dest)
+        log(f"{fid}: imported {len(got)} assets")
+        return
+    meshes = [EAL.load_asset(p) for p in EAL.list_assets(dest, recursive=False, include_folder=False) if isinstance(EAL.load_asset(p), unreal.SkeletalMesh)]
     if not meshes:
-        log(f"{fid}: no skeletal mesh imported from {fbx}")
+        log(f"{fid}: no skeletal mesh under {dest}")
         return
     mesh = meshes[0]
     # One material instance per slot, from the textures beside the FBX named after the slot.
@@ -371,21 +521,27 @@ def fighter(fid, fbx):
     mats = mesh.get_editor_property("materials")
     for i, sm in enumerate(mats):
         slot = str(sm.get_editor_property("material_slot_name"))
-        if not any(c.lower().endswith(".png") and slot.lower() in c.lower() for c in os.listdir(folder)):
+        # Slots are named M_<id>_<slot>; their textures <id>_<slot>_<map>.png.
+        key = slot[len(f"M_{fid}_"):] if slot.startswith(f"M_{fid}_") else slot
+        prefix = f"{fid}_{key}_".lower()
+        if not any(c.lower().endswith(".png") and c.lower().startswith(prefix) for c in os.listdir(folder)):
             # No textures of ours for this slot (development bodies): keep what the FBX brought.
             continue
-        mi_path = f"{dest}/MI_{fid}_{slot}"
+        mi_path = f"{dest}/MI_{fid}_{key}"
         if EAL.does_asset_exist(mi_path):
             mi = EAL.load_asset(mi_path)
         else:
-            mi = TOOLS.create_asset(f"MI_{fid}_{slot}", dest, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
+            mi = TOOLS.create_asset(f"MI_{fid}_{key}", dest, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
         unreal.MaterialEditingLibrary.set_material_instance_parent(mi, base)
-        for suffix, param, kind in [("basecolor", "BaseColorTex", "srgb"), ("normal", "NormalTex", "normal"), ("orm", "ORMTex", "linear")]:
-            png = None
-            for cand in os.listdir(folder):
-                low = cand.lower()
-                if low.endswith(f"_{suffix}.png") and slot.lower() in low:
-                    png = os.path.join(folder, cand)
+        for suffix, param, kind in [("basecolor", "BaseColorTex", "srgb"), ("normal", "NormalTex", "normal"), ("orm", "ORMTex", "linear"), ("emissive", "EmissiveTex", "srgb")]:
+            png = os.path.join(folder, f"{fid}_{key}_{suffix}.png")
+            if not os.path.exists(png):
+                png = None
+                # Development bodies: any texture naming the slot.
+                for cand in os.listdir(folder):
+                    low = cand.lower()
+                    if low.endswith(f"_{suffix}.png") and key.lower() in low:
+                        png = os.path.join(folder, cand)
             if png:
                 t = texture(png, dest + "/Textures", srgb=(kind == "srgb"), normal=(kind == "normal"))
                 if t:
@@ -394,11 +550,18 @@ def fighter(fid, fbx):
         sm.set_editor_property("material_interface", mi)
         mats[i] = sm
     mesh.set_editor_property("materials", mats)
-    EAL.save_loaded_asset(mesh)
+    EAL.save_loaded_asset(mesh, False)
+    ours = all(str(m.get_editor_property("material_interface").get_name()).startswith("MI_") for m in mats if m.get_editor_property("material_interface"))
+    if ours:
+        # The importer's own materials and its copies of the textures are no longer used.
+        for p in EAL.list_assets(dest, recursive=False, include_folder=False):
+            a = EAL.load_asset(p)
+            if (isinstance(a, unreal.MaterialInterface) and not a.get_name().startswith("MI_")) or isinstance(a, unreal.Texture):
+                EAL.delete_asset(p.split(".")[0])
     log(f"{fid}: {mesh.get_path_name()} with {len(mats)} material slots")
 
 
-def fighters():
+def fighters(import_meshes=True):
     root = os.path.join(SRC, "Fighters")
     if not os.path.isdir(root):
         log("no SourceArt/Fighters yet")
@@ -406,7 +569,7 @@ def fighters():
     for fid in sorted(os.listdir(root)):
         fbx = os.path.join(root, fid, fid + ".fbx")
         if os.path.exists(fbx):
-            fighter(fid, fbx)
+            fighter(fid, fbx, import_meshes)
 
 
 def bodies():
@@ -479,10 +642,155 @@ def props():
                 log(f"sky {name}: {'ok' if tex else 'failed'}")
 
 
+def material_instance(name, parent, dest):
+    path = f"{dest}/{name}"
+    if EAL.does_asset_exist(path):
+        mi = EAL.load_asset(path)
+    else:
+        mi = TOOLS.create_asset(name, dest, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
+    MEL.set_material_instance_parent(mi, parent)
+    return mi
+
+
+def set_two_sided(mi, on):
+    o = mi.get_editor_property("base_property_overrides")
+    o.set_editor_property("override_two_sided", bool(on))
+    o.set_editor_property("two_sided", bool(on))
+    mi.set_editor_property("base_property_overrides", o)
+
+
+def colour(v, a=1.0):
+    return unreal.LinearColor(v[0], v[1], v[2], v[3] if len(v) > 3 else a)
+
+
+def prop_material(name):
+    """PH_<model>_main / PH_<model>_glass: the material the Poly Haven glTF import made."""
+    body, part = name[3:].rsplit("_", 1)
+    want = body if part == "main" else f"{body}_{part}"
+    for p in EAL.list_assets(f"/Game/Slop/Props/{body}", recursive=True, include_folder=False):
+        if p.split(".")[-1] == want and isinstance(EAL.load_asset(p), unreal.MaterialInterface):
+            return EAL.load_asset(p)
+    return None
+
+
+def stage_materials(st, d, dest):
+    """One material instance per material name the stage FBX uses, from the stage's JSON."""
+    out = {}
+    surf = EAL.load_asset("/Game/Slop/Materials/M_Surface")
+    for name, sd in d["surfaces"].items():
+        mi = material_instance(f"MI_{st}_{name}", surf, dest)
+        ts = sd["set"]
+        for param, suffix in [("BaseColorTex", "BaseColor"), ("NormalTex", "Normal"), ("ORMTex", "ORM")]:
+            tp = f"/Game/Slop/Surfaces/{ts}/T_{ts}_{suffix}"
+            if EAL.does_asset_exist(tp):
+                MEL.set_material_instance_texture_parameter_value(mi, param, EAL.load_asset(tp))
+        MEL.set_material_instance_scalar_parameter_value(mi, "Tiling", sd.get("tiling", 1.0))
+        MEL.set_material_instance_vector_parameter_value(mi, "Tint", colour(sd.get("tint", (1, 1, 1))))
+        MEL.set_material_instance_scalar_parameter_value(mi, "Roughness", sd.get("roughness", 1.0))
+        MEL.set_material_instance_scalar_parameter_value(mi, "Metallic", sd.get("metallic", 0.0))
+        MEL.set_material_instance_scalar_parameter_value(mi, "NormalStrength", sd.get("normal_strength", 1.0))
+        if "emissive" in sd:
+            MEL.set_material_instance_vector_parameter_value(mi, "EmissiveColor", colour(sd.get("emissive_color", (1, 1, 1))))
+            MEL.set_material_instance_scalar_parameter_value(mi, "Emissive", sd["emissive"])
+        set_two_sided(mi, sd.get("two_sided", False))
+        out[name] = mi
+    glow = EAL.load_asset("/Game/Slop/Materials/M_StageGlow")
+    for g in d.get("glows", []):
+        mi = material_instance(f"MI_{st}_{g['material']}", glow, dest)
+        MEL.set_material_instance_vector_parameter_value(mi, "Color", colour(g["color"]))
+        MEL.set_material_instance_scalar_parameter_value(mi, "Intensity", g.get("strength", 1.0))
+        pat = g.get("pattern", 0)
+        if pat == "ribs":
+            MEL.set_material_instance_scalar_parameter_value(mi, "Ribs", 1.0)
+            MEL.set_material_instance_scalar_parameter_value(mi, "RibSpacing", g.get("pattern_scale", 0.03))
+        elif pat:
+            MEL.set_material_instance_scalar_parameter_value(mi, "Pattern", float(pat))
+            MEL.set_material_instance_scalar_parameter_value(mi, "PatternScale", g.get("pattern_scale", 1.0))
+        out[g["material"]] = mi
+    water = EAL.load_asset("/Game/Slop/Materials/M_Water")
+    for w in d.get("water", []):
+        mi = material_instance(f"MI_{st}_{w['material']}", water, dest)
+        MEL.set_material_instance_vector_parameter_value(mi, "Color", colour(w["color"]))
+        MEL.set_material_instance_scalar_parameter_value(mi, "Roughness", w.get("roughness", 0.05))
+        if "emissive" in w:
+            MEL.set_material_instance_vector_parameter_value(mi, "EmissiveColor", colour(w.get("emissive_color", (1, 1, 1))))
+            MEL.set_material_instance_scalar_parameter_value(mi, "Emissive", w["emissive"])
+        set_two_sided(mi, "tarfall" in w["material"])
+        out[w["material"]] = mi
+    for mi in out.values():
+        MEL.update_material_instance(mi)
+        EAL.save_loaded_asset(mi)
+    return out
+
+
+def stage_slots(st, d, mats):
+    """Gives every mesh of a stage the material instances for its slots; returns (meshes, unmatched)."""
+    dest = f"/Game/Slop/Stages/{st}"
+    n, missing = 0, set()
+    for p in EAL.list_assets(dest, recursive=False, include_folder=False):
+        a = EAL.load_asset(p)
+        if not isinstance(a, unreal.StaticMesh):
+            continue
+        if a.get_name().startswith("ORIGIN_MARKER"):
+            # The 1 m scale check the stage builder leaves in the file.
+            EAL.delete_asset(p.split(".")[0])
+            continue
+        n += 1
+        sms = a.get_editor_property("static_materials")
+        for i, sm in enumerate(sms):
+            slot = str(sm.get_editor_property("material_slot_name"))
+            mi = mats.get(slot) or (prop_material(slot) if slot.startswith("PH_") else None)
+            if mi is None:
+                missing.add(slot)
+                continue
+            sm.set_editor_property("material_interface", mi)
+            sms[i] = sm
+        a.set_editor_property("static_materials", sms)
+        EAL.save_loaded_asset(a, False)
+    return n, missing
+
+
+def stages(import_meshes=True):
+    """SourceArt/Stages/<id>/<id>.fbx (built by Tools/blender/stages) -> /Game/Slop/Stages/<id>:
+    one static mesh per object, its slots given material instances made from <id>.json, which is
+    copied to Content/Data/Stages for the game to place lights, fog, sway and weather. The slots
+    are assigned in a later pass (step `slots`): changes made in the import's own run do not hold."""
+    root = os.path.join(SRC, "Stages")
+    data_dir = os.path.join(PROJECT, "Content", "Data", "Stages")
+    os.makedirs(data_dir, exist_ok=True)
+    for st in sorted(os.listdir(root)):
+        fbx = os.path.join(root, st, st + ".fbx")
+        js = os.path.join(root, st, st + ".json")
+        if not (os.path.exists(fbx) and os.path.exists(js)):
+            continue
+        with open(js) as f:
+            d = json.load(f)
+        dest = f"/Game/Slop/Stages/{st}"
+        if import_meshes:
+            got = import_files([fbx], dest)
+            with open(js) as f, open(os.path.join(data_dir, st + ".json"), "w") as g:
+                g.write(f.read())
+            log(f"stage {st}: imported {len(got)} assets")
+            continue
+        mats = stage_materials(st, d, dest + "/Materials")
+        n, missing = stage_slots(st, d, mats)
+        if not missing:
+            # The importer's own placeholder materials are no longer used.
+            for p in EAL.list_assets(dest, recursive=False, include_folder=False):
+                if isinstance(EAL.load_asset(p), unreal.MaterialInterface):
+                    EAL.delete_asset(p.split(".")[0])
+        log(f"stage {st}: {n} meshes, {len(mats)} materials, unmatched slots {sorted(missing)}")
+
+
+def slots():
+    stages(import_meshes=False)
+    fighters(import_meshes=False)
+
+
 def main():
     only = args()
     steps = [("audio", audio), ("materials", materials), ("bodies", bodies), ("fighters", fighters),
-             ("surfaces", surfaces), ("props", props)]
+             ("surfaces", surfaces), ("props", props), ("stages", stages), ("slots", slots)]
     for name, fn in steps:
         if only is None or name in only:
             log("step " + name)

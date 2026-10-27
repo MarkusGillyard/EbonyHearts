@@ -138,7 +138,7 @@ void ASlopFightCamera::Apply()
 	}
 }
 
-void ASlopFightCamera::SetLook(bool bHighGraphics, bool bPostFx)
+void ASlopFightCamera::SetLook(bool bHighGraphics, bool bPostFx, float ExposureEV100)
 {
 	FPostProcessSettings& PP = Camera->PostProcessSettings;
 	bDof = bHighGraphics;
@@ -157,8 +157,9 @@ void ASlopFightCamera::SetLook(bool bHighGraphics, bool bPostFx)
 	PP.MotionBlurAmount = 0.f;
 	PP.bOverride_AutoExposureMethod = true;
 	PP.AutoExposureMethod = EAutoExposureMethod::AEM_Manual;
+	// Each stage is lit for a fixed exposure (EV100); with manual metering the bias is its negative.
 	PP.bOverride_AutoExposureBias = true;
-	PP.AutoExposureBias = 0.f;
+	PP.AutoExposureBias = -ExposureEV100;
 	PP.bOverride_AutoExposureApplyPhysicalCameraExposure = true;
 	PP.AutoExposureApplyPhysicalCameraExposure = false;
 	PP.bOverride_BloomIntensity = true;

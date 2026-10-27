@@ -141,6 +141,7 @@ void USlopGameInstance::Goto(const TSharedPtr<FSlopScreen>& S)
 		return;
 	}
 	Screen->GI = this;
+	UE_LOG(LogSlop, Log, TEXT("Screen: %s"), *Screen->ScreenName);
 	ScreenSlot->SetContent(Screen->Build());
 	Screen->Enter();
 	if (!Screen->ShowsMatch() && Match)
@@ -175,6 +176,7 @@ void USlopGameInstance::ShowOverlay(const TSharedPtr<FSlopScreen>& S)
 	if (Overlay.IsValid())
 	{
 		Overlay->GI = this;
+		UE_LOG(LogSlop, Log, TEXT("Overlay: %s"), *Overlay->ScreenName);
 		OverlaySlot->SetContent(Overlay->Build());
 		Overlay->Enter();
 	}
@@ -437,6 +439,12 @@ bool USlopGameInstance::Tick(float Dt)
 			QuitAtSeconds = Now() + 1.0;
 		}
 	}
+	if (ShotEvery > 0.0 && Now() >= NextShotAt)
+	{
+		NextShotAt = Now() + ShotEvery;
+		const FString Name = FString::Printf(TEXT("%s_%03d.png"), *ShotPrefix, ShotIndex++);
+		FScreenshotRequest::RequestScreenshot(Name, true, false);
+	}
 	if (QuitAtSeconds > 0.0 && Now() >= QuitAtSeconds)
 	{
 		QuitAtSeconds = -1.0;
@@ -531,6 +539,10 @@ void USlopGameInstance::DevCommandLine()
 	ShotPrefix = TEXT("shot");
 	FParse::Value(Cmd, TEXT("SlopShotPrefix="), ShotPrefix);
 	FParse::Value(Cmd, TEXT("SlopQuitAt="), QuitAtTick);
+	if (FParse::Value(Cmd, TEXT("SlopShotEvery="), ShotEvery))
+	{
+		NextShotAt = Now() + ShotEvery;
+	}
 	double QuitSecs = -1.0;
 	if (FParse::Value(Cmd, TEXT("SlopQuitAfter="), QuitSecs))
 	{

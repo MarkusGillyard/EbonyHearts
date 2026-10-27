@@ -650,16 +650,22 @@ using namespace SlopScreensImpl;
 
 namespace SlopScreens
 {
-	TSharedPtr<FSlopScreen> Title() { return MakeShared<FTitle>(); }
-	TSharedPtr<FSlopScreen> MainMenu() { return MakeShared<FMainMenu>(); }
-	TSharedPtr<FSlopScreen> MatchScreen() { return MakeShared<FMatchScreen>(); }
-	TSharedPtr<FSlopScreen> Pause() { return MakePause(); }
-	TSharedPtr<FSlopScreen> Results(const FMatchResult& R) { return MakeResults(R); }
-	TSharedPtr<FSlopScreen> DataError() { return MakeDataError(); }
+	static TSharedPtr<FSlopScreen> Named(TSharedPtr<FSlopScreen> S, const TCHAR* Name)
+	{
+		S->ScreenName = Name;
+		return S;
+	}
+	TSharedPtr<FSlopScreen> Title() { return Named(MakeShared<FTitle>(), TEXT("Title")); }
+	TSharedPtr<FSlopScreen> MainMenu() { return Named(MakeShared<FMainMenu>(), TEXT("MainMenu")); }
+	TSharedPtr<FSlopScreen> MatchScreen() { return Named(MakeShared<FMatchScreen>(), TEXT("Match")); }
+	TSharedPtr<FSlopScreen> Pause() { return Named(MakePause(), TEXT("Pause")); }
+	TSharedPtr<FSlopScreen> Results(const FMatchResult& R) { return Named(MakeResults(R), TEXT("Results")); }
+	TSharedPtr<FSlopScreen> DataError() { return Named(MakeDataError(), TEXT("DataError")); }
 
 	TSharedPtr<FSlopScreen> StrangerOffer()
 	{
 		TSharedRef<FListScreen> S = MakeShared<FListScreen>();
+		S->ScreenName = TEXT("StrangerOffer");
 		const TSharedPtr<FJsonObject> St = Json::Obj(GetContent().Story, TEXT("stranger"));
 		S->Heading = FText::FromString(Json::Str(St, TEXT("offer"), TEXT("A stranger in white watches the fight from the far walkway.")));
 		S->HeadingSize = 48.f;

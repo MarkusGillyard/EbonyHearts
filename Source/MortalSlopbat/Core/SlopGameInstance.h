@@ -95,6 +95,9 @@ private:
 	FName TourFighter;
 	void RequestShot(int32 Tick, const FString& Name);
 	FString ShotPrefix;
+	double ShotEvery = 0.0;
+	double NextShotAt = 0.0;
+	int32 ShotIndex = 0;
 	int32 QuitAtTick = -1;
 	double QuitAtSeconds = -1.0;
 	FDelegateHandle ConnHandle;

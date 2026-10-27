@@ -14,6 +14,8 @@ ASlopFighterActor::ASlopFighterActor()
 	Body->SetCastShadow(true);
 	Body->bCastDynamicShadow = true;
 	Body->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	// Channel 1 too: each stage's camera fill lights only the fighters.
+	Body->LightingChannels.bChannel1 = true;
 	// Bones move every frame from the rig; bounds must follow them.
 	Body->bComponentUseFixedSkelBounds = false;
 }

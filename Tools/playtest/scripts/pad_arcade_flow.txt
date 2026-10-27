@@ -1,0 +1,48 @@
+# Controller-only: title to an arcade fight and back out, with a cable pulled mid-fight.
+waitlog Screen: Title 400
+wait 8
+focus MortalSlopbat
+wait 1
+tap cross
+waitlog Screen: MainMenu 10
+wait 0.6
+tap cross
+waitlog Screen: Select 10
+wait 0.8
+dpad right
+wait 0.4
+tap cross
+waitlog Screen: Tower 10
+wait 0.8
+dpad up
+wait 0.3
+tap cross
+waitlog Screen: Match 60
+wait 6
+stick 1 0 700
+tap square
+wait 0.3
+tap triangle
+wait 0.3
+trigger r 1 600
+dpad down 400
+tap cross
+wait 0.5
+unplug
+waitlog Overlay: Pause 10
+wait 1.5
+replug
+waitlog Controller connected 10
+wait 1.0
+dpad down
+wait 0.3
+dpad down
+wait 0.3
+dpad down
+wait 0.3
+tap cross
+waitlog Screen: MainMenu 10
+wait 1.0
+dpad up
+wait 0.4
+tap cross

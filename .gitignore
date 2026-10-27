@@ -18,8 +18,9 @@ Tools/__pycache__/
 SourceArt/**/__pycache__/
 /Evidence/scratch/
 
-# Blender user config isolated for the body tool (add-ons are fetched, not versioned)
-Tools/blender/.blender_user/
+# Blender user configs isolated for the art tools (add-ons are fetched, not versioned)
+Tools/blender/**/.blender_user/
+Tools/**/__pycache__/
 # Raw third-party downloads: provenance and hashes live in SourceArt/ThirdParty/ledger.json;
 # what the game uses is imported under Content/ and licensed in Docs/ThirdParty.
 SourceArt/ThirdParty/*/

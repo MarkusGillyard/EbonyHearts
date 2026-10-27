@@ -35,7 +35,7 @@ public:
 	void SetOverride(const FVector& InPos, const FVector& InLook, double Weight = 1.0) { OverridePos = InPos; OverrideLook = InLook; OverrideTarget = Weight; }
 	void ClearOverride() { OverrideTarget = 0.0; }
 	// Depth of field behind the fighting plane, vignette and grain.
-	void SetLook(bool bHighGraphics, bool bPostFx);
+	void SetLook(bool bHighGraphics, bool bPostFx, float ExposureEV100 = 0.f);
 	bool bShakeEnabled = true;
 	// Where the camera is and looks, in the original's space (for effects that face it).
 	FVector Pos = FVector::ZeroVector;

@@ -498,7 +498,12 @@ using namespace SlopSettingsImpl;
 
 namespace SlopScreens
 {
-	TSharedPtr<FSlopScreen> Settings(bool bFromPause) { return MakeShared<FSettingsScreen>(bFromPause); }
+	TSharedPtr<FSlopScreen> Settings(bool bFromPause)
+	{
+		TSharedPtr<FSlopScreen> S = MakeShared<FSettingsScreen>(bFromPause);
+		S->ScreenName = TEXT("Settings");
+		return S;
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

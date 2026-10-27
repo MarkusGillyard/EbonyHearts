@@ -70,6 +70,7 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 	FActorSpawnParameters P;
 	P.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	Arena = W->SpawnActor<ASlopArena>(P);
+	Arena->bStrobe = GI()->Settings.bFlashes;
 	Arena->Build(Config.Stage, GI()->Settings.Graphics != TEXT("low"));
 	for (int32 I = 0; I < 2; ++I)
 	{
@@ -161,7 +162,7 @@ void ASlopMatch::ApplySettings()
 	if (Camera)
 	{
 		Camera->bShakeEnabled = S.bScreenShake;
-		Camera->SetLook(S.Graphics != TEXT("low"), S.bPostFx);
+		Camera->SetLook(S.Graphics != TEXT("low"), S.bPostFx, Arena ? Arena->ExposureEV100 : 0.f);
 	}
 	for (ASlopFighterActor* V : Views)
 	{
@@ -259,7 +260,7 @@ void ASlopMatch::Tick(float DeltaSeconds)
 	Camera->Step(bPaused ? 0.0 : DeltaSeconds);
 	Director.Step(D);
 	Vfx->Step(D);
-	Arena->Step(D);
+	Arena->Step(D, Camera->GetActorLocation());
 	if (bShowBoxes)
 	{
 		DrawDebugBoxes();

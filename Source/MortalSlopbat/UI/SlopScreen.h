@@ -21,6 +21,8 @@ public:
 	// Whether a running match keeps drawing behind this screen.
 	virtual bool ShowsMatch() const { return false; }
 	USlopGameInstance* GI = nullptr;
+	// For logs and automated checks.
+	FString ScreenName = TEXT("Screen");
 
 protected:
 	// Moves a selection index through a list with up/down (wrapping), skipping disabled items.
