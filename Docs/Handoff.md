@@ -13,7 +13,7 @@ evidence behind every claim here.
 | Art | All eight fighters built from CC0 MakeHuman bodies with scripted costumes (`Tools/blender`); four stage sets built in Blender (`Tools/blender/stages`); CC0 surfaces, props, skies and sounds. |
 | Tests | Automation tests (`run_tests`), scripted flows for every mode (`Tools/playtest`), unattended packaged sessions (`Tools/perf/soak.sh`). |
 | Combat feel | 2.2.0 applies the presentation changes ranked by the study in `Docs/Martial-arts.md` (strikes, hit-stop, reactions, styles, sound) and one rule change (counter-hit freeze on the victim); frame data otherwise unchanged. 2.3.0 to 2.5.0 bring in motion capture: strikes, footwork, the block, Daxion's evade, intros and wins. |
-| Package | `MortalSlopbat-2.5.1-linux-x86_64.tar.gz` (498 MB, SHA-256 `fa8f66c71529af41f43982911c40daa4c6178b6246e3bd5fee85a46ab764aa7c`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `27c727f` (2.5.0 plus the Slopbat's fairer tar, wind and bite); unpack and run `./MortalSlopbat.sh`. Earlier archives (2.0.0 to 2.5.0) are kept beside it. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
+| Package | `MortalSlopbat-2.5.2-linux-x86_64.tar.gz` (498 MB, SHA-256 `c4a626df68e725ad2ca7879a6c6a9bac6eeeb294f82f9ee56444d54ddd23ce4b`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `a944464` (training options, measured advantage, record and playback, planted feet, the deeper crouch, the keen's rings); unpack and run `./MortalSlopbat.sh`. Earlier archives (2.0.0 to 2.5.1) are kept beside it. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
 | Saves | Markus's own settings and progress from playing 2.1.0 are in `~/.local/share/MortalSlopbat/UE5/` (settings version 1: its default cap of 60 becomes Match the display when 2.2.0 loads it). Test runs used separate profiles, cleared afterwards. The Godot game's own files in `~/.local/share/MortalSlopbat/` are untouched. |
 
 ## Picking it up
@@ -42,7 +42,19 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   block's guard, Daxion's evade, and the human fighters' intros and wins. Gorm, Mirela and Hollis
   keep their own walks (a sumo shuffle, circle walking, a diver's plod). The set has no hit
   reactions or falls, so those stay procedural. Unused: the bounce (the study prefers a rock for
-  the idle) and the uppercut take (no clean contact).
+  the idle) and the uppercut take (no clean contact). Since 2.5.2 a captured cycle's foot stays
+  where it touched down (it slid up to a quarter of the way walking back), and a walk held against
+  a wall or the distance limit settles into the stance instead of freezing mid-stride.
+- **Measured fit of the animation to the rules (2.5.2 tests).** Every ground strike has a hand,
+  foot, elbow, knee or the head within 12 cm of its hitbox on its first active frame; the crouching
+  head now sits within 15 cm of the crouch hurtbox (it stood 25-29 cm above, so high attacks passed
+  through it). Still off, and left because the boxes are rules: standing, Gorm's sumo stance, Nix,
+  Mirela and the Slopbat sit 16-39 cm under a hurtbox drawn for upright fighters, so a high attack
+  passing just over those heads still hits.
+- **Training (2.5.2).** Training Options in the pause menu (dummy, boxes, frame data, states, input
+  display, slow motion) for the controller; the frame view shows the measured advantage of the last
+  exchange; the dummy can record ten seconds of the player's control and play it back. The listed
+  advantages are now a frame lower than the original's, matching what is measured.
 - **Realism of the art.** Skin has subsurface scattering and sweat, cloth has folds and wear, hair
   is matte (`M_Character`, `M_CharacterSkin`); standing water ripples faintly so reflections waver,
   the Roost's slop lake is a lit liquid over its glow, and contact shadows ground feet and hands

@@ -58,6 +58,13 @@ whether it is felt on a real pad is unverified.
 
 ### On Markus's monitor (2.2.0)
 
+2.5.2 (commit `a944464`) offscreen, unpacked fresh (checksums matched): two arcade matches over
+77 s of settled play at 60 fps, every frame within 1 ms, no hitches, GPU 14.75 ms at a 69 % render
+scale, peak memory 1,452 MB (`Saved/Perf/offscreen-2.5.2`). The monitor was dropping in and out of
+standby (`Monitors: 0` most of the time); a full-screen run started while it was briefly back hung
+in presentation when it went again, as described under Display, and was stopped. Full screen on
+the monitor is not yet checked for 2.5.1 or 2.5.2.
+
 2.5.1 (commit `27c727f`, the Slopbat's tar, wind and bite changes on 2.5.0) was checked
 offscreen only, as the monitor was off (`Monitors: 0`; a window run then blocks in Vulkan
 presentation, as noted under Display): unpacked fresh (checksums matched), the CPU played an arcade
