@@ -1,0 +1,1173 @@
+{
+ "stage": "roost",
+ "title": "The Slopbat's Roost",
+ "units": {
+  "positions": "Blender metres, Z up, fighting plane XZ at Y=0, camera at -Y looking +Y",
+  "unreal": "UE = (100*x, -100*y, 100*z) cm; *_ue_cm fields are already converted",
+  "lights": "candela (point/spot), lux (directional), glow strength in cd/m2; for manual exposure EV100 = 1.0",
+  "exposure_ev100": 1.0
+ },
+ "lights": [
+  {
+   "name": "key_warm",
+   "type": "directional",
+   "pos": [
+    -6,
+    -6,
+    10
+   ],
+   "color": [
+    1.0,
+    0.88,
+    0.72
+   ],
+   "lux": 2.4,
+   "dir": [
+    0.3831,
+    0.6631,
+    -0.6431
+   ],
+   "dir_ue": [
+    0.3831,
+    -0.6631,
+    -0.6431
+   ],
+   "shadows": true,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    -600,
+    600,
+    1000
+   ],
+   "source_angle_deg": 2.0,
+   "note": "warm key from the upper left front (torchlight from the cave mouth)"
+  },
+  {
+   "name": "rim_green",
+   "type": "directional",
+   "pos": [
+    0,
+    20,
+    10
+   ],
+   "color": [
+    0.5,
+    0.95,
+    0.4
+   ],
+   "lux": 3.2,
+   "dir": [
+    -0.081,
+    -0.9236,
+    -0.3748
+   ],
+   "dir_ue": [
+    -0.081,
+    0.9236,
+    -0.3748
+   ],
+   "shadows": false,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    0,
+    -2000,
+    1000
+   ],
+   "source_angle_deg": 0.05,
+   "specular_scale": 1.5,
+   "affects": "not_floor",
+   "note": "green storm rim from the back of the cavern"
+  },
+  {
+   "name": "fill_camera",
+   "type": "directional",
+   "pos": [
+    0,
+    -10,
+    3
+   ],
+   "color": [
+    0.75,
+    0.85,
+    0.8
+   ],
+   "lux": 1.4,
+   "dir": [
+    -0.1361,
+    0.9686,
+    -0.2081
+   ],
+   "dir_ue": [
+    -0.1361,
+    -0.9686,
+    -0.2081
+   ],
+   "shadows": false,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    0,
+    1000,
+    300
+   ],
+   "source_angle_deg": 0.05,
+   "specular_scale": 0.25,
+   "affects": "fighters_only"
+  },
+  {
+   "name": "lake_glow_1",
+   "type": "point",
+   "pos": [
+    -8.0,
+    4.5,
+    -1.2
+   ],
+   "color": [
+    0.45,
+    1.0,
+    0.2
+   ],
+   "intensity_candela": 30.0,
+   "radius_m": 8.5,
+   "shadows": false,
+   "flicker": 0.18,
+   "flicker_speed": 1.1,
+   "pos_ue_cm": [
+    -800.0,
+    -450.0,
+    -120.0
+   ],
+   "source_radius_m": 1.0,
+   "specular_scale": 0.25,
+   "note": "the slop lake glowing up onto the ledge's lip"
+  },
+  {
+   "name": "lake_glow_2",
+   "type": "point",
+   "pos": [
+    0.0,
+    4.5,
+    -1.2
+   ],
+   "color": [
+    0.45,
+    1.0,
+    0.2
+   ],
+   "intensity_candela": 30.0,
+   "radius_m": 8.5,
+   "shadows": false,
+   "flicker": 0.18,
+   "flicker_speed": 1.1,
+   "pos_ue_cm": [
+    0.0,
+    -450.0,
+    -120.0
+   ],
+   "source_radius_m": 1.0,
+   "specular_scale": 0.25,
+   "note": "the slop lake glowing up onto the ledge's lip"
+  },
+  {
+   "name": "lake_glow_3",
+   "type": "point",
+   "pos": [
+    8.0,
+    4.5,
+    -1.2
+   ],
+   "color": [
+    0.45,
+    1.0,
+    0.2
+   ],
+   "intensity_candela": 30.0,
+   "radius_m": 8.5,
+   "shadows": false,
+   "flicker": 0.18,
+   "flicker_speed": 1.1,
+   "pos_ue_cm": [
+    800.0,
+    -450.0,
+    -120.0
+   ],
+   "source_radius_m": 1.0,
+   "specular_scale": 0.25,
+   "note": "the slop lake glowing up onto the ledge's lip"
+  },
+  {
+   "name": "lake_deep",
+   "type": "point",
+   "pos": [
+    0.0,
+    22.0,
+    0.3
+   ],
+   "color": [
+    0.45,
+    1.0,
+    0.2
+   ],
+   "intensity_candela": 120.0,
+   "radius_m": 28.0,
+   "shadows": false,
+   "flicker": 0.2,
+   "flicker_speed": 0.7,
+   "pos_ue_cm": [
+    0.0,
+    -2200.0,
+    30.0
+   ],
+   "source_radius_m": 3.0,
+   "specular_scale": 0.2
+  },
+  {
+   "name": "hoard_1",
+   "type": "point",
+   "pos": [
+    -9.3,
+    -0.9,
+    1.6
+   ],
+   "color": [
+    1.0,
+    0.72,
+    0.35
+   ],
+   "intensity_candela": 14.0,
+   "radius_m": 4.0,
+   "shadows": false,
+   "flicker": 0.06,
+   "flicker_speed": 2.0,
+   "pos_ue_cm": [
+    -930.0,
+    90.0,
+    160.0
+   ],
+   "source_radius_m": 0.3,
+   "specular_scale": 0.8,
+   "note": "warm light catching the gold"
+  },
+  {
+   "name": "hoard_2",
+   "type": "point",
+   "pos": [
+    9.3,
+    -0.9,
+    1.6
+   ],
+   "color": [
+    1.0,
+    0.72,
+    0.35
+   ],
+   "intensity_candela": 14.0,
+   "radius_m": 4.0,
+   "shadows": false,
+   "flicker": 0.06,
+   "flicker_speed": 2.0,
+   "pos_ue_cm": [
+    930.0,
+    90.0,
+    160.0
+   ],
+   "source_radius_m": 0.3,
+   "specular_scale": 0.8,
+   "note": "warm light catching the gold"
+  },
+  {
+   "name": "storm",
+   "type": "point",
+   "pos": [
+    0.0,
+    30.0,
+    8.0
+   ],
+   "color": [
+    0.6,
+    1.0,
+    0.45
+   ],
+   "intensity_candela": 900.0,
+   "radius_m": 30.0,
+   "shadows": true,
+   "flicker": 1.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    0.0,
+    -3000.0,
+    800.0
+   ],
+   "source_radius_m": 2.0,
+   "note": "signature: green lightning. Off between flashes; every 5-11 s at a random X in -16..16: 7x for 0.07 s, 1.5x to 0.12 s, 5x to 0.2 s, then fading to 0 by 0.55 s (values relative to intensity_candela/7). Lights only the far cavern (exclude the ledge and lake). With flashes off: a slow 1.2 s swell to 2/7."
+  }
+ ],
+ "glows": [
+  {
+   "material": "GLOW_slop_lake",
+   "color": [
+    0.32,
+    0.9,
+    0.08
+   ],
+   "strength": 0.65,
+   "pattern": 0.85,
+   "pattern_scale": 0.3,
+   "note": "the slop lake: slow churning noise with dark crusted patches, bubbles, pulses with the lake lights"
+  },
+  {
+   "material": "GLOW_crack",
+   "color": [
+    0.42,
+    0.95,
+    0.12
+   ],
+   "strength": 2.2,
+   "note": "slop glowing through cracks in the ledge (good candidates for decals)"
+  },
+  {
+   "material": "GLOW_lightning",
+   "color": [
+    0.7,
+    1.0,
+    0.55
+   ],
+   "strength": 40.0,
+   "note": "lightning bolts far back: visible only during flashes (see fx)"
+  }
+ ],
+ "water": [
+  {
+   "material": "WATER_tar",
+   "color": [
+    0.008,
+    0.011,
+    0.007
+   ],
+   "roughness": 0.08,
+   "opacity": 1.0,
+   "note": "tar pools on the ledge: black, glossy, a faint green sheen, slow bubbles"
+  },
+  {
+   "material": "WATER_tarfall",
+   "color": [
+    0.01,
+    0.014,
+    0.01
+   ],
+   "roughness": 0.2,
+   "opacity": 1.0,
+   "emissive_color": [
+    0.4,
+    0.9,
+    0.15
+   ],
+   "emissive": 0.07,
+   "note": "tar falls: scrolling downward flow, a faint green glow on the edges, two-sided"
+  }
+ ],
+ "animated": [],
+ "fog": {
+  "color": [
+   0.035,
+   0.075,
+   0.04
+  ],
+  "density": 0.34,
+  "height_falloff": 2.0,
+  "density_per_m": 0.034,
+  "height_falloff_per_m": 0.2,
+  "fog_height_m": -2.2,
+  "fog_height_ue_cm": -220.0,
+  "note": "dense green height fog over the lake; volumetric fog so the lake lights and the storm glow scatter"
+ },
+ "ambient": {
+  "color": [
+   0.25,
+   0.42,
+   0.25
+  ],
+  "intensity": 0.25,
+  "units": "cd/m2 sky radiance at EV100 1.0 (Sky Light intensity: tune)"
+ },
+ "music": "music_roost",
+ "footstep": "rock",
+ "sky": "none",
+ "surfaces": {
+  "Rock035": {
+   "set": "Rock035",
+   "tiling": 0.5,
+   "tint": [
+    0.42,
+    0.48,
+    0.44
+   ],
+   "roughness": 0.55,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "dark_rock": {
+   "set": "dark_rock",
+   "tiling": 0.4132,
+   "tint": [
+    0.36,
+    0.4,
+    0.36
+   ],
+   "roughness": 0.8,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "dark_rock__far": {
+   "set": "dark_rock",
+   "tiling": 0.4132,
+   "tint": [
+    0.2,
+    0.24,
+    0.2
+   ],
+   "roughness": 0.9,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "brown_mud_03": {
+   "set": "brown_mud_03",
+   "tiling": 0.7692,
+   "tint": [
+    0.3,
+    0.32,
+    0.26
+   ],
+   "roughness": 0.45,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Ivory001B": {
+   "set": "Ivory001B",
+   "tiling": 1.6667,
+   "tint": [
+    0.62,
+    0.58,
+    0.47
+   ],
+   "roughness": 1.2,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Metal042A": {
+   "set": "Metal042A",
+   "tiling": 1.0,
+   "tint": [
+    1.0,
+    0.78,
+    0.42
+   ],
+   "roughness": 0.7,
+   "metallic": 1.0,
+   "normal_strength": 1.0
+  },
+  "Wood051": {
+   "set": "Wood051",
+   "tiling": 1.25,
+   "tint": [
+    0.32,
+    0.26,
+    0.21
+   ],
+   "roughness": 1.2,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Metal055A": {
+   "set": "Metal055A",
+   "tiling": 1.0,
+   "tint": [
+    0.25,
+    0.24,
+    0.22
+   ],
+   "roughness": 1.0,
+   "metallic": 1.0,
+   "normal_strength": 1.0
+  },
+  "Leather021": {
+   "set": "Leather021",
+   "tiling": 2.0,
+   "tint": [
+    0.6,
+    0.5,
+    0.42
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  }
+ },
+ "props": [
+  {
+   "model": "wooden_crate_02",
+   "object": "roost_prop_wooden_crate_02_1",
+   "pos": [
+    -12.0,
+    2.1,
+    -0.12
+   ],
+   "rot_z": -35,
+   "scale": 1.0,
+   "tris": 5176
+  },
+  {
+   "model": "wine_barrel_01",
+   "object": "roost_prop_wine_barrel_01_1",
+   "pos": [
+    12.2,
+    1.6,
+    0.37
+   ],
+   "rot_z": 40,
+   "scale": 1.0,
+   "tris": 10820
+  }
+ ],
+ "fx": [
+  {
+   "kind": "splash_mist",
+   "pos": [
+    -30.0,
+    59.2,
+    -1.8000000000000003
+   ],
+   "radius_m": 1.4000000000000001,
+   "rise_m_s": 0.7,
+   "size_m": 4.2,
+   "color": [
+    0.35,
+    0.6,
+    0.25,
+    0.4
+   ]
+  },
+  {
+   "kind": "splash_mist",
+   "pos": [
+    -11.0,
+    60.2,
+    -1.8000000000000003
+   ],
+   "radius_m": 1.04,
+   "rise_m_s": 0.7,
+   "size_m": 3.12,
+   "color": [
+    0.35,
+    0.6,
+    0.25,
+    0.4
+   ]
+  },
+  {
+   "kind": "splash_mist",
+   "pos": [
+    9.0,
+    59.7,
+    -1.8000000000000003
+   ],
+   "radius_m": 1.2000000000000002,
+   "rise_m_s": 0.7,
+   "size_m": 3.5999999999999996,
+   "color": [
+    0.35,
+    0.6,
+    0.25,
+    0.4
+   ]
+  },
+  {
+   "kind": "splash_mist",
+   "pos": [
+    27.0,
+    60.2,
+    -1.8000000000000003
+   ],
+   "radius_m": 0.96,
+   "rise_m_s": 0.7,
+   "size_m": 2.88,
+   "color": [
+    0.35,
+    0.6,
+    0.25,
+    0.4
+   ]
+  },
+  {
+   "kind": "splash_mist",
+   "pos": [
+    -19.0,
+    26.2,
+    -1.8000000000000003
+   ],
+   "radius_m": 0.6000000000000001,
+   "rise_m_s": 0.7,
+   "size_m": 1.7999999999999998,
+   "color": [
+    0.35,
+    0.6,
+    0.25,
+    0.4
+   ]
+  },
+  {
+   "kind": "splash_mist",
+   "pos": [
+    18.0,
+    35.2,
+    -1.8000000000000003
+   ],
+   "radius_m": 0.7200000000000001,
+   "rise_m_s": 0.7,
+   "size_m": 2.16,
+   "color": [
+    0.35,
+    0.6,
+    0.25,
+    0.4
+   ]
+  },
+  {
+   "kind": "glints",
+   "center": [
+    -9.4,
+    0.4,
+    0.39
+   ],
+   "extent": [
+    1.5,
+    1.1,
+    0.325
+   ],
+   "count": 9,
+   "color": [
+    1.0,
+    0.85,
+    0.5
+   ],
+   "note": "twinkling sparkles on the gold"
+  },
+  {
+   "kind": "glints",
+   "center": [
+    9.6,
+    0.35,
+    0.44999999999999996
+   ],
+   "extent": [
+    1.7,
+    1.2,
+    0.375
+   ],
+   "count": 12,
+   "color": [
+    1.0,
+    0.85,
+    0.5
+   ],
+   "note": "twinkling sparkles on the gold"
+  },
+  {
+   "kind": "glints",
+   "center": [
+    -11.4,
+    -1.6,
+    0.198
+   ],
+   "extent": [
+    0.9,
+    0.7,
+    0.165
+   ],
+   "count": 3,
+   "color": [
+    1.0,
+    0.85,
+    0.5
+   ],
+   "note": "twinkling sparkles on the gold"
+  },
+  {
+   "kind": "glints",
+   "center": [
+    10.9,
+    -1.9,
+    0.18
+   ],
+   "extent": [
+    0.7,
+    0.6,
+    0.15
+   ],
+   "count": 2,
+   "color": [
+    1.0,
+    0.85,
+    0.5
+   ],
+   "note": "twinkling sparkles on the gold"
+  },
+  {
+   "kind": "glints",
+   "center": [
+    -6.5,
+    13.0,
+    -1.2300000000000002
+   ],
+   "extent": [
+    1.6,
+    1.0,
+    0.35
+   ],
+   "count": 9,
+   "color": [
+    1.0,
+    0.85,
+    0.5
+   ],
+   "note": "twinkling sparkles on the gold"
+  },
+  {
+   "kind": "glints",
+   "center": [
+    8.0,
+    20.0,
+    -0.7600000000000002
+   ],
+   "extent": [
+    2.2,
+    1.4,
+    0.45
+   ],
+   "count": 18,
+   "color": [
+    1.0,
+    0.85,
+    0.5
+   ],
+   "note": "twinkling sparkles on the gold"
+  },
+  {
+   "kind": "glints",
+   "center": [
+    -6.9,
+    2.5,
+    0.192
+   ],
+   "extent": [
+    0.75,
+    0.42,
+    0.16
+   ],
+   "count": 1,
+   "color": [
+    1.0,
+    0.85,
+    0.5
+   ],
+   "note": "twinkling sparkles on the gold"
+  },
+  {
+   "kind": "glints",
+   "center": [
+    6.4,
+    2.55,
+    0.216
+   ],
+   "extent": [
+    0.85,
+    0.45,
+    0.18
+   ],
+   "count": 2,
+   "color": [
+    1.0,
+    0.85,
+    0.5
+   ],
+   "note": "twinkling sparkles on the gold"
+  },
+  {
+   "kind": "lightning",
+   "object": "roost_lightning",
+   "note": "three bolts at X -12, 3, 15 (Y 38): show the nearest one during the first and third pulse of each flash; hidden otherwise"
+  },
+  {
+   "kind": "motes",
+   "note": "spores over the slop",
+   "box_center": [
+    0,
+    9.0,
+    -0.6000000000000001
+   ],
+   "box_extent": [
+    16,
+    6,
+    1.6
+   ],
+   "count": 120,
+   "color": [
+    0.55,
+    1.0,
+    0.25,
+    0.9
+   ],
+   "size_m": 0.045,
+   "rise_m_s": 0.25
+  },
+  {
+   "kind": "mist",
+   "center": [
+    0,
+    10.0,
+    -1.7000000000000002
+   ],
+   "size": [
+    70,
+    16
+   ],
+   "color": [
+    0.22,
+    0.42,
+    0.12
+   ],
+   "density": 0.3
+  },
+  {
+   "kind": "mist",
+   "center": [
+    0,
+    32.0,
+    -1.2000000000000002
+   ],
+   "size": [
+    120,
+    30
+   ],
+   "color": [
+    0.18,
+    0.36,
+    0.1
+   ],
+   "density": 0.45
+  }
+ ],
+ "objects": [
+  {
+   "name": "roost_ledge",
+   "triangles": 12,
+   "materials": [
+    "Rock035"
+   ]
+  },
+  {
+   "name": "roost_rocks",
+   "triangles": 5206,
+   "materials": [
+    "dark_rock"
+   ]
+  },
+  {
+   "name": "roost_cavern",
+   "triangles": 3474,
+   "materials": [
+    "dark_rock__far"
+   ]
+  },
+  {
+   "name": "roost_bones",
+   "triangles": 33132,
+   "materials": [
+    "Ivory001B"
+   ]
+  },
+  {
+   "name": "roost_hoard",
+   "triangles": 2304,
+   "materials": [
+    "Metal042A"
+   ]
+  },
+  {
+   "name": "roost_coins",
+   "triangles": 11564,
+   "materials": [
+    "Metal042A"
+   ]
+  },
+  {
+   "name": "roost_tar_pools",
+   "triangles": 368,
+   "materials": [
+    "WATER_tar"
+   ]
+  },
+  {
+   "name": "roost_tar_mud",
+   "triangles": 80,
+   "materials": [
+    "brown_mud_03"
+   ]
+  },
+  {
+   "name": "roost_cracks",
+   "triangles": 1570,
+   "materials": [
+    "GLOW_crack"
+   ]
+  },
+  {
+   "name": "roost_lake",
+   "triangles": 2,
+   "materials": [
+    "GLOW_slop_lake"
+   ]
+  },
+  {
+   "name": "roost_ship",
+   "triangles": 328,
+   "materials": [
+    "Wood051"
+   ]
+  },
+  {
+   "name": "roost_rigging",
+   "triangles": 84,
+   "materials": [
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "roost_tar_falls",
+   "triangles": 1008,
+   "materials": [
+    "WATER_tarfall"
+   ]
+  },
+  {
+   "name": "roost_grips",
+   "triangles": 96,
+   "materials": [
+    "Leather021"
+   ]
+  },
+  {
+   "name": "roost_chest",
+   "triangles": 88,
+   "materials": [
+    "Wood051"
+   ]
+  },
+  {
+   "name": "roost_chest_iron",
+   "triangles": 88,
+   "materials": [
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "roost_lightning",
+   "triangles": 144,
+   "materials": [
+    "GLOW_lightning"
+   ]
+  },
+  {
+   "name": "roost_prop_wooden_crate_02_1",
+   "triangles": 5176,
+   "materials": [
+    "PH_wooden_crate_02_main"
+   ]
+  },
+  {
+   "name": "roost_prop_wine_barrel_01_1",
+   "triangles": 10820,
+   "materials": [
+    "PH_wine_barrel_01_main"
+   ]
+  },
+  {
+   "name": "ORIGIN_MARKER_1m",
+   "triangles": 12,
+   "materials": [
+    "ORIGIN_MARKER"
+   ]
+  }
+ ],
+ "placements": [
+  {
+   "object": "roost_ledge",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_rocks",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_cavern",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_bones",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_hoard",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_coins",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_tar_pools",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_tar_mud",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_cracks",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_lake",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_ship",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_rigging",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_tar_falls",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_grips",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_chest",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_chest_iron",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "roost_lightning",
+   "pivot_ue_cm": [
+    0.0,
+    -3800.0,
+    1380.0
+   ]
+  },
+  {
+   "object": "roost_prop_wooden_crate_02_1",
+   "pivot_ue_cm": [
+    -1200.0,
+    -210.0,
+    -12.0
+   ]
+  },
+  {
+   "object": "roost_prop_wine_barrel_01_1",
+   "pivot_ue_cm": [
+    1220.0,
+    -160.0,
+    37.0
+   ]
+  },
+  {
+   "object": "ORIGIN_MARKER_1m",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  }
+ ],
+ "triangles_total": 75544,
+ "strip_check": "clean",
+ "notes": [
+  "End spires at X +-8.2 (radius 1.0 at the floor) put their inner faces on X +-7.2.",
+  "Glowing cracks (roost_cracks) are 1 mm proud of the ledge; they could equally be decals.",
+  "roost_lightning is pivoted at its top and should be hidden except during flashes."
+ ]
+}

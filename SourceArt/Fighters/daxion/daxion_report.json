@@ -1,0 +1,431 @@
+{
+ "slots": {
+  "skin": {
+   "material": "M_daxion_skin",
+   "size": 2048,
+   "files": {
+    "basecolor": "daxion_skin_basecolor.png",
+    "normal": "daxion_skin_normal.png",
+    "orm": "daxion_skin_orm.png"
+   },
+   "objects": [
+    "daxion_body"
+   ]
+  },
+  "hairface": {
+   "material": "M_daxion_hairface",
+   "size": 2048,
+   "files": {
+    "basecolor": "daxion_hairface_basecolor.png",
+    "normal": "daxion_hairface_normal.png",
+    "orm": "daxion_hairface_orm.png",
+    "emissive": "daxion_hairface_emissive.png"
+   },
+   "objects": [
+    "daxion_eyes",
+    "daxion_brows",
+    "daxion_lashes",
+    "daxion_hair"
+   ]
+  },
+  "cloth": {
+   "material": "M_daxion_cloth",
+   "size": 2048,
+   "files": {
+    "basecolor": "daxion_cloth_basecolor.png",
+    "normal": "daxion_cloth_normal.png",
+    "orm": "daxion_cloth_orm.png"
+   },
+   "objects": [
+    "daxion_trousers",
+    "daxion_boot_l",
+    "daxion_sole_l",
+    "daxion_boot_r",
+    "daxion_sole_r",
+    "daxion_robe",
+    "daxion_collar0",
+    "daxion_collar2",
+    "daxion_sash",
+    "daxion_robe_skirt"
+   ]
+  },
+  "metal": {
+   "material": "M_daxion_metal",
+   "size": 512,
+   "files": {
+    "basecolor": "daxion_metal_basecolor.png",
+    "normal": "daxion_metal_normal.png",
+    "orm": "daxion_metal_orm.png"
+   },
+   "objects": [
+    "daxion_ring"
+   ]
+  }
+ },
+ "texture_notes": {
+  "skin": [
+   "tinted young_lightskinned_male_diffuse3.png -> #b8835c (per-channel gain [0.909, 0.833, 0.607])",
+   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #b8835c"
+  ],
+  "hairface": [
+   "hair: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/hair/long01/long01_diffuse.png -> tile (0.0, 0.5, 1.0, 0.5)",
+   "eyes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyes/materials/deepblue_eye.png -> tile (0.0, 0.0, 0.5, 0.5)",
+   "brows: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyebrows/eyebrow001/eyebrow001.png -> tile (0.5, 0.25, 0.25, 0.25)",
+   "lashes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyelashes/eyelashes01/eyelashes01.png -> tile (0.75, 0.25, 0.25, 0.25)"
+  ],
+  "cloth": [
+   "daxion_trousers: Fabric001 tinted #c9d0d8, 14 cm tiles, roughness 0.85, metallic 0",
+   "daxion_boot_l: Leather021 tinted #c4cbd3, 18 cm tiles, roughness 0.65, metallic 0",
+   "daxion_sole_l: Leather021 tinted #c4cbd3, 18 cm tiles, roughness 0.65, metallic 0",
+   "daxion_boot_r: Leather021 tinted #c4cbd3, 18 cm tiles, roughness 0.65, metallic 0",
+   "daxion_sole_r: Leather021 tinted #c4cbd3, 18 cm tiles, roughness 0.65, metallic 0",
+   "daxion_robe: Fabric001 tinted #cdd4dc, 16 cm tiles, roughness 0.90, metallic 0",
+   "daxion_collar0: Fabric001 tinted #cdd4dc, 16 cm tiles, roughness 0.90, metallic 0",
+   "daxion_collar2: Fabric001 tinted #cdd4dc, 16 cm tiles, roughness 0.90, metallic 0",
+   "daxion_sash: Fabric040 tinted #b9c1cb, 4 cm tiles, roughness 0.60, metallic 0",
+   "daxion_robe_skirt: Fabric001 tinted #cdd4dc, 16 cm tiles, roughness 0.90, metallic 0"
+  ],
+  "metal": [
+   "daxion_ring: Metal042A tinted #c46a3a, 5 cm tiles, roughness 0.30, metallic 1"
+  ]
+ },
+ "parts": {
+  "daxion_body": {
+   "vertices": 8167,
+   "faces": 8050,
+   "triangles": 16100,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_skin",
+   "surface": "body",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "clavicle_l",
+    "clavicle_r",
+    "foot_l",
+    "hand_l",
+    "hand_r",
+    "head",
+    "index_01_l",
+    "index_01_r",
+    "index_02_l",
+    "index_02_r",
+    "index_03_l",
+    "index_03_r",
+    "lowerarm_l",
+    "lowerarm_r",
+    "middle_01_l",
+    "middle_01_r",
+    "middle_02_l",
+    "middle_02_r",
+    "middle_03_l",
+    "middle_03_r",
+    "neck_01",
+    "pelvis",
+    "pinky_01_l",
+    "pinky_01_r",
+    "pinky_02_l",
+    "pinky_02_r",
+    "pinky_03_l",
+    "pinky_03_r",
+    "ring_01_l",
+    "ring_01_r",
+    "ring_02_l",
+    "ring_02_r",
+    "ring_03_l",
+    "ring_03_r",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "thumb_01_l",
+    "thumb_01_r",
+    "thumb_02_l",
+    "thumb_02_r",
+    "thumb_03_l",
+    "thumb_03_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "daxion_eyes": {
+   "vertices": 1064,
+   "faces": 1020,
+   "triangles": 2040,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_hairface",
+   "surface": "eyes",
+   "bones": [
+    "head"
+   ]
+  },
+  "daxion_brows": {
+   "vertices": 124,
+   "faces": 96,
+   "triangles": 192,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_hairface",
+   "surface": "brows",
+   "bones": [
+    "head"
+   ]
+  },
+  "daxion_lashes": {
+   "vertices": 250,
+   "faces": 184,
+   "triangles": 368,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_hairface",
+   "surface": "lashes",
+   "bones": [
+    "head"
+   ]
+  },
+  "daxion_hair": {
+   "vertices": 3239,
+   "faces": 2054,
+   "triangles": 4108,
+   "max_influences": 7,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_hairface",
+   "surface": "hair",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "daxion_trousers": {
+   "vertices": 2314,
+   "faces": 2324,
+   "triangles": 4632,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_cloth",
+   "surface": "trousers",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "foot_l",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "daxion_boot_l": {
+   "vertices": 1344,
+   "faces": 1368,
+   "triangles": 2684,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_cloth",
+   "surface": "boots",
+   "bones": [
+    "ball_l",
+    "calf_l",
+    "foot_l"
+   ]
+  },
+  "daxion_sole_l": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_cloth",
+   "surface": "boots",
+   "bones": [
+    "ball_l",
+    "foot_l"
+   ]
+  },
+  "daxion_boot_r": {
+   "vertices": 1344,
+   "faces": 1368,
+   "triangles": 2684,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_cloth",
+   "surface": "boots",
+   "bones": [
+    "ball_r",
+    "calf_r",
+    "foot_r"
+   ]
+  },
+  "daxion_sole_r": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_cloth",
+   "surface": "boots",
+   "bones": [
+    "ball_r",
+    "foot_r"
+   ]
+  },
+  "daxion_robe": {
+   "vertices": 5032,
+   "faces": 5148,
+   "triangles": 10072,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_cloth",
+   "surface": "robe",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "lowerarm_l",
+    "lowerarm_r",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "daxion_collar0": {
+   "vertices": 48,
+   "faces": 46,
+   "triangles": 92,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_cloth",
+   "surface": "robe",
+   "bones": [
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "upperarm_r"
+   ]
+  },
+  "daxion_collar2": {
+   "vertices": 48,
+   "faces": 46,
+   "triangles": 92,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_cloth",
+   "surface": "robe",
+   "bones": [
+    "clavicle_l",
+    "head",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "upperarm_l"
+   ]
+  },
+  "daxion_sash": {
+   "vertices": 338,
+   "faces": 366,
+   "triangles": 676,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_cloth",
+   "surface": "sash",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "daxion_robe_skirt": {
+   "vertices": 1580,
+   "faces": 1578,
+   "triangles": 3156,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_cloth",
+   "surface": "robe",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "daxion_ring": {
+   "vertices": 84,
+   "faces": 84,
+   "triangles": 168,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_daxion_metal",
+   "surface": "ring",
+   "bones": [
+    "middle_01_r"
+   ]
+  }
+ },
+ "triangles_total": 47280,
+ "top_of_everything_cm": 196.09,
+ "standing_height_cm": 195.0,
+ "lowest_point_cm": 0.0,
+ "bones": 53,
+ "root_bone": [
+  "root"
+ ],
+ "id": "daxion",
+ "name": "Daxion",
+ "height": {
+  "macro_range_m": [
+   1.3833,
+   2.4406
+  ],
+  "height_macro": 0.646973,
+  "height_before_scale_m": 1.93502,
+  "uniform_scale": 0.999987,
+  "body_height_m": 1.935,
+  "targets_applied": 5
+ },
+ "timings_s": {
+  "enable_mpfb": 0.19,
+  "mpfb_body": 0.92,
+  "bake_body": 0.02,
+  "outfit": 1.47,
+  "textures": 13.93,
+  "finalize": 0.01,
+  "save_blend": 0.02,
+  "export_fbx": 0.28
+ },
+ "script_wall_s": 16.8,
+ "peak_rss_mb": 1729.7
+}

@@ -1,0 +1,1644 @@
+{
+ "stage": "drowned_chapel",
+ "title": "The Drowned Chapel",
+ "units": {
+  "positions": "Blender metres, Z up, fighting plane XZ at Y=0, camera at -Y looking +Y",
+  "unreal": "UE = (100*x, -100*y, 100*z) cm; *_ue_cm fields are already converted",
+  "lights": "candela (point/spot), lux (directional), glow strength in cd/m2; for manual exposure EV100 = 1.0",
+  "exposure_ev100": 1.0
+ },
+ "lights": [
+  {
+   "name": "key_warm",
+   "type": "directional",
+   "pos": [
+    -6,
+    -6,
+    10
+   ],
+   "color": [
+    1.0,
+    0.8,
+    0.62
+   ],
+   "lux": 3.0,
+   "dir": [
+    0.3699,
+    0.6957,
+    -0.6158
+   ],
+   "dir_ue": [
+    0.3699,
+    -0.6957,
+    -0.6158
+   ],
+   "shadows": true,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    -600,
+    600,
+    1000
+   ],
+   "source_angle_deg": 2.0,
+   "note": "warm candle-coloured key from the upper left front"
+  },
+  {
+   "name": "rim_cool",
+   "type": "directional",
+   "pos": [
+    0,
+    20,
+    10
+   ],
+   "color": [
+    0.62,
+    0.76,
+    1.0
+   ],
+   "lux": 2.8,
+   "dir": [
+    0.0,
+    -0.9135,
+    -0.4068
+   ],
+   "dir_ue": [
+    0.0,
+    0.9135,
+    -0.4068
+   ],
+   "shadows": false,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    0,
+    -2000,
+    1000
+   ],
+   "source_angle_deg": 0.05,
+   "specular_scale": 1.5,
+   "affects": "not_floor",
+   "note": "cool moonlit rim from the rose end"
+  },
+  {
+   "name": "fill_camera",
+   "type": "directional",
+   "pos": [
+    0,
+    -10,
+    3
+   ],
+   "color": [
+    0.72,
+    0.8,
+    0.92
+   ],
+   "lux": 1.3,
+   "dir": [
+    -0.1361,
+    0.9686,
+    -0.2081
+   ],
+   "dir_ue": [
+    -0.1361,
+    -0.9686,
+    -0.2081
+   ],
+   "shadows": false,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    0,
+    1000,
+    300
+   ],
+   "source_angle_deg": 0.05,
+   "specular_scale": 0.25,
+   "affects": "fighters_only",
+   "note": "soft fill from the camera side, fighters only"
+  },
+  {
+   "name": "moon_rose",
+   "type": "spot",
+   "pos": [
+    0.0,
+    35.6,
+    7.9
+   ],
+   "color": [
+    0.6,
+    0.74,
+    1.0
+   ],
+   "intensity_candela": 1400.0,
+   "radius_m": 48.0,
+   "dir": [
+    0.0,
+    -0.9348,
+    -0.3551
+   ],
+   "dir_ue": [
+    0.0,
+    0.9348,
+    -0.3551
+   ],
+   "cone_inner_deg": 12,
+   "cone_outer_deg": 18,
+   "shadows": true,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    0.0,
+    -3560.0,
+    790.0
+   ],
+   "source_radius_m": 0.3,
+   "volumetric_scattering": 10.0,
+   "note": "signature: moonlight from outside the rose window; its glass casts no shadow, so the tracery throws its pattern on the water"
+  },
+  {
+   "name": "aisle_candles_1",
+   "type": "point",
+   "pos": [
+    -10.6,
+    8.8,
+    2.0
+   ],
+   "color": [
+    1.0,
+    0.62,
+    0.3
+   ],
+   "intensity_candela": 22.0,
+   "radius_m": 9.0,
+   "shadows": false,
+   "flicker": 0.12,
+   "flicker_speed": 6.0,
+   "pos_ue_cm": [
+    -1060.0,
+    -880.0,
+    200.0
+   ],
+   "source_radius_m": 0.5,
+   "specular_scale": 0.1
+  },
+  {
+   "name": "aisle_candles_2",
+   "type": "point",
+   "pos": [
+    10.6,
+    8.8,
+    2.0
+   ],
+   "color": [
+    1.0,
+    0.62,
+    0.3
+   ],
+   "intensity_candela": 22.0,
+   "radius_m": 9.0,
+   "shadows": false,
+   "flicker": 0.12,
+   "flicker_speed": 6.0,
+   "pos_ue_cm": [
+    1060.0,
+    -880.0,
+    200.0
+   ],
+   "source_radius_m": 0.5,
+   "specular_scale": 0.1
+  },
+  {
+   "name": "rack_1",
+   "type": "point",
+   "pos": [
+    -6.0,
+    3.8,
+    1.5
+   ],
+   "color": [
+    1.0,
+    0.58,
+    0.26
+   ],
+   "intensity_candela": 26.0,
+   "radius_m": 6.0,
+   "shadows": false,
+   "flicker": 0.15,
+   "flicker_speed": 7.0,
+   "pos_ue_cm": [
+    -600.0,
+    -380.0,
+    150.0
+   ],
+   "source_radius_m": 0.4,
+   "specular_scale": 0.08,
+   "note": "candle warmth"
+  },
+  {
+   "name": "rack_2",
+   "type": "point",
+   "pos": [
+    6.1,
+    4.6,
+    1.5
+   ],
+   "color": [
+    1.0,
+    0.58,
+    0.26
+   ],
+   "intensity_candela": 26.0,
+   "radius_m": 6.0,
+   "shadows": false,
+   "flicker": 0.15,
+   "flicker_speed": 7.0,
+   "pos_ue_cm": [
+    610.0,
+    -460.0,
+    150.0
+   ],
+   "source_radius_m": 0.4,
+   "specular_scale": 0.08,
+   "note": "candle warmth"
+  },
+  {
+   "name": "rack_3",
+   "type": "point",
+   "pos": [
+    -5.6,
+    12.5,
+    1.5
+   ],
+   "color": [
+    1.0,
+    0.58,
+    0.26
+   ],
+   "intensity_candela": 26.0,
+   "radius_m": 6.0,
+   "shadows": false,
+   "flicker": 0.15,
+   "flicker_speed": 7.0,
+   "pos_ue_cm": [
+    -560.0,
+    -1250.0,
+    150.0
+   ],
+   "source_radius_m": 0.4,
+   "specular_scale": 0.08,
+   "note": "candle warmth"
+  },
+  {
+   "name": "rack_4",
+   "type": "point",
+   "pos": [
+    5.9,
+    11.3,
+    1.5
+   ],
+   "color": [
+    1.0,
+    0.58,
+    0.26
+   ],
+   "intensity_candela": 26.0,
+   "radius_m": 6.0,
+   "shadows": false,
+   "flicker": 0.15,
+   "flicker_speed": 7.0,
+   "pos_ue_cm": [
+    590.0,
+    -1130.0,
+    150.0
+   ],
+   "source_radius_m": 0.4,
+   "specular_scale": 0.08,
+   "note": "candle warmth"
+  },
+  {
+   "name": "altar",
+   "type": "point",
+   "pos": [
+    0,
+    29.0,
+    1.8
+   ],
+   "color": [
+    1.0,
+    0.62,
+    0.3
+   ],
+   "intensity_candela": 30.0,
+   "radius_m": 7.0,
+   "shadows": false,
+   "flicker": 0.1,
+   "flicker_speed": 5.0,
+   "pos_ue_cm": [
+    0,
+    -2900.0,
+    180.0
+   ],
+   "source_radius_m": 0.6,
+   "specular_scale": 0.2
+  },
+  {
+   "name": "pier_candles_1",
+   "type": "point",
+   "pos": [
+    -7.2,
+    6.1,
+    0.9
+   ],
+   "color": [
+    1.0,
+    0.6,
+    0.28
+   ],
+   "intensity_candela": 10.0,
+   "radius_m": 4.0,
+   "shadows": false,
+   "flicker": 0.15,
+   "flicker_speed": 7.0,
+   "pos_ue_cm": [
+    -720.0,
+    -610.0,
+    90.0
+   ],
+   "source_radius_m": 0.2,
+   "specular_scale": 0.1
+  },
+  {
+   "name": "pier_candles_2",
+   "type": "point",
+   "pos": [
+    7.2,
+    6.1,
+    0.9
+   ],
+   "color": [
+    1.0,
+    0.6,
+    0.28
+   ],
+   "intensity_candela": 10.0,
+   "radius_m": 4.0,
+   "shadows": false,
+   "flicker": 0.15,
+   "flicker_speed": 7.0,
+   "pos_ue_cm": [
+    720.0,
+    -610.0,
+    90.0
+   ],
+   "source_radius_m": 0.2,
+   "specular_scale": 0.1
+  },
+  {
+   "name": "aisle_moon_1",
+   "type": "point",
+   "pos": [
+    -10.4,
+    20.0,
+    4.0
+   ],
+   "color": [
+    0.45,
+    0.58,
+    1.0
+   ],
+   "intensity_candela": 12.0,
+   "radius_m": 10.0,
+   "shadows": false,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    -1040.0,
+    -2000.0,
+    400.0
+   ],
+   "source_radius_m": 1.0,
+   "note": "moonlight through the aisle windows"
+  },
+  {
+   "name": "aisle_moon_2",
+   "type": "point",
+   "pos": [
+    10.4,
+    20.0,
+    4.0
+   ],
+   "color": [
+    0.45,
+    0.58,
+    1.0
+   ],
+   "intensity_candela": 12.0,
+   "radius_m": 10.0,
+   "shadows": false,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    1040.0,
+    -2000.0,
+    400.0
+   ],
+   "source_radius_m": 1.0,
+   "note": "moonlight through the aisle windows"
+  }
+ ],
+ "glows": [
+  {
+   "material": "GLOW_candle",
+   "color": [
+    1.0,
+    0.5,
+    0.14
+   ],
+   "strength": 9.0,
+   "note": "candle flames: flicker, a soft additive halo helps"
+  },
+  {
+   "material": "GLOW_rose_blue",
+   "color": [
+    0.22,
+    0.4,
+    1.0
+   ],
+   "strength": 3.0,
+   "pattern": 0.35,
+   "pattern_scale": 6.0,
+   "note": "rose window glass, moonlit"
+  },
+  {
+   "material": "GLOW_rose_violet",
+   "color": [
+    0.45,
+    0.28,
+    0.95
+   ],
+   "strength": 2.4,
+   "pattern": 0.35,
+   "pattern_scale": 6.0,
+   "note": "rose window glass"
+  },
+  {
+   "material": "GLOW_rose_red",
+   "color": [
+    0.95,
+    0.16,
+    0.12
+   ],
+   "strength": 2.0,
+   "pattern": 0.35,
+   "pattern_scale": 6.0,
+   "note": "rose window glass"
+  },
+  {
+   "material": "GLOW_rose_gold",
+   "color": [
+    1.0,
+    0.72,
+    0.32
+   ],
+   "strength": 2.4,
+   "note": "rose window hub"
+  },
+  {
+   "material": "GLOW_lancet",
+   "color": [
+    0.38,
+    0.5,
+    0.95
+   ],
+   "strength": 1.5,
+   "pattern": 0.35,
+   "pattern_scale": 5.0,
+   "note": "lancets beside the altar and the aisle windows"
+  },
+  {
+   "material": "GLOW_ember",
+   "color": [
+    1.0,
+    0.42,
+    0.1
+   ],
+   "strength": 4.0,
+   "note": "censer embers"
+  }
+ ],
+ "water": [
+  {
+   "material": "WATER_flood",
+   "color": [
+    0.03,
+    0.05,
+    0.06
+   ],
+   "roughness": 0.04,
+   "opacity": 0.35,
+   "note": "a 3.5 cm sheet over the flags: clear, reflective, ripples and drip rings; no collision"
+  }
+ ],
+ "animated": [
+  {
+   "object": "drowned_chapel_censer_1",
+   "kind": "sway",
+   "amp": 2.2,
+   "speed": 0.45,
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "axis_ue": [
+    1,
+    0,
+    0
+   ],
+   "pivot": [
+    -3.3,
+    6.1,
+    11.0
+   ],
+   "pivot_ue_cm": [
+    -330.0,
+    -610.0,
+    1100.0
+   ],
+   "note": "pendulum from the tie beam; add 0.6x about Y; ember band flickers"
+  },
+  {
+   "object": "drowned_chapel_censer_2",
+   "kind": "sway",
+   "amp": 2.2,
+   "speed": 0.45,
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "axis_ue": [
+    1,
+    0,
+    0
+   ],
+   "pivot": [
+    3.9,
+    10.5,
+    11.0
+   ],
+   "pivot_ue_cm": [
+    390.0,
+    -1050.0,
+    1100.0
+   ],
+   "note": "pendulum from the tie beam; add 0.6x about Y; ember band flickers"
+  },
+  {
+   "object": "drowned_chapel_censer_3",
+   "kind": "sway",
+   "amp": 2.2,
+   "speed": 0.45,
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "axis_ue": [
+    1,
+    0,
+    0
+   ],
+   "pivot": [
+    -0.8,
+    14.9,
+    11.0
+   ],
+   "pivot_ue_cm": [
+    -80.0,
+    -1490.0,
+    1100.0
+   ],
+   "note": "pendulum from the tie beam; add 0.6x about Y; ember band flickers"
+  },
+  {
+   "object": "drowned_chapel_censer_4",
+   "kind": "sway",
+   "amp": 2.2,
+   "speed": 0.45,
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "axis_ue": [
+    1,
+    0,
+    0
+   ],
+   "pivot": [
+    2.4,
+    19.3,
+    11.0
+   ],
+   "pivot_ue_cm": [
+    240.0,
+    -1930.0,
+    1100.0
+   ],
+   "note": "pendulum from the tie beam; add 0.6x about Y; ember band flickers"
+  },
+  {
+   "object": "drowned_chapel_banner_1",
+   "kind": "sway",
+   "amp": 1.4,
+   "speed": 0.5,
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "axis_ue": [
+    1,
+    0,
+    0
+   ],
+   "pivot": [
+    -7.35,
+    8.3,
+    9.2
+   ],
+   "pivot_ue_cm": [
+    -735.0,
+    -830.0,
+    920.0
+   ],
+   "note": "slow draught; better as cloth or a WPO wave"
+  },
+  {
+   "object": "drowned_chapel_banner_2",
+   "kind": "sway",
+   "amp": 1.4,
+   "speed": 0.5,
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "axis_ue": [
+    1,
+    0,
+    0
+   ],
+   "pivot": [
+    7.35,
+    12.8,
+    9.2
+   ],
+   "pivot_ue_cm": [
+    735.0,
+    -1280.0,
+    920.0
+   ],
+   "note": "slow draught; better as cloth or a WPO wave"
+  },
+  {
+   "object": "drowned_chapel_banner_3",
+   "kind": "sway",
+   "amp": 1.4,
+   "speed": 0.5,
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "axis_ue": [
+    1,
+    0,
+    0
+   ],
+   "pivot": [
+    -7.35,
+    17.1,
+    9.2
+   ],
+   "pivot_ue_cm": [
+    -735.0,
+    -1710.0,
+    920.0
+   ],
+   "note": "slow draught; better as cloth or a WPO wave"
+  },
+  {
+   "object": "drowned_chapel_banner_4",
+   "kind": "sway",
+   "amp": 1.4,
+   "speed": 0.5,
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "axis_ue": [
+    1,
+    0,
+    0
+   ],
+   "pivot": [
+    7.35,
+    3.9,
+    9.2
+   ],
+   "pivot_ue_cm": [
+    735.0,
+    -390.0,
+    920.0
+   ],
+   "note": "slow draught; better as cloth or a WPO wave"
+  },
+  {
+   "object": "drowned_chapel_banner_5",
+   "kind": "sway",
+   "amp": 1.4,
+   "speed": 0.5,
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "axis_ue": [
+    1,
+    0,
+    0
+   ],
+   "pivot": [
+    7.35,
+    25.9,
+    9.2
+   ],
+   "pivot_ue_cm": [
+    735.0,
+    -2590.0,
+    920.0
+   ],
+   "note": "slow draught; better as cloth or a WPO wave"
+  },
+  {
+   "object": "drowned_chapel_banner_6",
+   "kind": "sway",
+   "amp": 1.4,
+   "speed": 0.5,
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "axis_ue": [
+    1,
+    0,
+    0
+   ],
+   "pivot": [
+    -7.35,
+    30.3,
+    9.2
+   ],
+   "pivot_ue_cm": [
+    -735.0,
+    -3030.0,
+    920.0
+   ],
+   "note": "slow draught; better as cloth or a WPO wave"
+  }
+ ],
+ "fog": {
+  "color": [
+   0.06,
+   0.075,
+   0.1
+  ],
+  "density": 0.3,
+  "height_falloff": 0.8,
+  "density_per_m": 0.03,
+  "height_falloff_per_m": 0.08,
+  "fog_height_m": 0.5,
+  "fog_height_ue_cm": 50.0,
+  "note": "volumetric fog: the moon spot through the rose should draw a visible shaft (Volumetric Scattering ~3)"
+ },
+ "ambient": {
+  "color": [
+   0.25,
+   0.3,
+   0.42
+  ],
+  "intensity": 0.3,
+  "units": "cd/m2 sky radiance at EV100 1.0 (Sky Light intensity: tune)"
+ },
+ "music": "music_chapel",
+ "footstep": "stone",
+ "sky": "none",
+ "surfaces": {
+  "medieval_blocks_03": {
+   "set": "medieval_blocks_03",
+   "tiling": 0.5,
+   "tint": [
+    0.4,
+    0.43,
+    0.48
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "mossy_stone_wall": {
+   "set": "mossy_stone_wall",
+   "tiling": 0.5,
+   "tint": [
+    0.36,
+    0.4,
+    0.38
+   ],
+   "roughness": 0.9,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "monastery_stone_floor": {
+   "set": "monastery_stone_floor",
+   "tiling": 0.5556,
+   "tint": [
+    0.4,
+    0.42,
+    0.45
+   ],
+   "roughness": 0.35,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Wood051": {
+   "set": "Wood051",
+   "tiling": 1.25,
+   "tint": [
+    0.62,
+    0.48,
+    0.36
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Ivory001B__wax": {
+   "set": "Ivory001B",
+   "tiling": 1.6667,
+   "tint": [
+    0.8,
+    0.72,
+    0.56
+   ],
+   "roughness": 0.6,
+   "metallic": 0.0,
+   "normal_strength": 1.0,
+   "emissive_color": [
+    1.0,
+    0.55,
+    0.25
+   ],
+   "emissive": 0.35
+  },
+  "Metal055A": {
+   "set": "Metal055A",
+   "tiling": 1.0,
+   "tint": [
+    0.22,
+    0.21,
+    0.2
+   ],
+   "roughness": 1.0,
+   "metallic": 1.0,
+   "normal_strength": 1.0
+  },
+  "Metal042A": {
+   "set": "Metal042A",
+   "tiling": 1.0,
+   "tint": [
+    0.78,
+    0.55,
+    0.28
+   ],
+   "roughness": 1.4,
+   "metallic": 1.0,
+   "normal_strength": 1.0
+  },
+  "Fabric001__banner": {
+   "set": "Fabric001",
+   "tiling": 2.0,
+   "tint": [
+    0.62,
+    0.58,
+    0.5
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0,
+   "two_sided": true
+  },
+  "Fabric066__banner": {
+   "set": "Fabric066",
+   "tiling": 2.5,
+   "tint": [
+    0.12,
+    0.1,
+    0.1
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0,
+   "two_sided": true
+  },
+  "Fabric001": {
+   "set": "Fabric001",
+   "tiling": 2.0,
+   "tint": [
+    0.72,
+    0.68,
+    0.58
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Fabric001__petal": {
+   "set": "Fabric001",
+   "tiling": 2.0,
+   "tint": [
+    0.66,
+    0.63,
+    0.56
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0,
+   "two_sided": true
+  }
+ },
+ "props": [],
+ "fx": [
+  {
+   "kind": "smoke",
+   "pos": [
+    -3.3,
+    6.1000000000000005,
+    4.05
+   ],
+   "attach": "drowned_chapel_censer_1",
+   "radius_m": 0.05,
+   "rise_m_s": 0.35,
+   "size_m": 0.5,
+   "color": [
+    0.55,
+    0.6,
+    0.7,
+    0.28
+   ]
+  },
+  {
+   "kind": "smoke",
+   "pos": [
+    3.9,
+    10.5,
+    4.55
+   ],
+   "attach": "drowned_chapel_censer_2",
+   "radius_m": 0.05,
+   "rise_m_s": 0.35,
+   "size_m": 0.5,
+   "color": [
+    0.55,
+    0.6,
+    0.7,
+    0.28
+   ]
+  },
+  {
+   "kind": "smoke",
+   "pos": [
+    -0.8,
+    14.9,
+    4.85
+   ],
+   "attach": "drowned_chapel_censer_3",
+   "radius_m": 0.05,
+   "rise_m_s": 0.35,
+   "size_m": 0.5,
+   "color": [
+    0.55,
+    0.6,
+    0.7,
+    0.28
+   ]
+  },
+  {
+   "kind": "smoke",
+   "pos": [
+    2.4,
+    19.3,
+    5.25
+   ],
+   "attach": "drowned_chapel_censer_4",
+   "radius_m": 0.05,
+   "rise_m_s": 0.35,
+   "size_m": 0.5,
+   "color": [
+    0.55,
+    0.6,
+    0.7,
+    0.28
+   ]
+  },
+  {
+   "kind": "motes",
+   "note": "dust in the moon shaft",
+   "box_center": [
+    0,
+    21.8,
+    3.0
+   ],
+   "box_extent": [
+    3.0,
+    8.0,
+    3.0
+   ],
+   "count": 200,
+   "color": [
+    0.75,
+    0.85,
+    1.0,
+    0.8
+   ],
+   "size_m": 0.035
+  },
+  {
+   "kind": "motes",
+   "note": "warm specks near the fight",
+   "box_center": [
+    0,
+    6.8,
+    2.0
+   ],
+   "box_extent": [
+    8.0,
+    4.0,
+    1.8
+   ],
+   "count": 60,
+   "color": [
+    1.0,
+    0.8,
+    0.55,
+    0.5
+   ],
+   "size_m": 0.022
+  },
+  {
+   "kind": "mist",
+   "note": "low mist on the water",
+   "center": [
+    0,
+    20.8,
+    0.35
+   ],
+   "size": [
+    16,
+    16
+   ],
+   "color": [
+    0.42,
+    0.5,
+    0.62
+   ],
+   "density": 0.25
+  },
+  {
+   "kind": "drips",
+   "note": "drip rings on the water, a few per second",
+   "box_center": [
+    0,
+    12,
+    0.035
+   ],
+   "box_extent": [
+    10,
+    14,
+    0
+   ]
+  }
+ ],
+ "objects": [
+  {
+   "name": "drowned_chapel_candles_wax",
+   "triangles": 21476,
+   "materials": [
+    "Ivory001B__wax"
+   ]
+  },
+  {
+   "name": "drowned_chapel_candle_flames",
+   "triangles": 7472,
+   "materials": [
+    "GLOW_candle"
+   ]
+  },
+  {
+   "name": "drowned_chapel_pews",
+   "triangles": 17008,
+   "materials": [
+    "Wood051"
+   ]
+  },
+  {
+   "name": "drowned_chapel_rubble",
+   "triangles": 1136,
+   "materials": [
+    "medieval_blocks_03"
+   ]
+  },
+  {
+   "name": "drowned_chapel_floor",
+   "triangles": 540,
+   "materials": [
+    "monastery_stone_floor"
+   ]
+  },
+  {
+   "name": "drowned_chapel_water",
+   "triangles": 2,
+   "materials": [
+    "WATER_flood"
+   ]
+  },
+  {
+   "name": "drowned_chapel_piers",
+   "triangles": 16640,
+   "materials": [
+    "medieval_blocks_03"
+   ]
+  },
+  {
+   "name": "drowned_chapel_arcade_walls",
+   "triangles": 4680,
+   "materials": [
+    "medieval_blocks_03"
+   ]
+  },
+  {
+   "name": "drowned_chapel_damp",
+   "triangles": 704,
+   "materials": [
+    "mossy_stone_wall"
+   ]
+  },
+  {
+   "name": "drowned_chapel_aisle_walls",
+   "triangles": 24,
+   "materials": [
+    "mossy_stone_wall"
+   ]
+  },
+  {
+   "name": "drowned_chapel_ledges",
+   "triangles": 3592,
+   "materials": [
+    "medieval_blocks_03"
+   ]
+  },
+  {
+   "name": "drowned_chapel_lancets",
+   "triangles": 656,
+   "materials": [
+    "GLOW_lancet"
+   ]
+  },
+  {
+   "name": "drowned_chapel_east_wall",
+   "triangles": 672,
+   "materials": [
+    "medieval_blocks_03"
+   ]
+  },
+  {
+   "name": "drowned_chapel_tracery",
+   "triangles": 8248,
+   "materials": [
+    "medieval_blocks_03"
+   ]
+  },
+  {
+   "name": "drowned_chapel_rose_glass",
+   "triangles": 504,
+   "materials": [
+    "GLOW_rose_blue",
+    "GLOW_rose_gold",
+    "GLOW_rose_red",
+    "GLOW_rose_violet"
+   ]
+  },
+  {
+   "name": "drowned_chapel_dais",
+   "triangles": 412,
+   "materials": [
+    "medieval_blocks_03"
+   ]
+  },
+  {
+   "name": "drowned_chapel_altar_cloth",
+   "triangles": 268,
+   "materials": [
+    "Fabric001"
+   ]
+  },
+  {
+   "name": "drowned_chapel_brass",
+   "triangles": 910,
+   "materials": [
+    "Metal042A"
+   ]
+  },
+  {
+   "name": "drowned_chapel_ironwork",
+   "triangles": 2576,
+   "materials": [
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "drowned_chapel_floating_boards",
+   "triangles": 3840,
+   "materials": [
+    "Wood051"
+   ]
+  },
+  {
+   "name": "drowned_chapel_lilies",
+   "triangles": 120,
+   "materials": [
+    "Fabric001__petal"
+   ]
+  },
+  {
+   "name": "drowned_chapel_censer_1",
+   "triangles": 2400,
+   "materials": [
+    "Metal042A",
+    "GLOW_ember",
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "drowned_chapel_censer_2",
+   "triangles": 2256,
+   "materials": [
+    "Metal042A",
+    "GLOW_ember",
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "drowned_chapel_censer_3",
+   "triangles": 2184,
+   "materials": [
+    "Metal042A",
+    "GLOW_ember",
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "drowned_chapel_censer_4",
+   "triangles": 2040,
+   "materials": [
+    "Metal042A",
+    "GLOW_ember",
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "drowned_chapel_banner_1",
+   "triangles": 130,
+   "materials": [
+    "Fabric001__banner",
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "drowned_chapel_banner_2",
+   "triangles": 122,
+   "materials": [
+    "Fabric066__banner",
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "drowned_chapel_banner_3",
+   "triangles": 132,
+   "materials": [
+    "Fabric066__banner",
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "drowned_chapel_banner_4",
+   "triangles": 134,
+   "materials": [
+    "Fabric001__banner",
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "drowned_chapel_banner_5",
+   "triangles": 138,
+   "materials": [
+    "Fabric001__banner",
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "drowned_chapel_banner_6",
+   "triangles": 132,
+   "materials": [
+    "Fabric066__banner",
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "ORIGIN_MARKER_1m",
+   "triangles": 12,
+   "materials": [
+    "ORIGIN_MARKER"
+   ]
+  }
+ ],
+ "placements": [
+  {
+   "object": "drowned_chapel_candles_wax",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_candle_flames",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_pews",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_rubble",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_floor",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_water",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_piers",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_arcade_walls",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_damp",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_aisle_walls",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_ledges",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_lancets",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_east_wall",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_tracery",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_rose_glass",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_dais",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_altar_cloth",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_brass",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_ironwork",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_floating_boards",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_lilies",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_censer_1",
+   "pivot_ue_cm": [
+    -330.0,
+    -610.0,
+    1100.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_censer_2",
+   "pivot_ue_cm": [
+    390.0,
+    -1050.0,
+    1100.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_censer_3",
+   "pivot_ue_cm": [
+    -80.0,
+    -1490.0,
+    1100.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_censer_4",
+   "pivot_ue_cm": [
+    240.0,
+    -1930.0,
+    1100.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_banner_1",
+   "pivot_ue_cm": [
+    -735.0,
+    -830.0,
+    920.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_banner_2",
+   "pivot_ue_cm": [
+    735.0,
+    -1280.0,
+    920.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_banner_3",
+   "pivot_ue_cm": [
+    -735.0,
+    -1710.0,
+    920.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_banner_4",
+   "pivot_ue_cm": [
+    735.0,
+    -390.0,
+    920.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_banner_5",
+   "pivot_ue_cm": [
+    735.0,
+    -2590.0,
+    920.0
+   ]
+  },
+  {
+   "object": "drowned_chapel_banner_6",
+   "pivot_ue_cm": [
+    -735.0,
+    -3030.0,
+    920.0
+   ]
+  },
+  {
+   "object": "ORIGIN_MARKER_1m",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  }
+ ],
+ "triangles_total": 101148,
+ "strip_check": "clean",
+ "notes": [
+  "The water sheet (WATER_flood) lies 3.5 cm over the flags across the strip: a surface, not an obstacle; fighters' feet show through it.",
+  "Rose glass and lancets are emissive and must not cast shadows; the moon spot sits outside the east wall.",
+  "Piers moved 0.8 m back from the original so the first pair clears the strip; their plinths' inner faces are at X +-7.2."
+ ]
+}

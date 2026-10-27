@@ -1,0 +1,736 @@
+{
+ "slots": {
+  "skin": {
+   "material": "M_bram_skin",
+   "size": 2048,
+   "files": {
+    "basecolor": "bram_skin_basecolor.png",
+    "normal": "bram_skin_normal.png",
+    "orm": "bram_skin_orm.png"
+   },
+   "objects": [
+    "bram_body"
+   ]
+  },
+  "hairface": {
+   "material": "M_bram_hairface",
+   "size": 2048,
+   "files": {
+    "basecolor": "bram_hairface_basecolor.png",
+    "normal": "bram_hairface_normal.png",
+    "orm": "bram_hairface_orm.png"
+   },
+   "objects": [
+    "bram_eyes",
+    "bram_brows",
+    "bram_lashes",
+    "bram_hair",
+    "bram_beard",
+    "bram_beard_outer"
+   ]
+  },
+  "coat": {
+   "material": "M_bram_coat",
+   "size": 2048,
+   "files": {
+    "basecolor": "bram_coat_basecolor.png",
+    "normal": "bram_coat_normal.png",
+    "orm": "bram_coat_orm.png"
+   },
+   "objects": [
+    "bram_trousers",
+    "bram_coat",
+    "bram_coat_tails",
+    "bram_collar",
+    "bram_epaulette_l",
+    "bram_cuff_l",
+    "bram_epaulette_r",
+    "bram_cuff_r",
+    "bram_cap_crown",
+    "bram_cap_band"
+   ]
+  },
+  "leather": {
+   "material": "M_bram_leather",
+   "size": 1024,
+   "files": {
+    "basecolor": "bram_leather_basecolor.png",
+    "normal": "bram_leather_normal.png",
+    "orm": "bram_leather_orm.png"
+   },
+   "objects": [
+    "bram_boot_l",
+    "bram_sole_l",
+    "bram_boot_r",
+    "bram_sole_r",
+    "bram_belt",
+    "bram_cap_peak"
+   ]
+  },
+  "props": {
+   "material": "M_bram_props",
+   "size": 1024,
+   "files": {
+    "basecolor": "bram_props_basecolor.png",
+    "normal": "bram_props_normal.png",
+    "orm": "bram_props_orm.png",
+    "emissive": "bram_props_emissive.png"
+   },
+   "objects": [
+    "bram_buckle",
+    "bram_button00",
+    "bram_button01",
+    "bram_button02",
+    "bram_button03",
+    "bram_button20",
+    "bram_button21",
+    "bram_button22",
+    "bram_button23",
+    "bram_baton",
+    "bram_lantern_frame",
+    "bram_lantern_glass",
+    "bram_lantern_cap",
+    "bram_lantern_hook"
+   ]
+  }
+ },
+ "texture_notes": {
+  "skin": [
+   "tinted middleage_lightskinned_male_diffuse.png -> #b5806a (per-channel gain [0.812, 0.775, 0.86])",
+   "blended 60% of old_lightskinned_male_diffuse.png",
+   "weathered flush #b8503c on cheeks, nose, ears and brow",
+   "scalp under the hair painted #6e6256",
+   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #b5806a"
+  ],
+  "hairface": [
+   "hair: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/hair/short02/short02_diffuse.png -> tile (0.0, 0.5, 1.0, 0.5)",
+   "eyes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyes/materials/grey_eye.png -> tile (0.0, 0.0, 0.5, 0.5)",
+   "brows: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyebrows/eyebrow005/eyebrow005.png -> tile (0.5, 0.25, 0.25, 0.25)",
+   "lashes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyelashes/eyelashes01/eyelashes01.png -> tile (0.75, 0.25, 0.25, 0.25)",
+   "beard: generated fur strands #5f5449, alpha edges -> tile (0.5, 0.0, 0.25, 0.25)",
+   "beard_outer: generated fur strands #5f5449, alpha edges -> tile (0.75, 0.0, 0.25, 0.25)"
+  ],
+  "coat": [
+   "bram_trousers: Fabric066 tinted #2c2d33, 8 cm tiles, roughness 0.88, metallic 0",
+   "bram_coat: Fabric034 tinted #273760, 22 cm tiles, roughness 0.86, metallic 0",
+   "bram_coat_tails: Fabric034 tinted #273760, 22 cm tiles, roughness 0.86, metallic 0",
+   "bram_collar: Fabric034 tinted #1a2342, 20 cm tiles, roughness 0.80, metallic 0",
+   "bram_epaulette_l: Fabric034 tinted #1a2342, 20 cm tiles, roughness 0.80, metallic 0",
+   "bram_cuff_l: Fabric034 tinted #1a2342, 20 cm tiles, roughness 0.80, metallic 0",
+   "bram_epaulette_r: Fabric034 tinted #1a2342, 20 cm tiles, roughness 0.80, metallic 0",
+   "bram_cuff_r: Fabric034 tinted #1a2342, 20 cm tiles, roughness 0.80, metallic 0",
+   "bram_cap_crown: Fabric034 tinted #24325a, 15 cm tiles, roughness 0.80, metallic 0",
+   "bram_cap_band: Fabric034 tinted #161d36, 12 cm tiles, roughness 0.80, metallic 0"
+  ],
+  "leather": [
+   "bram_boot_l: Leather026 tinted #1b1512, 25 cm tiles, roughness 0.28, metallic 0",
+   "bram_sole_l: Leather021 tinted #120e0c, 20 cm tiles, roughness 0.60, metallic 0",
+   "bram_boot_r: Leather026 tinted #1b1512, 25 cm tiles, roughness 0.28, metallic 0",
+   "bram_sole_r: Leather021 tinted #120e0c, 20 cm tiles, roughness 0.60, metallic 0",
+   "bram_belt: Leather026 tinted #1d1611, 20 cm tiles, roughness 0.35, metallic 0",
+   "bram_cap_peak: Leather026 tinted #0f0f10, 15 cm tiles, roughness 0.15, metallic 0"
+  ],
+  "props": [
+   "bram_buckle: Metal042A tinted #c79a45, 10 cm tiles, roughness 0.30, metallic 1",
+   "bram_button00: Metal042A tinted #c79a45, 10 cm tiles, roughness 0.30, metallic 1",
+   "bram_button01: Metal042A tinted #c79a45, 10 cm tiles, roughness 0.30, metallic 1",
+   "bram_button02: Metal042A tinted #c79a45, 10 cm tiles, roughness 0.30, metallic 1",
+   "bram_button03: Metal042A tinted #c79a45, 10 cm tiles, roughness 0.30, metallic 1",
+   "bram_button20: Metal042A tinted #c79a45, 10 cm tiles, roughness 0.30, metallic 1",
+   "bram_button21: Metal042A tinted #c79a45, 10 cm tiles, roughness 0.30, metallic 1",
+   "bram_button22: Metal042A tinted #c79a45, 10 cm tiles, roughness 0.30, metallic 1",
+   "bram_button23: Metal042A tinted #c79a45, 10 cm tiles, roughness 0.30, metallic 1",
+   "bram_baton: Wood051 tinted #3b2617, 30 cm tiles, roughness 0.45, metallic 0",
+   "bram_lantern_frame: Metal042A tinted #c79a45, 10 cm tiles, roughness 0.30, metallic 1",
+   "bram_lantern_glass: flat #ffb24a",
+   "bram_lantern_cap: Metal055A tinted #2a2826, 15 cm tiles, roughness 0.50, metallic 1",
+   "bram_lantern_hook: Metal055A tinted #2a2826, 15 cm tiles, roughness 0.50, metallic 1"
+  ]
+ },
+ "parts": {
+  "bram_body": {
+   "vertices": 7764,
+   "faces": 7686,
+   "triangles": 15372,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_bram_skin",
+   "surface": "body",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "index_01_l",
+    "index_01_r",
+    "index_02_l",
+    "index_02_r",
+    "index_03_l",
+    "index_03_r",
+    "lowerarm_l",
+    "lowerarm_r",
+    "middle_01_l",
+    "middle_01_r",
+    "middle_02_l",
+    "middle_02_r",
+    "middle_03_l",
+    "middle_03_r",
+    "neck_01",
+    "pelvis",
+    "pinky_01_l",
+    "pinky_01_r",
+    "pinky_02_l",
+    "pinky_02_r",
+    "pinky_03_l",
+    "pinky_03_r",
+    "ring_01_l",
+    "ring_01_r",
+    "ring_02_l",
+    "ring_02_r",
+    "ring_03_l",
+    "ring_03_r",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "thumb_01_l",
+    "thumb_01_r",
+    "thumb_02_l",
+    "thumb_02_r",
+    "thumb_03_l",
+    "thumb_03_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "bram_eyes": {
+   "vertices": 1064,
+   "faces": 1020,
+   "triangles": 2040,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_hairface",
+   "surface": "eyes",
+   "bones": [
+    "head"
+   ]
+  },
+  "bram_brows": {
+   "vertices": 124,
+   "faces": 96,
+   "triangles": 192,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_hairface",
+   "surface": "brows",
+   "bones": [
+    "head"
+   ]
+  },
+  "bram_lashes": {
+   "vertices": 250,
+   "faces": 184,
+   "triangles": 368,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_hairface",
+   "surface": "lashes",
+   "bones": [
+    "head"
+   ]
+  },
+  "bram_hair": {
+   "vertices": 1755,
+   "faces": 1672,
+   "triangles": 3344,
+   "max_influences": 4,
+   "unweighted_vertices": 0,
+   "material": "M_bram_hairface",
+   "surface": "hair",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_03"
+   ]
+  },
+  "bram_trousers": {
+   "vertices": 2410,
+   "faces": 2432,
+   "triangles": 4824,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_bram_coat",
+   "surface": "trousers",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "foot_l",
+    "foot_r",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "bram_boot_l": {
+   "vertices": 1344,
+   "faces": 1368,
+   "triangles": 2684,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_bram_leather",
+   "surface": "boots",
+   "bones": [
+    "ball_l",
+    "calf_l",
+    "foot_l",
+    "thigh_l"
+   ]
+  },
+  "bram_sole_l": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_bram_leather",
+   "surface": "sole",
+   "bones": [
+    "ball_l",
+    "foot_l"
+   ]
+  },
+  "bram_boot_r": {
+   "vertices": 1344,
+   "faces": 1368,
+   "triangles": 2684,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_bram_leather",
+   "surface": "boots",
+   "bones": [
+    "ball_r",
+    "calf_r",
+    "foot_r",
+    "thigh_r"
+   ]
+  },
+  "bram_sole_r": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_bram_leather",
+   "surface": "sole",
+   "bones": [
+    "ball_r",
+    "foot_r"
+   ]
+  },
+  "bram_coat": {
+   "vertices": 5478,
+   "faces": 5564,
+   "triangles": 10964,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_bram_coat",
+   "surface": "coat",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "lowerarm_l",
+    "lowerarm_r",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "bram_coat_tails": {
+   "vertices": 1496,
+   "faces": 1494,
+   "triangles": 2988,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_bram_coat",
+   "surface": "coat",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "bram_belt": {
+   "vertices": 300,
+   "faces": 314,
+   "triangles": 600,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_bram_leather",
+   "surface": "belt",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "bram_buckle": {
+   "vertices": 8,
+   "faces": 6,
+   "triangles": 12,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_props",
+   "surface": "brass",
+   "bones": [
+    "pelvis"
+   ]
+  },
+  "bram_button00": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_props",
+   "surface": "brass",
+   "bones": [
+    "spine_03"
+   ]
+  },
+  "bram_button01": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_props",
+   "surface": "brass",
+   "bones": [
+    "spine_02"
+   ]
+  },
+  "bram_button02": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_props",
+   "surface": "brass",
+   "bones": [
+    "spine_02"
+   ]
+  },
+  "bram_button03": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_props",
+   "surface": "brass",
+   "bones": [
+    "spine_02"
+   ]
+  },
+  "bram_button20": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_props",
+   "surface": "brass",
+   "bones": [
+    "spine_03"
+   ]
+  },
+  "bram_button21": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_props",
+   "surface": "brass",
+   "bones": [
+    "spine_02"
+   ]
+  },
+  "bram_button22": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_props",
+   "surface": "brass",
+   "bones": [
+    "spine_02"
+   ]
+  },
+  "bram_button23": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_props",
+   "surface": "brass",
+   "bones": [
+    "spine_02"
+   ]
+  },
+  "bram_collar": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_bram_coat",
+   "surface": "coat_dark",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "bram_epaulette_l": {
+   "vertices": 8,
+   "faces": 6,
+   "triangles": 12,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_coat",
+   "surface": "coat_dark",
+   "bones": [
+    "clavicle_l"
+   ]
+  },
+  "bram_cuff_l": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_bram_coat",
+   "surface": "coat_dark",
+   "bones": [
+    "hand_l",
+    "lowerarm_l"
+   ]
+  },
+  "bram_epaulette_r": {
+   "vertices": 8,
+   "faces": 6,
+   "triangles": 12,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_coat",
+   "surface": "coat_dark",
+   "bones": [
+    "clavicle_r"
+   ]
+  },
+  "bram_cuff_r": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_bram_coat",
+   "surface": "coat_dark",
+   "bones": [
+    "hand_r",
+    "lowerarm_r"
+   ]
+  },
+  "bram_cap_crown": {
+   "vertices": 240,
+   "faces": 260,
+   "triangles": 476,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_coat",
+   "surface": "cap",
+   "bones": [
+    "head"
+   ]
+  },
+  "bram_cap_band": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_coat",
+   "surface": "cap_dark",
+   "bones": [
+    "head"
+   ]
+  },
+  "bram_cap_peak": {
+   "vertices": 54,
+   "faces": 52,
+   "triangles": 104,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_leather",
+   "surface": "peak",
+   "bones": [
+    "head"
+   ]
+  },
+  "bram_beard": {
+   "vertices": 663,
+   "faces": 610,
+   "triangles": 1126,
+   "max_influences": 4,
+   "unweighted_vertices": 0,
+   "material": "M_bram_hairface",
+   "surface": "beard",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_03"
+   ]
+  },
+  "bram_beard_outer": {
+   "vertices": 617,
+   "faces": 594,
+   "triangles": 1040,
+   "max_influences": 4,
+   "unweighted_vertices": 0,
+   "material": "M_bram_hairface",
+   "surface": "beard",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_03"
+   ]
+  },
+  "bram_baton": {
+   "vertices": 72,
+   "faces": 80,
+   "triangles": 140,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_props",
+   "surface": "baton",
+   "bones": [
+    "hand_r"
+   ]
+  },
+  "bram_lantern_frame": {
+   "vertices": 42,
+   "faces": 50,
+   "triangles": 80,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_props",
+   "surface": "brass",
+   "bones": [
+    "pelvis"
+   ]
+  },
+  "bram_lantern_glass": {
+   "vertices": 42,
+   "faces": 50,
+   "triangles": 80,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_props",
+   "surface": "glass",
+   "bones": [
+    "pelvis"
+   ]
+  },
+  "bram_lantern_cap": {
+   "vertices": 52,
+   "faces": 60,
+   "triangles": 100,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_props",
+   "surface": "iron",
+   "bones": [
+    "pelvis"
+   ]
+  },
+  "bram_lantern_hook": {
+   "vertices": 15,
+   "faces": 10,
+   "triangles": 20,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_bram_props",
+   "surface": "iron",
+   "bones": [
+    "pelvis"
+   ]
+  }
+ },
+ "triangles_total": 50950,
+ "top_of_everything_cm": 189.5,
+ "standing_height_cm": 186.0,
+ "lowest_point_cm": -0.0,
+ "bones": 53,
+ "root_bone": [
+  "root"
+ ],
+ "id": "bram",
+ "name": "Bram Ketch",
+ "height": {
+  "macro_range_m": [
+   1.4084,
+   2.4409
+  ],
+  "height_macro": 0.581665,
+  "height_before_scale_m": 1.83506,
+  "uniform_scale": 0.999967,
+  "body_height_m": 1.835,
+  "targets_applied": 28
+ },
+ "timings_s": {
+  "enable_mpfb": 0.19,
+  "mpfb_body": 1.54,
+  "bake_body": 0.02,
+  "outfit": 1.88,
+  "textures": 20.0,
+  "finalize": 0.01,
+  "save_blend": 0.02,
+  "export_fbx": 0.4
+ },
+ "script_wall_s": 24.1,
+ "peak_rss_mb": 1803.3
+}

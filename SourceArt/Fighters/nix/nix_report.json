@@ -1,0 +1,699 @@
+{
+ "slots": {
+  "skin": {
+   "material": "M_nix_skin",
+   "size": 2048,
+   "files": {
+    "basecolor": "nix_skin_basecolor.png",
+    "normal": "nix_skin_normal.png",
+    "orm": "nix_skin_orm.png"
+   },
+   "objects": [
+    "nix_body"
+   ]
+  },
+  "face": {
+   "material": "M_nix_face",
+   "size": 1024,
+   "files": {
+    "basecolor": "nix_face_basecolor.png",
+    "normal": "nix_face_normal.png",
+    "orm": "nix_face_orm.png",
+    "emissive": "nix_face_emissive.png"
+   },
+   "objects": [
+    "nix_eyes",
+    "nix_brows",
+    "nix_lashes"
+   ]
+  },
+  "cloth": {
+   "material": "M_nix_cloth",
+   "size": 2048,
+   "files": {
+    "basecolor": "nix_cloth_basecolor.png",
+    "normal": "nix_cloth_normal.png",
+    "orm": "nix_cloth_orm.png"
+   },
+   "objects": [
+    "nix_top",
+    "nix_trousers",
+    "nix_shinwrap_l",
+    "nix_shinband_l",
+    "nix_shinband2_l",
+    "nix_tabi_l",
+    "nix_shinwrap_r",
+    "nix_shinband_r",
+    "nix_shinband2_r",
+    "nix_tabi_r",
+    "nix_handwrap_l",
+    "nix_handwrap_r",
+    "nix_armband0_l",
+    "nix_armband1_l",
+    "nix_armband2_l",
+    "nix_armband0_r",
+    "nix_armband1_r",
+    "nix_armband2_r",
+    "nix_hood",
+    "nix_mask",
+    "nix_crossstrap0",
+    "nix_crossstrap1",
+    "nix_sash",
+    "nix_sash_knot",
+    "nix_sashtail0",
+    "nix_sashtail1"
+   ]
+  },
+  "props": {
+   "material": "M_nix_props",
+   "size": 1024,
+   "files": {
+    "basecolor": "nix_props_basecolor.png",
+    "normal": "nix_props_normal.png",
+    "orm": "nix_props_orm.png"
+   },
+   "objects": [
+    "nix_sickle_handle",
+    "nix_sickle_blade",
+    "nix_chain",
+    "nix_chain_weight"
+   ]
+  }
+ },
+ "texture_notes": {
+  "skin": [
+   "tinted young_lightskinned_male_diffuse3.png -> #b48c72 (per-channel gain [0.836, 0.944, 0.876])",
+   "painted scalp hair replaced by forehead skin tone",
+   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #b48c72"
+  ],
+  "face": [
+   "eyes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyes/materials/green_eye.png -> tile (0.0, 0.0, 0.5, 0.5)",
+   "brows: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyebrows/eyebrow003/eyebrow003.png -> tile (0.5, 0.0, 0.5, 0.5)",
+   "lashes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyelashes/eyelashes02/eyelashes02.png -> tile (0.0, 0.5, 0.5, 0.5)"
+  ],
+  "cloth": [
+   "nix_top: Fabric001 tinted #2e3032, 16 cm tiles, roughness 0.90, metallic 0",
+   "nix_trousers: Fabric066 tinted #28292b, 8 cm tiles, roughness 0.90, metallic 0",
+   "nix_shinwrap_l: Fabric001 tinted #161718, 12 cm tiles, roughness 0.85, metallic 0",
+   "nix_shinband_l: Fabric001 tinted #2e3032, 16 cm tiles, roughness 0.90, metallic 0",
+   "nix_shinband2_l: Fabric001 tinted #2e3032, 16 cm tiles, roughness 0.90, metallic 0",
+   "nix_tabi_l: Fabric001 tinted #3b3936, 10 cm tiles, roughness 0.85, metallic 0",
+   "nix_shinwrap_r: Fabric001 tinted #161718, 12 cm tiles, roughness 0.85, metallic 0",
+   "nix_shinband_r: Fabric001 tinted #2e3032, 16 cm tiles, roughness 0.90, metallic 0",
+   "nix_shinband2_r: Fabric001 tinted #2e3032, 16 cm tiles, roughness 0.90, metallic 0",
+   "nix_tabi_r: Fabric001 tinted #3b3936, 10 cm tiles, roughness 0.85, metallic 0",
+   "nix_handwrap_l: Fabric001 tinted #161718, 12 cm tiles, roughness 0.85, metallic 0",
+   "nix_handwrap_r: Fabric001 tinted #161718, 12 cm tiles, roughness 0.85, metallic 0",
+   "nix_armband0_l: Fabric001 tinted #161718, 12 cm tiles, roughness 0.85, metallic 0",
+   "nix_armband1_l: Fabric001 tinted #161718, 12 cm tiles, roughness 0.85, metallic 0",
+   "nix_armband2_l: Fabric001 tinted #161718, 12 cm tiles, roughness 0.85, metallic 0",
+   "nix_armband0_r: Fabric001 tinted #161718, 12 cm tiles, roughness 0.85, metallic 0",
+   "nix_armband1_r: Fabric001 tinted #161718, 12 cm tiles, roughness 0.85, metallic 0",
+   "nix_armband2_r: Fabric001 tinted #161718, 12 cm tiles, roughness 0.85, metallic 0",
+   "nix_hood: Fabric034 tinted #232527, 20 cm tiles, roughness 0.92, metallic 0",
+   "nix_mask: Fabric001 tinted #1a1b1c, 10 cm tiles, roughness 0.90, metallic 0",
+   "nix_crossstrap0: Fabric001 tinted #161718, 12 cm tiles, roughness 0.85, metallic 0",
+   "nix_crossstrap1: Fabric001 tinted #161718, 12 cm tiles, roughness 0.85, metallic 0",
+   "nix_sash: Fabric040 tinted #7aab26, 4 cm tiles, roughness 0.50, metallic 0",
+   "nix_sash_knot: Fabric040 tinted #7aab26, 4 cm tiles, roughness 0.50, metallic 0",
+   "nix_sashtail0: Fabric040 tinted #7aab26, 4 cm tiles, roughness 0.50, metallic 0",
+   "nix_sashtail1: Fabric040 tinted #7aab26, 4 cm tiles, roughness 0.50, metallic 0"
+  ],
+  "props": [
+   "nix_sickle_handle: Wood051 tinted #3a2a1c, 25 cm tiles, roughness 0.70, metallic 0",
+   "nix_sickle_blade: Metal055A tinted #9aa3a8, 15 cm tiles, roughness 0.28, metallic 1",
+   "nix_chain: Metal055A tinted #9aa3a8, 15 cm tiles, roughness 0.28, metallic 1",
+   "nix_chain_weight: Metal055A tinted #9aa3a8, 15 cm tiles, roughness 0.28, metallic 1"
+  ]
+ },
+ "parts": {
+  "nix_body": {
+   "vertices": 6972,
+   "faces": 6373,
+   "triangles": 12746,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_nix_skin",
+   "surface": "body",
+   "bones": [
+    "ball_l",
+    "ball_r",
+    "calf_l",
+    "calf_r",
+    "clavicle_l",
+    "clavicle_r",
+    "foot_l",
+    "foot_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "index_01_l",
+    "index_01_r",
+    "index_02_l",
+    "index_02_r",
+    "index_03_l",
+    "index_03_r",
+    "lowerarm_l",
+    "lowerarm_r",
+    "middle_01_l",
+    "middle_01_r",
+    "middle_02_l",
+    "middle_02_r",
+    "middle_03_l",
+    "middle_03_r",
+    "neck_01",
+    "pelvis",
+    "pinky_01_l",
+    "pinky_01_r",
+    "pinky_02_l",
+    "pinky_02_r",
+    "pinky_03_l",
+    "pinky_03_r",
+    "ring_01_l",
+    "ring_01_r",
+    "ring_02_l",
+    "ring_02_r",
+    "ring_03_l",
+    "ring_03_r",
+    "spine_01",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "thumb_01_l",
+    "thumb_01_r",
+    "thumb_02_l",
+    "thumb_02_r",
+    "thumb_03_l",
+    "thumb_03_r"
+   ]
+  },
+  "nix_eyes": {
+   "vertices": 1064,
+   "faces": 1020,
+   "triangles": 2040,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_nix_face",
+   "surface": "eyes",
+   "bones": [
+    "head"
+   ]
+  },
+  "nix_brows": {
+   "vertices": 124,
+   "faces": 96,
+   "triangles": 192,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_nix_face",
+   "surface": "brows",
+   "bones": [
+    "head"
+   ]
+  },
+  "nix_lashes": {
+   "vertices": 250,
+   "faces": 184,
+   "triangles": 368,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_nix_face",
+   "surface": "lashes",
+   "bones": [
+    "head"
+   ]
+  },
+  "nix_top": {
+   "vertices": 5584,
+   "faces": 5648,
+   "triangles": 11176,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "lowerarm_l",
+    "lowerarm_r",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "nix_trousers": {
+   "vertices": 2078,
+   "faces": 2132,
+   "triangles": 4160,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "trousers",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "foot_l",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "nix_shinwrap_l": {
+   "vertices": 502,
+   "faces": 526,
+   "triangles": 1004,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap_dark",
+   "bones": [
+    "calf_l",
+    "foot_l",
+    "thigh_l"
+   ]
+  },
+  "nix_shinband_l": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap",
+   "bones": [
+    "calf_l",
+    "foot_l"
+   ]
+  },
+  "nix_shinband2_l": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap",
+   "bones": [
+    "calf_l",
+    "foot_l"
+   ]
+  },
+  "nix_tabi_l": {
+   "vertices": 1586,
+   "faces": 1586,
+   "triangles": 3172,
+   "max_influences": 3,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "feet",
+   "bones": [
+    "ball_l",
+    "ball_r",
+    "calf_l",
+    "foot_l"
+   ]
+  },
+  "nix_shinwrap_r": {
+   "vertices": 502,
+   "faces": 526,
+   "triangles": 1004,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap_dark",
+   "bones": [
+    "calf_r",
+    "foot_r",
+    "thigh_r"
+   ]
+  },
+  "nix_shinband_r": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap",
+   "bones": [
+    "calf_r"
+   ]
+  },
+  "nix_shinband2_r": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap",
+   "bones": [
+    "calf_r",
+    "foot_r"
+   ]
+  },
+  "nix_tabi_r": {
+   "vertices": 1588,
+   "faces": 1588,
+   "triangles": 3176,
+   "max_influences": 3,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "feet",
+   "bones": [
+    "ball_l",
+    "ball_r",
+    "calf_r",
+    "foot_r"
+   ]
+  },
+  "nix_handwrap_l": {
+   "vertices": 738,
+   "faces": 746,
+   "triangles": 1480,
+   "max_influences": 4,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap_dark",
+   "bones": [
+    "hand_l",
+    "index_01_l",
+    "lowerarm_l",
+    "middle_01_l",
+    "pinky_01_l",
+    "ring_01_l",
+    "thumb_01_l",
+    "thumb_02_l"
+   ]
+  },
+  "nix_handwrap_r": {
+   "vertices": 738,
+   "faces": 746,
+   "triangles": 1480,
+   "max_influences": 4,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap_dark",
+   "bones": [
+    "hand_r",
+    "index_01_r",
+    "lowerarm_r",
+    "middle_01_r",
+    "pinky_01_r",
+    "ring_01_r",
+    "thumb_01_r",
+    "thumb_02_r"
+   ]
+  },
+  "nix_armband0_l": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap_dark",
+   "bones": [
+    "lowerarm_l"
+   ]
+  },
+  "nix_armband1_l": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap_dark",
+   "bones": [
+    "lowerarm_l"
+   ]
+  },
+  "nix_armband2_l": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap_dark",
+   "bones": [
+    "lowerarm_l"
+   ]
+  },
+  "nix_armband0_r": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap_dark",
+   "bones": [
+    "lowerarm_r",
+    "upperarm_r"
+   ]
+  },
+  "nix_armband1_r": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap_dark",
+   "bones": [
+    "lowerarm_r"
+   ]
+  },
+  "nix_armband2_r": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap_dark",
+   "bones": [
+    "lowerarm_r"
+   ]
+  },
+  "nix_hood": {
+   "vertices": 2068,
+   "faces": 2927,
+   "triangles": 4140,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "hood",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_02",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "nix_mask": {
+   "vertices": 1188,
+   "faces": 1723,
+   "triangles": 2376,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "mask",
+   "bones": [
+    "head",
+    "neck_01"
+   ]
+  },
+  "nix_crossstrap0": {
+   "vertices": 56,
+   "faces": 54,
+   "triangles": 108,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap_dark",
+   "bones": [
+    "clavicle_l",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_r",
+    "upperarm_l"
+   ]
+  },
+  "nix_crossstrap1": {
+   "vertices": 56,
+   "faces": 54,
+   "triangles": 108,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "wrap_dark",
+   "bones": [
+    "clavicle_l",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_r",
+    "upperarm_l"
+   ]
+  },
+  "nix_sash": {
+   "vertices": 334,
+   "faces": 372,
+   "triangles": 668,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "sash",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "nix_sash_knot": {
+   "vertices": 52,
+   "faces": 60,
+   "triangles": 100,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "sash",
+   "bones": [
+    "pelvis"
+   ]
+  },
+  "nix_sashtail0": {
+   "vertices": 36,
+   "faces": 34,
+   "triangles": 68,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "sash",
+   "bones": [
+    "pelvis",
+    "thigh_l"
+   ]
+  },
+  "nix_sashtail1": {
+   "vertices": 36,
+   "faces": 34,
+   "triangles": 68,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_nix_cloth",
+   "surface": "sash",
+   "bones": [
+    "pelvis",
+    "thigh_l"
+   ]
+  },
+  "nix_sickle_handle": {
+   "vertices": 50,
+   "faces": 56,
+   "triangles": 96,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_nix_props",
+   "surface": "wood",
+   "bones": [
+    "hand_r"
+   ]
+  },
+  "nix_sickle_blade": {
+   "vertices": 36,
+   "faces": 32,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_nix_props",
+   "surface": "steel",
+   "bones": [
+    "hand_r"
+   ]
+  },
+  "nix_chain": {
+   "vertices": 630,
+   "faces": 560,
+   "triangles": 1120,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_nix_props",
+   "surface": "steel",
+   "bones": [
+    "hand_r"
+   ]
+  },
+  "nix_chain_weight": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_nix_props",
+   "surface": "steel",
+   "bones": [
+    "hand_r"
+   ]
+  }
+ },
+ "triangles_total": 53378,
+ "top_of_everything_cm": 179.21,
+ "standing_height_cm": 178.0,
+ "lowest_point_cm": 0.0,
+ "bones": 53,
+ "root_bone": [
+  "root"
+ ],
+ "id": "nix",
+ "name": "Nix Hollow",
+ "height": {
+  "macro_range_m": [
+   1.3514,
+   2.4088
+  ],
+  "height_macro": 0.564697,
+  "height_before_scale_m": 1.77817,
+  "uniform_scale": 1.001028,
+  "body_height_m": 1.78,
+  "targets_applied": 12
+ },
+ "timings_s": {
+  "enable_mpfb": 0.19,
+  "mpfb_body": 1.17,
+  "bake_body": 0.02,
+  "outfit": 4.17,
+  "textures": 17.5,
+  "finalize": 0.0,
+  "save_blend": 0.03,
+  "export_fbx": 0.38
+ },
+ "script_wall_s": 23.5,
+ "peak_rss_mb": 1764.5
+}

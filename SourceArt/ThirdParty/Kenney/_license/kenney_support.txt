@@ -1,0 +1,48 @@
+Snapshot of https://kenney.nl/support
+Retrieved 2026-10-26 (text extracted from the saved HTML next to this file)
+
+Support · Kenney 
+ Get Kenney Game Assets All-in-1 to download everything at once, plus free updates! 
+ Games 
+ Tools 
+ Assets 
+ Starter Kits 
+ Donate 
+ × 
+ Games 
+ Tools 
+ Assets 
+ Starter Kits 
+ Support 
+ Knowledge Base 
+ Donate 
+Common questions 
+Can I use the game assets in a (commercial) project? 
+Yes, all game assets on the asset pages are public domain licensed (CC0). You’re free to use them, even in commercial projects. For full details, see the included license file or visit the asset page. 
+Is attribution required when using the game assets? 
+Attribution is not required, but if you choose to give credit you can do so by mentioning "Kenney". Do not use our logo, as it is reserved for official projects by our studio. 
+How can I use the game assets in my game engine? 
+Unfortunately, we’re unable to provide support for importing assets into specific game engines. We recommend consulting the knowledge base or the documentation/community of your chosen engine. 
+I have an idea for new game assets, can I share it? 
+Absolutely! We're happy to hear suggestions. Feel free to share your idea with us on social media . Please don't use the contact form or send an email, as those messages won't be read. 
+I've lost the download or e-mail for a purchased product 
+You can recover lost downloads or purchases through Itch.io support , Steam support or Epic Games Store support . 
+I have a question that isn’t listed 
+Your question might already be answered in the knowledge base . If you still need help, feel free to reach out to Kenney using the contact form below. 
+Contact 
+ Website * 
+ Subject 
+ Customer service 
+ Bug report 
+ Game asset(s) 
+ Press 
+ Job/internship applications 
+ Other inquiries 
+ Copyright © 2010 - 2026 · All rights reserved 
+ Support 
+ Knowledge Base 
+ Privacy Policy 
+ Terms of Service 
+Coming to Steam! 
+Add to wishlist to support 
+ Mastodon

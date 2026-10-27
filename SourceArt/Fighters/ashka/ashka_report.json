@@ -1,0 +1,465 @@
+{
+ "slots": {
+  "skin": {
+   "material": "M_ashka_skin",
+   "size": 2048,
+   "files": {
+    "basecolor": "ashka_skin_basecolor.png",
+    "normal": "ashka_skin_normal.png",
+    "orm": "ashka_skin_orm.png"
+   },
+   "objects": [
+    "ashka_body"
+   ]
+  },
+  "hairface": {
+   "material": "M_ashka_hairface",
+   "size": 2048,
+   "files": {
+    "basecolor": "ashka_hairface_basecolor.png",
+    "normal": "ashka_hairface_normal.png",
+    "orm": "ashka_hairface_orm.png",
+    "emissive": "ashka_hairface_emissive.png"
+   },
+   "objects": [
+    "ashka_eyes",
+    "ashka_brows",
+    "ashka_lashes",
+    "ashka_hair"
+   ]
+  },
+  "leather": {
+   "material": "M_ashka_leather",
+   "size": 1024,
+   "files": {
+    "basecolor": "ashka_leather_basecolor.png",
+    "normal": "ashka_leather_normal.png",
+    "orm": "ashka_leather_orm.png"
+   },
+   "objects": [
+    "ashka_vest",
+    "ashka_vest_lace",
+    "ashka_charm_cord"
+   ]
+  },
+  "cloth": {
+   "material": "M_ashka_cloth",
+   "size": 2048,
+   "files": {
+    "basecolor": "ashka_cloth_basecolor.png",
+    "normal": "ashka_cloth_normal.png",
+    "orm": "ashka_cloth_orm.png"
+   },
+   "objects": [
+    "ashka_shorts",
+    "ashka_shorts_hems",
+    "ashka_waistband",
+    "ashka_handwrap_l",
+    "ashka_handwrap_r",
+    "ashka_shinwrap_l",
+    "ashka_shinwrap_r"
+   ]
+  },
+  "metal": {
+   "material": "M_ashka_metal",
+   "size": 512,
+   "files": {
+    "basecolor": "ashka_metal_basecolor.png",
+    "normal": "ashka_metal_normal.png",
+    "orm": "ashka_metal_orm.png",
+    "emissive": "ashka_metal_emissive.png"
+   },
+   "objects": [
+    "ashka_armband",
+    "ashka_charm_brass",
+    "ashka_charm_ember"
+   ]
+  }
+ },
+ "texture_notes": {
+  "skin": [
+   "tinted young_darkskinned_female_diffuse.png -> #9c6a48 (per-channel gain [2.75, 3.349, 2.789])",
+   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #9c6a48"
+  ],
+  "hairface": [
+   "hair: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/hair/ponytail01/ponytail01_diffuse.png -> tile (0.0, 0.5, 1.0, 0.5)",
+   "eyes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyes/materials/brownlight_eye.png -> tile (0.0, 0.0, 0.5, 0.5)",
+   "brows: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyebrows/eyebrow001/eyebrow001.png -> tile (0.5, 0.25, 0.25, 0.25)",
+   "lashes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyelashes/eyelashes01/eyelashes01.png -> tile (0.75, 0.25, 0.25, 0.25)"
+  ],
+  "leather": [
+   "ashka_vest: Leather021 tinted #2c211b, 30 cm tiles, roughness 0.50, metallic 0",
+   "ashka_vest_lace: Leather021 tinted #d6a238, 30 cm tiles, roughness 0.40, metallic 0",
+   "ashka_charm_cord: Leather021 tinted #1d1611, 10 cm tiles, roughness 0.60, metallic 0"
+  ],
+  "cloth": [
+   "ashka_shorts: Fabric040 tinted #93301a, 4 cm tiles, roughness 0.40, metallic 0",
+   "ashka_shorts_hems: Fabric040 tinted #d6a238, 3 cm tiles, roughness 0.35, metallic 0",
+   "ashka_waistband: Fabric040 tinted #d6a238, 3 cm tiles, roughness 0.35, metallic 0",
+   "ashka_handwrap_l: Fabric001 tinted #d8ccb2, 18 cm tiles, roughness 0.92, metallic 0",
+   "ashka_handwrap_r: Fabric001 tinted #d8ccb2, 18 cm tiles, roughness 0.92, metallic 0",
+   "ashka_shinwrap_l: Fabric001 tinted #d8ccb2, 18 cm tiles, roughness 0.92, metallic 0",
+   "ashka_shinwrap_r: Fabric001 tinted #d8ccb2, 18 cm tiles, roughness 0.92, metallic 0"
+  ],
+  "metal": [
+   "ashka_armband: Metal042A tinted #b8872f, 10 cm tiles, roughness 0.35, metallic 1",
+   "ashka_charm_brass: Metal042A tinted #b8872f, 10 cm tiles, roughness 0.35, metallic 1",
+   "ashka_charm_ember: Metal042A tinted #ff8a2a, 10 cm tiles, roughness 0.20, metallic 0"
+  ]
+ },
+ "parts": {
+  "ashka_body": {
+   "vertices": 12457,
+   "faces": 12210,
+   "triangles": 24420,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_skin",
+   "surface": "body",
+   "bones": [
+    "ball_l",
+    "ball_r",
+    "calf_l",
+    "calf_r",
+    "clavicle_l",
+    "clavicle_r",
+    "foot_l",
+    "foot_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "index_01_l",
+    "index_01_r",
+    "index_02_l",
+    "index_02_r",
+    "index_03_l",
+    "index_03_r",
+    "lowerarm_l",
+    "lowerarm_r",
+    "middle_01_l",
+    "middle_01_r",
+    "middle_02_l",
+    "middle_02_r",
+    "middle_03_l",
+    "middle_03_r",
+    "neck_01",
+    "pelvis",
+    "pinky_01_l",
+    "pinky_01_r",
+    "pinky_02_l",
+    "pinky_02_r",
+    "pinky_03_l",
+    "pinky_03_r",
+    "ring_01_l",
+    "ring_01_r",
+    "ring_02_l",
+    "ring_02_r",
+    "ring_03_l",
+    "ring_03_r",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "thumb_01_l",
+    "thumb_01_r",
+    "thumb_02_l",
+    "thumb_02_r",
+    "thumb_03_l",
+    "thumb_03_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "ashka_eyes": {
+   "vertices": 1064,
+   "faces": 1020,
+   "triangles": 2040,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_hairface",
+   "surface": "eyes",
+   "bones": [
+    "head"
+   ]
+  },
+  "ashka_brows": {
+   "vertices": 124,
+   "faces": 96,
+   "triangles": 192,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_hairface",
+   "surface": "brows",
+   "bones": [
+    "head"
+   ]
+  },
+  "ashka_lashes": {
+   "vertices": 250,
+   "faces": 184,
+   "triangles": 368,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_hairface",
+   "surface": "lashes",
+   "bones": [
+    "head"
+   ]
+  },
+  "ashka_hair": {
+   "vertices": 3718,
+   "faces": 2676,
+   "triangles": 5352,
+   "max_influences": 4,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_hairface",
+   "surface": "hair",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "ashka_shorts": {
+   "vertices": 1182,
+   "faces": 1240,
+   "triangles": 2368,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_cloth",
+   "surface": "shorts",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "ashka_shorts_hems": {
+   "vertices": 284,
+   "faces": 328,
+   "triangles": 568,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_cloth",
+   "surface": "trim",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "pelvis",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "ashka_waistband": {
+   "vertices": 442,
+   "faces": 470,
+   "triangles": 884,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_cloth",
+   "surface": "trim",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "ashka_vest": {
+   "vertices": 1542,
+   "faces": 1724,
+   "triangles": 3076,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_leather",
+   "surface": "vest",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "ashka_vest_lace": {
+   "vertices": 80,
+   "faces": 40,
+   "triangles": 80,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_leather",
+   "surface": "lace",
+   "bones": [
+    "spine_03"
+   ]
+  },
+  "ashka_handwrap_l": {
+   "vertices": 778,
+   "faces": 786,
+   "triangles": 1560,
+   "max_influences": 4,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_cloth",
+   "surface": "wraps",
+   "bones": [
+    "hand_l",
+    "index_01_l",
+    "lowerarm_l",
+    "middle_01_l",
+    "pinky_01_l",
+    "ring_01_l",
+    "thumb_01_l",
+    "thumb_02_l"
+   ]
+  },
+  "ashka_handwrap_r": {
+   "vertices": 778,
+   "faces": 786,
+   "triangles": 1560,
+   "max_influences": 4,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_cloth",
+   "surface": "wraps",
+   "bones": [
+    "hand_r",
+    "index_01_r",
+    "lowerarm_r",
+    "middle_01_r",
+    "pinky_01_r",
+    "ring_01_r",
+    "thumb_01_r",
+    "thumb_02_r"
+   ]
+  },
+  "ashka_shinwrap_l": {
+   "vertices": 746,
+   "faces": 754,
+   "triangles": 1492,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_cloth",
+   "surface": "wraps",
+   "bones": [
+    "ball_l",
+    "calf_l",
+    "foot_l"
+   ]
+  },
+  "ashka_shinwrap_r": {
+   "vertices": 746,
+   "faces": 754,
+   "triangles": 1492,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_cloth",
+   "surface": "wraps",
+   "bones": [
+    "ball_r",
+    "calf_r",
+    "foot_r"
+   ]
+  },
+  "ashka_armband": {
+   "vertices": 160,
+   "faces": 160,
+   "triangles": 320,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_metal",
+   "surface": "band",
+   "bones": [
+    "upperarm_l"
+   ]
+  },
+  "ashka_charm_brass": {
+   "vertices": 157,
+   "faces": 172,
+   "triangles": 296,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_metal",
+   "surface": "band",
+   "bones": [
+    "spine_03"
+   ]
+  },
+  "ashka_charm_ember": {
+   "vertices": 62,
+   "faces": 72,
+   "triangles": 120,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_metal",
+   "surface": "ember",
+   "bones": [
+    "spine_03"
+   ]
+  },
+  "ashka_charm_cord": {
+   "vertices": 125,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_ashka_leather",
+   "surface": "cord",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_02",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  }
+ },
+ "triangles_total": 46428,
+ "standing_height_cm": 174.0,
+ "lowest_point_cm": 0.0,
+ "bones": 53,
+ "root_bone": [
+  "root"
+ ],
+ "id": "ashka",
+ "name": "Ashka Rook",
+ "height": {
+  "macro_range_m": [
+   1.2876,
+   2.3447
+  ],
+  "height_macro": 0.579834,
+  "height_before_scale_m": 1.74011,
+  "uniform_scale": 0.999938,
+  "body_height_m": 1.74,
+  "targets_applied": 32
+ },
+ "timings_s": {
+  "enable_mpfb": 0.2,
+  "mpfb_body": 1.19,
+  "bake_body": 0.02,
+  "outfit": 1.48,
+  "textures": 16.79,
+  "finalize": 0.0,
+  "save_blend": 0.02,
+  "export_fbx": 0.28
+ },
+ "script_wall_s": 20.0,
+ "peak_rss_mb": 1734.2
+}

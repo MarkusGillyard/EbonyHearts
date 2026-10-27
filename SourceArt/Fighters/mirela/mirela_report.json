@@ -1,0 +1,595 @@
+{
+ "slots": {
+  "skin": {
+   "material": "M_mirela_skin",
+   "size": 2048,
+   "files": {
+    "basecolor": "mirela_skin_basecolor.png",
+    "normal": "mirela_skin_normal.png",
+    "orm": "mirela_skin_orm.png"
+   },
+   "objects": [
+    "mirela_body"
+   ]
+  },
+  "hairface": {
+   "material": "M_mirela_hairface",
+   "size": 2048,
+   "files": {
+    "basecolor": "mirela_hairface_basecolor.png",
+    "normal": "mirela_hairface_normal.png",
+    "orm": "mirela_hairface_orm.png",
+    "emissive": "mirela_hairface_emissive.png"
+   },
+   "objects": [
+    "mirela_eyes",
+    "mirela_brows",
+    "mirela_lashes",
+    "mirela_hair"
+   ]
+  },
+  "gown": {
+   "material": "M_mirela_gown",
+   "size": 2048,
+   "files": {
+    "basecolor": "mirela_gown_basecolor.png",
+    "normal": "mirela_gown_normal.png",
+    "orm": "mirela_gown_orm.png"
+   },
+   "objects": [
+    "mirela_gown",
+    "mirela_leggings",
+    "mirela_cuff_l",
+    "mirela_cuff_r",
+    "mirela_choker",
+    "mirela_skirt_l",
+    "mirela_skirt_r",
+    "mirela_corset",
+    "mirela_corset_trim_top",
+    "mirela_corset_trim_bottom",
+    "mirela_corset_seams"
+   ]
+  },
+  "leather": {
+   "material": "M_mirela_leather",
+   "size": 1024,
+   "files": {
+    "basecolor": "mirela_leather_basecolor.png",
+    "normal": "mirela_leather_normal.png",
+    "orm": "mirela_leather_orm.png"
+   },
+   "objects": [
+    "mirela_glove_l",
+    "mirela_glove_r",
+    "mirela_boot_l",
+    "mirela_sole_l",
+    "mirela_boot_r",
+    "mirela_sole_r"
+   ]
+  },
+  "veil": {
+   "material": "M_mirela_veil",
+   "size": 1024,
+   "files": {
+    "basecolor": "mirela_veil_basecolor.png",
+    "normal": "mirela_veil_normal.png",
+    "orm": "mirela_veil_orm.png"
+   },
+   "objects": [
+    "mirela_yoke",
+    "mirela_veil"
+   ]
+  }
+ },
+ "texture_notes": {
+  "skin": [
+   "tinted young_lightskinned_female_diffuse.png -> #e4d0c4 (per-channel gain [1.31, 2.108, 2.858])",
+   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #e4d0c4"
+  ],
+  "hairface": [
+   "hair: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/hair/long01/long01_diffuse.png -> tile (0.0, 0.5, 1.0, 0.5)",
+   "eyes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyes/materials/lightblue_eye.png -> tile (0.0, 0.0, 0.5, 0.5)",
+   "brows: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyebrows/eyebrow006/eyebrow006.png -> tile (0.5, 0.25, 0.25, 0.25)",
+   "lashes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyelashes/eyelashes03/eyelashes03.png -> tile (0.75, 0.25, 0.25, 0.25)"
+  ],
+  "gown": [
+   "mirela_gown: Fabric040 tinted #b6b0a1, 2 cm tiles, roughness 0.58, metallic 0",
+   "mirela_leggings: Fabric040 tinted #a7a193, 2 cm tiles, roughness 0.60, metallic 0",
+   "mirela_cuff_l: Fabric040 tinted #121115, 3 cm tiles, roughness 0.50, metallic 0",
+   "mirela_cuff_r: Fabric040 tinted #121115, 3 cm tiles, roughness 0.50, metallic 0",
+   "mirela_choker: Fabric040 tinted #121115, 3 cm tiles, roughness 0.50, metallic 0",
+   "mirela_skirt_l: Fabric040 tinted #b6b0a1, 2 cm tiles, roughness 0.58, metallic 0",
+   "mirela_skirt_r: Fabric040 tinted #b6b0a1, 2 cm tiles, roughness 0.58, metallic 0",
+   "mirela_corset: Fabric040 tinted #1b191d, 3 cm tiles, roughness 0.42, metallic 0",
+   "mirela_corset_trim_top: Fabric040 tinted #ddd6c4, 3 cm tiles, roughness 0.45, metallic 0",
+   "mirela_corset_trim_bottom: Fabric040 tinted #ddd6c4, 3 cm tiles, roughness 0.45, metallic 0",
+   "mirela_corset_seams: Fabric040 tinted #ddd6c4, 3 cm tiles, roughness 0.45, metallic 0"
+  ],
+  "leather": [
+   "mirela_glove_l: Leather026 tinted #141317, 15 cm tiles, roughness 0.42, metallic 0",
+   "mirela_glove_r: Leather026 tinted #141317, 15 cm tiles, roughness 0.42, metallic 0",
+   "mirela_boot_l: Leather026 tinted #18161a, 20 cm tiles, roughness 0.45, metallic 0",
+   "mirela_sole_l: Leather026 tinted #18161a, 20 cm tiles, roughness 0.45, metallic 0",
+   "mirela_boot_r: Leather026 tinted #18161a, 20 cm tiles, roughness 0.45, metallic 0",
+   "mirela_sole_r: Leather026 tinted #18161a, 20 cm tiles, roughness 0.45, metallic 0"
+  ],
+  "veil": [
+   "mirela_yoke: flat #121115 + procedural lace",
+   "mirela_veil: flat #100f13 + procedural lace"
+  ]
+ },
+ "parts": {
+  "mirela_body": {
+   "vertices": 4721,
+   "faces": 4562,
+   "triangles": 9124,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_skin",
+   "surface": "body",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "clavicle_l",
+    "clavicle_r",
+    "foot_l",
+    "foot_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "lowerarm_l",
+    "lowerarm_r",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "mirela_eyes": {
+   "vertices": 1064,
+   "faces": 1020,
+   "triangles": 2040,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_hairface",
+   "surface": "eyes",
+   "bones": [
+    "head"
+   ]
+  },
+  "mirela_brows": {
+   "vertices": 124,
+   "faces": 96,
+   "triangles": 192,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_hairface",
+   "surface": "brows",
+   "bones": [
+    "head"
+   ]
+  },
+  "mirela_lashes": {
+   "vertices": 250,
+   "faces": 184,
+   "triangles": 368,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_hairface",
+   "surface": "lashes",
+   "bones": [
+    "head"
+   ]
+  },
+  "mirela_hair": {
+   "vertices": 3239,
+   "faces": 2054,
+   "triangles": 4108,
+   "max_influences": 7,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_hairface",
+   "surface": "hair",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "mirela_gown": {
+   "vertices": 5510,
+   "faces": 5564,
+   "triangles": 11028,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_gown",
+   "surface": "gown",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "lowerarm_l",
+    "lowerarm_r",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "mirela_glove_l": {
+   "vertices": 1912,
+   "faces": 2489,
+   "triangles": 3820,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_leather",
+   "surface": "gloves",
+   "bones": [
+    "hand_l",
+    "index_01_l",
+    "index_02_l",
+    "index_03_l",
+    "lowerarm_l",
+    "middle_01_l",
+    "middle_02_l",
+    "middle_03_l",
+    "pinky_01_l",
+    "pinky_02_l",
+    "pinky_03_l",
+    "ring_01_l",
+    "ring_02_l",
+    "ring_03_l",
+    "thumb_01_l",
+    "thumb_02_l",
+    "thumb_03_l"
+   ]
+  },
+  "mirela_glove_r": {
+   "vertices": 1912,
+   "faces": 2511,
+   "triangles": 3820,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_leather",
+   "surface": "gloves",
+   "bones": [
+    "hand_r",
+    "index_01_r",
+    "index_02_r",
+    "index_03_r",
+    "lowerarm_r",
+    "middle_01_r",
+    "middle_02_r",
+    "middle_03_r",
+    "pinky_01_r",
+    "pinky_02_r",
+    "pinky_03_r",
+    "ring_01_r",
+    "ring_02_r",
+    "ring_03_r",
+    "thumb_01_r",
+    "thumb_02_r",
+    "thumb_03_r"
+   ]
+  },
+  "mirela_leggings": {
+   "vertices": 1650,
+   "faces": 2074,
+   "triangles": 3304,
+   "max_influences": 4,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_gown",
+   "surface": "underdress",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "foot_l",
+    "foot_r",
+    "pelvis",
+    "spine_01",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "mirela_boot_l": {
+   "vertices": 1344,
+   "faces": 1368,
+   "triangles": 2684,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_leather",
+   "surface": "boots",
+   "bones": [
+    "ball_l",
+    "calf_l",
+    "foot_l"
+   ]
+  },
+  "mirela_sole_l": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_leather",
+   "surface": "boots",
+   "bones": [
+    "ball_l",
+    "foot_l"
+   ]
+  },
+  "mirela_boot_r": {
+   "vertices": 1344,
+   "faces": 1368,
+   "triangles": 2684,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_leather",
+   "surface": "boots",
+   "bones": [
+    "ball_r",
+    "calf_r",
+    "foot_r"
+   ]
+  },
+  "mirela_sole_r": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_leather",
+   "surface": "boots",
+   "bones": [
+    "ball_r",
+    "foot_r"
+   ]
+  },
+  "mirela_cuff_l": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_gown",
+   "surface": "lace",
+   "bones": [
+    "hand_l",
+    "lowerarm_l"
+   ]
+  },
+  "mirela_cuff_r": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_gown",
+   "surface": "lace",
+   "bones": [
+    "hand_r",
+    "lowerarm_r"
+   ]
+  },
+  "mirela_choker": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_gown",
+   "surface": "lace",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "mirela_skirt_l": {
+   "vertices": 1508,
+   "faces": 1506,
+   "triangles": 3012,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_gown",
+   "surface": "gown",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "mirela_skirt_r": {
+   "vertices": 1508,
+   "faces": 1506,
+   "triangles": 3012,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_gown",
+   "surface": "gown",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "mirela_corset": {
+   "vertices": 2058,
+   "faces": 2151,
+   "triangles": 4112,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_gown",
+   "surface": "corset",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "mirela_corset_trim_top": {
+   "vertices": 332,
+   "faces": 330,
+   "triangles": 660,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_gown",
+   "surface": "trim",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "mirela_corset_trim_bottom": {
+   "vertices": 388,
+   "faces": 386,
+   "triangles": 772,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_gown",
+   "surface": "trim",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "mirela_corset_seams": {
+   "vertices": 578,
+   "faces": 279,
+   "triangles": 558,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_gown",
+   "surface": "trim",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "mirela_yoke": {
+   "vertices": 593,
+   "faces": 580,
+   "triangles": 1028,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_veil",
+   "surface": "yoke_lace",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_02",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "mirela_veil": {
+   "vertices": 555,
+   "faces": 504,
+   "triangles": 1008,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_mirela_veil",
+   "surface": "veil",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  }
+ },
+ "triangles_total": 58270,
+ "top_of_everything_cm": 182.89,
+ "standing_height_cm": 182.0,
+ "lowest_point_cm": 0.0,
+ "bones": 53,
+ "root_bone": [
+  "root"
+ ],
+ "id": "mirela",
+ "name": "Mirela Sorrow",
+ "height": {
+  "macro_range_m": [
+   1.27,
+   2.3183
+  ],
+  "height_macro": 0.640137,
+  "height_before_scale_m": 1.80012,
+  "uniform_scale": 0.999935,
+  "body_height_m": 1.8,
+  "targets_applied": 16
+ },
+ "timings_s": {
+  "enable_mpfb": 0.19,
+  "mpfb_body": 1.41,
+  "bake_body": 0.02,
+  "outfit": 3.15,
+  "textures": 20.09,
+  "finalize": 0.01,
+  "save_blend": 0.03,
+  "export_fbx": 0.38
+ },
+ "script_wall_s": 25.3,
+ "peak_rss_mb": 1733.8
+}

@@ -1,0 +1,631 @@
+{
+ "slots": {
+  "skin": {
+   "material": "M_hollis_skin",
+   "size": 1024,
+   "files": {
+    "basecolor": "hollis_skin_basecolor.png",
+    "normal": "hollis_skin_normal.png",
+    "orm": "hollis_skin_orm.png"
+   },
+   "objects": [
+    "hollis_body"
+   ]
+  },
+  "face": {
+   "material": "M_hollis_face",
+   "size": 512,
+   "files": {
+    "basecolor": "hollis_face_basecolor.png",
+    "normal": "hollis_face_normal.png",
+    "orm": "hollis_face_orm.png",
+    "emissive": "hollis_face_emissive.png"
+   },
+   "objects": [
+    "hollis_eyes",
+    "hollis_brows"
+   ]
+  },
+  "suit": {
+   "material": "M_hollis_suit",
+   "size": 2048,
+   "files": {
+    "basecolor": "hollis_suit_basecolor.png",
+    "normal": "hollis_suit_normal.png",
+    "orm": "hollis_suit_orm.png"
+   },
+   "objects": [
+    "hollis_suit",
+    "hollis_glove_l",
+    "hollis_glove_r",
+    "hollis_cuff_l",
+    "hollis_cuff_r"
+   ]
+  },
+  "metal": {
+   "material": "M_hollis_metal",
+   "size": 2048,
+   "files": {
+    "basecolor": "hollis_metal_basecolor.png",
+    "normal": "hollis_metal_normal.png",
+    "orm": "hollis_metal_orm.png",
+    "emissive": "hollis_metal_emissive.png"
+   },
+   "objects": [
+    "hollis_sole_l",
+    "hollis_sole_r",
+    "hollis_corselet",
+    "hollis_helmet",
+    "hollis_helmet_collar",
+    "hollis_port_frame0",
+    "hollis_port_glass0",
+    "hollis_port_frame1",
+    "hollis_port_glass1",
+    "hollis_guard10",
+    "hollis_guard15",
+    "hollis_guard19",
+    "hollis_port_frame2",
+    "hollis_port_glass2",
+    "hollis_guard20",
+    "hollis_guard25",
+    "hollis_guard29",
+    "hollis_harpoon_grip",
+    "hollis_harpoon_barrel",
+    "hollis_harpoon_tip"
+   ]
+  },
+  "leather": {
+   "material": "M_hollis_leather",
+   "size": 1024,
+   "files": {
+    "basecolor": "hollis_leather_basecolor.png",
+    "normal": "hollis_leather_normal.png",
+    "orm": "hollis_leather_orm.png"
+   },
+   "objects": [
+    "hollis_boot_l",
+    "hollis_boot_r",
+    "hollis_belt"
+   ]
+  }
+ },
+ "texture_notes": {
+  "skin": [
+   "tinted middleage_darkskinned_male_diffuse.png -> #a8836a (per-channel gain [4.758, 7.954, 9.662])",
+   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #a8836a"
+  ],
+  "face": [
+   "eyes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyes/materials/green_eye.png -> tile (0.0, 0.0, 0.5, 0.5)",
+   "brows: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyebrows/eyebrow002/eyebrow002.png -> tile (0.5, 0.0, 0.5, 0.5)"
+  ],
+  "suit": [
+   "hollis_suit: Fabric066 tinted #5f6337, 8 cm tiles, roughness 0.92, metallic 0",
+   "hollis_glove_l: Leather026 tinted #1e1b18, 15 cm tiles, roughness 0.32, metallic 0",
+   "hollis_glove_r: Leather026 tinted #1e1b18, 15 cm tiles, roughness 0.32, metallic 0",
+   "hollis_cuff_l: Leather026 tinted #1e1b18, 15 cm tiles, roughness 0.32, metallic 0",
+   "hollis_cuff_r: Leather026 tinted #1e1b18, 15 cm tiles, roughness 0.32, metallic 0"
+  ],
+  "metal": [
+   "hollis_sole_l: Metal055A tinted #45464a, 20 cm tiles, roughness 0.62, metallic 1",
+   "hollis_sole_r: Metal055A tinted #45464a, 20 cm tiles, roughness 0.62, metallic 1",
+   "hollis_corselet: Metal042A tinted #b98c3c, 18 cm tiles, roughness 0.30, metallic 1",
+   "hollis_helmet: Metal042A tinted #b98c3c, 18 cm tiles, roughness 0.30, metallic 1",
+   "hollis_helmet_collar: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
+   "hollis_port_frame0: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
+   "hollis_port_glass0: flat #2f9a6a",
+   "hollis_port_frame1: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
+   "hollis_port_glass1: flat #2f9a6a",
+   "hollis_guard10: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
+   "hollis_guard15: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
+   "hollis_guard19: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
+   "hollis_port_frame2: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
+   "hollis_port_glass2: flat #2f9a6a",
+   "hollis_guard20: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
+   "hollis_guard25: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
+   "hollis_guard29: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
+   "hollis_harpoon_grip: Metal055A tinted #3a3836, 15 cm tiles, roughness 0.50, metallic 1",
+   "hollis_harpoon_barrel: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
+   "hollis_harpoon_tip: Metal055A tinted #3a3836, 15 cm tiles, roughness 0.50, metallic 1"
+  ],
+  "leather": [
+   "hollis_boot_l: Leather021 tinted #3a3026, 20 cm tiles, roughness 0.60, metallic 0",
+   "hollis_boot_r: Leather021 tinted #3a3026, 20 cm tiles, roughness 0.60, metallic 0",
+   "hollis_belt: Leather021 tinted #2a2018, 20 cm tiles, roughness 0.50, metallic 0"
+  ]
+ },
+ "parts": {
+  "hollis_body": {
+   "vertices": 4475,
+   "faces": 4332,
+   "triangles": 8664,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_skin",
+   "surface": "body",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "clavicle_l",
+    "clavicle_r",
+    "foot_l",
+    "hand_l",
+    "hand_r",
+    "head",
+    "lowerarm_l",
+    "lowerarm_r",
+    "neck_01",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "hollis_eyes": {
+   "vertices": 96,
+   "faces": 86,
+   "triangles": 172,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_face",
+   "surface": "eyes",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_brows": {
+   "vertices": 124,
+   "faces": 96,
+   "triangles": 192,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_face",
+   "surface": "brows",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_boot_l": {
+   "vertices": 1344,
+   "faces": 1368,
+   "triangles": 2684,
+   "max_influences": 3,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_leather",
+   "surface": "boot",
+   "bones": [
+    "ball_l",
+    "calf_l",
+    "foot_l",
+    "thigh_l"
+   ]
+  },
+  "hollis_sole_l": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "lead",
+   "bones": [
+    "ball_l",
+    "foot_l"
+   ]
+  },
+  "hollis_boot_r": {
+   "vertices": 1344,
+   "faces": 1368,
+   "triangles": 2684,
+   "max_influences": 3,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_leather",
+   "surface": "boot",
+   "bones": [
+    "ball_r",
+    "calf_r",
+    "foot_r",
+    "thigh_r"
+   ]
+  },
+  "hollis_sole_r": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "lead",
+   "bones": [
+    "ball_r",
+    "foot_r"
+   ]
+  },
+  "hollis_suit": {
+   "vertices": 7132,
+   "faces": 7194,
+   "triangles": 14276,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_suit",
+   "surface": "suit",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "clavicle_l",
+    "clavicle_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "lowerarm_l",
+    "lowerarm_r",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "hollis_glove_l": {
+   "vertices": 1866,
+   "faces": 2404,
+   "triangles": 3728,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_suit",
+   "surface": "rubber",
+   "bones": [
+    "hand_l",
+    "index_01_l",
+    "index_02_l",
+    "index_03_l",
+    "lowerarm_l",
+    "middle_01_l",
+    "middle_02_l",
+    "middle_03_l",
+    "pinky_01_l",
+    "pinky_02_l",
+    "pinky_03_l",
+    "ring_01_l",
+    "ring_02_l",
+    "ring_03_l",
+    "thumb_01_l",
+    "thumb_02_l",
+    "thumb_03_l"
+   ]
+  },
+  "hollis_glove_r": {
+   "vertices": 1866,
+   "faces": 2416,
+   "triangles": 3728,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_suit",
+   "surface": "rubber",
+   "bones": [
+    "hand_r",
+    "index_01_r",
+    "index_02_r",
+    "index_03_r",
+    "lowerarm_r",
+    "middle_01_r",
+    "middle_02_r",
+    "middle_03_r",
+    "pinky_01_r",
+    "pinky_02_r",
+    "pinky_03_r",
+    "ring_01_r",
+    "ring_02_r",
+    "ring_03_r",
+    "thumb_01_r",
+    "thumb_02_r",
+    "thumb_03_r"
+   ]
+  },
+  "hollis_cuff_l": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_suit",
+   "surface": "rubber",
+   "bones": [
+    "hand_l",
+    "lowerarm_l"
+   ]
+  },
+  "hollis_cuff_r": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_suit",
+   "surface": "rubber",
+   "bones": [
+    "hand_r",
+    "lowerarm_r"
+   ]
+  },
+  "hollis_belt": {
+   "vertices": 318,
+   "faces": 352,
+   "triangles": 636,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_leather",
+   "surface": "belt",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "hollis_corselet": {
+   "vertices": 2090,
+   "faces": 2285,
+   "triangles": 4180,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "brass",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "hollis_helmet": {
+   "vertices": 314,
+   "faces": 336,
+   "triangles": 624,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "brass",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_helmet_collar": {
+   "vertices": 98,
+   "faces": 120,
+   "triangles": 192,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "brass_dark",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_port_frame0": {
+   "vertices": 82,
+   "faces": 96,
+   "triangles": 160,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "brass_dark",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_port_glass0": {
+   "vertices": 66,
+   "faces": 80,
+   "triangles": 128,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "glass",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_port_frame1": {
+   "vertices": 82,
+   "faces": 96,
+   "triangles": 160,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "brass_dark",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_port_glass1": {
+   "vertices": 66,
+   "faces": 80,
+   "triangles": 128,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "glass",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_guard10": {
+   "vertices": 12,
+   "faces": 6,
+   "triangles": 12,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "brass_dark",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_guard15": {
+   "vertices": 12,
+   "faces": 6,
+   "triangles": 12,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "brass_dark",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_guard19": {
+   "vertices": 12,
+   "faces": 6,
+   "triangles": 12,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "brass_dark",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_port_frame2": {
+   "vertices": 82,
+   "faces": 96,
+   "triangles": 160,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "brass_dark",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_port_glass2": {
+   "vertices": 66,
+   "faces": 80,
+   "triangles": 128,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "glass",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_guard20": {
+   "vertices": 12,
+   "faces": 6,
+   "triangles": 12,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "brass_dark",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_guard25": {
+   "vertices": 12,
+   "faces": 6,
+   "triangles": 12,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "brass_dark",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_guard29": {
+   "vertices": 12,
+   "faces": 6,
+   "triangles": 12,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "brass_dark",
+   "bones": [
+    "head"
+   ]
+  },
+  "hollis_harpoon_grip": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "iron",
+   "bones": [
+    "hand_r"
+   ]
+  },
+  "hollis_harpoon_barrel": {
+   "vertices": 42,
+   "faces": 50,
+   "triangles": 80,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "brass_dark",
+   "bones": [
+    "hand_r"
+   ]
+  },
+  "hollis_harpoon_tip": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_hollis_metal",
+   "surface": "iron",
+   "bones": [
+    "hand_r"
+   ]
+  }
+ },
+ "triangles_total": 43600,
+ "top_of_everything_cm": 207.62,
+ "standing_height_cm": 195.0,
+ "lowest_point_cm": -0.0,
+ "bones": 53,
+ "root_bone": [
+  "root"
+ ],
+ "id": "hollis",
+ "name": "Hollis Fathom",
+ "height": {
+  "macro_range_m": [
+   1.3999,
+   2.4492
+  ],
+  "height_macro": 0.629395,
+  "height_before_scale_m": 1.91516,
+  "uniform_scale": 0.999914,
+  "body_height_m": 1.915,
+  "targets_applied": 4
+ },
+ "timings_s": {
+  "enable_mpfb": 0.19,
+  "mpfb_body": 1.03,
+  "bake_body": 0.02,
+  "outfit": 2.12,
+  "textures": 17.94,
+  "finalize": 0.01,
+  "save_blend": 0.03,
+  "export_fbx": 0.33
+ },
+ "script_wall_s": 21.7,
+ "peak_rss_mb": 1936.1
+}

@@ -1,0 +1,1453 @@
+{
+ "stage": "stilt_market",
+ "title": "Lowmere Stilt Market",
+ "units": {
+  "positions": "Blender metres, Z up, fighting plane XZ at Y=0, camera at -Y looking +Y",
+  "unreal": "UE = (100*x, -100*y, 100*z) cm; *_ue_cm fields are already converted",
+  "lights": "candela (point/spot), lux (directional), glow strength in cd/m2; for manual exposure EV100 = 1.0",
+  "exposure_ev100": 1.0
+ },
+ "lights": [
+  {
+   "name": "key_warm",
+   "type": "directional",
+   "pos": [
+    -6,
+    -6,
+    10
+   ],
+   "color": [
+    1.0,
+    0.84,
+    0.68
+   ],
+   "lux": 2.6,
+   "dir": [
+    0.4289,
+    0.6859,
+    -0.5879
+   ],
+   "dir_ue": [
+    0.4289,
+    -0.6859,
+    -0.5879
+   ],
+   "shadows": true,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    -600,
+    600,
+    1000
+   ],
+   "source_angle_deg": 2.0,
+   "note": "warm key from the upper left front"
+  },
+  {
+   "name": "rim_moon",
+   "type": "directional",
+   "pos": [
+    6,
+    30,
+    10
+   ],
+   "color": [
+    0.6,
+    0.76,
+    1.0
+   ],
+   "lux": 3.0,
+   "dir": [
+    -0.4411,
+    -0.7651,
+    -0.4691
+   ],
+   "dir_ue": [
+    -0.4411,
+    0.7651,
+    -0.4691
+   ],
+   "shadows": false,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    600,
+    -3000,
+    1000
+   ],
+   "source_angle_deg": 0.05,
+   "specular_scale": 1.5,
+   "affects": "not_floor",
+   "note": "cool moonlit rim from behind right"
+  },
+  {
+   "name": "fill_camera",
+   "type": "directional",
+   "pos": [
+    0,
+    -10,
+    3
+   ],
+   "color": [
+    0.75,
+    0.82,
+    0.9
+   ],
+   "lux": 1.4,
+   "dir": [
+    -0.1361,
+    0.9686,
+    -0.2081
+   ],
+   "dir_ue": [
+    -0.1361,
+    -0.9686,
+    -0.2081
+   ],
+   "shadows": false,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    0,
+    1000,
+    300
+   ],
+   "source_angle_deg": 0.05,
+   "specular_scale": 0.25,
+   "affects": "fighters_only"
+  },
+  {
+   "name": "lantern_string_1",
+   "type": "point",
+   "pos": [
+    -10.8,
+    2.18,
+    2.8
+   ],
+   "color": [
+    1.0,
+    0.58,
+    0.28
+   ],
+   "intensity_candela": 20.0,
+   "radius_m": 7.0,
+   "shadows": false,
+   "flicker": 0.08,
+   "flicker_speed": 3.0,
+   "pos_ue_cm": [
+    -1080.0,
+    -218.0,
+    280.0
+   ],
+   "source_radius_m": 0.3,
+   "specular_scale": 0.4,
+   "note": "signature: strings of amber lanterns"
+  },
+  {
+   "name": "lantern_string_2",
+   "type": "point",
+   "pos": [
+    -3.6,
+    2.18,
+    2.8
+   ],
+   "color": [
+    1.0,
+    0.58,
+    0.28
+   ],
+   "intensity_candela": 20.0,
+   "radius_m": 7.0,
+   "shadows": false,
+   "flicker": 0.08,
+   "flicker_speed": 3.0,
+   "pos_ue_cm": [
+    -360.0,
+    -218.0,
+    280.0
+   ],
+   "source_radius_m": 0.3,
+   "specular_scale": 0.4,
+   "note": "signature: strings of amber lanterns"
+  },
+  {
+   "name": "lantern_string_3",
+   "type": "point",
+   "pos": [
+    3.6,
+    2.18,
+    2.8
+   ],
+   "color": [
+    1.0,
+    0.58,
+    0.28
+   ],
+   "intensity_candela": 20.0,
+   "radius_m": 7.0,
+   "shadows": true,
+   "flicker": 0.08,
+   "flicker_speed": 3.0,
+   "pos_ue_cm": [
+    360.0,
+    -218.0,
+    280.0
+   ],
+   "source_radius_m": 0.3,
+   "specular_scale": 0.4,
+   "note": "signature: strings of amber lanterns"
+  },
+  {
+   "name": "lantern_string_4",
+   "type": "point",
+   "pos": [
+    10.8,
+    2.18,
+    2.8
+   ],
+   "color": [
+    1.0,
+    0.58,
+    0.28
+   ],
+   "intensity_candela": 20.0,
+   "radius_m": 7.0,
+   "shadows": false,
+   "flicker": 0.08,
+   "flicker_speed": 3.0,
+   "pos_ue_cm": [
+    1080.0,
+    -218.0,
+    280.0
+   ],
+   "source_radius_m": 0.3,
+   "specular_scale": 0.4,
+   "note": "signature: strings of amber lanterns"
+  },
+  {
+   "name": "pier_stalls_1",
+   "type": "point",
+   "pos": [
+    -15.0,
+    12.4,
+    2.0
+   ],
+   "color": [
+    1.0,
+    0.56,
+    0.26
+   ],
+   "intensity_candela": 18.0,
+   "radius_m": 6.0,
+   "shadows": false,
+   "flicker": 0.1,
+   "flicker_speed": 4.0,
+   "pos_ue_cm": [
+    -1500.0,
+    -1240.0,
+    200.0
+   ],
+   "source_radius_m": 0.3,
+   "specular_scale": 0.4
+  },
+  {
+   "name": "pier_stalls_2",
+   "type": "point",
+   "pos": [
+    -8.0,
+    12.4,
+    2.0
+   ],
+   "color": [
+    1.0,
+    0.56,
+    0.26
+   ],
+   "intensity_candela": 18.0,
+   "radius_m": 6.0,
+   "shadows": false,
+   "flicker": 0.1,
+   "flicker_speed": 4.0,
+   "pos_ue_cm": [
+    -800.0,
+    -1240.0,
+    200.0
+   ],
+   "source_radius_m": 0.3,
+   "specular_scale": 0.4
+  },
+  {
+   "name": "pier_stalls_3",
+   "type": "point",
+   "pos": [
+    -2.0,
+    12.4,
+    2.0
+   ],
+   "color": [
+    1.0,
+    0.56,
+    0.26
+   ],
+   "intensity_candela": 18.0,
+   "radius_m": 6.0,
+   "shadows": false,
+   "flicker": 0.1,
+   "flicker_speed": 4.0,
+   "pos_ue_cm": [
+    -200.0,
+    -1240.0,
+    200.0
+   ],
+   "source_radius_m": 0.3,
+   "specular_scale": 0.4
+  },
+  {
+   "name": "end_stall_1",
+   "type": "point",
+   "pos": [
+    -8.95,
+    0.3,
+    1.9
+   ],
+   "color": [
+    1.0,
+    0.58,
+    0.28
+   ],
+   "intensity_candela": 14.0,
+   "radius_m": 4.5,
+   "shadows": false,
+   "flicker": 0.1,
+   "flicker_speed": 4.0,
+   "pos_ue_cm": [
+    -895.0,
+    -30.0,
+    190.0
+   ],
+   "source_radius_m": 0.2,
+   "specular_scale": 0.3
+  },
+  {
+   "name": "end_stall_2",
+   "type": "point",
+   "pos": [
+    8.95,
+    0.3,
+    1.9
+   ],
+   "color": [
+    1.0,
+    0.58,
+    0.28
+   ],
+   "intensity_candela": 14.0,
+   "radius_m": 4.5,
+   "shadows": false,
+   "flicker": 0.1,
+   "flicker_speed": 4.0,
+   "pos_ue_cm": [
+    895.0,
+    -30.0,
+    190.0
+   ],
+   "source_radius_m": 0.2,
+   "specular_scale": 0.3
+  },
+  {
+   "name": "set_down_lantern",
+   "type": "point",
+   "pos": [
+    -3.4,
+    1.75,
+    0.3
+   ],
+   "color": [
+    1.0,
+    0.62,
+    0.3
+   ],
+   "intensity_candela": 3.0,
+   "radius_m": 2.2,
+   "shadows": false,
+   "flicker": 0.15,
+   "flicker_speed": 9.0,
+   "pos_ue_cm": [
+    -340.0,
+    -175.0,
+    30.0
+   ],
+   "source_radius_m": 0.05
+  },
+  {
+   "name": "stranger_lamp",
+   "type": "point",
+   "pos": [
+    13.1,
+    15.9,
+    3.95
+   ],
+   "color": [
+    0.72,
+    0.78,
+    1.0
+   ],
+   "intensity_candela": 16.0,
+   "radius_m": 6.0,
+   "shadows": false,
+   "flicker": 0.04,
+   "flicker_speed": 1.5,
+   "pos_ue_cm": [
+    1310.0,
+    -1590.0,
+    395.0
+   ],
+   "source_radius_m": 0.12,
+   "note": "the pale lamp over the empty walk"
+  }
+ ],
+ "glows": [
+  {
+   "material": "GLOW_lantern_amber",
+   "color": [
+    1.0,
+    0.42,
+    0.1
+   ],
+   "strength": 1.5,
+   "pattern": "ribs",
+   "pattern_scale": 0.032,
+   "note": "paper lanterns: horizontal paper ribs about 3 cm apart, slow sway"
+  },
+  {
+   "material": "GLOW_lantern_red",
+   "color": [
+    1.0,
+    0.16,
+    0.05
+   ],
+   "strength": 1.3,
+   "pattern": "ribs",
+   "pattern_scale": 0.032,
+   "note": "red paper lanterns, ribbed likewise"
+  },
+  {
+   "material": "GLOW_window",
+   "color": [
+    1.0,
+    0.56,
+    0.24
+   ],
+   "strength": 1.6,
+   "note": "stilt-house windows"
+  },
+  {
+   "material": "GLOW_jar",
+   "color": [
+    0.5,
+    0.95,
+    0.2
+   ],
+   "strength": 1.8,
+   "note": "jars of slop at the jar stall"
+  },
+  {
+   "material": "GLOW_lamp_pale",
+   "color": [
+    0.75,
+    0.8,
+    1.0
+   ],
+   "strength": 6.0,
+   "note": "the stranger's lamp"
+  },
+  {
+   "material": "GLOW_moon",
+   "color": [
+    0.85,
+    0.9,
+    0.82
+   ],
+   "strength": 3.0,
+   "note": "the low moon disc (delete if the sky carries one)"
+  }
+ ],
+ "water": [
+  {
+   "material": "WATER_bog",
+   "color": [
+    0.008,
+    0.012,
+    0.013
+   ],
+   "roughness": 0.05,
+   "opacity": 1.0,
+   "note": "black bog water with a little green scum; gentle swell; reflections matter"
+  }
+ ],
+ "animated": [
+  {
+   "object": "stilt_market_lanterns",
+   "kind": "sway",
+   "amp": 4.0,
+   "speed": 1.1,
+   "note": "many lanterns in one mesh: sway in the material (WPO) about each lantern's hook, phase by world position; hook = top of each lantern"
+  }
+ ],
+ "fog": {
+  "color": [
+   0.1,
+   0.125,
+   0.135
+  ],
+  "density": 0.2,
+  "height_falloff": 2.5,
+  "density_per_m": 0.02,
+  "height_falloff_per_m": 0.25,
+  "fog_height_m": -1.7,
+  "fog_height_ue_cm": -170.0,
+  "note": "heavy low mist over the water (height fog), thinner above the boardwalk; volumetric fog for lantern halos"
+ },
+ "ambient": {
+  "color": [
+   0.32,
+   0.5,
+   0.6
+  ],
+  "intensity": 0.3,
+  "units": "cd/m2 sky radiance at EV100 1.0 (Sky Light intensity: tune)"
+ },
+ "music": "music_market",
+ "footstep": "wood",
+ "sky": "lakeside_night",
+ "surfaces": {
+  "weathered_planks": {
+   "set": "weathered_planks",
+   "tiling": 0.5,
+   "tint": [
+    0.62,
+    0.58,
+    0.54
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "weathered_planks__dark": {
+   "set": "weathered_planks",
+   "tiling": 0.5,
+   "tint": [
+    0.32,
+    0.29,
+    0.27
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "moss_wood": {
+   "set": "moss_wood",
+   "tiling": 1.0,
+   "tint": [
+    0.45,
+    0.47,
+    0.4
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Wood051": {
+   "set": "Wood051",
+   "tiling": 1.25,
+   "tint": [
+    0.5,
+    0.42,
+    0.36
+   ],
+   "roughness": 1.2,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Rope003": {
+   "set": "Rope003",
+   "tiling": 2.8571,
+   "tint": [
+    0.75,
+    0.68,
+    0.55
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "hessian_380": {
+   "set": "hessian_380",
+   "tiling": 3.6496,
+   "tint": [
+    0.72,
+    0.66,
+    0.52
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "hessian_380__wicker": {
+   "set": "hessian_380",
+   "tiling": 1.0,
+   "tint": [
+    0.27,
+    0.23,
+    0.17
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Fabric040": {
+   "set": "Fabric040",
+   "tiling": 2.0,
+   "tint": [
+    0.85,
+    0.55,
+    0.5
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0,
+   "two_sided": true
+  },
+  "Fabric040__teal": {
+   "set": "Fabric040",
+   "tiling": 2.0,
+   "tint": [
+    0.18,
+    0.55,
+    0.52
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0,
+   "two_sided": true
+  },
+  "Fabric040__ochre": {
+   "set": "Fabric040",
+   "tiling": 2.0,
+   "tint": [
+    1.0,
+    0.78,
+    0.3
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0,
+   "two_sided": true
+  },
+  "Fabric040__plum": {
+   "set": "Fabric040",
+   "tiling": 2.0,
+   "tint": [
+    0.5,
+    0.3,
+    0.45
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0,
+   "two_sided": true
+  },
+  "hessian_380__awning": {
+   "set": "hessian_380",
+   "tiling": 3.6496,
+   "tint": [
+    0.95,
+    0.9,
+    0.78
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0,
+   "two_sided": true
+  },
+  "Metal055A": {
+   "set": "Metal055A",
+   "tiling": 1.0,
+   "tint": [
+    0.22,
+    0.21,
+    0.2
+   ],
+   "roughness": 1.0,
+   "metallic": 1.0,
+   "normal_strength": 1.0
+  },
+  "Metal055A__fish": {
+   "set": "Metal055A",
+   "tiling": 1.0,
+   "tint": [
+    0.6,
+    0.66,
+    0.68
+   ],
+   "roughness": 0.5,
+   "metallic": 0.5,
+   "normal_strength": 1.0
+  },
+  "Leather021": {
+   "set": "Leather021",
+   "tiling": 2.0,
+   "tint": [
+    0.8,
+    0.7,
+    0.6
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Ivory001B__clay": {
+   "set": "Ivory001B",
+   "tiling": 1.6667,
+   "tint": [
+    0.42,
+    0.4,
+    0.26
+   ],
+   "roughness": 0.7,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Ivory001B__gourd": {
+   "set": "Ivory001B",
+   "tiling": 1.6667,
+   "tint": [
+    0.85,
+    0.45,
+    0.12
+   ],
+   "roughness": 0.6,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Fabric040__beet": {
+   "set": "Fabric040",
+   "tiling": 2.0,
+   "tint": [
+    0.5,
+    0.12,
+    0.2
+   ],
+   "roughness": 0.6,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "moss_wood__roof": {
+   "set": "moss_wood",
+   "tiling": 1.0,
+   "tint": [
+    0.22,
+    0.23,
+    0.2
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Ground051": {
+   "set": "Ground051",
+   "tiling": 0.5,
+   "tint": [
+    0.12,
+    0.13,
+    0.12
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Ground037__reed": {
+   "set": "Ground037",
+   "tiling": 0.4762,
+   "tint": [
+    0.42,
+    0.42,
+    0.22
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0,
+   "two_sided": true
+  },
+  "brown_mud_03": {
+   "set": "brown_mud_03",
+   "tiling": 0.7692,
+   "tint": [
+    0.35,
+    0.33,
+    0.3
+   ],
+   "roughness": 0.6,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  }
+ },
+ "props": [
+  {
+   "model": "wooden_lantern_01",
+   "object": "stilt_market_prop_wooden_lantern_01_1",
+   "pos": [
+    -3.4,
+    1.75,
+    0.0
+   ],
+   "rot_z": 20,
+   "scale": 1.0,
+   "tris": 8321
+  },
+  {
+   "model": "wooden_bucket_01",
+   "object": "stilt_market_prop_wooden_bucket_01_1",
+   "pos": [
+    2.6,
+    2.05,
+    0.0
+   ],
+   "rot_z": -30,
+   "scale": 1.0,
+   "tris": 5116
+  },
+  {
+   "model": "wooden_crate_02",
+   "object": "stilt_market_prop_wooden_crate_02_1",
+   "pos": [
+    -7.95,
+    1.75,
+    0.0
+   ],
+   "rot_z": 88,
+   "scale": 1.0,
+   "tris": 5176
+  },
+  {
+   "model": "wooden_crate_02",
+   "object": "stilt_market_prop_wooden_crate_02_2",
+   "pos": [
+    -8.0,
+    1.7,
+    0.455
+   ],
+   "rot_z": 95,
+   "scale": 1.0,
+   "tris": 5176
+  },
+  {
+   "model": "wine_barrel_01",
+   "object": "stilt_market_prop_wine_barrel_01_1",
+   "pos": [
+    8.2,
+    1.65,
+    0.0
+   ],
+   "rot_z": 30,
+   "scale": 1.0,
+   "tris": 10820
+  }
+ ],
+ "fx": [
+  {
+   "kind": "motes",
+   "note": "fireflies / bog lights over the water",
+   "box_center": [
+    0,
+    14.0,
+    -0.7
+   ],
+   "box_extent": [
+    20,
+    9,
+    1.0
+   ],
+   "count": 40,
+   "color": [
+    0.7,
+    1.0,
+    0.4,
+    0.9
+   ],
+   "size_m": 0.06
+  },
+  {
+   "kind": "mist",
+   "center": [
+    0,
+    8.0,
+    -1.35
+   ],
+   "size": [
+    60,
+    14
+   ],
+   "color": [
+    0.26,
+    0.31,
+    0.34
+   ],
+   "density": 0.35
+  },
+  {
+   "kind": "mist",
+   "center": [
+    0,
+    24.0,
+    -1.2
+   ],
+   "size": [
+    90,
+    20
+   ],
+   "color": [
+    0.24,
+    0.29,
+    0.32
+   ],
+   "density": 0.45
+  },
+  {
+   "kind": "mist",
+   "center": [
+    0,
+    50.0,
+    -0.8999999999999999
+   ],
+   "size": [
+    160,
+    30
+   ],
+   "color": [
+    0.22,
+    0.27,
+    0.3
+   ],
+   "density": 0.55
+  }
+ ],
+ "objects": [
+  {
+   "name": "stilt_market_deck",
+   "triangles": 18522,
+   "materials": [
+    "weathered_planks"
+   ]
+  },
+  {
+   "name": "stilt_market_beams",
+   "triangles": 2348,
+   "materials": [
+    "weathered_planks__dark"
+   ]
+  },
+  {
+   "name": "stilt_market_piles",
+   "triangles": 8812,
+   "materials": [
+    "moss_wood"
+   ]
+  },
+  {
+   "name": "stilt_market_posts",
+   "triangles": 6964,
+   "materials": [
+    "Wood051"
+   ]
+  },
+  {
+   "name": "stilt_market_ropes",
+   "triangles": 12080,
+   "materials": [
+    "Rope003"
+   ]
+  },
+  {
+   "name": "stilt_market_lanterns",
+   "triangles": 8640,
+   "materials": [
+    "GLOW_lantern_amber",
+    "GLOW_lantern_red"
+   ]
+  },
+  {
+   "name": "stilt_market_lantern_caps",
+   "triangles": 5400,
+   "materials": [
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "stilt_market_goods",
+   "triangles": 2732,
+   "materials": [
+    "hessian_380__wicker"
+   ]
+  },
+  {
+   "name": "stilt_market_water",
+   "triangles": 2,
+   "materials": [
+    "WATER_bog"
+   ]
+  },
+  {
+   "name": "stilt_market_far_bank",
+   "triangles": 1280,
+   "materials": [
+    "Ground051"
+   ]
+  },
+  {
+   "name": "stilt_market_dead_trees",
+   "triangles": 1088,
+   "materials": [
+    "moss_wood__roof"
+   ]
+  },
+  {
+   "name": "stilt_market_moon",
+   "triangles": 96,
+   "materials": [
+    "GLOW_moon"
+   ]
+  },
+  {
+   "name": "stilt_market_mud",
+   "triangles": 180,
+   "materials": [
+    "brown_mud_03"
+   ]
+  },
+  {
+   "name": "stilt_market_floats",
+   "triangles": 768,
+   "materials": [
+    "Wood051"
+   ]
+  },
+  {
+   "name": "stilt_market_awnings",
+   "triangles": 5292,
+   "materials": [
+    "Fabric040__ochre",
+    "Fabric040",
+    "Fabric040__plum",
+    "Fabric040__teal",
+    "hessian_380__awning"
+   ]
+  },
+  {
+   "name": "stilt_market_jars",
+   "triangles": 1960,
+   "materials": [
+    "Ivory001B__clay"
+   ]
+  },
+  {
+   "name": "stilt_market_jars_glow",
+   "triangles": 600,
+   "materials": [
+    "GLOW_jar"
+   ]
+  },
+  {
+   "name": "stilt_market_crates_ice",
+   "triangles": 132,
+   "materials": [
+    "hessian_380"
+   ]
+  },
+  {
+   "name": "stilt_market_fish",
+   "triangles": 3384,
+   "materials": [
+    "Metal055A__fish"
+   ]
+  },
+  {
+   "name": "stilt_market_produce",
+   "triangles": 1620,
+   "materials": [
+    "Fabric040__beet",
+    "Ivory001B__clay",
+    "Ivory001B__gourd"
+   ]
+  },
+  {
+   "name": "stilt_market_bolts",
+   "triangles": 320,
+   "materials": [
+    "Fabric040",
+    "Fabric040__plum",
+    "Fabric040__teal",
+    "hessian_380__awning"
+   ]
+  },
+  {
+   "name": "stilt_market_leather",
+   "triangles": 132,
+   "materials": [
+    "Leather021"
+   ]
+  },
+  {
+   "name": "stilt_market_pale_lamp",
+   "triangles": 72,
+   "materials": [
+    "GLOW_lamp_pale"
+   ]
+  },
+  {
+   "name": "stilt_market_houses",
+   "triangles": 2816,
+   "materials": [
+    "weathered_planks__dark"
+   ]
+  },
+  {
+   "name": "stilt_market_roofs",
+   "triangles": 512,
+   "materials": [
+    "moss_wood__roof"
+   ]
+  },
+  {
+   "name": "stilt_market_windows",
+   "triangles": 348,
+   "materials": [
+    "GLOW_window"
+   ]
+  },
+  {
+   "name": "stilt_market_reeds",
+   "triangles": 17284,
+   "materials": [
+    "Ground037__reed",
+    "brown_mud_03"
+   ]
+  },
+  {
+   "name": "stilt_market_prop_wooden_lantern_01_1",
+   "triangles": 8321,
+   "materials": [
+    "PH_wooden_lantern_01_main",
+    "PH_wooden_lantern_01_glass"
+   ]
+  },
+  {
+   "name": "stilt_market_prop_wooden_bucket_01_1",
+   "triangles": 5116,
+   "materials": [
+    "PH_wooden_bucket_01_main"
+   ]
+  },
+  {
+   "name": "stilt_market_prop_wooden_crate_02_1",
+   "triangles": 5176,
+   "materials": [
+    "PH_wooden_crate_02_main"
+   ]
+  },
+  {
+   "name": "stilt_market_prop_wooden_crate_02_2",
+   "triangles": 5176,
+   "materials": [
+    "PH_wooden_crate_02_main"
+   ]
+  },
+  {
+   "name": "stilt_market_prop_wine_barrel_01_1",
+   "triangles": 10820,
+   "materials": [
+    "PH_wine_barrel_01_main"
+   ]
+  },
+  {
+   "name": "ORIGIN_MARKER_1m",
+   "triangles": 12,
+   "materials": [
+    "ORIGIN_MARKER"
+   ]
+  }
+ ],
+ "placements": [
+  {
+   "object": "stilt_market_deck",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_beams",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_piles",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_posts",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_ropes",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_lanterns",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_lantern_caps",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_goods",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_water",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_far_bank",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_dead_trees",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_moon",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_mud",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_floats",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_awnings",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_jars",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_jars_glow",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_crates_ice",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_fish",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_produce",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_bolts",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_leather",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_pale_lamp",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_houses",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_roofs",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_windows",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_reeds",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_prop_wooden_lantern_01_1",
+   "pivot_ue_cm": [
+    -340.0,
+    -175.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_prop_wooden_bucket_01_1",
+   "pivot_ue_cm": [
+    260.0,
+    -205.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_prop_wooden_crate_02_1",
+   "pivot_ue_cm": [
+    -795.0,
+    -175.0,
+    0.0
+   ]
+  },
+  {
+   "object": "stilt_market_prop_wooden_crate_02_2",
+   "pivot_ue_cm": [
+    -800.0,
+    -170.0,
+    45.5
+   ]
+  },
+  {
+   "object": "stilt_market_prop_wine_barrel_01_1",
+   "pivot_ue_cm": [
+    820.0,
+    -165.0,
+    0.0
+   ]
+  },
+  {
+   "object": "ORIGIN_MARKER_1m",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  }
+ ],
+ "triangles_total": 137993,
+ "strip_check": "clean",
+ "notes": [
+  "Tall rail poles at X 0, +-7.2, +-14.4 (the +-7.2 pair marks the ends of the floor); end stalls start at X +-7.65.",
+  "Lanterns are one merged object for the draw count; the strings are in stilt_market_ropes.",
+  "The raised walkway on the right (X 3.4-15.5, Y 15.5, Z 1.25) is kept empty for the stranger."
+ ]
+}

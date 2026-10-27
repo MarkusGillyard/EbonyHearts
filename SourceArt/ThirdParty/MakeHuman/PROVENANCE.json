@@ -1,0 +1,60 @@
+{
+ "recorded": "2026-10-26",
+ "note": "Files under downloads/ are byte-for-byte as delivered; extracted/ is an unmodified unzip of the asset pack. Nothing here is modified.",
+ "mpfb_addon": {
+  "file": "downloads/mpfb2_addon/add-on-mpfb-v2.0.18.zip",
+  "url": "https://extensions.blender.org/download/sha256:c075b3e9b94b8e5556a5f03f4653602d02ea306de08126e8f55ed6dee28a2dad/add-on-mpfb-v2.0.18.zip",
+  "listed_by": "https://extensions.blender.org/api/v1/extensions/?blender_version=5.2.2&platform=linux-x64 (id mpfb, version 2.0.18, blender_version_min 4.2.0, no max)",
+  "version": "2.0.18",
+  "release_notes": "https://static.makehumancommunity.org/mpfb/releases/release_2018.html (released 2026-10-10; GitHub tag v2.0.18 published 2026-10-11, no release asset)",
+  "http_last_modified": "Sat, 10 Oct 2026 14:55:31 GMT",
+  "size": 45956992,
+  "sha256": "c075b3e9b94b8e5556a5f03f4653602d02ea306de08126e8f55ed6dee28a2dad",
+  "sha256_published_by_extensions_api": "c075b3e9b94b8e5556a5f03f4653602d02ea306de08126e8f55ed6dee28a2dad",
+  "license": "GPL-3.0-or-later (blender_manifest.toml). Development tool only; not shipped. The zip contains no LICENSE files; see mpfb2_repo_license_files_v2.0.18/."
+ },
+ "makehuman_system_assets": {
+  "file": "downloads/makehuman_system_assets/makehuman_system_assets_cc0.zip",
+  "url": "https://files.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip",
+  "mirror": "https://files2.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip (same size, Last-Modified and ETag)",
+  "index_page": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html (linked from MPFB src/mpfb/ui/weburls.py URL_SYSTEM_ASSETS)",
+  "http_last_modified": "Sun, 14 Apr 2024 13:28:46 GMT",
+  "http_etag": "10bbb7ea-6160e7c0d7996",
+  "size": 280737770,
+  "sha256": "b542127a8e25547c7c29c19f2d1d2adb9a664c80396ecd694095dbc8028a0107",
+  "version": "no version number published; zip entries dated 2024-04-14; packs/makehuman_system_assets.json lists 94 assets, all license CC0, author makehuman_system, changed 2020-01-01",
+  "license_text_in_pack": "none: the archive has no LICENSE/README file. Every .mhclo/.mhmat/.proxy/.obj (209 files) carries the header 'This asset was explicitly released as CC0 in september 2020. The license text for CC0 can be found in the root of this repository.'",
+  "extracted_to": "extracted/makehuman_system_assets/"
+ },
+ "license_texts_fetched_separately": {
+  "mpfb2_repo_license_files_v2.0.18": {
+   "LICENSE.md": {
+    "url": "https://raw.githubusercontent.com/makehumancommunity/mpfb2/v2.0.18/LICENSE.md",
+    "sha256": "5cefb60680cb9efd4550a2e65d719021cfbec9dad3658481d11d48ae863ce04d"
+   },
+   "LICENSE.ASSETS.md": {
+    "url": "https://raw.githubusercontent.com/makehumancommunity/mpfb2/v2.0.18/LICENSE.ASSETS.md",
+    "sha256": "f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c"
+   },
+   "LICENSE.CODE.md": {
+    "url": "https://raw.githubusercontent.com/makehumancommunity/mpfb2/v2.0.18/LICENSE.CODE.md",
+    "sha256": "26c03bc049c15fc5b9e52d791a06f1a6bc32f89edc8f8c701ab0aadf66e85b82"
+   }
+  },
+  "makehuman_repo_license_files_master": {
+   "LICENSE.md": {
+    "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/LICENSE.md",
+    "sha256": "edd99571ca62698f78c943fd4fffb159a413c315fa0d4819d3cec5cadaf8b4f1"
+   },
+   "LICENSE.ASSETS.md": {
+    "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/LICENSE.ASSETS.md",
+    "sha256": "f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c"
+   }
+  }
+ },
+ "provenance_flags": [
+  "PNG tEXt 'author: Doctor Hell' in hair/bob01/bob01_diffuse.png, hair/bob02/bob02_diffuse.png, eyebrows/eyebrow009/eyebrow009.png, eyebrows/eyebrow010/eyebrow010.png, eyebrows/eyebrow011/eyebrow011.png; their .mhclo/.mhmat still carry the CC0 header and the pack JSON says CC0. Not used by the test bodies; avoid until provenance is confirmed.",
+  "Assets are tagged 'MakeHuman™'; CC0 section 4a does not license trademarks.",
+  "Skin diffuse textures carry a 'PUBLIC DOMAIN / MAKEHUMAN.ORG' stamp in an unused UV corner; paint it out before shipping."
+ ]
+}

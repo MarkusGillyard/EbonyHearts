@@ -1,0 +1,729 @@
+{
+ "slots": {
+  "skin": {
+   "material": "M_slopbat_skin",
+   "size": 2048,
+   "files": {
+    "basecolor": "slopbat_skin_basecolor.png",
+    "normal": "slopbat_skin_normal.png",
+    "orm": "slopbat_skin_orm.png",
+    "emissive": "slopbat_skin_emissive.png"
+   },
+   "objects": [
+    "slopbat_body"
+   ]
+  },
+  "face": {
+   "material": "M_slopbat_face",
+   "size": 512,
+   "files": {
+    "basecolor": "slopbat_face_basecolor.png",
+    "normal": "slopbat_face_normal.png",
+    "orm": "slopbat_face_orm.png",
+    "emissive": "slopbat_face_emissive.png"
+   },
+   "objects": [
+    "slopbat_eyes"
+   ]
+  },
+  "membrane": {
+   "material": "M_slopbat_membrane",
+   "size": 2048,
+   "files": {
+    "basecolor": "slopbat_membrane_basecolor.png",
+    "normal": "slopbat_membrane_normal.png",
+    "orm": "slopbat_membrane_orm.png"
+   },
+   "objects": [
+    "slopbat_cloak",
+    "slopbat_wing_l",
+    "slopbat_wing_r",
+    "slopbat_ear_l",
+    "slopbat_ear_r"
+   ]
+  },
+  "horn": {
+   "material": "M_slopbat_horn",
+   "size": 1024,
+   "files": {
+    "basecolor": "slopbat_horn_basecolor.png",
+    "normal": "slopbat_horn_normal.png",
+    "orm": "slopbat_horn_orm.png"
+   },
+   "objects": [
+    "slopbat_spar0_l",
+    "slopbat_spar1_l",
+    "slopbat_spar2_l",
+    "slopbat_thumbclaw_l",
+    "slopbat_spar0_r",
+    "slopbat_spar1_r",
+    "slopbat_spar2_r",
+    "slopbat_thumbclaw_r",
+    "slopbat_horn0",
+    "slopbat_horn1",
+    "slopbat_horn2",
+    "slopbat_horn3",
+    "slopbat_horn4",
+    "slopbat_horn5",
+    "slopbat_horn6",
+    "slopbat_claw_thumb_l",
+    "slopbat_claw_index_l",
+    "slopbat_claw_middle_l",
+    "slopbat_claw_ring_l",
+    "slopbat_claw_pinky_l",
+    "slopbat_toeclaw0_l",
+    "slopbat_toeclaw1_l",
+    "slopbat_toeclaw2_l",
+    "slopbat_toeclaw3_l",
+    "slopbat_claw_thumb_r",
+    "slopbat_claw_index_r",
+    "slopbat_claw_middle_r",
+    "slopbat_claw_ring_r",
+    "slopbat_claw_pinky_r",
+    "slopbat_toeclaw0_r",
+    "slopbat_toeclaw1_r",
+    "slopbat_toeclaw2_r",
+    "slopbat_toeclaw3_r"
+   ]
+  }
+ },
+ "texture_notes": {
+  "skin": [
+   "tinted old_lightskinned_male_diffuse.png -> #121a10 (per-channel gain [0.008, 0.025, 0.02])",
+   "painted scalp hair replaced by forehead skin tone",
+   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #121a10",
+   "procedural glowing veins #4fae24"
+  ],
+  "face": [
+   "eyes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyes/materials/green_eye.png -> tile (0.0, 0.0, 0.5, 0.5)"
+  ],
+  "membrane": [
+   "slopbat_cloak: Leather026 tinted #18200f, 35 cm tiles, roughness 0.42, metallic 0",
+   "slopbat_wing_l: Leather026 tinted #18200f, 35 cm tiles, roughness 0.42, metallic 0",
+   "slopbat_wing_r: Leather026 tinted #18200f, 35 cm tiles, roughness 0.42, metallic 0",
+   "slopbat_ear_l: Leather026 tinted #18200f, 35 cm tiles, roughness 0.42, metallic 0",
+   "slopbat_ear_r: Leather026 tinted #18200f, 35 cm tiles, roughness 0.42, metallic 0"
+  ],
+  "horn": [
+   "slopbat_spar0_l: Leather026 tinted #10160d, 20 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_spar1_l: Leather026 tinted #10160d, 20 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_spar2_l: Leather026 tinted #10160d, 20 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_thumbclaw_l: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_spar0_r: Leather026 tinted #10160d, 20 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_spar1_r: Leather026 tinted #10160d, 20 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_spar2_r: Leather026 tinted #10160d, 20 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_thumbclaw_r: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_horn0: Leather021 tinted #2b2a22, 12 cm tiles, roughness 0.45, metallic 0",
+   "slopbat_horn1: Leather021 tinted #2b2a22, 12 cm tiles, roughness 0.45, metallic 0",
+   "slopbat_horn2: Leather021 tinted #2b2a22, 12 cm tiles, roughness 0.45, metallic 0",
+   "slopbat_horn3: Leather021 tinted #2b2a22, 12 cm tiles, roughness 0.45, metallic 0",
+   "slopbat_horn4: Leather021 tinted #2b2a22, 12 cm tiles, roughness 0.45, metallic 0",
+   "slopbat_horn5: Leather021 tinted #2b2a22, 12 cm tiles, roughness 0.45, metallic 0",
+   "slopbat_horn6: Leather021 tinted #2b2a22, 12 cm tiles, roughness 0.45, metallic 0",
+   "slopbat_claw_thumb_l: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_claw_index_l: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_claw_middle_l: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_claw_ring_l: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_claw_pinky_l: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_toeclaw0_l: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_toeclaw1_l: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_toeclaw2_l: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_toeclaw3_l: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_claw_thumb_r: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_claw_index_r: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_claw_middle_r: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_claw_ring_r: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_claw_pinky_r: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_toeclaw0_r: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_toeclaw1_r: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_toeclaw2_r: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0",
+   "slopbat_toeclaw3_r: Metal055A tinted #26241c, 10 cm tiles, roughness 0.30, metallic 0"
+  ]
+ },
+ "parts": {
+  "slopbat_body": {
+   "vertices": 13380,
+   "faces": 13378,
+   "triangles": 26756,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_skin",
+   "surface": "body",
+   "bones": [
+    "ball_l",
+    "ball_r",
+    "calf_l",
+    "calf_r",
+    "clavicle_l",
+    "clavicle_r",
+    "foot_l",
+    "foot_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "index_01_l",
+    "index_01_r",
+    "index_02_l",
+    "index_02_r",
+    "index_03_l",
+    "index_03_r",
+    "lowerarm_l",
+    "lowerarm_r",
+    "middle_01_l",
+    "middle_01_r",
+    "middle_02_l",
+    "middle_02_r",
+    "middle_03_l",
+    "middle_03_r",
+    "neck_01",
+    "pelvis",
+    "pinky_01_l",
+    "pinky_01_r",
+    "pinky_02_l",
+    "pinky_02_r",
+    "pinky_03_l",
+    "pinky_03_r",
+    "ring_01_l",
+    "ring_01_r",
+    "ring_02_l",
+    "ring_02_r",
+    "ring_03_l",
+    "ring_03_r",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "thumb_01_l",
+    "thumb_01_r",
+    "thumb_02_l",
+    "thumb_02_r",
+    "thumb_03_l",
+    "thumb_03_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "slopbat_eyes": {
+   "vertices": 1064,
+   "faces": 1020,
+   "triangles": 2040,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_face",
+   "surface": "eyes",
+   "bones": [
+    "head"
+   ]
+  },
+  "slopbat_cloak": {
+   "vertices": 1950,
+   "faces": 2064,
+   "triangles": 3896,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_membrane",
+   "surface": "membrane",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "slopbat_wing_l": {
+   "vertices": 510,
+   "faces": 533,
+   "triangles": 1016,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_membrane",
+   "surface": "membrane",
+   "bones": [
+    "pelvis",
+    "spine_02",
+    "spine_03",
+    "wing_l_01",
+    "wing_l_02",
+    "wing_l_03"
+   ]
+  },
+  "slopbat_spar0_l": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "spar",
+   "bones": [
+    "wing_l_01"
+   ]
+  },
+  "slopbat_spar1_l": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "spar",
+   "bones": [
+    "wing_l_02"
+   ]
+  },
+  "slopbat_spar2_l": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "spar",
+   "bones": [
+    "wing_l_03"
+   ]
+  },
+  "slopbat_thumbclaw_l": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "wing_l_01"
+   ]
+  },
+  "slopbat_wing_r": {
+   "vertices": 510,
+   "faces": 533,
+   "triangles": 1016,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_membrane",
+   "surface": "membrane",
+   "bones": [
+    "pelvis",
+    "spine_02",
+    "spine_03",
+    "wing_r_01",
+    "wing_r_02",
+    "wing_r_03"
+   ]
+  },
+  "slopbat_spar0_r": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "spar",
+   "bones": [
+    "wing_r_01"
+   ]
+  },
+  "slopbat_spar1_r": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "spar",
+   "bones": [
+    "wing_r_02"
+   ]
+  },
+  "slopbat_spar2_r": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "spar",
+   "bones": [
+    "wing_r_03"
+   ]
+  },
+  "slopbat_thumbclaw_r": {
+   "vertices": 34,
+   "faces": 40,
+   "triangles": 64,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "wing_r_01"
+   ]
+  },
+  "slopbat_horn0": {
+   "vertices": 48,
+   "faces": 40,
+   "triangles": 80,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "horn",
+   "bones": [
+    "head"
+   ]
+  },
+  "slopbat_horn1": {
+   "vertices": 48,
+   "faces": 40,
+   "triangles": 80,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "horn",
+   "bones": [
+    "head"
+   ]
+  },
+  "slopbat_horn2": {
+   "vertices": 48,
+   "faces": 40,
+   "triangles": 80,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "horn",
+   "bones": [
+    "head"
+   ]
+  },
+  "slopbat_horn3": {
+   "vertices": 48,
+   "faces": 40,
+   "triangles": 80,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "horn",
+   "bones": [
+    "head"
+   ]
+  },
+  "slopbat_horn4": {
+   "vertices": 48,
+   "faces": 40,
+   "triangles": 80,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "horn",
+   "bones": [
+    "head"
+   ]
+  },
+  "slopbat_horn5": {
+   "vertices": 48,
+   "faces": 40,
+   "triangles": 80,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "horn",
+   "bones": [
+    "head"
+   ]
+  },
+  "slopbat_horn6": {
+   "vertices": 48,
+   "faces": 40,
+   "triangles": 80,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "horn",
+   "bones": [
+    "head"
+   ]
+  },
+  "slopbat_ear_l": {
+   "vertices": 56,
+   "faces": 48,
+   "triangles": 96,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_membrane",
+   "surface": "membrane",
+   "bones": [
+    "head"
+   ]
+  },
+  "slopbat_ear_r": {
+   "vertices": 56,
+   "faces": 48,
+   "triangles": 96,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_membrane",
+   "surface": "membrane",
+   "bones": [
+    "head"
+   ]
+  },
+  "slopbat_claw_thumb_l": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "thumb_03_l"
+   ]
+  },
+  "slopbat_claw_index_l": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "index_03_l"
+   ]
+  },
+  "slopbat_claw_middle_l": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "middle_03_l"
+   ]
+  },
+  "slopbat_claw_ring_l": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "ring_03_l"
+   ]
+  },
+  "slopbat_claw_pinky_l": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "pinky_03_l"
+   ]
+  },
+  "slopbat_toeclaw0_l": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "ball_l"
+   ]
+  },
+  "slopbat_toeclaw1_l": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "ball_l"
+   ]
+  },
+  "slopbat_toeclaw2_l": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "ball_l"
+   ]
+  },
+  "slopbat_toeclaw3_l": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "ball_l"
+   ]
+  },
+  "slopbat_claw_thumb_r": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "thumb_03_r"
+   ]
+  },
+  "slopbat_claw_index_r": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "index_03_r"
+   ]
+  },
+  "slopbat_claw_middle_r": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "middle_03_r"
+   ]
+  },
+  "slopbat_claw_ring_r": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "ring_03_r"
+   ]
+  },
+  "slopbat_claw_pinky_r": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "pinky_03_r"
+   ]
+  },
+  "slopbat_toeclaw0_r": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "ball_r"
+   ]
+  },
+  "slopbat_toeclaw1_r": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "ball_r"
+   ]
+  },
+  "slopbat_toeclaw2_r": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "ball_r"
+   ]
+  },
+  "slopbat_toeclaw3_r": {
+   "vertices": 26,
+   "faces": 30,
+   "triangles": 48,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_slopbat_horn",
+   "surface": "claw",
+   "bones": [
+    "ball_r"
+   ]
+  }
+ },
+ "triangles_total": 36852,
+ "top_of_everything_cm": 284.9,
+ "standing_height_cm": 265.0,
+ "lowest_point_cm": -0.0,
+ "bones": 59,
+ "root_bone": [
+  "root"
+ ],
+ "id": "slopbat",
+ "name": "The Slopbat",
+ "height": {
+  "macro_range_m": [
+   1.4327,
+   2.4671
+  ],
+  "height_macro": 1.0,
+  "height_before_scale_m": 2.46708,
+  "uniform_scale": 1.074146,
+  "body_height_m": 2.65,
+  "targets_applied": 27
+ },
+ "timings_s": {
+  "enable_mpfb": 0.18,
+  "mpfb_body": 0.93,
+  "bake_body": 0.02,
+  "outfit": 0.29,
+  "textures": 15.71,
+  "finalize": 0.0,
+  "save_blend": 0.03,
+  "export_fbx": 0.35
+ },
+ "script_wall_s": 17.5,
+ "peak_rss_mb": 1832.4
+}

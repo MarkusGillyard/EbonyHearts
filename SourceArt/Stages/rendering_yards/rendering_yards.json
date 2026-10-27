@@ -1,0 +1,1646 @@
+{
+ "stage": "rendering_yards",
+ "title": "The Rendering Yards",
+ "units": {
+  "positions": "Blender metres, Z up, fighting plane XZ at Y=0, camera at -Y looking +Y",
+  "unreal": "UE = (100*x, -100*y, 100*z) cm; *_ue_cm fields are already converted",
+  "lights": "candela (point/spot), lux (directional), glow strength in cd/m2; for manual exposure EV100 = 1.0",
+  "exposure_ev100": 1.0
+ },
+ "lights": [
+  {
+   "name": "key_warm",
+   "type": "directional",
+   "pos": [
+    -6,
+    -6,
+    10
+   ],
+   "color": [
+    1.0,
+    0.86,
+    0.72
+   ],
+   "lux": 3.2,
+   "dir": [
+    0.426,
+    0.609,
+    -0.669
+   ],
+   "dir_ue": [
+    0.426,
+    -0.609,
+    -0.669
+   ],
+   "shadows": true,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    -600,
+    600,
+    1000
+   ],
+   "source_angle_deg": 2.0,
+   "note": "warm key from the upper left front"
+  },
+  {
+   "name": "rim_cool",
+   "type": "directional",
+   "pos": [
+    6,
+    12,
+    10
+   ],
+   "color": [
+    0.5,
+    0.7,
+    1.0
+   ],
+   "lux": 2.6,
+   "dir": [
+    -0.2091,
+    -0.7812,
+    -0.5882
+   ],
+   "dir_ue": [
+    -0.2091,
+    0.7812,
+    -0.5882
+   ],
+   "shadows": false,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    600,
+    -1200,
+    1000
+   ],
+   "source_angle_deg": 0.05,
+   "specular_scale": 1.5,
+   "affects": "not_floor",
+   "note": "cool rim from behind; exclude floors (lighting channel) so it leaves no glare band"
+  },
+  {
+   "name": "fill_camera",
+   "type": "directional",
+   "pos": [
+    0,
+    -10,
+    3
+   ],
+   "color": [
+    0.78,
+    0.84,
+    0.92
+   ],
+   "lux": 1.4,
+   "dir": [
+    -0.1361,
+    0.9686,
+    -0.2081
+   ],
+   "dir_ue": [
+    -0.1361,
+    -0.9686,
+    -0.2081
+   ],
+   "shadows": false,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    0,
+    1000,
+    300
+   ],
+   "source_angle_deg": 0.05,
+   "specular_scale": 0.25,
+   "affects": "fighters_only",
+   "note": "soft fill from the camera side, fighters only"
+  },
+  {
+   "name": "vat_glow_1",
+   "type": "point",
+   "pos": [
+    0.0,
+    4.1,
+    3.55
+   ],
+   "color": [
+    0.5,
+    1.0,
+    0.18
+   ],
+   "intensity_candela": 34.0,
+   "radius_m": 6.4,
+   "shadows": true,
+   "flicker": 0.12,
+   "flicker_speed": 1.7,
+   "pos_ue_cm": [
+    0.0,
+    -410.0,
+    355.0
+   ],
+   "source_radius_m": 0.4,
+   "note": "signature: green slop glow spilling over the lip"
+  },
+  {
+   "name": "firebox_1",
+   "type": "point",
+   "pos": [
+    0.0,
+    3.85,
+    0.35
+   ],
+   "color": [
+    1.0,
+    0.45,
+    0.12
+   ],
+   "intensity_candela": 5.0,
+   "radius_m": 3.0,
+   "shadows": false,
+   "flicker": 0.3,
+   "flicker_speed": 8.0,
+   "pos_ue_cm": [
+    0.0,
+    -385.0,
+    35.0
+   ],
+   "source_radius_m": 0.2
+  },
+  {
+   "name": "vat_glow_2",
+   "type": "point",
+   "pos": [
+    -5.5,
+    5.5,
+    3.3
+   ],
+   "color": [
+    0.5,
+    1.0,
+    0.18
+   ],
+   "intensity_candela": 26.0,
+   "radius_m": 6.0,
+   "shadows": false,
+   "flicker": 0.12,
+   "flicker_speed": 1.7,
+   "pos_ue_cm": [
+    -550.0,
+    -550.0,
+    330.0
+   ],
+   "source_radius_m": 0.4,
+   "note": "signature: green slop glow spilling over the lip"
+  },
+  {
+   "name": "firebox_2",
+   "type": "point",
+   "pos": [
+    -5.5,
+    5.25,
+    0.35
+   ],
+   "color": [
+    1.0,
+    0.45,
+    0.12
+   ],
+   "intensity_candela": 5.0,
+   "radius_m": 3.0,
+   "shadows": false,
+   "flicker": 0.3,
+   "flicker_speed": 8.0,
+   "pos_ue_cm": [
+    -550.0,
+    -525.0,
+    35.0
+   ],
+   "source_radius_m": 0.2
+  },
+  {
+   "name": "vat_glow_3",
+   "type": "point",
+   "pos": [
+    5.6,
+    5.25,
+    3.45
+   ],
+   "color": [
+    0.5,
+    1.0,
+    0.18
+   ],
+   "intensity_candela": 26.0,
+   "radius_m": 6.05,
+   "shadows": false,
+   "flicker": 0.12,
+   "flicker_speed": 1.7,
+   "pos_ue_cm": [
+    560.0,
+    -525.0,
+    345.0
+   ],
+   "source_radius_m": 0.4,
+   "note": "signature: green slop glow spilling over the lip"
+  },
+  {
+   "name": "firebox_3",
+   "type": "point",
+   "pos": [
+    5.6,
+    5.0,
+    0.35
+   ],
+   "color": [
+    1.0,
+    0.45,
+    0.12
+   ],
+   "intensity_candela": 5.0,
+   "radius_m": 3.0,
+   "shadows": false,
+   "flicker": 0.3,
+   "flicker_speed": 8.0,
+   "pos_ue_cm": [
+    560.0,
+    -500.0,
+    35.0
+   ],
+   "source_radius_m": 0.2
+  },
+  {
+   "name": "vat_glow_4",
+   "type": "point",
+   "pos": [
+    -10.8,
+    4.6,
+    3.7
+   ],
+   "color": [
+    0.5,
+    1.0,
+    0.18
+   ],
+   "intensity_candela": 26.0,
+   "radius_m": 6.3,
+   "shadows": false,
+   "flicker": 0.12,
+   "flicker_speed": 1.7,
+   "pos_ue_cm": [
+    -1080.0,
+    -460.0,
+    370.0
+   ],
+   "source_radius_m": 0.4,
+   "note": "signature: green slop glow spilling over the lip"
+  },
+  {
+   "name": "firebox_4",
+   "type": "point",
+   "pos": [
+    -10.8,
+    4.35,
+    0.35
+   ],
+   "color": [
+    1.0,
+    0.45,
+    0.12
+   ],
+   "intensity_candela": 5.0,
+   "radius_m": 3.0,
+   "shadows": false,
+   "flicker": 0.3,
+   "flicker_speed": 8.0,
+   "pos_ue_cm": [
+    -1080.0,
+    -435.0,
+    35.0
+   ],
+   "source_radius_m": 0.2
+  },
+  {
+   "name": "vat_glow_5",
+   "type": "point",
+   "pos": [
+    10.9,
+    4.85,
+    3.6
+   ],
+   "color": [
+    0.5,
+    1.0,
+    0.18
+   ],
+   "intensity_candela": 26.0,
+   "radius_m": 6.25,
+   "shadows": false,
+   "flicker": 0.12,
+   "flicker_speed": 1.7,
+   "pos_ue_cm": [
+    1090.0,
+    -485.0,
+    360.0
+   ],
+   "source_radius_m": 0.4,
+   "note": "signature: green slop glow spilling over the lip"
+  },
+  {
+   "name": "firebox_5",
+   "type": "point",
+   "pos": [
+    10.9,
+    4.6,
+    0.35
+   ],
+   "color": [
+    1.0,
+    0.45,
+    0.12
+   ],
+   "intensity_candela": 5.0,
+   "radius_m": 3.0,
+   "shadows": false,
+   "flicker": 0.3,
+   "flicker_speed": 8.0,
+   "pos_ue_cm": [
+    1090.0,
+    -460.0,
+    35.0
+   ],
+   "source_radius_m": 0.2
+  },
+  {
+   "name": "furnace_1",
+   "type": "point",
+   "pos": [
+    -8.2,
+    10.7,
+    1.4
+   ],
+   "color": [
+    1.0,
+    0.5,
+    0.18
+   ],
+   "intensity_candela": 46.0,
+   "radius_m": 8.0,
+   "shadows": false,
+   "flicker": 0.28,
+   "flicker_speed": 7.0,
+   "pos_ue_cm": [
+    -820.0,
+    -1070.0,
+    140.0
+   ],
+   "source_radius_m": 0.6,
+   "note": "signature: furnace mouths"
+  },
+  {
+   "name": "furnace_2",
+   "type": "point",
+   "pos": [
+    8.3,
+    10.7,
+    1.4
+   ],
+   "color": [
+    1.0,
+    0.5,
+    0.18
+   ],
+   "intensity_candela": 46.0,
+   "radius_m": 8.0,
+   "shadows": false,
+   "flicker": 0.28,
+   "flicker_speed": 7.0,
+   "pos_ue_cm": [
+    830.0,
+    -1070.0,
+    140.0
+   ],
+   "source_radius_m": 0.6,
+   "note": "signature: furnace mouths"
+  },
+  {
+   "name": "furnace_3",
+   "type": "point",
+   "pos": [
+    -13.5,
+    10.7,
+    1.4
+   ],
+   "color": [
+    1.0,
+    0.5,
+    0.18
+   ],
+   "intensity_candela": 30.0,
+   "radius_m": 8.0,
+   "shadows": false,
+   "flicker": 0.28,
+   "flicker_speed": 7.0,
+   "pos_ue_cm": [
+    -1350.0,
+    -1070.0,
+    140.0
+   ],
+   "source_radius_m": 0.6,
+   "note": "signature: furnace mouths"
+  },
+  {
+   "name": "furnace_4",
+   "type": "point",
+   "pos": [
+    13.6,
+    10.7,
+    1.4
+   ],
+   "color": [
+    1.0,
+    0.5,
+    0.18
+   ],
+   "intensity_candela": 30.0,
+   "radius_m": 8.0,
+   "shadows": false,
+   "flicker": 0.28,
+   "flicker_speed": 7.0,
+   "pos_ue_cm": [
+    1360.0,
+    -1070.0,
+    140.0
+   ],
+   "source_radius_m": 0.6,
+   "note": "signature: furnace mouths"
+  },
+  {
+   "name": "furnace_5",
+   "type": "point",
+   "pos": [
+    0.1,
+    10.7,
+    1.4
+   ],
+   "color": [
+    1.0,
+    0.5,
+    0.18
+   ],
+   "intensity_candela": 26.0,
+   "radius_m": 8.0,
+   "shadows": false,
+   "flicker": 0.28,
+   "flicker_speed": 7.0,
+   "pos_ue_cm": [
+    10.0,
+    -1070.0,
+    140.0
+   ],
+   "source_radius_m": 0.6,
+   "note": "signature: furnace mouths"
+  },
+  {
+   "name": "lamp_1",
+   "type": "spot",
+   "pos": [
+    -3.9,
+    5.05,
+    2.65
+   ],
+   "color": [
+    1.0,
+    0.74,
+    0.44
+   ],
+   "intensity_candela": 60.0,
+   "radius_m": 9.0,
+   "dir": [
+    0.0,
+    -0.2425,
+    -0.9701
+   ],
+   "dir_ue": [
+    0.0,
+    0.2425,
+    -0.9701
+   ],
+   "cone_inner_deg": 30,
+   "cone_outer_deg": 55,
+   "shadows": false,
+   "flicker": 0.03,
+   "flicker_speed": 12.0,
+   "pos_ue_cm": [
+    -390.0,
+    -505.0,
+    265.0
+   ],
+   "source_radius_m": 0.12
+  },
+  {
+   "name": "lamp_2",
+   "type": "spot",
+   "pos": [
+    3.9,
+    5.05,
+    2.65
+   ],
+   "color": [
+    1.0,
+    0.74,
+    0.44
+   ],
+   "intensity_candela": 60.0,
+   "radius_m": 9.0,
+   "dir": [
+    0.0,
+    -0.2425,
+    -0.9701
+   ],
+   "dir_ue": [
+    0.0,
+    0.2425,
+    -0.9701
+   ],
+   "cone_inner_deg": 30,
+   "cone_outer_deg": 55,
+   "shadows": false,
+   "flicker": 0.03,
+   "flicker_speed": 12.0,
+   "pos_ue_cm": [
+    390.0,
+    -505.0,
+    265.0
+   ],
+   "source_radius_m": 0.12
+  }
+ ],
+ "glows": [
+  {
+   "material": "GLOW_slop",
+   "color": [
+    0.36,
+    1.0,
+    0.06
+   ],
+   "strength": 1.9,
+   "pattern": 0.6,
+   "pattern_scale": 3.0,
+   "note": "vat slop, spills and the channel: animate (slow scrolling noise, bubbles)"
+  },
+  {
+   "material": "GLOW_furnace",
+   "color": [
+    1.0,
+    0.3,
+    0.05
+   ],
+   "strength": 3.4,
+   "pattern": 0.5,
+   "pattern_scale": 4.0,
+   "note": "furnace mouths and fireboxes: flicker 0.25"
+  },
+  {
+   "material": "GLOW_window",
+   "color": [
+    1.0,
+    0.48,
+    0.16
+   ],
+   "strength": 0.9,
+   "note": "furnace-house windows"
+  },
+  {
+   "material": "GLOW_window_far",
+   "color": [
+    1.0,
+    0.45,
+    0.15
+   ],
+   "strength": 0.6,
+   "note": "distant windows"
+  }
+ ],
+ "water": [
+  {
+   "material": "WATER_puddle",
+   "color": [
+    0.012,
+    0.014,
+    0.012
+   ],
+   "roughness": 0.03,
+   "opacity": 0.5,
+   "note": "rain puddles on the plates: near-black, glossy, ripples from the drizzle"
+  }
+ ],
+ "animated": [
+  {
+   "object": "rendering_yards_chain_1",
+   "kind": "sway",
+   "amp": 3.0,
+   "speed": 0.8,
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "axis_ue": [
+    1,
+    0,
+    0
+   ],
+   "pivot": [
+    -6.6,
+    4.33,
+    3.85
+   ],
+   "pivot_ue_cm": [
+    -660.0,
+    -433.0,
+    385.0
+   ],
+   "note": "swing about the top link, amp in degrees; second axis Y at 0.6x"
+  },
+  {
+   "object": "rendering_yards_chain_2",
+   "kind": "sway",
+   "amp": 3.0,
+   "speed": 0.8,
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "axis_ue": [
+    1,
+    0,
+    0
+   ],
+   "pivot": [
+    -2.3,
+    4.33,
+    3.85
+   ],
+   "pivot_ue_cm": [
+    -230.0,
+    -433.0,
+    385.0
+   ],
+   "note": "swing about the top link, amp in degrees; second axis Y at 0.6x"
+  },
+  {
+   "object": "rendering_yards_chain_3",
+   "kind": "sway",
+   "amp": 3.0,
+   "speed": 0.8,
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "axis_ue": [
+    1,
+    0,
+    0
+   ],
+   "pivot": [
+    2.7,
+    4.33,
+    3.85
+   ],
+   "pivot_ue_cm": [
+    270.0,
+    -433.0,
+    385.0
+   ],
+   "note": "swing about the top link, amp in degrees; second axis Y at 0.6x"
+  },
+  {
+   "object": "rendering_yards_chain_4",
+   "kind": "sway",
+   "amp": 3.0,
+   "speed": 0.8,
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "axis_ue": [
+    1,
+    0,
+    0
+   ],
+   "pivot": [
+    6.4,
+    4.33,
+    3.85
+   ],
+   "pivot_ue_cm": [
+    640.0,
+    -433.0,
+    385.0
+   ],
+   "note": "swing about the top link, amp in degrees; second axis Y at 0.6x"
+  }
+ ],
+ "fog": {
+  "color": [
+   0.08,
+   0.09,
+   0.105
+  ],
+  "density": 0.22,
+  "height_falloff": 0.5,
+  "density_per_m": 0.022,
+  "height_falloff_per_m": 0.05,
+  "fog_height_m": 0.0,
+  "fog_height_ue_cm": 0.0,
+  "note": "volumetric fog on: furnace, vat and lamp lights should scatter (Volumetric Scattering ~1-2)"
+ },
+ "ambient": {
+  "color": [
+   0.36,
+   0.4,
+   0.5
+  ],
+  "intensity": 0.35,
+  "units": "cd/m2 sky radiance at EV100 1.0 (Sky Light intensity: tune)"
+ },
+ "music": "music_yards",
+ "footstep": "metal",
+ "sky": "kloppenheim_07",
+ "surfaces": {
+  "MetalPlates013": {
+   "set": "MetalPlates013",
+   "tiling": 0.625,
+   "tint": [
+    0.6,
+    0.6,
+    0.6
+   ],
+   "roughness": 0.85,
+   "metallic": 0.9,
+   "normal_strength": 1.0
+  },
+  "MetalPlates013__vat": {
+   "set": "MetalPlates013",
+   "tiling": 0.625,
+   "tint": [
+    0.4,
+    0.38,
+    0.36
+   ],
+   "roughness": 0.95,
+   "metallic": 0.85,
+   "normal_strength": 1.0
+  },
+  "rusty_metal_04": {
+   "set": "rusty_metal_04",
+   "tiling": 0.5,
+   "tint": [
+    0.6,
+    0.52,
+    0.46
+   ],
+   "roughness": 1.0,
+   "metallic": 1.0,
+   "normal_strength": 1.0
+  },
+  "Metal055A": {
+   "set": "Metal055A",
+   "tiling": 1.0,
+   "tint": [
+    0.3,
+    0.29,
+    0.28
+   ],
+   "roughness": 1.0,
+   "metallic": 1.0,
+   "normal_strength": 1.0
+  },
+  "metal_plate": {
+   "set": "metal_plate",
+   "tiling": 2.0,
+   "tint": [
+    0.55,
+    0.55,
+    0.55
+   ],
+   "roughness": 1.0,
+   "metallic": 1.0,
+   "normal_strength": 1.0
+  },
+  "factory_brick": {
+   "set": "factory_brick",
+   "tiling": 0.6667,
+   "tint": [
+    0.48,
+    0.38,
+    0.34
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "factory_brick__soot": {
+   "set": "factory_brick",
+   "tiling": 0.6667,
+   "tint": [
+    0.26,
+    0.21,
+    0.2
+   ],
+   "roughness": 1.0,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "medieval_blocks_03": {
+   "set": "medieval_blocks_03",
+   "tiling": 0.5,
+   "tint": [
+    0.34,
+    0.33,
+    0.34
+   ],
+   "roughness": 0.7,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  }
+ },
+ "props": [
+  {
+   "model": "wine_barrel_01",
+   "object": "rendering_yards_prop_wine_barrel_01_1",
+   "pos": [
+    -9.0,
+    0.55,
+    0.0
+   ],
+   "rot_z": -25,
+   "scale": 1.0,
+   "tris": 10820
+  },
+  {
+   "model": "wine_barrel_01",
+   "object": "rendering_yards_prop_wine_barrel_01_2",
+   "pos": [
+    9.0,
+    0.55,
+    0.0
+   ],
+   "rot_z": 25,
+   "scale": 1.0,
+   "tris": 10820
+  },
+  {
+   "model": "hanging_industrial_lamp",
+   "object": "rendering_yards_prop_hanging_industrial_lamp_1",
+   "pos": [
+    -3.9,
+    5.05,
+    3.84
+   ],
+   "rot_z": 0,
+   "scale": 1.0,
+   "tris": 9530
+  },
+  {
+   "model": "hanging_industrial_lamp",
+   "object": "rendering_yards_prop_hanging_industrial_lamp_2",
+   "pos": [
+    3.9,
+    5.05,
+    3.84
+   ],
+   "rot_z": 0,
+   "scale": 1.0,
+   "tris": 9530
+  }
+ ],
+ "fx": [
+  {
+   "kind": "smoke",
+   "pos": [
+    -15.0,
+    20.0,
+    16.3
+   ],
+   "radius_m": 0.6,
+   "rise_m_s": 1.0,
+   "color": [
+    0.22,
+    0.18,
+    0.16,
+    0.6
+   ]
+  },
+  {
+   "kind": "smoke",
+   "pos": [
+    -6.5,
+    24.0,
+    16.3
+   ],
+   "radius_m": 0.72,
+   "rise_m_s": 1.0,
+   "color": [
+    0.22,
+    0.18,
+    0.16,
+    0.6
+   ]
+  },
+  {
+   "kind": "smoke",
+   "pos": [
+    4.5,
+    21.0,
+    16.3
+   ],
+   "radius_m": 0.54,
+   "rise_m_s": 1.0,
+   "color": [
+    0.22,
+    0.18,
+    0.16,
+    0.6
+   ]
+  },
+  {
+   "kind": "smoke",
+   "pos": [
+    13.0,
+    23.0,
+    16.3
+   ],
+   "radius_m": 0.66,
+   "rise_m_s": 1.0,
+   "color": [
+    0.22,
+    0.18,
+    0.16,
+    0.6
+   ]
+  },
+  {
+   "kind": "smoke",
+   "pos": [
+    21.0,
+    26.0,
+    16.3
+   ],
+   "radius_m": 0.6,
+   "rise_m_s": 1.0,
+   "color": [
+    0.22,
+    0.18,
+    0.16,
+    0.6
+   ]
+  },
+  {
+   "kind": "rain",
+   "note": "drizzle over the whole stage",
+   "box_center": [
+    0,
+    2,
+    11
+   ],
+   "box_extent": [
+    13,
+    6,
+    0.2
+   ],
+   "velocity": [
+    1.4,
+    0,
+    -12.5
+   ],
+   "streak_m": 0.42,
+   "count": 1200,
+   "color": [
+    0.62,
+    0.68,
+    0.72,
+    0.28
+   ]
+  },
+  {
+   "kind": "embers",
+   "box_center": [
+    0,
+    11.4,
+    2.2
+   ],
+   "box_extent": [
+    15,
+    0.5,
+    1.8
+   ],
+   "count": 70,
+   "rise_m_s": 0.35,
+   "color": [
+    1.0,
+    0.55,
+    0.2,
+    1.0
+   ]
+  },
+  {
+   "kind": "steam",
+   "pos": [
+    0.0,
+    6.6,
+    3.5999999999999996
+   ],
+   "radius_m": 1.0,
+   "rise_m_s": 0.6,
+   "size_m": 1.6,
+   "color": [
+    0.5,
+    0.56,
+    0.48,
+    0.35
+   ]
+  },
+  {
+   "kind": "steam",
+   "pos": [
+    -5.5,
+    7.6,
+    3.3499999999999996
+   ],
+   "radius_m": 0.8,
+   "rise_m_s": 0.6,
+   "size_m": 1.6,
+   "color": [
+    0.5,
+    0.56,
+    0.48,
+    0.35
+   ]
+  },
+  {
+   "kind": "steam",
+   "pos": [
+    5.6,
+    7.4,
+    3.5
+   ],
+   "radius_m": 0.825,
+   "rise_m_s": 0.6,
+   "size_m": 1.6,
+   "color": [
+    0.5,
+    0.56,
+    0.48,
+    0.35
+   ]
+  },
+  {
+   "kind": "steam",
+   "pos": [
+    -10.8,
+    7.0,
+    3.75
+   ],
+   "radius_m": 0.95,
+   "rise_m_s": 0.6,
+   "size_m": 1.6,
+   "color": [
+    0.5,
+    0.56,
+    0.48,
+    0.35
+   ]
+  },
+  {
+   "kind": "steam",
+   "pos": [
+    10.9,
+    7.2,
+    3.65
+   ],
+   "radius_m": 0.925,
+   "rise_m_s": 0.6,
+   "size_m": 1.6,
+   "color": [
+    0.5,
+    0.56,
+    0.48,
+    0.35
+   ]
+  }
+ ],
+ "objects": [
+  {
+   "name": "rendering_yards_floor",
+   "triangles": 3276,
+   "materials": [
+    "MetalPlates013"
+   ]
+  },
+  {
+   "name": "rendering_yards_floor_bed",
+   "triangles": 3580,
+   "materials": [
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "rendering_yards_drain_glow",
+   "triangles": 48,
+   "materials": [
+    "GLOW_slop"
+   ]
+  },
+  {
+   "name": "rendering_yards_kerb",
+   "triangles": 2680,
+   "materials": [
+    "medieval_blocks_03"
+   ]
+  },
+  {
+   "name": "rendering_yards_channel",
+   "triangles": 364,
+   "materials": [
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "rendering_yards_slop",
+   "triangles": 396,
+   "materials": [
+    "GLOW_slop"
+   ]
+  },
+  {
+   "name": "rendering_yards_yard",
+   "triangles": 44,
+   "materials": [
+    "medieval_blocks_03"
+   ]
+  },
+  {
+   "name": "rendering_yards_vats",
+   "triangles": 2400,
+   "materials": [
+    "MetalPlates013__vat"
+   ]
+  },
+  {
+   "name": "rendering_yards_vat_bands",
+   "triangles": 19570,
+   "materials": [
+    "rusty_metal_04"
+   ]
+  },
+  {
+   "name": "rendering_yards_vat_plinths",
+   "triangles": 1080,
+   "materials": [
+    "factory_brick"
+   ]
+  },
+  {
+   "name": "rendering_yards_ironwork",
+   "triangles": 18868,
+   "materials": [
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "rendering_yards_fire",
+   "triangles": 396,
+   "materials": [
+    "GLOW_furnace"
+   ]
+  },
+  {
+   "name": "rendering_yards_vat_slop",
+   "triangles": 7072,
+   "materials": [
+    "GLOW_slop"
+   ]
+  },
+  {
+   "name": "rendering_yards_pipes",
+   "triangles": 4344,
+   "materials": [
+    "rusty_metal_04"
+   ]
+  },
+  {
+   "name": "rendering_yards_catwalk_deck",
+   "triangles": 440,
+   "materials": [
+    "metal_plate"
+   ]
+  },
+  {
+   "name": "rendering_yards_rails",
+   "triangles": 2032,
+   "materials": [
+    "rusty_metal_04"
+   ]
+  },
+  {
+   "name": "rendering_yards_chain_1",
+   "triangles": 1804,
+   "materials": [
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "rendering_yards_chain_2",
+   "triangles": 2316,
+   "materials": [
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "rendering_yards_chain_3",
+   "triangles": 1612,
+   "materials": [
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "rendering_yards_chain_4",
+   "triangles": 2572,
+   "materials": [
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "rendering_yards_furnace_house",
+   "triangles": 4068,
+   "materials": [
+    "factory_brick"
+   ]
+  },
+  {
+   "name": "rendering_yards_brick_far",
+   "triangles": 2504,
+   "materials": [
+    "factory_brick__soot"
+   ]
+  },
+  {
+   "name": "rendering_yards_windows",
+   "triangles": 72,
+   "materials": [
+    "GLOW_window"
+   ]
+  },
+  {
+   "name": "rendering_yards_roofs",
+   "triangles": 144,
+   "materials": [
+    "rusty_metal_04"
+   ]
+  },
+  {
+   "name": "rendering_yards_windows_far",
+   "triangles": 216,
+   "materials": [
+    "GLOW_window_far"
+   ]
+  },
+  {
+   "name": "rendering_yards_drums",
+   "triangles": 4680,
+   "materials": [
+    "rusty_metal_04"
+   ]
+  },
+  {
+   "name": "rendering_yards_floor_chain",
+   "triangles": 3328,
+   "materials": [
+    "Metal055A"
+   ]
+  },
+  {
+   "name": "rendering_yards_puddles",
+   "triangles": 296,
+   "materials": [
+    "WATER_puddle"
+   ]
+  },
+  {
+   "name": "rendering_yards_prop_wine_barrel_01_1",
+   "triangles": 10820,
+   "materials": [
+    "PH_wine_barrel_01_main"
+   ]
+  },
+  {
+   "name": "rendering_yards_prop_wine_barrel_01_2",
+   "triangles": 10820,
+   "materials": [
+    "PH_wine_barrel_01_main"
+   ]
+  },
+  {
+   "name": "rendering_yards_prop_hanging_industrial_lamp_1",
+   "triangles": 9530,
+   "materials": [
+    "PH_hanging_industrial_lamp_main",
+    "PH_hanging_industrial_lamp_glass"
+   ]
+  },
+  {
+   "name": "rendering_yards_prop_hanging_industrial_lamp_2",
+   "triangles": 9530,
+   "materials": [
+    "PH_hanging_industrial_lamp_main",
+    "PH_hanging_industrial_lamp_glass"
+   ]
+  },
+  {
+   "name": "ORIGIN_MARKER_1m",
+   "triangles": 12,
+   "materials": [
+    "ORIGIN_MARKER"
+   ]
+  }
+ ],
+ "placements": [
+  {
+   "object": "rendering_yards_floor",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_floor_bed",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_drain_glow",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_kerb",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_channel",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_slop",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_yard",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_vats",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_vat_bands",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_vat_plinths",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_ironwork",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_fire",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_vat_slop",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_pipes",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_catwalk_deck",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_rails",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_chain_1",
+   "pivot_ue_cm": [
+    -660.0,
+    -433.0,
+    385.0
+   ]
+  },
+  {
+   "object": "rendering_yards_chain_2",
+   "pivot_ue_cm": [
+    -230.0,
+    -433.0,
+    385.0
+   ]
+  },
+  {
+   "object": "rendering_yards_chain_3",
+   "pivot_ue_cm": [
+    270.0,
+    -433.0,
+    385.0
+   ]
+  },
+  {
+   "object": "rendering_yards_chain_4",
+   "pivot_ue_cm": [
+    640.0,
+    -433.0,
+    385.0
+   ]
+  },
+  {
+   "object": "rendering_yards_furnace_house",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_brick_far",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_windows",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_roofs",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_windows_far",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_drums",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_floor_chain",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_puddles",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_prop_wine_barrel_01_1",
+   "pivot_ue_cm": [
+    -900.0,
+    -55.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_prop_wine_barrel_01_2",
+   "pivot_ue_cm": [
+    900.0,
+    -55.0,
+    0.0
+   ]
+  },
+  {
+   "object": "rendering_yards_prop_hanging_industrial_lamp_1",
+   "pivot_ue_cm": [
+    -390.0,
+    -505.0,
+    384.0
+   ]
+  },
+  {
+   "object": "rendering_yards_prop_hanging_industrial_lamp_2",
+   "pivot_ue_cm": [
+    390.0,
+    -505.0,
+    384.0
+   ]
+  },
+  {
+   "object": "ORIGIN_MARKER_1m",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  }
+ ],
+ "triangles_total": 130902,
+ "strip_check": "clean",
+ "notes": [
+  "The centre vat (X 0, Y 6.6, r 2.0, lip at Z 3.3) is the one the stage finisher uses.",
+  "Drain grates in the floor are flush (tops at Z 0) with a faint slop glow under them.",
+  "Gantry legs at X +-7.55 put their inner faces on X +-7.2: the visual edge of the floor."
+ ]
+}

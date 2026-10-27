@@ -1,0 +1,413 @@
+{
+ "slots": {
+  "skin": {
+   "material": "M_gorm_skin",
+   "size": 2048,
+   "files": {
+    "basecolor": "gorm_skin_basecolor.png",
+    "normal": "gorm_skin_normal.png",
+    "orm": "gorm_skin_orm.png"
+   },
+   "objects": [
+    "gorm_body"
+   ]
+  },
+  "face": {
+   "material": "M_gorm_face",
+   "size": 1024,
+   "files": {
+    "basecolor": "gorm_face_basecolor.png",
+    "normal": "gorm_face_normal.png",
+    "orm": "gorm_face_orm.png"
+   },
+   "objects": [
+    "gorm_eyes",
+    "gorm_brows",
+    "gorm_lashes"
+   ]
+  },
+  "leather": {
+   "material": "M_gorm_leather",
+   "size": 2048,
+   "files": {
+    "basecolor": "gorm_leather_basecolor.png",
+    "normal": "gorm_leather_normal.png",
+    "orm": "gorm_leather_orm.png"
+   },
+   "objects": [
+    "gorm_boot_l",
+    "gorm_sole_l",
+    "gorm_boot_r",
+    "gorm_sole_r",
+    "gorm_apron",
+    "gorm_belt",
+    "gorm_neckstrap"
+   ]
+  },
+  "canvas": {
+   "material": "M_gorm_canvas",
+   "size": 2048,
+   "files": {
+    "basecolor": "gorm_canvas_basecolor.png",
+    "normal": "gorm_canvas_normal.png",
+    "orm": "gorm_canvas_orm.png"
+   },
+   "objects": [
+    "gorm_trousers"
+   ]
+  },
+  "iron": {
+   "material": "M_gorm_iron",
+   "size": 1024,
+   "files": {
+    "basecolor": "gorm_iron_basecolor.png",
+    "normal": "gorm_iron_normal.png",
+    "orm": "gorm_iron_orm.png"
+   },
+   "objects": [
+    "gorm_buckle",
+    "gorm_rivets",
+    "gorm_vambrace_l",
+    "gorm_vambrace_r"
+   ]
+  }
+ },
+ "texture_notes": {
+  "skin": [
+   "tinted young_lightskinned_male_diffuse.png -> #d39a84 (per-channel gain [0.904, 0.877, 1.011])",
+   "painted scalp hair replaced by forehead skin tone",
+   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #d39a84"
+  ],
+  "face": [
+   "eyes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyes/materials/grey_eye.png -> tile (0.0, 0.0, 0.5, 0.5)",
+   "brows: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyebrows/eyebrow002/eyebrow002.png -> tile (0.5, 0.0, 0.5, 0.5)",
+   "lashes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyelashes/eyelashes01/eyelashes01.png -> tile (0.0, 0.5, 0.5, 0.5)"
+  ],
+  "leather": [
+   "gorm_boot_l: Leather021 tinted #2c2018, 25 cm tiles, roughness 0.55, metallic 0",
+   "gorm_sole_l: Leather021 tinted #17120f, 20 cm tiles, roughness 0.70, metallic 0",
+   "gorm_boot_r: Leather021 tinted #2c2018, 25 cm tiles, roughness 0.55, metallic 0",
+   "gorm_sole_r: Leather021 tinted #17120f, 20 cm tiles, roughness 0.70, metallic 0",
+   "gorm_apron: Leather026 tinted #2b221c, 45 cm tiles, roughness 0.30, metallic 0",
+   "gorm_belt: Leather021 tinted #1f1915, 25 cm tiles, roughness 0.45, metallic 0",
+   "gorm_neckstrap: Leather021 tinted #1f1915, 25 cm tiles, roughness 0.45, metallic 0"
+  ],
+  "canvas": [
+   "gorm_trousers: Fabric066 tinted #77694c, 7 cm tiles, roughness 0.92, metallic 0"
+  ],
+  "iron": [
+   "gorm_buckle: Metal055A tinted #5a5855, 25 cm tiles, roughness 0.48, metallic 1",
+   "gorm_rivets: Metal055A tinted #5a5855, 25 cm tiles, roughness 0.48, metallic 1",
+   "gorm_vambrace_l: Metal055A tinted #5a5855, 25 cm tiles, roughness 0.48, metallic 1",
+   "gorm_vambrace_r: Metal055A tinted #5a5855, 25 cm tiles, roughness 0.48, metallic 1"
+  ]
+ },
+ "parts": {
+  "gorm_body": {
+   "vertices": 10106,
+   "faces": 9998,
+   "triangles": 19996,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_skin",
+   "surface": "body",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "clavicle_l",
+    "clavicle_r",
+    "foot_l",
+    "hand_l",
+    "hand_r",
+    "head",
+    "index_01_l",
+    "index_01_r",
+    "index_02_l",
+    "index_02_r",
+    "index_03_l",
+    "index_03_r",
+    "lowerarm_l",
+    "lowerarm_r",
+    "middle_01_l",
+    "middle_01_r",
+    "middle_02_l",
+    "middle_02_r",
+    "middle_03_l",
+    "middle_03_r",
+    "neck_01",
+    "pelvis",
+    "pinky_01_l",
+    "pinky_01_r",
+    "pinky_02_l",
+    "pinky_02_r",
+    "pinky_03_l",
+    "pinky_03_r",
+    "ring_01_l",
+    "ring_01_r",
+    "ring_02_l",
+    "ring_02_r",
+    "ring_03_l",
+    "ring_03_r",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "thumb_01_l",
+    "thumb_01_r",
+    "thumb_02_l",
+    "thumb_02_r",
+    "thumb_03_l",
+    "thumb_03_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "gorm_eyes": {
+   "vertices": 1064,
+   "faces": 1020,
+   "triangles": 2040,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_face",
+   "surface": "eyes",
+   "bones": [
+    "head"
+   ]
+  },
+  "gorm_brows": {
+   "vertices": 124,
+   "faces": 96,
+   "triangles": 192,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_face",
+   "surface": "brows",
+   "bones": [
+    "head"
+   ]
+  },
+  "gorm_lashes": {
+   "vertices": 250,
+   "faces": 184,
+   "triangles": 368,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_face",
+   "surface": "lashes",
+   "bones": [
+    "head"
+   ]
+  },
+  "gorm_trousers": {
+   "vertices": 2284,
+   "faces": 2320,
+   "triangles": 4572,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_canvas",
+   "surface": "trousers",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "foot_l",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "gorm_boot_l": {
+   "vertices": 1344,
+   "faces": 1368,
+   "triangles": 2684,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_leather",
+   "surface": "boots",
+   "bones": [
+    "ball_l",
+    "calf_l",
+    "foot_l"
+   ]
+  },
+  "gorm_sole_l": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_leather",
+   "surface": "sole",
+   "bones": [
+    "ball_l",
+    "foot_l"
+   ]
+  },
+  "gorm_boot_r": {
+   "vertices": 1344,
+   "faces": 1368,
+   "triangles": 2684,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_leather",
+   "surface": "boots",
+   "bones": [
+    "ball_r",
+    "calf_r",
+    "foot_r"
+   ]
+  },
+  "gorm_sole_r": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_leather",
+   "surface": "sole",
+   "bones": [
+    "ball_r",
+    "foot_r"
+   ]
+  },
+  "gorm_apron": {
+   "vertices": 1074,
+   "faces": 1072,
+   "triangles": 2144,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_leather",
+   "surface": "apron",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "gorm_belt": {
+   "vertices": 320,
+   "faces": 368,
+   "triangles": 640,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_leather",
+   "surface": "strap",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "gorm_buckle": {
+   "vertices": 8,
+   "faces": 6,
+   "triangles": 12,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_iron",
+   "surface": "iron",
+   "bones": [
+    "pelvis"
+   ]
+  },
+  "gorm_neckstrap": {
+   "vertices": 124,
+   "faces": 122,
+   "triangles": 244,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_leather",
+   "surface": "strap",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "gorm_rivets": {
+   "vertices": 136,
+   "faces": 160,
+   "triangles": 256,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_iron",
+   "surface": "iron",
+   "bones": [
+    "spine_03"
+   ]
+  },
+  "gorm_vambrace_l": {
+   "vertices": 322,
+   "faces": 334,
+   "triangles": 644,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_iron",
+   "surface": "iron",
+   "bones": [
+    "lowerarm_l"
+   ]
+  },
+  "gorm_vambrace_r": {
+   "vertices": 322,
+   "faces": 334,
+   "triangles": 644,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_iron",
+   "surface": "iron",
+   "bones": [
+    "lowerarm_r"
+   ]
+  }
+ },
+ "triangles_total": 37336,
+ "standing_height_cm": 212.0,
+ "lowest_point_cm": 0.0,
+ "bones": 53,
+ "root_bone": [
+  "root"
+ ],
+ "id": "gorm",
+ "name": "Gorm Tallow",
+ "height": {
+  "macro_range_m": [
+   1.4701,
+   2.4364
+  ],
+  "height_macro": 0.763184,
+  "height_before_scale_m": 2.08995,
+  "uniform_scale": 1.000024,
+  "body_height_m": 2.09,
+  "targets_applied": 60
+ },
+ "timings_s": {
+  "enable_mpfb": 0.19,
+  "mpfb_body": 1.25,
+  "bake_body": 0.02,
+  "outfit": 1.14,
+  "textures": 21.37,
+  "finalize": 0.02,
+  "save_blend": 0.01,
+  "export_fbx": 0.24
+ },
+ "script_wall_s": 24.3,
+ "peak_rss_mb": 2248.5
+}
