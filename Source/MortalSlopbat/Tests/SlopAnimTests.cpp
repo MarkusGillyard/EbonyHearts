@@ -137,4 +137,6 @@ bool FSlopAnimatorRuns::RunTest(const FString&)
 	return true;
 }
 
+#undef SLOP_TEST
+
 #endif

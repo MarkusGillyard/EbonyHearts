@@ -350,4 +350,6 @@ bool FSlopContentValid::RunTest(const FString&)
 	return C.Errors.Num() == 0;
 }
 
+#undef SLOP_TEST
+
 #endif

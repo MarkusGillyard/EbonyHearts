@@ -1,0 +1,114 @@
+#pragma once
+
+#include "GameFramework/Actor.h"
+#include "AI/SlopAI.h"
+#include "Core/SlopFlow.h"
+#include "SlopMatch.generated.h"
+
+class ASlopFighterActor;
+class ASlopFightCamera;
+class ASlopArena;
+class ASlopVfx;
+class USlopGameInstance;
+
+namespace Slop
+{
+	// A fixed 60 Hz simulation clock driven by rendered frames of any length. Each frame adds its
+	// time; whole ticks are taken out. At most MaxSteps ticks run per frame: a frame longer than
+	// that (a hitch, a debugger) drops the excess, so the game slows rather than spiralling.
+	struct FFixedClock
+	{
+		static constexpr int32 MaxSteps = 4;
+		double Accum = 0.0;
+		int32 Advance(double FrameSeconds)
+		{
+			Accum += FMath::Clamp(FrameSeconds, 0.0, 0.25);
+			int32 N = 0;
+			while (Accum >= DT && N < MaxSteps)
+			{
+				Accum -= DT;
+				++N;
+			}
+			if (N == MaxSteps && Accum >= DT)
+			{
+				Accum = FMath::Fmod(Accum, DT);
+			}
+			return N;
+		}
+		// How far rendering is between the last tick and the next one.
+		double Frac() const { return FMath::Clamp(Accum / DT, 0.0, 1.0); }
+		void Reset() { Accum = 0.0; }
+	};
+}
+
+// A fight on screen. Steps the simulation at 60 Hz from the players' devices or the CPU, then
+// draws the fighters between ticks, the camera, effects and HUD. Losing focus or a controller
+// pauses the match and clears every held input.
+UCLASS()
+class ASlopMatch : public AActor
+{
+	GENERATED_BODY()
+public:
+	ASlopMatch();
+	virtual void Tick(float DeltaSeconds) override;
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+
+	bool Start(const Slop::FMatchConfig& Config);
+	void SetPaused(bool bPause);
+	bool IsPaused() const { return bPaused; }
+	bool HasEnded() const { return bEnded; }
+	// Training: back to the start positions.
+	void ResetPositions();
+	void SkipFinisher() { Sim.SkipFinisher(); }
+	// Applies the comfort and graphics settings (shake, flashes, effects, depth of field).
+	void ApplySettings();
+
+	Slop::FFightSim Sim;
+	Slop::FMatchConfig Config;
+	Slop::FMatchResult Result;
+	TUniquePtr<Slop::IBrain> Brains[2];
+	Slop::FTrainingDummy* Dummy = nullptr;
+	TUniquePtr<Slop::FStrangerRules> Stranger;
+	// The events of the ticks run this frame, for the HUD and effects.
+	TArray<Slop::FSimEvent> FrameEvents;
+	// The pads fed to the simulation on the last tick (input display).
+	Slop::FPadState LastPads[2];
+	// Development: freeze, single-step and slow motion; hit/hurtbox and frame-data views.
+	bool bDebugPause = false;
+	bool bDebugStep = false;
+	bool bDebugSlow = false;
+	bool bShowBoxes = false;
+	int32 TicksRun = 0;
+	double SimMicros = 0.0;
+	// Seconds left on the clock at the end of each round won by player 1, summed (time bonus).
+	int32 TimeLeft = 0;
+
+	UPROPERTY()
+	TObjectPtr<ASlopFighterActor> Views[2];
+	UPROPERTY()
+	TObjectPtr<ASlopFightCamera> Camera;
+	UPROPERTY()
+	TObjectPtr<ASlopArena> Arena;
+	UPROPERTY()
+	TObjectPtr<ASlopVfx> Vfx;
+
+	// Called once when the match ends.
+	TFunction<void(const Slop::FMatchResult&)> OnFinished;
+	// Called for every simulation event after the match has reacted to it.
+	TFunction<void(const Slop::FSimEvent&)> OnEvent;
+
+private:
+	void FixedTick();
+	void HandleEvent(const Slop::FSimEvent& E);
+	void PlayEventSound(const Slop::FSimEvent& E);
+	void DrawDebugBoxes() const;
+	USlopGameInstance* GI() const;
+
+	Slop::FFixedClock Clock;
+	bool bPaused = false;
+	bool bEnded = false;
+	int32 KoFreeze = 0;
+	int32 KoSlow = 0;
+	int32 SlowCount = 0;
+	int32 SteppedThisFrame = 0;
+};

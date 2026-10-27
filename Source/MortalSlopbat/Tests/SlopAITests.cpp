@@ -391,4 +391,6 @@ bool FSlopStranger::RunTest(const FString&)
 	return true;
 }
 
+#undef SLOP_TEST
+
 #endif

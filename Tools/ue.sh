@@ -29,3 +29,7 @@ run_tests() {
 	grep -E "Result=\{Fail" "$log" | sed -E 's/.*Name=\{([^}]*)\}.*/FAIL \1/'
 	grep -E "^.*LogAutomationController: Error" "$log" | sed -E 's/.*Error: //' | head -40
 }
+# Runs the game from the editor build in a window. Extra arguments pass through (e.g. -SlopMatch=...).
+run_game() {
+	capped "$UE/Engine/Binaries/Linux/UnrealEditor" "$P" -game -windowed -resx="${RESX:-1920}" -resy="${RESY:-1080}" -log -NoSplash -nosound=false "$@"
+}
