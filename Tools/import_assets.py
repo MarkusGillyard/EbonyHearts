@@ -176,14 +176,18 @@ def const(m, v, x, y):
     return e
 
 
-def character_material():
+def character_material(path="/Game/Slop/Materials/M_Character", skin=False):
     """M_Character: base colour x tint, normal, ORM; the fighter's accent rim; a hit flash; a tint
     toward a colour (the Reflection, ash, salt); a dissolve with a glowing edge (finishers).
     Two realism controls, off by default: ClothDetail (folds, wear and dirt from noise in the
     mesh's rest-pose space, so the pattern rides with the fabric and ignores UV seams) and
     HairRoughness / HairSpecDrop (a matte floor and less specular on the hair half of a hair
-    atlas, which otherwise reads as a glossy shell)."""
-    m = fresh_material("/Game/Slop/Materials/M_Character")
+    atlas, which otherwise reads as a glossy shell).
+    `skin` builds M_CharacterSkin: the same graph with subsurface scattering (light through skin,
+    the engine's default profile) and Sweat, which wets the skin (smoother, a little more specular)."""
+    m = fresh_material(path)
+    if skin:
+        m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_SUBSURFACE_PROFILE)
     m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
     m.set_editor_property("used_with_skeletal_mesh", True)
     base = texparam(m, "BaseColorTex", WHITE, -1400, -400)
@@ -247,10 +251,16 @@ def character_material():
     rough4 = expr(m, unreal.MaterialExpressionMax, -200, 420)
     link(rough3, "", rough4, "A")
     link(floor_, "", rough4, "B")
-    output(rough4, "", unreal.MaterialProperty.MP_ROUGHNESS)
     spec = expr(m, unreal.MaterialExpressionSubtract, -200, 560)
     link(const(m, 0.5, -350, 560), "", spec, "A")
     link(mul(m, hair, scalar(m, "HairSpecDrop", 0.0, -500, 900), -350, 900), "", spec, "B")
+    if skin:
+        sweat = scalar(m, "Sweat", 0.0, -500, 1000)
+        dry = expr(m, unreal.MaterialExpressionOneMinus, -350, 1000)
+        link(mul(m, sweat, const(m, 0.5, -500, 1060), -400, 1000), "", dry, "")
+        rough4 = mul(m, rough4, dry, -100, 460)
+        spec = add(m, spec, mul(m, sweat, const(m, 0.15, -350, 1100), -250, 1060), -100, 600)
+    output(rough4, "", unreal.MaterialProperty.MP_ROUGHNESS)
     output(spec, "", unreal.MaterialProperty.MP_SPECULAR)
     metal = mul(m, orm, metal_k, -850, 520, "B", "")
     output(metal, "", unreal.MaterialProperty.MP_METALLIC)
@@ -309,7 +319,7 @@ def character_material():
     output(em2, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     MEL.recompile_material(m)
     EAL.save_loaded_asset(m)
-    log("M_Character built")
+    log(path.rsplit("/", 1)[1] + " built")
 
 
 def surface_material():
@@ -538,6 +548,7 @@ def materials():
     sky_material()
     stage_glow_material()
     character_material()
+    character_material("/Game/Slop/Materials/M_CharacterSkin", skin=True)
     surface_material()
     glow_material("/Game/Slop/Materials/M_GlowAdd", unreal.BlendMode.BLEND_ADDITIVE)
     glow_material("/Game/Slop/Materials/M_GlowTranslucent", unreal.BlendMode.BLEND_TRANSLUCENT)
@@ -588,6 +599,7 @@ def fighter(fid, fbx, import_meshes=True):
     mesh = meshes[0]
     # One material instance per slot, from the textures beside the FBX named after the slot.
     base = EAL.load_asset("/Game/Slop/Materials/M_Character")
+    skin_base = EAL.load_asset("/Game/Slop/Materials/M_CharacterSkin") or base
     mats = mesh.get_editor_property("materials")
     for i, sm in enumerate(mats):
         slot = str(sm.get_editor_property("material_slot_name"))
@@ -602,7 +614,7 @@ def fighter(fid, fbx, import_meshes=True):
             mi = EAL.load_asset(mi_path)
         else:
             mi = TOOLS.create_asset(f"MI_{fid}_{key}", dest, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
-        unreal.MaterialEditingLibrary.set_material_instance_parent(mi, base)
+        unreal.MaterialEditingLibrary.set_material_instance_parent(mi, skin_base if key == "skin" else base)
         for suffix, param, kind in [("basecolor", "BaseColorTex", "srgb"), ("normal", "NormalTex", "normal"), ("orm", "ORMTex", "linear"), ("emissive", "EmissiveTex", "srgb")]:
             png = os.path.join(folder, f"{fid}_{key}_{suffix}.png")
             if not os.path.exists(png):

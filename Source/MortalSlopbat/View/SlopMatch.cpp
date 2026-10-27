@@ -78,6 +78,7 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 		{
 			return false;
 		}
+		Views[I]->bSweats = true;
 	}
 	if (Config.bMirrorDark)
 	{

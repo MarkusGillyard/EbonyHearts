@@ -30,6 +30,9 @@ public:
 	void SetAccent(const FLinearColor& Color, float Strength);
 	void SetHidden(bool bHide);
 	bool bFlashes = true;
+	// A fighter in a match works up a sweat over the round and as it takes damage (the skin
+	// material's Sweat); the menu figures stay dry.
+	bool bSweats = false;
 
 	Slop::Anim::FAnimator Anim;
 
@@ -45,4 +48,6 @@ private:
 	TArray<TObjectPtr<UMaterialInstanceDynamic>> Mats;
 	TArray<bool> IsSkin;
 	float LastFlash = -1.f;
+	double Exertion = 0.0;
+	float LastSweat = -1.f;
 };

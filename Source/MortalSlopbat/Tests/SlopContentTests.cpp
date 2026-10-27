@@ -45,7 +45,7 @@ bool FSlopEveryFighterHasABody::RunTest(const FString&)
 		for (const FSkeletalMaterial& M : Mesh->GetMaterials())
 		{
 			UMaterialInterface* Mi = M.MaterialInterface;
-			const bool bOurs = Mi && Mi->GetName().StartsWith(TEXT("MI_")) && Mi->GetBaseMaterial() && Mi->GetBaseMaterial()->GetName() == TEXT("M_Character");
+			const bool bOurs = Mi && Mi->GetName().StartsWith(TEXT("MI_")) && Mi->GetBaseMaterial() && Mi->GetBaseMaterial()->GetName().StartsWith(TEXT("M_Character"));
 			TestTrue(*FString::Printf(TEXT("%s slot %s has the character material"), *Id.ToString(), *M.MaterialSlotName.ToString()), bOurs);
 		}
 		const FString P = FString::Printf(TEXT("/Game/Slop/Portraits/T_portrait_%s.T_portrait_%s"), *Id.ToString(), *Id.ToString());

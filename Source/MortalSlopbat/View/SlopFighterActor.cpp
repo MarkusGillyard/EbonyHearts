@@ -80,6 +80,18 @@ void ASlopFighterActor::UpdateVisual(double Frac, double Delta)
 		LastFlash = Flash;
 	}
 	SetScalar(TEXT("Glow"), (float)Anim.Glow * 3.f);
+	if (bSweats && Anim.Fighter)
+	{
+		// About two minutes of fighting, or the health taken, brings it on fully.
+		Exertion += Delta / 120.0;
+		const double Hurt = double(Anim.Fighter->DamageTaken) / FMath::Max(1, Anim.Fighter->Def->Health);
+		const float Sweat = (float)FMath::Clamp(Exertion * 0.6 + Hurt * 0.6, 0.0, 1.0);
+		if (FMath::Abs(Sweat - LastSweat) > 0.01f)
+		{
+			SetScalar(TEXT("Sweat"), Sweat);
+			LastSweat = Sweat;
+		}
+	}
 }
 
 void ASlopFighterActor::SetScalar(FName Param, float Value)
