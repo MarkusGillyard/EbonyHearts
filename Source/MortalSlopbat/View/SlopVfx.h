@@ -37,12 +37,27 @@ private:
 	void Spawn(EKind K, const FVector& P, const FVector& V, double Life, double Size, double Grow = 0, double Drag = 2.0, double Gravity = 9.8);
 	void Burst(EKind K, const FVector& P, int32 N, double Speed, double Life, double Size, const FVector& Bias = FVector::ZeroVector);
 	void Flash(const FVector& P, const FLinearColor& C, float Intensity);
-	void SyncProjectiles();
+	void SyncProjectiles(double Delta);
+	UStaticMeshComponent* ProjPart(const TCHAR* Shape, class UMaterialInterface* Material);
+	class UMaterialInterface* SolidMaterial(const FLinearColor& Color, double Roughness, double Metallic, bool bTar);
 	TWeakObjectPtr<ASlopMatch> Match;
 	TArray<FParticle> Parts[(int32)EKind::Count];
 	UPROPERTY()
 	TArray<TObjectPtr<UInstancedStaticMeshComponent>> Ism;
-	struct FProjView { int32 Serial; TObjectPtr<UStaticMeshComponent> Mesh; TObjectPtr<UPointLightComponent> Light; FName Kind; };
+	// A projectile as drawn: a glowing core for fire and energy, or solid parts for a thrown
+	// weapon (blade, harpoon, anchor) or tar, a chain back to the thrower when it is tethered,
+	// and a trail.
+	struct FProjView
+	{
+		int32 Serial = 0;
+		FName Kind;
+		TObjectPtr<UStaticMeshComponent> Mesh;
+		TObjectPtr<UStaticMeshComponent> Part;
+		TObjectPtr<UStaticMeshComponent> Chain;
+		TObjectPtr<UPointLightComponent> Light;
+		double TrailT = 0;
+		double Spin = 0;
+	};
 	TArray<FProjView> Projs;
 	struct FFlashLight { TObjectPtr<UPointLightComponent> L; double Life; double Age; float Peak; };
 	TArray<FFlashLight> Flashes;

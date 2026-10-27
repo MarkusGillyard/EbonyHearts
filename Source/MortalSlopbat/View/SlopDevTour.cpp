@@ -4,12 +4,12 @@ namespace Slop
 {
 	void FMoveTour::Place()
 	{
-		// Touching distance on the left (pass 0) or the right (pass 1) of the stage centre.
+		// Touching distance (or Gap) on the left (pass 0) or the right (pass 1) of the stage centre.
 		FFighter& A = Sim.Fighters[Index];
 		FFighter& B = Sim.Fighters[1 - Index];
 		const double Side = Pass == 0 ? -1.0 : 1.0;
-		A.Pos = FVector2D(Side * 0.55, 0);
-		B.Pos = FVector2D(-Side * 0.55, 0);
+		A.Pos = FVector2D(Side * Gap * 0.5, 0);
+		B.Pos = FVector2D(-Side * Gap * 0.5, 0);
 		A.Facing = Pass == 0 ? 1 : -1;
 		B.Facing = -A.Facing;
 		for (FFighter* F : {&A, &B})

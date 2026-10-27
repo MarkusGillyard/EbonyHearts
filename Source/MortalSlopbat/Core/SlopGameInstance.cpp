@@ -797,7 +797,9 @@ void USlopGameInstance::DevCommandLine()
 		if (Match)
 		{
 			TourFighter = C.P1;
-			Match->Brains[0] = MakeUnique<FMoveTour>(Match->Sim, 0);
+			TUniquePtr<FMoveTour> T = MakeUnique<FMoveTour>(Match->Sim, 0);
+			FParse::Value(Cmd, TEXT("SlopTourGap="), T->Gap);
+			Match->Brains[0] = MoveTemp(T);
 			Tour = Match->Brains[0].Get();
 			Match->bShowBoxes = FParse::Param(Cmd, TEXT("SlopBoxes"));
 			int32 Delay = 0;

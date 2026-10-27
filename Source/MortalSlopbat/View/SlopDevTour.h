@@ -16,6 +16,9 @@ namespace Slop
 		int32 Pass = 0;
 		int32 Step = 0;
 		FString Current;
+		// Distance between the two at each move (-SlopTourGap=; projectiles are seen in flight
+		// from further off).
+		double Gap = 1.1;
 
 	private:
 		void Place();

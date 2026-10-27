@@ -228,7 +228,65 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 	}
 }
 
-void ASlopVfx::SyncProjectiles()
+// How each projectile kind looks, after the original's table: fire and energy glow and light
+// their surroundings; thrown steel, tar and the anchor are solid and unlit; the ground slap and
+// the wind are only dust and streaks along their path.
+namespace
+{
+	enum class EProjSolid : uint8 { None, Blade, Harpoon, Anchor, Tar };
+	struct FProjLook { FLinearColor Core; float Glow; float Light; float CoreSize; EProjSolid Solid; int32 Trail; float TrailEvery = 0.03f; float TrailSize = 0.f; };
+
+	const FProjLook& LookOf(FName Kind)
+	{
+		// Trail: -1 none, else the particle kind (cast) streamed behind it.
+		static const TMap<FName, FProjLook> Looks = {
+			{TEXT("ember"), {FLinearColor(1.f, 0.55f, 0.15f), 8.f, 9.f, 1.f, EProjSolid::None, 1}},
+			{TEXT("flare"), {FLinearColor(1.f, 0.22f, 0.12f), 9.f, 10.f, 0.8f, EProjSolid::None, 1}},
+			{TEXT("orb"), {FLinearColor(0.8f, 0.9f, 1.f), 6.f, 6.f, 1.f, EProjSolid::None, -1}},
+			{TEXT("wave"), {FLinearColor(0.55f, 0.8f, 1.f), 0.5f, 5.f, 0.25f, EProjSolid::None, 5}},
+			{TEXT("bubble"), {FLinearColor(0.55f, 0.95f, 0.85f), 0.22f, 2.f, 0.9f, EProjSolid::None, -1}},
+			{TEXT("storm"), {FLinearColor(0.6f, 1.f, 0.4f), 9.f, 12.f, 1.f, EProjSolid::None, 4}},
+			{TEXT("tar"), {FLinearColor(0.05f, 0.08f, 0.04f), 0.f, 0.f, 0.f, EProjSolid::Tar, 4}},
+			{TEXT("sickle"), {FLinearColor(0.75f, 0.8f, 0.85f), 0.f, 0.f, 0.f, EProjSolid::Blade, -1}},
+			{TEXT("harpoon"), {FLinearColor(0.8f, 0.62f, 0.3f), 0.f, 0.f, 0.f, EProjSolid::Harpoon, -1}},
+			{TEXT("anchor"), {FLinearColor(0.25f, 0.25f, 0.27f), 0.f, 0.f, 0.f, EProjSolid::Anchor, 3}},
+			{TEXT("quake"), {FLinearColor(0.55f, 0.45f, 0.32f), 0.f, 0.f, 0.f, EProjSolid::None, 3, 0.015f, 0.09f}},
+			{TEXT("gust"), {FLinearColor(0.75f, 0.82f, 0.8f), 0.f, 0.f, 0.f, EProjSolid::None, 3, 0.008f, 0.13f}},
+		};
+		static const FProjLook Default = {FLinearColor(0.9f, 0.85f, 0.6f), 6.f, 6.f, 1.f, EProjSolid::None, -1};
+		const FProjLook* L = Looks.Find(Kind);
+		return L ? *L : Default;
+	}
+}
+
+UStaticMeshComponent* ASlopVfx::ProjPart(const TCHAR* Shape, UMaterialInterface* Material)
+{
+	UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(this);
+	C->SetupAttachment(RootComponent);
+	C->SetStaticMesh(VfxShape(Shape));
+	C->SetMobility(EComponentMobility::Movable);
+	C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	C->SetCastShadow(false);
+	C->SetMaterial(0, Material);
+	C->RegisterComponent();
+	return C;
+}
+
+UMaterialInterface* ASlopVfx::SolidMaterial(const FLinearColor& Color, double Roughness, double Metallic, bool bTar)
+{
+	UMaterialInstanceDynamic* M = UMaterialInstanceDynamic::Create(LoadObject<UMaterialInterface>(nullptr,
+		bTar ? TEXT("/Game/Slop/Materials/M_Water.M_Water") : TEXT("/Game/Slop/Materials/M_Surface.M_Surface")), this);
+	M->SetVectorParameterValue(bTar ? TEXT("Color") : TEXT("Tint"), Color);
+	M->SetScalarParameterValue(TEXT("Roughness"), Roughness);
+	if (!bTar)
+	{
+		M->SetScalarParameterValue(TEXT("Metallic"), Metallic);
+	}
+	Mats.Add(M);
+	return M;
+}
+
+void ASlopVfx::SyncProjectiles(double Delta)
 {
 	ASlopMatch* M = Match.Get();
 	if (!M)
@@ -239,50 +297,151 @@ void ASlopVfx::SyncProjectiles()
 	for (const FProjectile& P : M->Sim.Projectiles)
 	{
 		Live.Add(P.Serial);
+		const FProjLook& L = LookOf(P.Kind);
 		FProjView* V = Projs.FindByPredicate([&P](const FProjView& X) { return X.Serial == P.Serial; });
 		if (!V)
 		{
 			FProjView N;
 			N.Serial = P.Serial;
 			N.Kind = P.Kind;
-			N.Mesh = NewObject<UStaticMeshComponent>(this);
-			N.Mesh->SetupAttachment(RootComponent);
-			N.Mesh->SetStaticMesh(VfxShape(TEXT("Sphere")));
-			N.Mesh->SetMobility(EComponentMobility::Movable);
-			N.Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			N.Mesh->SetCastShadow(false);
-			UMaterialInstanceDynamic* Mat = UMaterialInstanceDynamic::Create(LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Slop/Materials/M_GlowAdd.M_GlowAdd")), this);
-			const FString K = P.Kind.ToString();
-			const FLinearColor C = K == TEXT("ember") || K == TEXT("flare") ? FLinearColor(1.f, 0.5f, 0.12f)
-				: K == TEXT("wave") || K == TEXT("bubble") ? FLinearColor(0.55f, 0.75f, 1.f)
-				: K == TEXT("tar") ? FLinearColor(0.2f, 0.5f, 0.15f)
-				: K == TEXT("storm") ? FLinearColor(0.5f, 1.f, 0.4f) : FLinearColor(0.9f, 0.85f, 0.6f);
-			Mat->SetVectorParameterValue(TEXT("Color"), C);
-			Mat->SetScalarParameterValue(TEXT("Intensity"), 8.f);
-			N.Mesh->SetMaterial(0, Mat);
-			N.Mesh->RegisterComponent();
-			Mats.Add(Mat);
-			N.Light = NewObject<UPointLightComponent>(this);
-			N.Light->SetupAttachment(N.Mesh);
-			N.Light->SetLightColor(C);
-			N.Light->SetIntensityUnits(ELightUnits::Candelas);
-			N.Light->SetIntensity(6.f);
-			N.Light->SetAttenuationRadius(300.f);
-			N.Light->SetCastShadows(false);
-			N.Light->RegisterComponent();
+			if (L.Glow > 0.f)
+			{
+				UMaterialInstanceDynamic* Mat = UMaterialInstanceDynamic::Create(LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Slop/Materials/M_GlowAdd.M_GlowAdd")), this);
+				Mat->SetVectorParameterValue(TEXT("Color"), L.Core);
+				Mat->SetScalarParameterValue(TEXT("Intensity"), L.Glow);
+				Mats.Add(Mat);
+				N.Mesh = ProjPart(TEXT("Sphere"), Mat);
+			}
+			UMaterialInterface* Steel = nullptr;
+			switch (L.Solid)
+			{
+			case EProjSolid::Blade:
+				Steel = SolidMaterial(L.Core, 0.3, 0.9, false);
+				N.Part = ProjPart(TEXT("Cube"), Steel);
+				break;
+			case EProjSolid::Harpoon:
+				Steel = SolidMaterial(FLinearColor(0.6f, 0.62f, 0.65f), 0.35, 0.9, false);
+				N.Mesh = ProjPart(TEXT("Cone"), Steel);
+				N.Part = ProjPart(TEXT("Cylinder"), SolidMaterial(L.Core, 0.45, 0.8, false));
+				break;
+			case EProjSolid::Anchor:
+				Steel = SolidMaterial(L.Core, 0.55, 0.85, false);
+				N.Mesh = ProjPart(TEXT("Cylinder"), Steel);
+				N.Part = ProjPart(TEXT("Cylinder"), Steel);
+				break;
+			case EProjSolid::Tar:
+				N.Part = ProjPart(TEXT("Sphere"), SolidMaterial(L.Core, 0.15, 0.0, true));
+				break;
+			default:
+				break;
+			}
+			if (P.Def().bTether || P.Kind == TEXT("sickle"))
+			{
+				N.Chain = ProjPart(TEXT("Cylinder"), SolidMaterial(FLinearColor(0.35f, 0.35f, 0.33f), 0.5, 0.8, false));
+			}
+			if (L.Light > 0.f && N.Mesh)
+			{
+				N.Light = NewObject<UPointLightComponent>(this);
+				N.Light->SetupAttachment(N.Mesh);
+				N.Light->SetLightColor(L.Core);
+				N.Light->SetIntensityUnits(ELightUnits::Candelas);
+				N.Light->SetIntensity(L.Light * (bReduced ? 0.6f : 1.f));
+				N.Light->SetAttenuationRadius(300.f);
+				N.Light->SetCastShadows(false);
+				N.Light->RegisterComponent();
+			}
 			Projs.Add(N);
 			V = &Projs.Last();
 		}
-		V->Mesh->SetWorldLocation(WorldToUE(FVector(P.Pos.X, P.Pos.Y, 0.0)));
-		const FVector2D S = P.Size * 100.0;
-		V->Mesh->SetWorldScale3D(FVector(FMath::Max(S.X, S.Y) / 100.0));
+		const FVector At(P.Pos.X, P.Pos.Y, 0.0);
+		const double Big = FMath::Max(P.Size.X, P.Size.Y);
+		const double Dir = P.Vel.X != 0.0 ? FMath::Sign(P.Vel.X) : double(P.Facing);
+		V->Spin += Delta * 14.0;
+		if (V->Mesh && L.Glow > 0.f)
+		{
+			V->Mesh->SetWorldLocation(WorldToUE(At));
+			V->Mesh->SetWorldScale3D(FVector(Big * L.CoreSize));
+		}
+		switch (L.Solid)
+		{
+		case EProjSolid::Blade:
+			// A sickle blade turning end over end as it flies.
+			V->Part->SetWorldLocation(WorldToUE(At));
+			V->Part->SetWorldRotation(FRotator(0.f, 0.f, float(FMath::RadiansToDegrees(V->Spin))));
+			V->Part->SetWorldScale3D(FVector(0.006, 0.3, 0.07));
+			break;
+		case EProjSolid::Harpoon:
+		{
+			// The barbed tip leading, the shaft behind it, along the line of flight (the engine's
+			// cone and cylinder stand along their Z axis).
+			const FRotator Along = FRotationMatrix::MakeFromZ((WorldToUE(At + FVector(Dir, 0.0, 0.0)) - WorldToUE(At)).GetSafeNormal()).Rotator();
+			V->Mesh->SetWorldLocation(WorldToUE(At));
+			V->Mesh->SetWorldRotation(Along);
+			V->Mesh->SetWorldScale3D(FVector(0.07, 0.07, 0.3));
+			V->Part->SetWorldLocation(WorldToUE(At - FVector(Dir * 0.45, 0.0, 0.0)));
+			V->Part->SetWorldRotation(Along);
+			V->Part->SetWorldScale3D(FVector(0.025, 0.025, 0.6));
+			break;
+		}
+		case EProjSolid::Anchor:
+			// A shank with its crown across the bottom, falling.
+			V->Mesh->SetWorldLocation(WorldToUE(At + FVector(0.0, 0.08, 0.0)));
+			V->Mesh->SetWorldScale3D(FVector(0.07, 0.07, 0.5));
+			V->Part->SetWorldLocation(WorldToUE(At - FVector(0.0, 0.17, 0.0)));
+			V->Part->SetWorldRotation(FRotator(0.f, 0.f, 90.f));
+			V->Part->SetWorldScale3D(FVector(0.09, 0.09, 0.5));
+			break;
+		case EProjSolid::Tar:
+			V->Part->SetWorldLocation(WorldToUE(At));
+			V->Part->SetWorldScale3D(FVector(Big * 0.85, Big * 0.7, Big * 0.7));
+			break;
+		default:
+			break;
+		}
+		if (V->Chain && M->Views[P.Owner])
+		{
+			// The line back to the thrower's nearer hand.
+			const Slop::Anim::FAnimator& A = M->Views[P.Owner]->Anim;
+			const FVector H0 = A.WorldPoint(A.Rig.HandTip(0)), H1 = A.WorldPoint(A.Rig.HandTip(1));
+			const FVector Hand = (H0 - At).SizeSquared() < (H1 - At).SizeSquared() ? H0 : H1;
+			const FVector From = WorldToUE(Hand), To = WorldToUE(At);
+			const FVector Span = To - From;
+			V->Chain->SetWorldLocation((From + To) * 0.5);
+			V->Chain->SetWorldRotation(FRotationMatrix::MakeFromZ(Span.GetSafeNormal()).Rotator());
+			V->Chain->SetWorldScale3D(FVector(0.016, 0.016, Span.Size() / 100.0));
+		}
+		if (L.Trail >= 0 && Delta > 0.0)
+		{
+			// Streamed at a steady rate whatever the frame rate.
+			V->TrailT += Delta;
+			const double Every = L.TrailEvery * (bReduced ? 2.0 : 1.0);
+			while (V->TrailT >= Every)
+			{
+				V->TrailT -= Every;
+				const EKind K = (EKind)L.Trail;
+				const FVector Back(-Dir * FMath::FRandRange(0.5, 1.5), FMath::FRandRange(-0.3, 0.6), FMath::FRandRange(-0.2, 0.2));
+				const FVector Jit(FMath::FRandRange(-0.5, 0.5) * P.Size.X, FMath::FRandRange(-0.5, 0.5) * P.Size.Y, 0.0);
+				if (K == EKind::Ring)
+				{
+					Spawn(K, At + Jit, FVector(Dir * 1.0, 0, 0), 0.35, 0.1, 2.0, 1.0, 0);
+				}
+				else
+				{
+					const double Size = L.TrailSize > 0.f ? L.TrailSize : (K == EKind::Dust ? 0.06 : 0.02);
+					Spawn(K, At + Jit, Back, K == EKind::Dust ? 0.5 : 0.35, Size, 0.4, 2.5, K == EKind::Dust ? -0.5 : 0.0);
+				}
+			}
+		}
 	}
 	for (int32 I = Projs.Num() - 1; I >= 0; --I)
 	{
 		if (!Live.Contains(Projs[I].Serial))
 		{
+			for (UStaticMeshComponent* C : {Projs[I].Mesh.Get(), Projs[I].Part.Get(), Projs[I].Chain.Get()})
+			{
+				if (C) C->DestroyComponent();
+			}
 			if (Projs[I].Light) Projs[I].Light->DestroyComponent();
-			if (Projs[I].Mesh) Projs[I].Mesh->DestroyComponent();
 			Projs.RemoveAt(I);
 		}
 	}
@@ -327,7 +486,7 @@ void ASlopVfx::SoundRings()
 
 void ASlopVfx::Step(double Delta)
 {
-	SyncProjectiles();
+	SyncProjectiles(Delta);
 	SoundRings();
 	for (int32 K = 0; K < (int32)EKind::Count; ++K)
 	{
