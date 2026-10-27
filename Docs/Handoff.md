@@ -12,8 +12,8 @@ evidence behind every claim here.
 | Game | Complete: six fighters, the Slopbat and the stranger; four stages; Arcade, Survival, Versus, Training, Tutorial, Trials, Extras, Settings; saves and settings; controllers and keyboard. |
 | Art | All eight fighters built from CC0 MakeHuman bodies with scripted costumes (`Tools/blender`); four stage sets built in Blender (`Tools/blender/stages`); CC0 surfaces, props, skies and sounds. |
 | Tests | Automation tests (`run_tests`), scripted flows for every mode (`Tools/playtest`), unattended packaged sessions (`Tools/perf/soak.sh`). |
-| Combat feel | 2.2.0 applies the presentation changes ranked by the study in `Docs/Martial-arts.md` (strikes, hit-stop, reactions, styles, sound) and one rule change (counter-hit freeze on the victim); frame data otherwise unchanged. |
-| Package | `MortalSlopbat-2.4.0-linux-x86_64.tar.gz` (498 MB, SHA-256 `868c3a1017f61bf40a0059d3ba12efd3df3cec49f49ad1d7c96d9e9fd8ad01e2`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `d13999b`; unpack and run `./MortalSlopbat.sh`. Earlier archives (2.0.0 to 2.3.0) are kept beside it. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
+| Combat feel | 2.2.0 applies the presentation changes ranked by the study in `Docs/Martial-arts.md` (strikes, hit-stop, reactions, styles, sound) and one rule change (counter-hit freeze on the victim); frame data otherwise unchanged. 2.3.0 to 2.5.0 bring in motion capture: strikes, footwork, the block, Daxion's evade, intros and wins. |
+| Package | `MortalSlopbat-2.5.0-linux-x86_64.tar.gz` (498 MB, SHA-256 `2fd5a6784b678f62d65ac11e46020d2313dfb7c07056e284bf6f0ef1e13d377d`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `60bf254`; unpack and run `./MortalSlopbat.sh`. Earlier archives (2.0.0 to 2.4.0) are kept beside it. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
 | Saves | Markus's own settings and progress from playing 2.1.0 are in `~/.local/share/MortalSlopbat/UE5/` (settings version 1: its default cap of 60 becomes Match the display when 2.2.0 loads it). Test runs used separate profiles, cleared afterwards. The Godot game's own files in `~/.local/share/MortalSlopbat/` are untouched. |
 
 ## Picking it up
@@ -37,13 +37,17 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
 
 ## Open
 
-- **More motion capture.** The shared strikes and Ashka's teep come from ACCAD's Male 2 takes
-  (CC BY 3.0), and so do the human fighters' round intros and wins. The same set has a bounce,
-  advance and retreat footwork, blocks and dodges not used yet; it has no hit reactions or falls.
-  Unused: the uppercut take (no clean contact).
+- **More motion capture.** From ACCAD's Male 2 takes (CC BY 3.0): the shared strikes, Ashka's
+  teep, walking and running (step cycles played by distance, so the feet keep pace), the standing
+  block's guard, Daxion's evade, and the human fighters' intros and wins. Gorm, Mirela and Hollis
+  keep their own walks (a sumo shuffle, circle walking, a diver's plod). The set has no hit
+  reactions or falls, so those stay procedural. Unused: the bounce (the study prefers a rock for
+  the idle) and the uppercut take (no clean contact).
 - **Realism of the art.** Skin has subsurface scattering and sweat, cloth has folds and wear, hair
-  is matte (`M_Character`, `M_CharacterSkin`); the meshes and textures are the original CC0 builds.
-  Real hair (grooms), cloth simulation and new props are not done.
+  is matte (`M_Character`, `M_CharacterSkin`); standing water ripples faintly so reflections waver,
+  the Roost's slop lake is a lit liquid over its glow, and contact shadows ground feet and hands
+  (`M_Water`, `ASlopArena`). The meshes and textures are the original CC0 builds. Real hair
+  (grooms), cloth simulation and new props are not done.
 - **The study's other rule changes.** Ashka's teep is in (forward + low kick; a combat test holds
   it), Gorm's blocked thrusts push further, and Bram throws with a chancery and a cross-buttock.
   Not done: a shin check for Ashka, optional leg damage. Each touches balance, so each needs a playtest.

@@ -58,6 +58,14 @@ whether it is felt on a real pad is unverified.
 
 ### On Markus's monitor (2.2.0)
 
+2.5.0 (commit `60bf254`, with captured footwork, block and evade, rippled water, the Roost's lit
+slop lake and contact shadows), unpacked fresh from the archive (checksums matched): 7,007 frames
+over 85 s at a 12.12 ms median, every frame within 1 ms of it, 1% low 82.5, slowest settled frame
+12.2 ms, GPU 10.91 ms median at a 58 % render scale, peak resident memory 1,500 MB
+(`Saved/Perf/monitor-2.5.0`). The window came up full screen: 3440 x 1440 at the origin,
+`_NET_WM_STATE_FULLSCREEN`. The first 5 s of the match had two frames over 25 ms (the longest
+43.7 ms), as 2.4.0 had three over its two match starts.
+
 2.4.0 (commit `d13999b`, with subsurface skin, cloth detail and the captured intros and wins):
 6,358 frames over 77 s and two matches at a 12.12 ms median, every frame within 1 ms of it, 1% low
 81.1, GPU 10.87 ms median at a 60 % render scale, peak resident memory 1,466 MB, no frame over
