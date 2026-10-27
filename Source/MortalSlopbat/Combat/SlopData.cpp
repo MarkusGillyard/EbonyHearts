@@ -599,11 +599,15 @@ namespace Slop
 		}
 		if (Basics.IsValid())
 		{
-			const TSharedPtr<FJsonObject> Moves = Obj(Basics, TEXT("moves"));
-			const TSharedPtr<FJsonObject> Over = LoadJson(DataDir / TEXT("basics_style.json"));
-			if (Moves.IsValid() && Over.IsValid())
+			// basics_style.json is written by Tools/mocap; basics_tweaks.json is written by hand.
+			for (const TCHAR* File : {TEXT("basics_style.json"), TEXT("basics_tweaks.json")})
 			{
-				Basics->SetObjectField(TEXT("moves"), Overlay(Moves, Over));
+				const TSharedPtr<FJsonObject> Moves = Obj(Basics, TEXT("moves"));
+				const TSharedPtr<FJsonObject> Over = LoadJson(DataDir / File);
+				if (Moves.IsValid() && Over.IsValid())
+				{
+					Basics->SetObjectField(TEXT("moves"), Overlay(Moves, Over));
+				}
 			}
 		}
 		FightersMocap = LoadJson(DataDir / TEXT("fighters_mocap.json"));

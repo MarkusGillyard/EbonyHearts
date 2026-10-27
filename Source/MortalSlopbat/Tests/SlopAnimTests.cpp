@@ -515,6 +515,81 @@ bool FSlopFloorHolds::RunTest(const FString&)
 	return true;
 }
 
+// Thrown, a body goes where the throw takes it: never through the floor, and not through the
+// thrower (measured between the spine and head joints of the two bodies, in 3D).
+SLOP_TEST(FSlopThrowPaths, "Anim.ThrownBodiesStayOutOfFloorAndThrower")
+bool FSlopThrowPaths::RunTest(const FString&)
+{
+	TArray<FName> Ids = FContent::Roster();
+	Ids.Append(FContent::Special());
+	for (const FName& Id : Ids)
+	{
+		const FFighterDef* Def = GetContent().Fighter(Id);
+		for (const TPair<FName, TSharedRef<FMoveDef>>& Pair : Def->Moves)
+		{
+			const FMoveDef& M = *Pair.Value;
+			if (!M.IsThrowKind() || !M.Throw.bHas || M.bAir)
+			{
+				continue;
+			}
+			FFightSim Sim;
+			Sim.bIntro = false;
+			Sim.bTraining = true;
+			Sim.Setup(Def, GetContent().Fighter(TEXT("bram")));
+			FAnimator A[2];
+			A[0].Setup(Sim.Fighters[0], GetContent().CommonPoses);
+			A[1].Setup(Sim.Fighters[1], GetContent().CommonPoses);
+			FPadState Pads[2];
+			for (int32 T = 0; T < 600 && (Sim.Phase != EPhase::Fight || T < 30); ++T)
+			{
+				Sim.Step(Pads);
+				for (FAnimator& X : A) { X.SyncFromSim(); X.Update(1.0, 1.0 / 60.0); }
+			}
+			Sim.Fighters[0].Pos = FVector2D(-0.4, 0.0);
+			Sim.Fighters[1].Pos = FVector2D(0.4, 0.0);
+			Sim.Fighters[0].StartMove(M);
+			Sim.Fighters[0].SetState(EState::Move);
+			double Lowest = 1e9, Closest = 1e9;
+			FString Nearest;
+			bool bThrown = false;
+			for (int32 T = 0; T < 200; ++T)
+			{
+				Sim.Step(Pads);
+				for (FAnimator& X : A) { X.SyncFromSim(); X.Update(1.0, 1.0 / 60.0); }
+				if (Sim.Fighters[1].State != EState::Thrown)
+				{
+					if (bThrown)
+					{
+						break;
+					}
+					continue;
+				}
+				bThrown = true;
+				for (int32 J = 0; J <= (int32)EJoint::Head; ++J)
+				{
+					const FVector V = A[1].WorldPoint(A[1].Rig.Xf[J].P);
+					Lowest = FMath::Min(Lowest, V.Y);
+					for (int32 K = 0; K <= (int32)EJoint::Head; ++K)
+					{
+						const FVector W = A[0].WorldPoint(A[0].Rig.Xf[K].P);
+						if ((V - W).Size() < Closest)
+						{
+							Closest = (V - W).Size();
+							Nearest = FString::Printf(TEXT("victim %s to thrower %s at tick %d"), JointName((EJoint)J), JointName((EJoint)K), T);
+						}
+					}
+				}
+			}
+			TestTrue(FString::Printf(TEXT("%s %s connects"), *Id.ToString(), *M.Id.ToString()), bThrown);
+			TestTrue(FString::Printf(TEXT("%s %s: the victim's spine stays above the floor (%+.2f m)"), *Id.ToString(), *M.Id.ToString(), Lowest), Lowest > 0.0);
+			// Throws are close work (a headlock, a hip throw), but two spines or heads closer than
+			// 10 cm are inside each other: the chancery and the back throws were at 1-17 cm.
+			TestTrue(FString::Printf(TEXT("%s %s: bodies stay apart (%.2f m, %s)"), *Id.ToString(), *M.Id.ToString(), Closest, *Nearest), Closest >= 0.1);
+		}
+	}
+	return true;
+}
+
 // Walking and running play their step cycles by the distance covered, so a foot on the ground stays
 // where it was put: while a foot is planted it should hardly move across the floor (the captured
 // cycles; the sumo shuffle, the circle walk and the diver's plod are the fighters' own and logged).
