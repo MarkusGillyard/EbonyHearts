@@ -646,6 +646,80 @@ bool FSlopHandsOutsideBody::RunTest(const FString&)
 	return true;
 }
 
+// Drawn at Markus's 82.5 fps instead of 60, the animation should look the same: the sim runs at
+// 60 Hz and the animator interpolates between ticks and runs its springs on real time. Where the
+// two rates meet (every 11 ticks), the joints of a fighter walking in, punching and kicking should
+// be close.
+SLOP_TEST(FSlopAnimFrameRates, "Anim.SameMotionAtAnyFrameRate")
+bool FSlopAnimFrameRates::RunTest(const FString&)
+{
+	const auto Run = [](double Fps, TMap<int32, TArray<FVector>>& Out)
+	{
+		FFightSim Sim;
+		Sim.bIntro = false;
+		Sim.bTraining = true;
+		Sim.Setup(GetContent().Fighter(TEXT("ashka")), GetContent().Fighter(TEXT("bram")));
+		FAnimator A;
+		A.Setup(Sim.Fighters[0], GetContent().CommonPoses);
+		const double Tick = 1.0 / 60.0, Frame = 1.0 / Fps;
+		double Clock = 0.0, Drawn = 0.0;
+		int32 Ticks = 0;
+		for (int32 Step = 0; Ticks < 900; ++Step)
+		{
+			Drawn += Frame;
+			while (Clock + Tick <= Drawn + 1e-9)
+			{
+				FPadState Pads[2];
+				const int32 T = Ticks % 120;
+				Pads[0].Dirs = T < 40 ? PadRight : 0;
+				Pads[0].Pressed = Pads[0].Held = T == 50 ? BtnHP : (T == 80 ? BtnHK : 0);
+				Sim.Step(Pads);
+				A.SyncFromSim();
+				Clock += Tick;
+				++Ticks;
+			}
+			A.Update(FMath::Clamp((Drawn - Clock) / Tick, 0.0, 1.0), Frame);
+			if (FMath::Abs(Drawn - Clock) < 1e-6 && Ticks % 11 == 0 && Ticks > 120)
+			{
+				TArray<FVector>& J = Out.Add(Ticks);
+				for (int32 K = 0; K < (int32)EJoint::Count; ++K)
+				{
+					J.Add(A.WorldPoint(A.Rig.Xf[K].P));
+				}
+			}
+		}
+	};
+	TMap<int32, TArray<FVector>> At60, At82;
+	Run(60.0, At60);
+	Run(82.5, At82);
+	double Worst = 0.0, Sum = 0.0;
+	int32 N = 0;
+	FString Where;
+	for (const TPair<int32, TArray<FVector>>& P : At82)
+	{
+		if (const TArray<FVector>* Q = At60.Find(P.Key))
+		{
+			for (int32 K = 0; K < P.Value.Num(); ++K)
+			{
+				const double D = (P.Value[K] - (*Q)[K]).Size();
+				Sum += D;
+				++N;
+				if (D > Worst)
+				{
+					Worst = D;
+					Where = FString::Printf(TEXT("%s at tick %d"), JointName((EJoint)K), P.Key);
+				}
+			}
+		}
+	}
+	UE_LOG(LogSlop, Display, TEXT("Rates: %d joint samples compared, mean difference %.4f m, worst %.4f m (%s)"), N, Sum / FMath::Max(N, 1), Worst, *Where);
+	TestTrue("the two rates were compared", N > 100);
+	// Measured at 5 mm on average; the worst is a planted foot stepping a frame apart.
+	TestTrue(FString::Printf(TEXT("mean difference %.4f m"), Sum / FMath::Max(N, 1)), Sum / FMath::Max(N, 1) < 0.01);
+	TestTrue(FString::Printf(TEXT("worst difference %.4f m (%s)"), Worst, *Where), Worst < 0.12);
+	return true;
+}
+
 // Walking and running play their step cycles by the distance covered, so a foot on the ground stays
 // where it was put: while a foot is planted it should hardly move across the floor (the captured
 // cycles; the sumo shuffle, the circle walk and the diver's plod are the fighters' own and logged).
