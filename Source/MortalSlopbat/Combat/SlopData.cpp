@@ -457,6 +457,7 @@ namespace Slop
 			M.Tip = FName(*Str(Anim, TEXT("tip")));
 		}
 		M.Swing = FName(*Str(Obj(D, TEXT("sfx")), TEXT("swing")));
+		M.HitSound = FName(*Str(Obj(D, TEXT("sfx")), TEXT("hit")));
 		return MR;
 	}
 

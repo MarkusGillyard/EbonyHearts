@@ -126,7 +126,8 @@
 				18
 			],
 			"sfx": {
-				"swing": "light"
+				"swing": "light",
+				"hit": "blade"
 			}
 		},
 		"nix_low": {
@@ -362,7 +363,8 @@
 				"projectile"
 			],
 			"sfx": {
-				"swing": "chain"
+				"swing": "chain",
+				"hit": "blade"
 			}
 		},
 		"sinkstep": {
@@ -508,7 +510,8 @@
 				"far"
 			],
 			"sfx": {
-				"swing": "chain"
+				"swing": "chain",
+				"hit": "chain"
 			}
 		},
 		"drowned_drop": {

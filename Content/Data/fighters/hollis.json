@@ -112,7 +112,8 @@
 			],
 			"hitstop": 11,
 			"sfx": {
-				"swing": "heavy"
+				"swing": "heavy",
+				"hit": "metal"
 			},
 			"motion": [
 				[
@@ -173,7 +174,8 @@
 				24
 			],
 			"sfx": {
-				"swing": "heavy"
+				"swing": "heavy",
+				"hit": "metal"
 			}
 		},
 		"harpoon": {
@@ -234,7 +236,8 @@
 				"pull"
 			],
 			"sfx": {
-				"swing": "cast_harpoon"
+				"swing": "cast_harpoon",
+				"hit": "metal"
 			}
 		},
 		"anchor_drop": {
@@ -302,7 +305,8 @@
 				"overhead"
 			],
 			"sfx": {
-				"swing": "chain"
+				"swing": "chain",
+				"hit": "metal"
 			}
 		},
 		"bubble": {

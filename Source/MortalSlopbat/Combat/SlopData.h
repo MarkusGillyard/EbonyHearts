@@ -156,6 +156,8 @@ namespace Slop
 		TArray<FAnimKey> VictimKeys;
 		FName Tip;
 		FName Swing;
+		// What lands the blow, for its sound: wood, metal, blade or chain (none: the body).
+		FName HitSound;
 
 		bool IsAttack() const { return Level != ELevel::None; }
 		int32 LastActive() const { return Startup + Active - 1; }

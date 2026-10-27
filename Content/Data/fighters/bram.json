@@ -229,7 +229,8 @@
 			"juggle_cost": 2,
 			"hitstop": 10,
 			"sfx": {
-				"swing": "medium"
+				"swing": "medium",
+				"hit": "wood"
 			}
 		},
 		"flare_high": {
@@ -415,7 +416,8 @@
 				"low"
 			],
 			"sfx": {
-				"swing": "medium"
+				"swing": "medium",
+				"hit": "wood"
 			}
 		},
 		"bull_rush": {
@@ -587,7 +589,8 @@
 			],
 			"hitstop": 12,
 			"sfx": {
-				"swing": "heavy"
+				"swing": "heavy",
+				"hit": "wood"
 			}
 		},
 		"lights_out": {

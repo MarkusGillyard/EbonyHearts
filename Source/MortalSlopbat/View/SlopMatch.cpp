@@ -486,9 +486,44 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 		}
 		else
 		{
-			// A recorded punch for the contact over the synthesised body of the blow.
-			A->Play(E.Damage < 55 ? TEXT("hit_light") : (E.Damage < 95 ? TEXT("hit_medium") : TEXT("hit_heavy")), -2.f, R);
-			A->Play(E.Damage < 70 ? TEXT("kenney:impactPunch_medium") : TEXT("kenney:impactPunch_heavy"), -3.f, R);
+			// The synthesised body of the blow, pitched by where it lands (a face hit sharp, a body
+			// hit deeper, a leg kick low), and a recorded contact for what lands it: a fist or shin
+			// on the face, a thud in the body, or the weapon's own wood, brass or steel.
+			const FMoveDef* M = Sim.Fighters[E.By].Def->Move(E.Move);
+			const FName Mat = M ? M->HitSound : NAME_None;
+			const bool bHeavy = E.Damage >= 70;
+			const float Pitch = E.Level == ELevel::Low ? 0.86f : (E.Level == ELevel::Mid ? 0.94f : 1.05f);
+			A->Play(E.Damage < 55 ? TEXT("hit_light") : (E.Damage < 95 ? TEXT("hit_medium") : TEXT("hit_heavy")), -2.f, R * Pitch);
+			if (Mat == TEXT("wood"))
+			{
+				A->Play(bHeavy ? TEXT("kenney:impactWood_heavy") : TEXT("kenney:impactWood_medium"), -3.f, R);
+			}
+			else if (Mat == TEXT("metal"))
+			{
+				A->Play(bHeavy ? TEXT("kenney:impactMetal_heavy") : TEXT("kenney:impactPlate_medium"), -4.f, R);
+			}
+			else if (Mat == TEXT("blade"))
+			{
+				A->Play(TEXT("kenney:impactMetal_light"), -5.f, R * 1.15f);
+				A->Play(TEXT("kenney:impactPunch_medium"), -7.f, R);
+			}
+			else if (Mat == TEXT("chain"))
+			{
+				A->Play(TEXT("kenney:impactMetal_medium"), -5.f, R * 1.1f);
+			}
+			else if (E.Level == ELevel::High)
+			{
+				A->Play(bHeavy ? TEXT("kenney:impactPunch_heavy") : TEXT("kenney:impactPunch_medium"), -3.f, R * 1.04f);
+			}
+			else if (E.Level == ELevel::Mid)
+			{
+				A->Play(TEXT("kenney:impactSoft_heavy"), -3.f, R * 0.95f);
+				A->Play(TEXT("kenney:impactPunch_medium"), -8.f, R * 0.9f);
+			}
+			else
+			{
+				A->Play(TEXT("kenney:impactSoft_medium"), -3.f, R * 0.88f);
+			}
 		}
 		if (E.bProj)
 		{
@@ -496,9 +531,15 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 		}
 		break;
 	case EEvent::Block:
+	{
+		// A guarded blow: the arms take it, or the weapon's own material on the forearms.
+		const FMoveDef* M = Sim.Fighters[E.By].Def->Move(E.Move);
+		const FName Mat = M ? M->HitSound : NAME_None;
 		A->Play(TEXT("block"), -3.f, R);
-		A->Play(TEXT("kenney:impactSoft_medium"), -6.f, R);
+		A->Play(Mat == TEXT("wood") ? TEXT("kenney:impactWood_light") : (Mat == TEXT("metal") || Mat == TEXT("blade") || Mat == TEXT("chain") ? TEXT("kenney:impactPlate_light") : TEXT("kenney:impactSoft_medium")),
+			-6.f, R);
 		break;
+	}
 	case EEvent::Armor: A->Play(TEXT("armor"), -2.f); break;
 	case EEvent::Throw: A->Play(TEXT("grab"), -2.f); break;
 	case EEvent::ThrowBreak: A->Play(TEXT("throw_break"), 0.f); break;
