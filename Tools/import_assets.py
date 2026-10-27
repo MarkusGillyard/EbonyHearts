@@ -170,9 +170,19 @@ BLACK = "/Engine/EngineResources/Black"
 GREY = "/Engine/EngineResources/DefaultTexture"
 
 
+def const(m, v, x, y):
+    e = expr(m, unreal.MaterialExpressionConstant, x, y)
+    e.set_editor_property("r", v)
+    return e
+
+
 def character_material():
     """M_Character: base colour x tint, normal, ORM; the fighter's accent rim; a hit flash; a tint
-    toward a colour (the Reflection, ash, salt); a dissolve with a glowing edge (finishers)."""
+    toward a colour (the Reflection, ash, salt); a dissolve with a glowing edge (finishers).
+    Two realism controls, off by default: ClothDetail (folds, wear and dirt from noise in the
+    mesh's rest-pose space, so the pattern rides with the fabric and ignores UV seams) and
+    HairRoughness / HairSpecDrop (a matte floor and less specular on the hair half of a hair
+    atlas, which otherwise reads as a glossy shell)."""
     m = fresh_material("/Game/Slop/Materials/M_Character")
     m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
     m.set_editor_property("used_with_skeletal_mesh", True)
@@ -182,9 +192,34 @@ def character_material():
     towards = vector(m, "TintColor", (0.05, 0.08, 0.05, 1), -1100, -100)
     amount = scalar(m, "TintAmount", 0.0, -1100, 0)
     col2 = lerp(m, col, towards, amount, -850, -200)
-    output(col2, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    # The rest-pose position exists only in the vertex shader; an interpolator carries it over.
+    pre_v = expr(m, unreal.MaterialExpressionPreSkinnedPosition, -2500, -700)
+    pre = expr(m, unreal.MaterialExpressionVertexInterpolator, -2300, -700)
+    link(pre_v, "", pre, "")
+    cloth_k = scalar(m, "ClothDetail", 0.0, -2300, -560)
+    wear = expr(m, unreal.MaterialExpressionNoise, -2050, -700)
+    wear.set_editor_property("scale", 0.025)
+    wear.set_editor_property("quality", 1)
+    wear.set_editor_property("output_min", 0.0)
+    wear.set_editor_property("output_max", 1.0)
+    link(pre, "", wear, "")
+    wear_col = lerp(m, const(m, 0.78, -1850, -760), const(m, 1.08, -1850, -700), wear, -1650, -720)
+    wear_k = lerp(m, const(m, 1.0, -1650, -820), wear_col, cloth_k, -1450, -760)
+    col3 = mul(m, col2, wear_k, -650, -260)
+    output(col3, "", unreal.MaterialProperty.MP_BASE_COLOR)
     normal = texparam(m, "NormalTex", FLAT_NORMAL, -1400, 150, unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
-    output(normal, "RGB", unreal.MaterialProperty.MP_NORMAL)
+    folds = expr(m, unreal.MaterialExpressionVectorNoise, -1850, 100)
+    folds.set_editor_property("noise_function", unreal.VectorNoiseFunction.VNF_GRADIENT_ALU)
+    link(mul(m, pre, const(m, 0.08, -2050, 40), -2050, 100), "", folds, "")
+    folds3 = expr(m, unreal.MaterialExpressionComponentMask, -1700, 40)
+    for ch, on in (("r", True), ("g", True), ("b", True), ("a", False)):
+        folds3.set_editor_property(ch, on)
+    link(folds, "", folds3, "")
+    bump = mul(m, mul(m, folds3, cloth_k, -1650, 100), const(m, 0.3, -1650, 180), -1450, 120)
+    nsum = add(m, normal, bump, -1250, 150, "RGB", "")
+    nrm = expr(m, unreal.MaterialExpressionNormalize, -1050, 150)
+    link(nsum, "", nrm, "")
+    output(nrm, "", unreal.MaterialProperty.MP_NORMAL)
     orm = texparam(m, "ORMTex", WHITE_LINEAR, -1400, 450, unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
     rough_k = scalar(m, "Roughness", 0.6, -1100, 400)
     metal_k = scalar(m, "Metallic", 0.0, -1100, 520)
@@ -194,7 +229,29 @@ def character_material():
     one = expr(m, unreal.MaterialExpressionConstant, -850, 300)
     one.set_editor_property("r", 0.08)
     link(one, "", rough2, "B")
-    output(rough2, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    # Cloth wear roughens and smooths the fabric in patches.
+    wear_r = mul(m, mul(m, add(m, wear, const(m, -0.5, -850, 640), -700, 620), cloth_k, -550, 620), const(m, 0.2, -550, 700), -400, 640)
+    rough3 = add(m, rough2, wear_r, -350, 420)
+    # The hair half of a hair atlas (texture v below one half) gets a matte floor.
+    tc = expr(m, unreal.MaterialExpressionTextureCoordinate, -1400, 760)
+    v = expr(m, unreal.MaterialExpressionComponentMask, -1250, 760)
+    v.set_editor_property("r", False)
+    v.set_editor_property("g", True)
+    link(tc, "", v, "")
+    below = expr(m, unreal.MaterialExpressionSubtract, -1100, 760)
+    link(const(m, 0.5, -1250, 820), "", below, "A")
+    link(v, "", below, "B")
+    hair = expr(m, unreal.MaterialExpressionSaturate, -800, 760)
+    link(mul(m, below, const(m, 200.0, -950, 820), -950, 760), "", hair, "")
+    floor_ = mul(m, hair, scalar(m, "HairRoughness", 0.0, -800, 850), -650, 780)
+    rough4 = expr(m, unreal.MaterialExpressionMax, -200, 420)
+    link(rough3, "", rough4, "A")
+    link(floor_, "", rough4, "B")
+    output(rough4, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    spec = expr(m, unreal.MaterialExpressionSubtract, -200, 560)
+    link(const(m, 0.5, -350, 560), "", spec, "A")
+    link(mul(m, hair, scalar(m, "HairSpecDrop", 0.0, -500, 900), -350, 900), "", spec, "B")
+    output(spec, "", unreal.MaterialProperty.MP_SPECULAR)
     metal = mul(m, orm, metal_k, -850, 520, "B", "")
     output(metal, "", unreal.MaterialProperty.MP_METALLIC)
     output(orm, "R", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
@@ -504,6 +561,19 @@ def texture(path_png, dest, srgb=True, normal=False):
     return t
 
 
+# Realism controls of M_Character per slot (a slot name for every fighter, or <id>_<slot>).
+SLOT_EXTRA = {
+    "hairface": {"HairRoughness": 0.72, "HairSpecDrop": 0.2},
+    "suit": {"ClothDetail": 1.0},
+    "canvas": {"ClothDetail": 0.8},
+    "coat": {"ClothDetail": 0.6},
+    "cloth": {"ClothDetail": 0.6},
+    "gown": {"ClothDetail": 0.5},
+    "leather": {"ClothDetail": 0.3},
+    "ashka_cloth": {"ClothDetail": 0.35},
+}
+
+
 def fighter(fid, fbx, import_meshes=True):
     dest = f"/Game/Slop/Fighters/{fid}"
     folder = os.path.dirname(fbx)
@@ -544,6 +614,8 @@ def fighter(fid, fbx, import_meshes=True):
         # The maps carry the values: roughness in G, metalness in B, taken as they are.
         MEL.set_material_instance_scalar_parameter_value(mi, "Roughness", 1.0)
         MEL.set_material_instance_scalar_parameter_value(mi, "Metallic", 1.0)
+        for param, value in {**SLOT_EXTRA.get(key, {}), **SLOT_EXTRA.get(f"{fid}_{key}", {})}.items():
+            MEL.set_material_instance_scalar_parameter_value(mi, param, value)
         EAL.save_loaded_asset(mi)
         sm.set_editor_property("material_interface", mi)
         mats[i] = sm
