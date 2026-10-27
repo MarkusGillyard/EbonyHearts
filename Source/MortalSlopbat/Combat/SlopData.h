@@ -71,6 +71,8 @@ namespace Slop
 		FVector2D Release = FVector2D(2.0, 3.0);
 		int32 Recover = 10;
 		bool bSwap = false;
+		// Whether a command grab can be broken like a throw (throws always can).
+		bool bBreakable = false;
 		// [tick, forward, up] keys of the victim's position relative to the thrower.
 		TArray<FVector> Path;
 	};

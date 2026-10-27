@@ -541,7 +541,7 @@
 		"bite": {
 			"name": "Bite",
 			"kind": "grab",
-			"startup": 8,
+			"startup": 11,
 			"active": 3,
 			"recovery": 30,
 			"level": "throw",
@@ -558,7 +558,8 @@
 			"throw": {
 				"frames": 60,
 				"damage_frame": 40,
-				"damage": 170,
+				"damage": 130,
+				"breakable": true,
 				"release": [
 					2.6,
 					3.6
@@ -595,12 +596,12 @@
 			"anim": {
 				"keys": [
 					[
-						4,
+						6,
 						"grab_reach",
 						"snap"
 					],
 					[
-						10,
+						13,
 						"grab_reach",
 						"linear"
 					],

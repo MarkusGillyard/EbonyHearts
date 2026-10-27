@@ -679,9 +679,9 @@ namespace Slop
 		: Sim(InSim), Index(InIndex)
 	{
 		static const FLevel Levels[] = {
-			{22, 720, 660, 0.25, 26, 0.15, 150},
-			{16, 560, 520, 0.45, 20, 0.3, 120},
-			{12, 440, 420, 0.65, 15, 0.45, 95},
+			{22, 720, 660, 0.25, 26, 0.15, 150, 300},
+			{16, 560, 520, 0.45, 20, 0.3, 120, 240},
+			{12, 440, 420, 0.65, 15, 0.45, 95, 180},
 		};
 		L = Levels[FMath::Clamp(Difficulty, 0, 2)];
 		Rng.Initialize(4242 + Difficulty);
@@ -690,6 +690,7 @@ namespace Slop
 
 	static const TCHAR* const BossTar = TEXT("D,F+HP");
 	static const TCHAR* const BossGust = TEXT("B,F+HK");
+	static const TCHAR* const BossBite = TEXT("F,F+LP");
 
 	void FBossBrain::Do(const TCHAR* Command)
 	{
@@ -698,6 +699,11 @@ namespace Slop
 		if (LastCommand == BossTar || LastCommand == BossGust)
 		{
 			RangedCd = L.RangedCd + Rng.RandRange(0, 45);
+		}
+		else if (LastCommand == BossBite)
+		{
+			// A grab beats a block, so it must not come round too often.
+			BiteCd = L.BiteCd + Rng.RandRange(0, 60);
 		}
 	}
 
@@ -719,6 +725,7 @@ namespace Slop
 		--DiveCd;
 		--StormCd;
 		--RangedCd;
+		--BiteCd;
 		if (Intent.Busy())
 		{
 			return Intent.Next(M.Facing);
@@ -769,7 +776,7 @@ namespace Slop
 		}
 		else
 		{
-			if (R < 0.18) Do(TEXT("F,F+LP"));
+			if (R < 0.18 && BiteCd <= 0) Do(BossBite);
 			else if (R < 0.55) { Do(TEXT("HP")); Intent.Hold(5, 9); Intent.Command(TEXT("HP")); }
 			else if (R < 0.75) Do(TEXT("D+LK"));
 			else if (R < 0.85 && CanFire(BossGust)) Do(BossGust);

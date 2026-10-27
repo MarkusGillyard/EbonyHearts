@@ -921,7 +921,7 @@ namespace Slop
 		FFighter& D = Fighters[A.ThrowVictim];
 		const FThrowDef& TD = A.Move->Throw;
 		++A.ThrowT;
-		if (A.ThrowT <= ThrowBreakWindow && D.Input.PressAge(BtnLP | BtnHP, 1) == 0 && A.Move->Kind == EMoveKind::Throw)
+		if (A.ThrowT <= ThrowBreakWindow && D.Input.PressAge(BtnLP | BtnHP, 1) == 0 && (A.Move->Kind == EMoveKind::Throw || TD.bBreakable))
 		{
 			BreakThrow(A, D);
 			return;

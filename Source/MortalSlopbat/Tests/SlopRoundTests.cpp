@@ -270,6 +270,43 @@ bool FSlopRoundBossThrow::RunTest(const FString&)
 	return true;
 }
 
+// The Slopbat's bite is a grab (a block does not stop it), but a punch as it closes breaks it.
+SLOP_TEST(FSlopRoundBossBite, "Rounds.BossBiteCanBeBroken")
+bool FSlopRoundBossBite::RunTest(const FString&)
+{
+	const FFighterDef* Bat = Real(TEXT("slopbat"));
+	TSharedPtr<FFighterDef> A = FSimHarness::DummyDef(TEXT("a"));
+	for (int32 Break = 0; Break < 2; ++Break)
+	{
+		FSimHarness H(A.Get(), Bat);
+		const int32 Health = H.F(0).Health;
+		H.Place(0.9);
+		H.Motion(1, {L, 0, L}, LP);
+		int32 T = 0;
+		for (; T < 30 && H.F(0).ThrownBy < 0; ++T)
+		{
+			H.Idle(1);
+		}
+		TestTrue("the bite catches a fighter standing close", H.F(0).ThrownBy == 1);
+		H.Idle(2);
+		if (Break)
+		{
+			H.Step(0, LP);
+		}
+		H.Idle(70);
+		if (Break)
+		{
+			TestEqual("a punch just after the bite breaks free", H.Count(EEvent::ThrowBreak), 1);
+			TestEqual("and costs nothing", H.F(0).Health, Health);
+		}
+		else
+		{
+			TestEqual("unbroken, the bite does its damage", H.F(0).Health, Health - Bat->Move(TEXT("bite"))->Throw.Damage);
+		}
+	}
+	return true;
+}
+
 SLOP_TEST(FSlopRoundLoserShots, "Rounds.DecidingKOClearsLosersProjectiles")
 bool FSlopRoundLoserShots::RunTest(const FString&)
 {

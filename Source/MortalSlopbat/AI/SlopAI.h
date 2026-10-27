@@ -126,9 +126,9 @@ namespace Slop
 		int32 LastDamage = 0;
 	};
 
-	// The Slopbat's mind: readable patterns rather than reflexes. Claws and bites up close, tar and
-	// wind from afar (each followed by a wait, never the same twice running), the Dive on a
-	// cooldown, and below half health the Storm Shroud.
+	// The Slopbat's mind: readable patterns rather than reflexes. Claws up close and now and then a
+	// bite, tar and wind from afar (each followed by a wait, never the same twice running), the Dive
+	// on a cooldown, and below half health the Storm Shroud.
 	class FBossBrain : public IBrain
 	{
 	public:
@@ -136,7 +136,7 @@ namespace Slop
 		virtual FPadState Think() override;
 
 	private:
-		struct FLevel { int32 React, DiveCd, StormCd; double Aa; int32 Think; double Block; int32 RangedCd; };
+		struct FLevel { int32 React, DiveCd, StormCd; double Aa; int32 Think; double Block; int32 RangedCd, BiteCd; };
 		void Do(const TCHAR* Command);
 		FFightSim& Sim;
 		int32 Index;
@@ -148,6 +148,7 @@ namespace Slop
 		int32 DiveCd = 420;
 		int32 StormCd = 240;
 		int32 RangedCd = 0;
+		int32 BiteCd = 0;
 		FString LastCommand;
 		int32 Walk = 5;
 		int32 WalkT = 0;

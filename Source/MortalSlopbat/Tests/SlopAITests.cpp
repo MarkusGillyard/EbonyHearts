@@ -329,6 +329,57 @@ bool FSlopBossPatterns::RunTest(const FString&)
 	return true;
 }
 
+// A grab beats a block, so against a player who only blocks the Bite was most of the damage the
+// Slopbat did. It now waits between bites (and the bite can be broken, see Rounds).
+SLOP_TEST(FSlopBossBites, "AI.BossWaitsBetweenBites")
+bool FSlopBossBites::RunTest(const FString&)
+{
+	const int32 Wait[] = {300, 240, 180};
+	for (int32 Level = 0; Level < 3; ++Level)
+	{
+		int32 Bites = 0, BiteDamage = 0, Damage = 0, MinGap = MAX_int32, Ticks = 0;
+		for (const FName& Id : FContent::Roster())
+		{
+			FFightSim Sim;
+			Sim.bIntro = false;
+			Sim.RoundsToWin = 1;
+			Sim.Setup(GetContent().Fighter(Id), GetContent().Fighter(TEXT("slopbat")));
+			FTrainingDummy Blocker(Sim, 0);
+			Blocker.SetMode(2);
+			FBossBrain Boss(Sim, 1, Level);
+			int32 LastAt = -1;
+			for (int32 T = 0; T < 60 * 60 * 2 && Sim.Phase != EPhase::MatchEnd; ++T)
+			{
+				FPadState Pads[2] = {Blocker.Think(), Boss.Think()};
+				Sim.Step(Pads);
+				++Ticks;
+				for (const FSimEvent& E : Sim.Events)
+				{
+					if (E.Type == EEvent::Move && E.Who == 1 && E.Move == TEXT("bite"))
+					{
+						++Bites;
+						if (LastAt >= 0)
+						{
+							MinGap = FMath::Min(MinGap, E.Tick - LastAt);
+						}
+						LastAt = E.Tick;
+					}
+					if ((E.Type == EEvent::Hit || E.Type == EEvent::Block) && E.Who == 0)
+					{
+						Damage += E.Damage;
+						BiteDamage += E.Move == TEXT("bite") ? E.Damage : 0;
+					}
+				}
+			}
+		}
+		UE_LOG(LogSlop, Display, TEXT("Slopbat at level %d against a blocker: %d bites, %.0f damage a minute of which %.0f%% bites, shortest gap %d ticks"),
+			Level, Bites, Damage * 3600.0 / FMath::Max(Ticks, 1), 100.0 * BiteDamage / FMath::Max(Damage, 1), MinGap);
+		TestTrue(FString::Printf(TEXT("level %d still bites"), Level), Bites > 0);
+		TestTrue(FString::Printf(TEXT("level %d waits at least %d ticks between bites"), Level, Wait[Level]), MinGap >= Wait[Level]);
+	}
+	return true;
+}
+
 // The Slopbat keeps its distance with tar and wind, but it should not keep firing: after each
 // one it waits a while and never repeats the same one straight away, against a CPU that comes
 // at it or a player who only blocks.

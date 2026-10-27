@@ -387,6 +387,7 @@ namespace Slop
 			TD.Release = Vec2(T, TEXT("release"), FVector2D(2.0, 3.0));
 			TD.Recover = Int(T, TEXT("recover"), 10);
 			TD.bSwap = Bool(T, TEXT("swap"), false);
+			TD.bBreakable = Bool(T, TEXT("breakable"), false);
 			if (const TArray<TSharedPtr<FJsonValue>>* Path = Arr(T, TEXT("path")))
 			{
 				for (const TSharedPtr<FJsonValue>& V : *Path)
