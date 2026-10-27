@@ -23,6 +23,12 @@
 #include "View/SlopMatch.h"
 #include "View/SlopShowroom.h"
 #include "View/SlopDevTour.h"
+#include "Widgets/SWindow.h"
+#if PLATFORM_LINUX
+THIRD_PARTY_INCLUDES_START
+#include <SDL3/SDL.h>
+THIRD_PARTY_INCLUDES_END
+#endif
 
 #define LOCTEXT_NAMESPACE "SlopGame"
 
@@ -103,6 +109,7 @@ void USlopGameInstance::OnStart()
 		return;
 	}
 	bStarted = true;
+	StartedAt = Now();
 	BuildRoot();
 	ApplySettings(true);
 	Audio->Preload();
@@ -342,6 +349,52 @@ void USlopGameInstance::ApplySettings(bool bDisplay)
 	}
 }
 
+// The engine sets the game window's mode while the window is still hidden, and some X11 window
+// managers (Cinnamon's, for one) can miss that request: the window comes up as an ordinary one
+// while the engine, and at times SDL too, records it as full screen, so asking the engine again
+// for the same mode does nothing. For the first seconds after start, compare the window's actual
+// placement with its display's, and ask the window system again (leaving full screen first when
+// SDL believes it is already there).
+void USlopGameInstance::KeepWindowMode()
+{
+#if PLATFORM_LINUX
+	if (!bStarted || WindowRequests >= 3 || Now() < WindowCheckAt || Now() > StartedAt + 15.0 || !GEngine || !GEngine->GameViewport
+		|| FSlateApplication::Get().IsRenderingOffScreen())
+	{
+		return;
+	}
+	WindowCheckAt = Now() + 0.5;
+	const TSharedPtr<SWindow> W = GEngine->GameViewport->GetWindow();
+	if (!W.IsValid() || !W->IsVisible() || !W->GetNativeWindow().IsValid() || W->GetWindowMode() == EWindowMode::Windowed)
+	{
+		return;
+	}
+	SDL_Window* H = static_cast<SDL_Window*>(W->GetNativeWindow()->GetOSWindowHandle());
+	const SDL_DisplayID Display = H ? SDL_GetDisplayForWindow(H) : 0;
+	SDL_Rect B;
+	int X = 0, Y = 0, Wd = 0, Ht = 0;
+	if (!Display || !SDL_GetDisplayBounds(Display, &B) || !SDL_GetWindowPosition(H, &X, &Y) || !SDL_GetWindowSize(H, &Wd, &Ht))
+	{
+		return;
+	}
+	if (X <= B.x && Y <= B.y && X + Wd >= B.x + B.w && Y + Ht >= B.y + B.h)
+	{
+		return;
+	}
+	++WindowRequests;
+	const bool bSdlFull = (SDL_GetWindowFlags(H) & SDL_WINDOW_FULLSCREEN) != 0;
+	UE_LOG(LogSlop, Log, TEXT("The game window is %dx%d at %d,%d on a %dx%d display (SDL full screen: %d); asking again for full screen"),
+		Wd, Ht, X, Y, B.w, B.h, bSdlFull ? 1 : 0);
+	if (bSdlFull)
+	{
+		SDL_SetWindowFullscreen(H, false);
+		SDL_SyncWindow(H);
+	}
+	SDL_SetWindowFullscreen(H, true);
+	SDL_SyncWindow(H);
+#endif
+}
+
 void USlopGameInstance::Quit()
 {
 	if (Audio)
@@ -456,6 +509,7 @@ bool USlopGameInstance::Tick(float Dt)
 	}
 	DispatchUi();
 	HandleDebugKeys();
+	KeepWindowMode();
 	if (FrameStats)
 	{
 		if (Match)

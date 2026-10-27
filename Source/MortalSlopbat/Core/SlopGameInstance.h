@@ -84,6 +84,7 @@ private:
 	void OnActivation(bool bActive);
 	void TestCommandLine();
 	void DevCommandLine();
+	void KeepWindowMode();
 
 	FTSTicker::FDelegateHandle TickHandle;
 	UPROPERTY()
@@ -126,4 +127,8 @@ private:
 	FDelegateHandle ConnHandle;
 	FDelegateHandle ActiveHandle;
 	bool bStarted = false;
+	double StartedAt = 0.0;
+	// Full screen asked of the window system again after start (KeepWindowMode).
+	double WindowCheckAt = 0.0;
+	int32 WindowRequests = 0;
 };
