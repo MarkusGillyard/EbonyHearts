@@ -81,7 +81,9 @@ namespace Slop
 	{
 		RoundStart, Fight, Move, Chain, Jump, Land, Run, Hit, Block, Armor, Parry, Throw, ThrowBreak,
 		Projectile, ProjectileEnd, Clash, Teleport, Buff, BuffEnd, ComboEnd, KO, FinishPrompt,
-		FinishTimeout, FinisherRange, Finisher, FinisherEnd, Timeout, RoundEnd, WinPose, MatchEnd
+		FinishTimeout, FinisherRange, Finisher, FinisherEnd, Timeout, RoundEnd, WinPose, MatchEnd,
+		// The stranger encounter: a spoken line (Text; bHint for instructions), his evade, palm and strike.
+		Line, StrangerEvade, StrangerStrike, StrangerCrack
 	};
 	const TCHAR* EventName(EEvent E);
 
@@ -117,5 +119,7 @@ namespace Slop
 		FName Want;
 		double Gap = 0;
 		int32 Wins[2] = {0, 0};
+		FString Text;
+		bool bHint = false;
 	};
 }

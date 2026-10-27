@@ -76,6 +76,10 @@ namespace Slop
 		case EEvent::RoundEnd: return TEXT("round_end");
 		case EEvent::WinPose: return TEXT("win_pose");
 		case EEvent::MatchEnd: return TEXT("match_end");
+		case EEvent::Line: return TEXT("line");
+		case EEvent::StrangerEvade: return TEXT("stranger_evade");
+		case EEvent::StrangerStrike: return TEXT("stranger_strike");
+		case EEvent::StrangerCrack: return TEXT("stranger_crack");
 		}
 		return TEXT("?");
 	}
