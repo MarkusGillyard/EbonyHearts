@@ -58,6 +58,13 @@ whether it is felt on a real pad is unverified.
 
 ### On Markus's monitor (2.2.0)
 
+2.5.4 (commit `927ed04`) offscreen, unpacked fresh (checksums matched): 85 s of an arcade fight
+at 60 fps, every frame within 1 ms, no hitches, GPU 15.17 ms at a 76 % render scale
+(`Saved/Perf/offscreen-2.5.4`). The first run peaked at 1,739 MB; a second with the same
+fighters at 1,434 MB, and the development build used the same memory with the old and new font
+cache settings (3,214 and 3,243 MB), so the first was a one-off. The font cache flushed twice at
+start-up and not again in 150 s of menus and fights at 3440 x 1440 (development build).
+
 2.5.3 (commit `c8fce5d`) offscreen, unpacked fresh (checksums matched): 85 s of an arcade fight
 at 60 fps, every frame within 1 ms, no hitches, GPU 14.89 ms at a 76 % render scale, peak memory
 1,448 MB (`Saved/Perf/offscreen-2.5.3`); the monitor was in standby.

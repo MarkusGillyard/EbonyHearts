@@ -13,7 +13,7 @@ evidence behind every claim here.
 | Art | All eight fighters built from CC0 MakeHuman bodies with scripted costumes (`Tools/blender`); four stage sets built in Blender (`Tools/blender/stages`); CC0 surfaces, props, skies and sounds. |
 | Tests | Automation tests (`run_tests`), scripted flows for every mode (`Tools/playtest`), unattended packaged sessions (`Tools/perf/soak.sh`). |
 | Combat feel | 2.2.0 applies the presentation changes ranked by the study in `Docs/Martial-arts.md` (strikes, hit-stop, reactions, styles, sound) and one rule change (counter-hit freeze on the victim); frame data otherwise unchanged. 2.3.0 to 2.5.0 bring in motion capture: strikes, footwork, the block, Daxion's evade, intros and wins. |
-| Package | `MortalSlopbat-2.5.3-linux-x86_64.tar.gz` (498 MB, SHA-256 `7f9cfd6abcd0bbef61f4843b760d9275fcfb8e7a4305a4ee3e686c308c76365c`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `c8fce5d` (2.5.2 with knocked-down bodies on the floor, throws that keep the bodies apart, and weapons and footsteps levelled with the fists); unpack and run `./MortalSlopbat.sh`. Earlier archives (2.0.0 to 2.5.2) are kept beside it. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
+| Package | `MortalSlopbat-2.5.4-linux-x86_64.tar.gz` (498 MB, SHA-256 `3b205878da4f0119a15e225adfff578f43e39e2ee97d150fe76e453a578420be`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `927ed04` (2.5.3 with no font-cache flushes mid-fight, leg kicks that buckle the leg, the crouch guard in front of the face, two more training dummies); unpack and run `./MortalSlopbat.sh`. Earlier archives (2.0.0 to 2.5.3) are kept beside it. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
 | Saves | Markus's own settings and progress from playing 2.1.0 are in `~/.local/share/MortalSlopbat/UE5/` (settings version 1: its default cap of 60 becomes Match the display when 2.2.0 loads it). Test runs used separate profiles, cleared afterwards. The Godot game's own files in `~/.local/share/MortalSlopbat/` are untouched. |
 
 ## Picking it up
@@ -56,6 +56,14 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   apart (the chancery had the victim's head inside Bram, the back throws clipped heads); fighters
   pushed together stay 31 cm clear. Bram's cross-buttock is the closest, at 11 cm, as it rolls the
   victim over his back.
+- **Smaller fixes (2.5.4).** Slate's font cache no longer flushes mid-fight (it did every few
+  seconds: animated text made new glyph sizes every frame and the cache allowed one page); a
+  standing fighter kicked in the legs buckles at the knee instead of flinching at the chest; the
+  crouch holds its guard in front of the face (the 2.5.2 crouch had the hands in the chest); the
+  dummy can block after a hit (to show gaps in combos) and break throws; the stranger's moves
+  have swing sounds. Measured and left: TSR's anti-flicker and two-level ambient occlusion cost
+  about 1.7 ms at 3440 x 1440, maybe 3 % of render scale at the monitor's usual 58 %, at a cost in
+  shimmer and contact shading.
 - **The mix, measured (2.5.3).** `Tools/audio_levels.py` reads every sound's peak and loudness:
   the Kenney files are peak-normalised, so the short weapon contacts played 4-10 dB under the
   fists. They were raised as far as their peaks allow; nobody has listened since.
