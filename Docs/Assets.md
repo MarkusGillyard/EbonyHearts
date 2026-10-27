@@ -18,20 +18,26 @@ downloads themselves are not in Git; the ledger is enough to fetch the same file
 | Props (barrels, crates, bucket, lantern, lamp) | Poly Haven | CC0 1.0 | Stage dressing |
 | Night skies (lakeside_night, kloppenheim_07) | Poly Haven | CC0 1.0 | Ambient light and reflections; the Market's and Yards' skies |
 | Impact, interface and RPG sounds | Kenney (kenney.nl) | CC0 1.0 | Hits, blocks, footsteps and UI, layered with the original's own sounds |
+| Motion capture: ACCAD mocap Data, Male 2 (BVH) | Open Motion Project by ACCAD / The Ohio State University (accad.osu.edu) | CC BY 3.0 Unported (`Docs/Licenses/CC-BY-3.0.txt`); attribution in the credits | The shared jab, body jab, cross, body cross, low and high kicks and roundhouse, and Ashka's teep, converted to key poses and retimed to the moves' frames (`Tools/mocap`) |
 | New Rocker | Pablo Impallari, Brenda Gallo, Rodrigo Fuenzalida | SIL OFL 1.1 (`Docs/Licenses/NewRocker-OFL.txt`) | Titles |
 | Oswald | The Oswald Project Authors | SIL OFL 1.1 (`Docs/Licenses/Oswald-OFL.txt`) | Body text |
 | Droid Sans Fallback | The Android Open Source Project, via the engine's Slate fonts | Apache 2.0 (`Docs/Licenses/DroidSansFallback-Apache-2.0.txt`) | Arrows, ticks and symbols the two typefaces lack |
 | Unreal Engine 5.8.4 | Epic Games | Unreal Engine EULA (proprietary, not open source) | The engine |
 
-CC0 asks for nothing, but the credits screen names every source anyway. The credits also carry the
+CC0 asks for nothing, but the credits screen names every source anyway. CC BY asks for credit:
+the credits read "Motion capture: Open Motion Project by ACCAD / The Ohio State University, CC BY
+3.0 (creativecommons.org/licenses/by/3.0); retargeted and retimed for this game", and the licence
+text ships in the Licenses folder. The credits also carry the
 engine's notices: "Mortal Slopbat uses the Unreal® Engine. Unreal® is a trademark or registered
 trademark of Epic Games, Inc. in the United States of America and elsewhere." and "Unreal®
 Engine, Copyright 1998 – 2026, Epic Games, Inc. All rights reserved."
 
 ## Rules that were followed
 
-- Only assets marked CC0 on their own page or in their own bundled licence file were taken; a
-  permissive downloader or a "free" label was not taken as a licence. Nothing downloaded was run.
+- Only assets marked CC0, or CC BY with its attribution given (the ACCAD motion capture), on
+  their own page or in their own bundled licence file were taken; a permissive downloader or a
+  "free" label was not taken as a licence. Nothing downloaded was run. Motion capture sets with
+  non-commercial or no-derivatives terms (Bandai Namco's, Ubisoft's LAFAN1) were not taken.
 - MPFB itself (GPL code) is a tool that ran in Blender; none of it ships. What ships are meshes
   and textures made from the CC0 MakeHuman assets.
 - MakeHuman's skin textures carry a "public domain / MakeHuman.org" stamp in an unused corner;

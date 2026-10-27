@@ -778,24 +778,89 @@
 				"tip": "foot_l",
 				"keys": [
 					[
-						4,
-						"ashka_teep_load",
-						"out"
+						5,
+						"mc_ashka_teep_05",
+						"linear"
+					],
+					[
+						6,
+						"mc_ashka_teep_06",
+						"linear"
+					],
+					[
+						7,
+						"mc_ashka_teep_07",
+						"linear"
 					],
 					[
 						8,
-						"ashka_teep_hit",
-						"snap"
+						"mc_ashka_teep_08",
+						"linear"
+					],
+					[
+						9,
+						"mc_ashka_teep_09",
+						"linear"
+					],
+					[
+						10,
+						"mc_ashka_teep_10",
+						"linear"
 					],
 					[
 						11,
-						"ashka_teep_hit",
+						"mc_ashka_teep_11",
+						"linear"
+					],
+					[
+						12,
+						"mc_ashka_teep_12",
+						"linear"
+					],
+					[
+						13,
+						"mc_ashka_teep_13",
+						"linear"
+					],
+					[
+						14,
+						"mc_ashka_teep_14",
+						"linear"
+					],
+					[
+						15,
+						"mc_ashka_teep_15",
+						"linear"
+					],
+					[
+						16,
+						"mc_ashka_teep_16",
 						"linear"
 					],
 					[
 						17,
-						"ashka_teep_load",
-						"inout"
+						"mc_ashka_teep_17",
+						"linear"
+					],
+					[
+						18,
+						"mc_ashka_teep_18",
+						"linear"
+					],
+					[
+						19,
+						"mc_ashka_teep_19",
+						"linear"
+					],
+					[
+						20,
+						"mc_ashka_teep_20",
+						"linear"
+					],
+					[
+						21,
+						"mc_ashka_teep_21",
+						"linear"
 					],
 					[
 						25,

@@ -560,29 +560,49 @@ namespace Slop
 		Basics = LoadJson(DataDir / TEXT("basics.json"), &Errors);
 		CommonPosesOriginal = LoadJson(DataDir / TEXT("poses_common.json"), &Errors);
 		CommonPoses = CommonPosesOriginal;
-		if (const TSharedPtr<FJsonObject> Style = LoadJson(DataDir / TEXT("poses_common_style.json")))
+		// Refinements made since the port, laid over the original's data field by field: the shared
+		// poses' style (poses_common_style.json) and the poses converted from motion capture
+		// (poses_mocap.json, written by Tools/mocap), and the shared basics' animation
+		// (basics_style.json). Each names the entries it refines; anything new is added.
+		const auto Overlay = [](const TSharedPtr<FJsonObject>& Base, const TSharedPtr<FJsonObject>& Over)
 		{
-			if (CommonPosesOriginal.IsValid())
+			TSharedPtr<FJsonObject> Out = MakeShared<FJsonObject>();
+			Out->Values = Base->Values;
+			for (const auto& KV : Over->Values)
 			{
-				CommonPoses = MakeShared<FJsonObject>();
-				CommonPoses->Values = CommonPosesOriginal->Values;
-				for (const auto& KV : Style->Values)
+				TSharedPtr<FJsonObject> Merged = MakeShared<FJsonObject>();
+				if (const TSharedPtr<FJsonObject> Old = Obj(Base, *KV.Key))
 				{
-					const TSharedPtr<FJsonObject> Over = KV.Value->AsObject();
-					TSharedPtr<FJsonObject> Merged = MakeShared<FJsonObject>();
-					if (const TSharedPtr<FJsonObject> Old = Obj(CommonPosesOriginal, *KV.Key))
-					{
-						Merged->Values = Old->Values;
-					}
-					if (Over.IsValid())
-					{
-						for (const auto& FV : Over->Values)
-						{
-							Merged->SetField(FString(*FV.Key), FV.Value);
-						}
-					}
-					CommonPoses->SetObjectField(KV.Key, Merged);
+					Merged->Values = Old->Values;
 				}
+				if (const TSharedPtr<FJsonObject> Fields = KV.Value->AsObject())
+				{
+					for (const auto& FV : Fields->Values)
+					{
+						Merged->SetField(FString(*FV.Key), FV.Value);
+					}
+				}
+				Out->SetObjectField(KV.Key, Merged);
+			}
+			return Out;
+		};
+		if (CommonPosesOriginal.IsValid())
+		{
+			for (const TCHAR* File : {TEXT("poses_common_style.json"), TEXT("poses_mocap.json")})
+			{
+				if (const TSharedPtr<FJsonObject> Over = LoadJson(DataDir / File))
+				{
+					CommonPoses = Overlay(CommonPoses, Over);
+				}
+			}
+		}
+		if (Basics.IsValid())
+		{
+			const TSharedPtr<FJsonObject> Moves = Obj(Basics, TEXT("moves"));
+			const TSharedPtr<FJsonObject> Over = LoadJson(DataDir / TEXT("basics_style.json"));
+			if (Moves.IsValid() && Over.IsValid())
+			{
+				Basics->SetObjectField(TEXT("moves"), Overlay(Moves, Over));
 			}
 		}
 		Story = LoadJson(DataDir / TEXT("story.json"), &Errors);

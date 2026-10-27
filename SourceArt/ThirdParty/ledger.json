@@ -4,16 +4,17 @@
   "compiled": "2026-10-26",
   "root": "/home/cinqic/Documents/Unreal Projects/MortalSlopbat/SourceArt/ThirdParty",
   "paths_are_relative_to": "root (this file's folder)",
-  "policy": "Only assets marked CC0 on their own page or in their own bundled license file were taken. Nothing downloaded was executed; archives were checked for unsafe paths and symlinks, then extracted into new folders.",
+  "policy": "Only assets marked CC0, or CC BY with the attribution the licence asks for (the ACCAD motion capture; credited in the game's credits and in Docs/Assets.md), on their own page or in their own bundled license file were taken. Nothing downloaded was executed; archives were checked for unsafe paths and symlinks, then extracted into new folders.",
   "excluded_folder_note": "SourceArt/ThirdParty/MakeHuman belongs to another agent and is not covered by this ledger.",
   "totals": {
-    "items": 38,
+    "items": 39,
     "surface_materials": 26,
     "hdris": 2,
     "models": 7,
     "audio_packs": 3,
-    "downloaded_bytes": 271128380,
-    "on_disk_bytes_including_extracted_and_evidence": 402130130
+    "downloaded_bytes": 278400203,
+    "on_disk_bytes_including_extracted_and_evidence": 402130130,
+    "motion_capture": 1
   },
   "license_reference_copies": {
     "ambientCG:https://docs.ambientcg.com/license/": {
@@ -3868,6 +3869,29 @@
         "The archive also contains .blend, .mtlx, .png, .tres, .usdc sidecar files (data only, never opened or run). If you open a .blend in Blender, leave 'Auto Run Python Scripts' off.",
         "Added by Tools/blender/fetch_ambientcg.py for the fighter costume pipeline (Tools/blender/build_fighter.py)."
       ]
+    },
+    {
+      "id": "accad/male2_bvh",
+      "type": "motion_capture",
+      "title": "ACCAD mocap Data: Male 2 (149 BVH takes)",
+      "creator": "ACCAD (Advanced Computing Center for the Arts and Design), The Ohio State University, Open Motion Project",
+      "source": "ACCAD Motion Lab",
+      "source_page_url": "https://accad.osu.edu/research/motion-lab/system-data",
+      "download_url": "https://accad.osu.edu/sites/accad.osu.edu/files/Male2_bvh.zip",
+      "take_list_url": "https://accad.osu.edu/sites/accad.osu.edu/files/ACCAD_mocap_Data_Male_2.pdf",
+      "acquired": "2026-10-27",
+      "license": "CC BY 3.0 Unported (https://creativecommons.org/licenses/by/3.0/), as stated on the source page: \"Open Motion Project by ACCAD/The Ohio State University is licensed under a Creative Commons Attribution 3.0 Unported License.\"",
+      "attribution": "Motion capture: Open Motion Project by ACCAD / The Ohio State University, CC BY 3.0; retargeted and retimed for this game.",
+      "files": {
+        "ACCAD/downloads/Male2_bvh.zip": "f30dc56f8557d4b9f1bd6b8b0c4218c076471de0a9c1a20f3bc4a8b776cc14b1",
+        "ACCAD/downloads/ACCAD_mocap_Data_Male_2.pdf": "55473cbd7af1364012e94da34d342ee7637f27a1190ce2dbf458832e37994ded"
+      },
+      "license_copies": {
+        "ACCAD/_license/accad_system_data_page.html": "792db15d5fd303514893d5edcfe826c57afb1dee65404babd3a9113a470aea71",
+        "ACCAD/_license/CC-BY-3.0_legalcode.txt": "e6bc9e9c474700b708f568bac9e5a8a9bcb2b1dad53442f5ba449fcb848b8e76"
+      },
+      "download_bytes": 7271823,
+      "used_for": "Shared basic strikes (jab, body jab, cross, body cross, low and high kicks, roundhouse) and Ashka's teep: converted to key poses by Tools/mocap/bvh_to_poses.py (Content/Data/poses_mocap.json, basics_style.json)."
     }
   ],
   "excluded": [
