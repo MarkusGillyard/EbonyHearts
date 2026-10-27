@@ -786,7 +786,7 @@ void USlopGameInstance::DevCommandLine()
 	if (FParse::Value(Cmd, TEXT("SlopTour="), TourArg))
 	{
 		// Every ground command of one fighter, from both sides, with boxes and a screenshot at
-		// each move's first active frame.
+		// each move's first active frame (or -SlopTourDelay= frames after it).
 		FMatchConfig& C = Flow.Config;
 		C = FMatchConfig();
 		C.Mode = EMode::Training;
@@ -800,8 +800,10 @@ void USlopGameInstance::DevCommandLine()
 			Match->Brains[0] = MakeUnique<FMoveTour>(Match->Sim, 0);
 			Tour = Match->Brains[0].Get();
 			Match->bShowBoxes = FParse::Param(Cmd, TEXT("SlopBoxes"));
+			int32 Delay = 0;
+			FParse::Value(Cmd, TEXT("SlopTourDelay="), Delay);
 			TFunction<void(const FSimEvent&)> HudFn = Match->OnEvent;
-			Match->OnEvent = [this, HudFn](const FSimEvent& E)
+			Match->OnEvent = [this, HudFn, Delay](const FSimEvent& E)
 			{
 				if (HudFn)
 				{
@@ -812,7 +814,7 @@ void USlopGameInstance::DevCommandLine()
 					const FMoveDef* M = Match->Sim.Fighters[0].Def->Move(E.Move);
 					const FMoveTour* T = static_cast<FMoveTour*>(Tour);
 					const int32 At = M ? (M->Active > 0 ? M->Startup : (M->Projectile.bHas ? M->Projectile.Frame + 6 : M->Startup + 8)) : 1;
-					RequestShot(Match->Sim.TickCount + At - 1, FString::Printf(TEXT("tour_%s_%s_%02d_%s.png"), *TourFighter.ToString(), T->Pass == 0 ? TEXT("L") : TEXT("R"), T->Step, *E.Move.ToString()));
+					RequestShot(Match->Sim.TickCount + At - 1 + Delay, FString::Printf(TEXT("tour_%s_%s_%02d_%s.png"), *TourFighter.ToString(), T->Pass == 0 ? TEXT("L") : TEXT("R"), T->Step, *E.Move.ToString()));
 				}
 			};
 		}

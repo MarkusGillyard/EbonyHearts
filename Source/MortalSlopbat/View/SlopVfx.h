@@ -48,4 +48,7 @@ private:
 	TArray<FFlashLight> Flashes;
 	UPROPERTY()
 	TArray<TObjectPtr<UMaterialInstanceDynamic>> Mats;
+	// The move frame each fighter last sent out a sound ring on (moves tagged "sound").
+	int32 SoundMF[2] = {-1, -1};
+	void SoundRings();
 };

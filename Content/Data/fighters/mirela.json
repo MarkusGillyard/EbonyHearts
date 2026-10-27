@@ -339,7 +339,8 @@
 			"effect": "daze",
 			"chip": 6,
 			"tags": [
-				"far"
+				"far",
+				"sound"
 			],
 			"sfx": {
 				"swing": "scream"

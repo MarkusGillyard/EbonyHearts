@@ -255,6 +255,85 @@ bool FSlopBlowDirections::RunTest(const FString&)
 	return true;
 }
 
+// A blow should be seen to land: on its first active frame some striking part of the body (a hand,
+// foot, elbow, knee or the head) is inside, or close to, the move's hitbox. (Moves tagged "sound"
+// reach further than any limb and are shown by rings instead.)
+SLOP_TEST(FSlopStrikesReachBoxes, "Anim.StrikesReachTheirHitboxes")
+bool FSlopStrikesReachBoxes::RunTest(const FString&)
+{
+	TArray<FName> Ids = FContent::Roster();
+	Ids.Append(FContent::Special());
+	int32 Checked = 0;
+	for (const FName& Id : Ids)
+	{
+		const FFighterDef* Def = GetContent().Fighter(Id);
+		for (const TPair<FName, TSharedRef<FMoveDef>>& Pair : Def->Moves)
+		{
+			const FMoveDef& M = *Pair.Value;
+			if (M.bAir || M.Projectile.bHas || M.IsThrowKind() || M.Hitboxes.Num() == 0 || M.Active <= 0 || M.bFinisher)
+			{
+				continue;
+			}
+			FFightSim Sim;
+			Sim.bIntro = false;
+			Sim.bTraining = true;
+			Sim.Setup(Def, GetContent().Fighter(TEXT("gorm")));
+			FAnimator A;
+			A.Setup(Sim.Fighters[0], GetContent().CommonPoses);
+			FPadState Idle[2];
+			for (int32 T = 0; T < 600 && (Sim.Phase != EPhase::Fight || T < 30); ++T)
+			{
+				Sim.Step(Idle);
+				A.SyncFromSim();
+				A.Update(1.0, 1.0 / 60.0);
+			}
+			FFighter& F = Sim.Fighters[0];
+			F.Pos = FVector2D(-2.0, 0.0);
+			Sim.Fighters[1].Pos = FVector2D(6.0, 0.0);
+			F.StartMove(M);
+			F.SetState(EState::Move);
+			for (int32 T = 0; T < 200 && F.Move == &M && F.MF < M.Startup; ++T)
+			{
+				Sim.Step(Idle);
+				A.SyncFromSim();
+				A.Update(1.0, 1.0 / 60.0);
+			}
+			if (F.Move != &M)
+			{
+				continue;
+			}
+			TArray<TPair<int32, FRect>> Boxes;
+			F.ActiveHitboxes(Boxes);
+			if (Boxes.Num() == 0)
+			{
+				continue;
+			}
+			const FRig& R = A.Rig;
+			const FVector Tips[] = {R.HandTip(0), R.HandTip(1), R.FootTip(0), R.FootTip(1), R.J(EJoint::ForearmL).P, R.J(EJoint::ForearmR).P,
+				R.J(EJoint::ShinL).P, R.J(EJoint::ShinR).P, R.J(EJoint::Head).P};
+			double Best = 1e9;
+			for (const FVector& Tip : Tips)
+			{
+				const FVector W = A.WorldPoint(Tip);
+				for (const TPair<int32, FRect>& B : Boxes)
+				{
+					const double DX = FMath::Max3(B.Value.X - W.X, 0.0, W.X - B.Value.EndX());
+					const double DY = FMath::Max3(B.Value.Y - W.Y, 0.0, W.Y - B.Value.EndY());
+					Best = FMath::Min(Best, FMath::Sqrt(DX * DX + DY * DY));
+				}
+			}
+			++Checked;
+			// A wail reaches by sound, not by a limb.
+			if (!M.HasTag(TEXT("sound")))
+			{
+				TestTrue(FString::Printf(TEXT("%s %s: a striking part is within 12 cm of the hitbox (%.2f m)"), *Id.ToString(), *M.Id.ToString(), Best), Best <= 0.12);
+			}
+		}
+	}
+	TestTrue(FString::Printf(TEXT("strikes checked (%d)"), Checked), Checked > 80);
+	return true;
+}
+
 // Walking and running play their step cycles by the distance covered, so a foot on the ground stays
 // where it was put: while a foot is planted it should hardly move across the floor (the captured
 // cycles; the sumo shuffle, the circle walk and the diver's plod are the fighters' own and logged).

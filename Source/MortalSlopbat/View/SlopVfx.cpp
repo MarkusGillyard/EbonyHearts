@@ -6,6 +6,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Anim/SlopMeshRig.h"
 #include "View/SlopMatch.h"
+#include "View/SlopFighterActor.h"
 
 using namespace Slop;
 using Slop::Anim::WorldToUE;
@@ -287,9 +288,47 @@ void ASlopVfx::SyncProjectiles()
 	}
 }
 
+// A wail (a move tagged "sound": Mirela's Keen) is seen as faint rings leaving the mouth while it
+// can hit, so a daze from two metres off has something to show for it.
+void ASlopVfx::SoundRings()
+{
+	ASlopMatch* M = Match.Get();
+	if (!M)
+	{
+		return;
+	}
+	for (int32 I = 0; I < 2; ++I)
+	{
+		const FFighter& F = M->Sim.Fighters[I];
+		const FMoveDef* Mv = F.State == EState::Move ? F.Move : nullptr;
+		if (!Mv || !Mv->HasTag(TEXT("sound")) || F.MF < Mv->Startup || F.MF >= Mv->Startup + Mv->Active || F.MF == SoundMF[I] || !M->Views[I])
+		{
+			continue;
+		}
+		SoundMF[I] = F.MF;
+		if ((F.MF - Mv->Startup) % (bReduced ? 4 : 2) != 0)
+		{
+			continue;
+		}
+		const Slop::Anim::FAnimator& A = M->Views[I]->Anim;
+		FVector Head = A.WorldPoint(A.Rig.J(Slop::Anim::EJoint::Head).P);
+		Head.X += F.Facing * 0.18 * A.Rig.H / 1.8;
+		Head.Z = 0.25;
+		TArray<FParticle>& Rings = Parts[(int32)EKind::Ring];
+		const int32 Before = Rings.Num();
+		Spawn(EKind::Ring, Head, FVector(F.Facing * 6.5, 0, 0), 0.3, 0.06, 2.6, 1.5, 0);
+		if (Rings.Num() > Before)
+		{
+			// Fainter than a counter's ring: it starts part-way faded.
+			Rings.Last().Age = 0.12;
+		}
+	}
+}
+
 void ASlopVfx::Step(double Delta)
 {
 	SyncProjectiles();
+	SoundRings();
 	for (int32 K = 0; K < (int32)EKind::Count; ++K)
 	{
 		TArray<FParticle>& A = Parts[K];
