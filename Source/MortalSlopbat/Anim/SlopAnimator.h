@@ -88,6 +88,9 @@ namespace Slop::Anim
 			double FromYaw = 0;
 			double Dur = 0.15;
 			bool bValid = false;
+			// In a captured step cycle: held where it touched down, then eased back onto the path.
+			bool bLocked = false;
+			double Release = 0;
 		};
 
 		FVector2D PrevPos = FVector2D::ZeroVector;
@@ -141,6 +144,12 @@ namespace Slop::Anim
 		// drives the legs this frame (the feet then follow it instead of being planted).
 		double CycleDist = 0;
 		double CycleX = 0;
+		// Seconds the body has not moved: walking into a wall or the distance limit stops the cycle,
+		// which is played by distance, so the fighter settles into the stance instead of hanging
+		// mid-stride with a foot in the air.
+		double StillTime = 0;
+		// The lowest each foot comes in the cycle playing (pose space): a foot near it is down.
+		double CycleFloor[2] = {0, 0};
 		bool bCycleFeet = false;
 	};
 }

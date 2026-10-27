@@ -255,6 +255,99 @@ bool FSlopBlowDirections::RunTest(const FString&)
 	return true;
 }
 
+// Walking and running play their step cycles by the distance covered, so a foot on the ground stays
+// where it was put: while a foot is planted it should hardly move across the floor (the captured
+// cycles; the sumo shuffle, the circle walk and the diver's plod are the fighters' own and logged).
+// Held on against the distance limit, the walk stops with both feet down, not mid-stride.
+SLOP_TEST(FSlopFeetPlanted, "Anim.PlantedFeetDoNotSlide")
+bool FSlopFeetPlanted::RunTest(const FString&)
+{
+	struct FGait { const TCHAR* Name; int32 Dirs; int32 Held; bool bRun; };
+	const FGait Gaits[] = {{TEXT("walk forward"), PadRight, 0, false}, {TEXT("walk back"), PadLeft, 0, false}, {TEXT("run"), PadRight, BtnRN, true}};
+	for (const FName& Id : FContent::Roster())
+	{
+		const FFighterDef* Def = GetContent().Fighter(Id);
+		for (const FGait& G : Gaits)
+		{
+			FFightSim Sim;
+			Sim.bIntro = false;
+			Sim.bTraining = true;
+			Sim.bInfiniteRun = true;
+			Sim.Setup(Def, GetContent().Fighter(TEXT("gorm")));
+			FAnimator A;
+			A.Setup(Sim.Fighters[0], GetContent().CommonPoses);
+			FPadState Idle[2];
+			for (int32 T = 0; T < 600 && (Sim.Phase != EPhase::Fight || T < 40); ++T)
+			{
+				Sim.Step(Idle);
+				A.SyncFromSim();
+				A.Update(1.0, 1.0 / 60.0);
+			}
+			// Back: from close to the opponent out to the distance limit, then held there.
+			Sim.Fighters[0].Pos.X = G.Dirs == PadLeft ? 5.4 : -5.0;
+			Sim.Fighters[1].Pos.X = 6.5;
+			const EJoint Feet[2] = {EJoint::FootL, EJoint::FootR};
+			TArray<FVector> Track[2];
+			TArray<double> BodyX;
+			for (int32 T = 0; T < 260; ++T)
+			{
+				FPadState Pads[2];
+				Pads[0].Dirs = G.Dirs;
+				Pads[0].Held = G.Held;
+				Sim.Step(Pads);
+				A.SyncFromSim();
+				A.Update(1.0, 1.0 / 60.0);
+				for (int32 K = 0; K < 2; ++K)
+				{
+					Track[K].Add(A.WorldPoint(A.Rig.Xf[(int32)Feet[K]].P));
+				}
+				BodyX.Add(Sim.Fighters[0].Pos.X);
+			}
+			// The moving part: from frame 10 while the body still moves.
+			int32 End = 10;
+			while (End + 1 < BodyX.Num() && FMath::Abs(BodyX[End + 1] - BodyX[End]) > 1e-6)
+			{
+				++End;
+			}
+			const double Travel = FMath::Abs(BodyX[End] - BodyX[10]);
+			double Slide = 0.0;
+			for (int32 K = 0; K < 2; ++K)
+			{
+				double Low = 1e9;
+				for (int32 T = 10; T <= End; ++T)
+				{
+					Low = FMath::Min(Low, Track[K][T].Y);
+				}
+				for (int32 T = 11; T <= End; ++T)
+				{
+					// Planted: at the bottom of the cycle on this frame and the last.
+					if (Track[K][T].Y < Low + 0.012 && Track[K][T - 1].Y < Low + 0.012)
+					{
+						Slide += FMath::Abs(Track[K][T].X - Track[K][T - 1].X);
+					}
+				}
+			}
+			const double Share = Slide / FMath::Max(Travel, 0.01);
+			UE_LOG(LogSlop, Display, TEXT("Feet: %s %s: travelled %.2f m, planted feet slid %.3f m (%.0f%%)"), *Id.ToString(), G.Name, Travel, Slide, 100.0 * Share);
+			const bool bCaptured = G.bRun ? Def->Motion.bRunCycle && Def->Cycles.Contains(TEXT("run")) : Def->Motion.bWalkCycle && Def->Cycles.Contains(TEXT("walk_f"));
+			if (bCaptured)
+			{
+				TestTrue(FString::Printf(TEXT("%s %s: planted feet slide %.0f%% of the way"), *Id.ToString(), G.Name, 100.0 * Share), Share < 0.03);
+			}
+			if (G.Dirs == PadLeft)
+			{
+				// Held against the limit for the rest of the run: both feet on the floor.
+				TestTrue(FString::Printf(TEXT("%s held back at the limit: walking stopped"), *Id.ToString()), End < BodyX.Num() - 40);
+				for (int32 K = 0; K < 2; ++K)
+				{
+					TestTrue(FString::Printf(TEXT("%s held back at the limit: foot %d down (%.3f m)"), *Id.ToString(), K, Track[K].Last().Y), Track[K].Last().Y < Def->Scale() * 0.08 + 0.025);
+				}
+			}
+		}
+	}
+	return true;
+}
+
 SLOP_TEST(FSlopTurnIsContinuous, "Anim.TurningRoundIsContinuous")
 bool FSlopTurnIsContinuous::RunTest(const FString&)
 {

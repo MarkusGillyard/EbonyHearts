@@ -204,7 +204,9 @@ namespace Slop::Anim
 		WorldScale = ExtraScale;
 		if (Delta > 0.0)
 		{
-			CycleDist += FMath::Abs(P2.X - CycleX);
+			const double Moved = FMath::Abs(P2.X - CycleX);
+			CycleDist += Moved;
+			StillTime = Moved > 1e-5 ? 0.0 : StillTime + Delta;
 		}
 		CycleX = P2.X;
 		bCycleFeet = false;
@@ -538,7 +540,7 @@ namespace Slop::Anim
 		{
 		case EState::WalkF:
 		case EState::WalkB:
-			if (!PlayCycle(F.State == EState::WalkF ? FName(TEXT("walk_f")) : FName(TEXT("walk_b")), 6.0))
+			if (StillTime > 0.1 || !PlayCycle(F.State == EState::WalkF ? FName(TEXT("walk_f")) : FName(TEXT("walk_b")), 6.0))
 			{
 				HoldPose(TEXT("stance"), 7.0);
 			}
@@ -578,7 +580,11 @@ namespace Slop::Anim
 			HoldPose(TEXT("block_low"), 3.0);
 			break;
 		case EState::Run:
-			if (!PlayCycle(TEXT("run"), 4.0))
+			if (StillTime > 0.1)
+			{
+				HoldPose(TEXT("stance"), 6.0);
+			}
+			else if (!PlayCycle(TEXT("run"), 4.0))
 			{
 				RunCycle();
 			}
@@ -730,6 +736,13 @@ namespace Slop::Anim
 		const int32 I0 = FMath::FloorToInt(Phase) % C->Poses.Num();
 		const int32 I1 = (I0 + 1) % C->Poses.Num();
 		Src.BlendInto(Lib.Get(C->Poses[I0]), Lib.Get(C->Poses[I1]), Phase - FMath::FloorToDouble(Phase));
+		CycleFloor[0] = CycleFloor[1] = 1e9;
+		for (const FName& P : C->Poses)
+		{
+			const FPose& K = Lib.Get(P);
+			CycleFloor[0] = FMath::Min(CycleFloor[0], K.P(EPos::FootL).Y);
+			CycleFloor[1] = FMath::Min(CycleFloor[1], K.P(EPos::FootR).Y);
+		}
 		bCycleFeet = true;
 		return true;
 	}
@@ -989,8 +1002,8 @@ namespace Slop::Anim
 		const FVector GZ = G.Z();
 		const double RootYaw = FMath::Atan2(-GZ.X, -GZ.Z);
 		const double Speed = FMath::Abs(VisVel.X);
-		const bool bLoose = In(F.State, {EState::Air, EState::Juggle, EState::Fall, EState::Down, EState::KO, EState::Thrown, EState::Run, EState::WakeUp})
-			|| F.IsAirborne() || FMath::Abs(Flip) > 1.0 || FMath::Abs(AirPitch) > 1.0 || TurnT < 1.0 || bCycleFeet;
+		const bool bLoose = In(F.State, {EState::Air, EState::Juggle, EState::Fall, EState::Down, EState::KO, EState::Thrown, EState::WakeUp})
+			|| (F.State == EState::Run && !bCycleFeet) || F.IsAirborne() || FMath::Abs(Flip) > 1.0 || FMath::Abs(AirPitch) > 1.0 || TurnT < 1.0;
 		const double Thresh = 0.085 * Rig.H;
 		for (int32 I = 0; I < 2; ++I)
 		{
@@ -998,6 +1011,40 @@ namespace Slop::Anim
 			const FVector WantLocal = Pose.P(I == 0 ? EPos::FootL : EPos::FootR) + FVector(0, Rig.AnkleH, 0);
 			const FVector Want = G * WantLocal;
 			const double WantYaw = RootYaw + FMath::DegreesToRadians(Pose.V(I == 0 ? EVal::YawL : EVal::YawR));
+			if (bCycleFeet && !bLoose)
+			{
+				// A captured step cycle: a foot that is down stays where it touched the floor (the
+				// capture's pelvis surges and slows within a stride, while the body here moves
+				// evenly), and once it lifts it eases back onto the captured path.
+				if (Delta > 0.0 || !Ft.bValid)
+				{
+					const bool bDown = WantLocal.Y - Rig.AnkleH < CycleFloor[I] + 0.015 * Rig.H / 1.8;
+					if (bDown)
+					{
+						if (!Ft.bLocked || !Ft.bValid)
+						{
+							Ft.Pos = Want;
+						}
+						Ft.bLocked = true;
+						Ft.Pos.Y = Want.Y;
+						Ft.From = Ft.Pos;
+						Ft.Release = 1.0;
+					}
+					else
+					{
+						Ft.bLocked = false;
+						Ft.Release = FMath::Max(0.0, Ft.Release - Delta / 0.12);
+						Ft.Pos = FMath::Lerp(Want, FVector(Ft.From.X, Want.Y, Ft.From.Z), FPose::Ease(TEXT("inout"), Ft.Release));
+					}
+					Ft.Yaw = WantYaw;
+					Ft.Step = -1.0;
+					Ft.bValid = true;
+				}
+				OutAnkles[I] = GI * Ft.Pos;
+				OutYaw[I] = Ft.Yaw - RootYaw;
+				continue;
+			}
+			Ft.bLocked = false;
 			const bool bFree = Pose.V(I == 0 ? EVal::FreeL : EVal::FreeR) >= 0.5 || bLoose || WantLocal.Y > Rig.AnkleH + 0.06;
 			if (bFree || !Ft.bValid || Delta <= 0.0)
 			{
