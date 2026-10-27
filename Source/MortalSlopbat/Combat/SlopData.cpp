@@ -219,7 +219,7 @@ namespace Slop
 			FAnimKey AK;
 			AK.Frame = (int32)K[0]->AsNumber();
 			AK.Pose = FName(*K[1]->AsString());
-			AK.Ease = K.Num() > 2 ? FName(*K[2]->AsString()) : FName(TEXT("linear"));
+			AK.Ease = K.Num() > 2 ? FName(*K[2]->AsString()) : FName(TEXT("inout"));
 			Out.Add(AK);
 		}
 	}

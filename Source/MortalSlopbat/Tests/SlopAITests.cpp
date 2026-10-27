@@ -4,6 +4,7 @@
 
 #include "AI/SlopAI.h"
 #include "Tests/SlopSimHarness.h"
+#include "Core/SlopLog.h"
 
 using namespace Slop;
 using namespace Slop::Test;
@@ -251,7 +252,7 @@ bool FSlopCpuAllPairs::RunTest(const FString&)
 	{
 		Summary += FString::Printf(TEXT("%s %d  "), *Roster[I].ToString(), Wins[I]);
 	}
-	AddInfo(FString::Printf(TEXT("%d matches; match wins: %s"), Matches, *Summary));
+	UE_LOG(LogSlop, Display, TEXT("CPU all pairings: %d matches; match wins: %s"), Matches, *Summary);
 	return true;
 }
 
