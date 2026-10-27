@@ -117,7 +117,8 @@ bool ASlopArena::Build(FName Stage, bool bHighGraphics)
 {
 	StageId = Stage;
 	bHigh = bHighGraphics;
-	Rng.Initialize(GetTypeHash(Stage));
+	// Seeded from the stage's name as text, so its flicker and sway are the same every run.
+	Rng.Initialize(int32(FCrc::StrCrc32(*Stage.ToString())));
 	const FString Path = FPaths::ProjectContentDir() / TEXT("Data/Stages") / Stage.ToString() + TEXT(".json");
 	FString Text;
 	TSharedPtr<FJsonObject> D;
