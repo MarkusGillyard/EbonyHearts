@@ -7,7 +7,7 @@ for sessions, `Saved/Logs/tests.log` for the last test run.
 
 ## Automated tests
 
-`run_tests` (Unreal automation, headless): **67 tests, all passing** on the final source.
+`run_tests` (Unreal automation, headless): **69 tests, all passing** on the final source.
 
 | Area | What the tests hold |
 |---|---|
@@ -15,7 +15,7 @@ for sessions, `Saved/Logs/tests.log` for the last test run.
 | Combat | Active windows from the first frame; whiffs out of range; highs, lows, overheads and guards from either side; chip only from specials and projectiles; throws, breaks, back throws, command grabs beating block; trades; counter hits; damage scaling; juggle limit; run-meter costs; projectiles one at a time and clashing; parry, armour, teleport; bodies never overlap or leave the stage. |
 | Match rules | KO and the next round, double KO, timeout and draw, deciding KO with finisher, the finish window timing out, restart clearing everything, input after KO changing nothing, flawless, no match running forever. |
 | Roster and AI | All data loads and validates; every trial possible; CPU against CPU in every pairing; the CPU never reacts before its delay; the boss can't be thrown, fights to an end, and storms only below half health; the stranger's memory only moves forward. |
-| Animation | The ported rig matches the Godot original joint by joint on every pose of every fighter; the animator follows every state of a match. |
+| Animation | The ported rig matches the Godot original joint by joint on every pose of every fighter; the animator follows every state of a match; through the follow-through the arm carrying a blow stays exactly on its authored pose until the blow is over; turning round after a cross-over moves no joint more than 30 cm in a frame and ends facing the new way. |
 | Content | Every fighter has a body that maps onto the rig, the character material on every slot and a portrait; every stage piece the data places exists with its materials and surface textures. |
 | Saves | Settings round trip and bad values; rebinding never binds twice; reserved keys and pad buttons refused (directions, menu keys, F-keys); progress records, a damaged file set aside, the original game's file read once and never written; an interrupted write recovered; a damaged settings file set aside; a later version's progress copied aside. |
 | Flow | Arcade ladders, scoring and the end; Survival waves, carried health and the boss. |
