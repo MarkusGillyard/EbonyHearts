@@ -56,7 +56,7 @@ whether it is felt on a real pad is unverified.
 
 ## Performance
 
-Shipping package of commit `16cb3e3` (the release differs from it only in the HUD's layout on
+Shipping package of commit `f175b91` (the release differs from it only in the HUD's layout on
 non-16:9 screens), 30-minute unattended session (`Tools/perf/soak.sh`, the CPU
 playing arcade ladders with fighters picked at random), High preset, 1920 x 1080, frame cap 60,
 rendered offscreen (see "Display" below: no presentation, no VSync). Frame times are written by the
