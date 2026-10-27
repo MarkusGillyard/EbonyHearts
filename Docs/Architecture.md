@@ -23,7 +23,9 @@ two ticks. Hit-stop freezes the simulation's clock, not the renderer.
 **Input.** `FSlopInputRouter` is a Slate input pre-processor: it sees every key, button and axis
 before any widget, turns them into per-device state and menu actions, and owns rebinding and the
 assignment of devices to players. Pads are identified by their platform device id, so a pad that is
-unplugged and plugged back keeps its slot. Triggers are read as axes with hysteresis.
+unplugged and plugged back keeps its slot; with two pads both reconnecting, the platform numbers
+them in the order they come back, so they can swap (Versus's device screen shows who is who).
+Triggers are read as axes with hysteresis.
 
 **Presentation.** The simulation emits events (hit, block, throw, KO, line spoken...); the match
 turns them into sound, camera shake and kick, hit-stop, impact effects and finisher scenes. Stages
@@ -79,7 +81,10 @@ pause, next, prev, reset, alt; `@1` for the second player), `-SlopAutoPlay[=0..2
 the first side, idle menus are confirmed, fighters are picked at random), `-SlopFrameStats`
 (match frame times to a CSV in the save folder, for `Tools/perf/summarize.py`), and
 `-profile=name` (separate settings and progress files). `Tools/playtest/run_flow.sh <flow>` plays
-one of the scripted flows in `Tools/playtest/flows/` in the `autotest` profile.
+one of the scripted flows in `Tools/playtest/flows/` in the `autotest` profile (editor or
+Development builds, which keep a log). Shipping builds keep no log: with `-SlopFrameStats` the game
+writes the screens, matches and results it went through to an events file beside the frame
+record, which `Tools/perf/soak.sh` reads.
 
 `Tools/playtest/vpad.py` drives the game from a virtual pad (uinput) from a script; it needs a
 monitor attached. SDL reads Sony pads through hidraw, which a uinput device lacks, so the script's

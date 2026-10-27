@@ -21,8 +21,11 @@ CONTROLS
                         I block, K run.
   Keyboard, right half: arrow keys move, numeric keypad 7 4 9 6 high punch, low punch,
                         high kick, low kick, 8 block, 5 run.
-  Esc pauses in a fight and goes back in menus. Two players can share one keyboard, use two
-  pads, or one of each; Versus asks which device belongs to whom.
+  Esc pauses in a fight and goes back in menus; each keyboard half's Block also goes back.
+  Training, Tutorial and Trials: R3/RS or Tab changes the dummy, skips a step or moves to the
+  next trial; Create/View or F4 resets. In Training, F1 shows the boxes, F2 frame data.
+  Two players can share one keyboard, use two pads, or one of each; Versus asks which device
+  belongs to whom.
 
 MODES
   Arcade (three towers, a rival, the Reflection, the Slopbat), Survival, Versus, Training

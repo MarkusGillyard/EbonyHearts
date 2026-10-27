@@ -16,13 +16,14 @@ mkdir -p "$OUT"
 SAVES="${XDG_DATA_HOME:-$HOME/.local/share}/MortalSlopbat/UE5"
 BEFORE="$(ls "$SAVES"/framestats-*.csv 2>/dev/null)"
 nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader > "$OUT/gpu.txt" 2>/dev/null
-systemd-run --user --scope -p MemoryMax=10G --quiet "$PKG/MortalSlopbat.sh" -windowed -resx=1920 -resy=1080 \
+timeout -k 10 $((SECS + 180)) systemd-run --user --scope -p MemoryMax=10G --quiet "$PKG/MortalSlopbat.sh" -windowed -resx=1920 -resy=1080 \
 	$(offscreen_flag) -SlopAutoPlay=2 -SlopFrameStats -SlopQuitAfter="$SECS" -profile="$LABEL" "$@" > "$OUT/stdout.log" 2>&1 &
+GAME=$!
 sleep 5
 echo "t_s,rss_mb,gpu_used_mb" > "$OUT/memory.csv"
 T0=$(date +%s)
 while true; do
-	PID="$(pgrep -f "$PKG/MortalSlopbat/Binaries/Linux/MortalSlopbat" | head -1)"
+	PID="$(ps -eo pid,args | awk -v p="$PKG/MortalSlopbat/Binaries/Linux/MortalSlopbat" 'index($0, p) && !/awk/ {print $1; exit}')"
 	[ -n "$PID" ] || break
 	RSS=$(awk '/VmRSS/ {print $2/1024}' "/proc/$PID/status" 2>/dev/null)
 	GPU=$(nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader,nounits 2>/dev/null | awk -F', ' -v p="$PID" '$1==p {print $2}')
@@ -30,14 +31,21 @@ while true; do
 	echo "$(( $(date +%s) - T0 )),${RSS:-0},${GPU:-0}" >> "$OUT/memory.csv"
 	sleep 5
 done
-wait
+wait "$GAME"; RC=$?
 NEW="$(comm -13 <(echo "$BEFORE" | sort) <(ls "$SAVES"/framestats-*.csv 2>/dev/null | sort) | tail -1)"
-[ -n "$NEW" ] && mv "$NEW" "$OUT/frames.csv"
+if [ -n "$NEW" ]; then
+	mv "$NEW" "$OUT/frames.csv"
+	mv "${NEW%.csv}.events.txt" "$OUT/events.txt" 2>/dev/null
+fi
+# Development packages keep a log beside the game; Shipping ones keep none (the events file
+# stands in).
 cp "$PKG/MortalSlopbat/Saved/Logs/MortalSlopbat.log" "$OUT/game.log" 2>/dev/null
 {
 	echo "package: $PKG"; cat "$OUT/gpu.txt"
-	grep -c "LogSlop: Result" "$OUT/game.log" | sed 's/^/matches finished: /'
-	grep -cE "Assertion failed|Fatal error|Ensure condition" "$OUT/game.log" | sed 's/^/assertions, fatal errors, ensures: /'
+	echo "game exit status: $RC (0: quit by itself at the set time)"
+	grep -c "Result:" "$OUT/events.txt" 2>/dev/null | sed 's/^/matches finished: /'
+	grep -c "Quit after the set time" "$OUT/events.txt" 2>/dev/null | sed 's/^/ran to the set time: /'
+	[ -f "$OUT/game.log" ] && grep -cE "Assertion failed|Fatal error|Ensure condition" "$OUT/game.log" | sed 's/^/assertions, fatal errors, ensures in the log: /'
 	[ -f "$OUT/frames.csv" ] && python3 -I "$ROOT/Tools/perf/summarize.py" "$OUT/frames.csv"
 	python3 -I - "$OUT/memory.csv" <<'EOF'
 import csv, sys

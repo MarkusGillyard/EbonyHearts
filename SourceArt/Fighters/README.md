@@ -1,6 +1,9 @@
 # Fighters (source art)
 
-One folder per fighter, built by script from `Tools/blender/fighters.json`. Each folder holds:
+One folder per fighter, built by script from `Tools/blender/fighters.json`. Git keeps this file and
+each fighter's report; the FBX, textures, `.blend` and renders are rebuilt by the scripts and are
+not versioned (the game's imported copies are under `Content/Slop/Fighters`). After a build each
+folder holds:
 
 | File | What it is |
 |---|---|
@@ -225,7 +228,7 @@ Notes:
 - **Excluded sources.** Nothing from Quaternius, Kivanagh, Wyseforge Fighters or Slopperfall is used.
 - **Look references** come from the game repo (`docs/DESIGN.md`, `data/looks/*.json`) and are first-party.
 
-## Known limitations (vertical slice)
+## Known limitations
 
 - **Deformation** is plain linear-blend skinning on a skeleton without twist bones.
   - Elbows and knees lose some volume; the hip crease folds in deep flexion.
