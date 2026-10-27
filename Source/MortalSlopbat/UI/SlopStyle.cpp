@@ -1,5 +1,6 @@
 #include "UI/SlopStyle.h"
 #include "Fonts/CompositeFont.h"
+#include "Engine/Texture2D.h"
 #include "Misc/Paths.h"
 #include "Styling/CoreStyle.h"
 #include "Widgets/Images/SImage.h"
@@ -26,7 +27,11 @@ namespace SlopUI
 	static TSharedPtr<const FCompositeFont> LoadFont(const TCHAR* Name, const TCHAR* File)
 	{
 		const FString Path = FPaths::ProjectContentDir() / TEXT("Fonts") / File;
-		return MakeShared<FStandaloneCompositeFont>(FName(Name), Path, EFontHinting::Default, EFontLoadingPolicy::LazyLoad);
+		TSharedPtr<FStandaloneCompositeFont> F = MakeShared<FStandaloneCompositeFont>(FName(Name), Path, EFontHinting::Default, EFontLoadingPolicy::LazyLoad);
+		// Arrows, ticks, dots and the infinity sign come from the engine's own fallback face; the
+		// game's faces have letters, digits and common punctuation only.
+		F->FallbackTypeface.Typeface.AppendFont(TEXT("Fallback"), FPaths::EngineContentDir() / TEXT("Slate/Fonts/DroidSansFallback.ttf"), EFontHinting::Default, EFontLoadingPolicy::LazyLoad);
+		return F;
 	}
 
 	FSlateFontInfo Display(float Size)
@@ -186,6 +191,29 @@ namespace SlopUI
 			return KeyName(GI->Settings.Keys[FMath::Clamp(Side, 0, 1)][(int32)A], G);
 		}
 		return KeyName(GI->Settings.PadButtons[(int32)A], G);
+	}
+
+	const FSlateBrush* Portrait(FName Fighter)
+	{
+		// Kept for the life of the process, like the fonts: a handful of small textures.
+		static TMap<FName, TSharedPtr<FSlateBrush>>* Cache = new TMap<FName, TSharedPtr<FSlateBrush>>();
+		if (const TSharedPtr<FSlateBrush>* Found = Cache->Find(Fighter))
+		{
+			return Found->Get();
+		}
+		const FString Name = FString::Printf(TEXT("T_portrait_%s"), *Fighter.ToString());
+		UTexture2D* T = LoadObject<UTexture2D>(nullptr, *FString::Printf(TEXT("/Game/Slop/Portraits/%s.%s"), *Name, *Name), nullptr, LOAD_Quiet | LOAD_NoWarn);
+		TSharedPtr<FSlateBrush> B;
+		if (T)
+		{
+			T->AddToRoot();
+			B = MakeShared<FSlateBrush>();
+			B->SetResourceObject(T);
+			B->ImageSize = FVector2D(420, 500);
+			B->DrawAs = ESlateBrushDrawType::Image;
+		}
+		Cache->Add(Fighter, B);
+		return B.Get();
 	}
 
 	TSharedRef<SWidget> Backdrop()

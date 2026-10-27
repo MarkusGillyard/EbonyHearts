@@ -26,6 +26,8 @@ namespace SlopUI
 	FSlateFontInfo Body(float Size);
 	const FSlateBrush* White();
 	const FSlateBrush* Rounded();
+	// A fighter's select-screen portrait (head and shoulders, 420 x 500), or null when it has none.
+	const FSlateBrush* Portrait(FName Fighter);
 	// A plain coloured box brush.
 	const FSlateBrush* Box();
 

@@ -36,6 +36,8 @@ offscreen_flag() {
 	if [ "$(xrandr --listmonitors 2>/dev/null | head -1 | awk '{print $2}')" = "0" ]; then echo -RenderOffscreen -ForceRes; fi
 }
 
+# SDL drops pad events for a window without focus (and an offscreen run has no window); the
+# virtual-pad playtests need them, so development runs allow background pad events.
 run_game() {
-	capped "$UE/Engine/Binaries/Linux/UnrealEditor" "$P" -game -windowed -resx="${RESX:-1920}" -resy="${RESY:-1080}" -log -NoSplash -nosound=false $(offscreen_flag) "$@"
+	SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1 capped "$UE/Engine/Binaries/Linux/UnrealEditor" "$P" -game -windowed -resx="${RESX:-1920}" -resy="${RESY:-1080}" -log -NoSplash -nosound=false $(offscreen_flag) "$@"
 }

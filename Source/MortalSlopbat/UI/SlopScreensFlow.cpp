@@ -3,6 +3,7 @@
 #include "Core/SlopAudio.h"
 #include "Core/SlopGameInstance.h"
 #include "View/SlopMatch.h"
+#include "View/SlopShowroom.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
@@ -99,63 +100,78 @@ namespace SlopScreensFlowImpl
 				if (b1) return SlopUI::Amber;
 				return SlopUI::PanelEdge;
 			};
-			return SNew(SBox).WidthOverride(300).HeightOverride(240)
+			TSharedRef<SOverlay> Face = SNew(SOverlay);
+			if (const FSlateBrush* Portrait = SlopUI::Portrait(Ids[I]))
+			{
+				Face->AddSlot()[SNew(SImage).Image(Portrait)];
+			}
+			else
+			{
+				Face->AddSlot().VAlign(VAlign_Center).HAlign(HAlign_Center)
+				[
+					SlopUI::Title(FText::FromString(D->Name.Left(1)), 120.f, FLinearColor(FColor::FromHex(Json::Str(D->Look, TEXT("glow"), TEXT("#a8db38")))))
+				];
+			}
+			// The name along the bottom, over a band that darkens the portrait under it.
+			Face->AddSlot().VAlign(VAlign_Bottom)
 			[
-				SNew(SBorder).BorderImage(SlopUI::Rounded()).BorderBackgroundColor_Lambda(Border).Padding(4)
+				SNew(SBorder).BorderImage(SlopUI::Box()).BorderBackgroundColor(FLinearColor(0.f, 0.f, 0.f, 0.62f)).Padding(FMargin(4, 4)).HAlign(HAlign_Center)
+				[
+					SlopUI::Label(FText::FromString(D->Name.ToUpper()), 22.f, SlopUI::Text)
+				]
+			];
+			return SNew(SBox).WidthOverride(198).HeightOverride(238)
+			[
+				SNew(SBorder).BorderImage(SlopUI::Rounded()).BorderBackgroundColor_Lambda(Border).Padding_Lambda([this, I]()
+				{
+					const bool bOn = Cursor[0] == I || ((TwoSides() || bPickingDummy) && Cursor[1] == I);
+					return FMargin(bOn ? 6.f : 3.f);
+				})
 				.OnMouseButtonDown_Lambda([this, I](const FGeometry&, const FPointerEvent&) { Cursor[0] = I; Confirm(0); return FReply::Handled(); })
 				[
-					SNew(SBorder).BorderImage(SlopUI::Rounded()).BorderBackgroundColor(FLinearColor(0.012f, 0.02f, 0.016f, 0.96f)).Padding(FMargin(16, 14))
+					SNew(SBorder).BorderImage(SlopUI::Box()).BorderBackgroundColor(FLinearColor(0.05f, 0.07f, 0.06f, 0.92f)).Padding(0)
 					[
-						SNew(SVerticalBox)
-						+ SVerticalBox::Slot().FillHeight(1.f).VAlign(VAlign_Center).HAlign(HAlign_Center)
-						[
-							SlopUI::Title(FText::FromString(D->Name.Left(1)), 120.f, FLinearColor(FColor::FromHex(Json::Str(D->Look, TEXT("glow"), TEXT("#a8db38")))))
-						]
-						+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SlopUI::Label(FText::FromString(D->Name.ToUpper()), 26.f, SlopUI::Text)]
-						+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SlopUI::Label(FText::FromString(D->Style), 20.f, SlopUI::Dim)]
+						Face
 					]
 				]
 			];
 		}
 
+		bool SideShown(int32 Side) const { return Side == 0 || TwoSides() || bPickingDummy; }
+
 		TSharedRef<SWidget> Info(int32 Side)
 		{
-			return SlopUI::PanelBox(
-				SNew(SVerticalBox)
-				+ SVerticalBox::Slot().AutoHeight()
+			return SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 				[
-					SNew(STextBlock).Font(SlopUI::Display(46.f)).ColorAndOpacity(Side == 0 ? SlopUI::Accent : SlopUI::Amber)
-					.Text_Lambda([this, Side]() { return FText::FromString(Def(Ids[Cursor[Side]])->Name); })
+					SNew(STextBlock).Font(SlopUI::Display(54.f)).ColorAndOpacity(Side == 0 ? SlopUI::Accent : SlopUI::Amber).ShadowOffset(FVector2D(2, 2))
+					.Text_Lambda([this, Side]() { return SideShown(Side) ? FText::FromString(Def(Ids[Cursor[Side]])->Name.ToUpper()) : FText::FromString(TEXT("?")); })
 				]
-				+ SVerticalBox::Slot().AutoHeight()
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 4, 0, 0)
 				[
-					SNew(STextBlock).Font(SlopUI::Body(26.f)).ColorAndOpacity(SlopUI::Text)
-					.Text_Lambda([this, Side]() { const FFighterDef* D = Def(Ids[Cursor[Side]]); return FText::FromString(D->Title + TEXT("   ·   ") + D->Style); })
-				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, 10, 0, 0)
-				[
-					SNew(STextBlock).Font(SlopUI::Body(24.f)).ColorAndOpacity(SlopUI::Dim).AutoWrapText(true)
-					.Text_Lambda([this, Side]() { return FText::FromString(Json::Str(StoryOf(Ids[Cursor[Side]]), TEXT("bio"), Def(Ids[Cursor[Side]])->Blurb)); })
-				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, 10, 0, 0)
-				[
-					SNew(STextBlock).Font(SlopUI::Body(24.f)).ColorAndOpacity(SlopUI::Amber)
+					SNew(STextBlock).Font(SlopUI::Body(22.f)).ColorAndOpacity(SlopUI::Text).Justification(ETextJustify::Center).AutoWrapText(true).ShadowOffset(FVector2D(1, 1))
 					.Text_Lambda([this, Side]()
 					{
-						const FName Id = Ids[Cursor[Side]];
-						FString S;
-						if (bLocked[Side] && !bPickingDummy)
+						if (!SideShown(Side))
 						{
-							S = LOCTEXT("Ready", "READY").ToString();
+							return Mode == EMode::Arcade ? LOCTEXT("Await", "The Slopbat's chosen await.")
+								: Mode == EMode::Survival ? LOCTEXT("Waves", "Wave after wave, until you fall.")
+								: LOCTEXT("Rival", "Your rival will stand for the trials.");
 						}
-						if (GI->Progress.IsUnlocked(TEXT("costume:") + Id.ToString()))
+						const FFighterDef* D = Def(Ids[Cursor[Side]]);
+						FString S = D->Title + TEXT("   ·   ") + D->Style + TEXT("\n") + Json::Str(StoryOf(Ids[Cursor[Side]]), TEXT("bio"), D->Blurb);
+						if (bLocked[Side] && !(bPickingDummy && Side == 0))
 						{
-							S += (S.IsEmpty() ? TEXT("") : TEXT("   ·   ")) + FText::Format(LOCTEXT("Alt", "{0}: alternate colours ({1})"),
+							S += TEXT("\n") + LOCTEXT("Ready", "READY").ToString();
+						}
+						if (GI->Progress.IsUnlocked(TEXT("costume:") + Ids[Cursor[Side]].ToString()))
+						{
+							S += TEXT("\n") + FText::Format(LOCTEXT("Alt", "{0}: alternate colours ({1})"),
 								SlopUI::ActionKey(GI, EGameAction::HK, Side), bCostume[Side] ? LOCTEXT("On", "on") : LOCTEXT("Off", "off")).ToString();
 						}
 						return FText::FromString(S);
 					})
-				]);
+				];
 		}
 
 		virtual TSharedRef<SWidget> Build() override
@@ -166,34 +182,57 @@ namespace SlopScreensFlowImpl
 				TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
 				for (int32 C = 0; C < Cols && R * Cols + C < Ids.Num(); ++C)
 				{
-					Row->AddSlot().AutoWidth().Padding(8)[Tile(R * Cols + C)];
+					Row->AddSlot().AutoWidth().Padding(6)[Tile(R * Cols + C)];
 				}
 				Grid->AddSlot().AutoHeight().HAlign(HAlign_Center)[Row];
 			}
+			// The figures themselves stand behind this, over the left and right panels
+			// (ASlopShowroom); their names and stories go beneath them.
 			TSharedRef<SConstraintCanvas> Canvas = SNew(SConstraintCanvas)
-				+ SConstraintCanvas::Slot().Offset(FMargin(0, 30, 1920, 110))
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 30, 1920, 110))
 				[
 					SNew(SBox).HAlign(HAlign_Center)
 					[
-						SNew(STextBlock).Font(SlopUI::Display(72.f)).ColorAndOpacity(SlopUI::Text)
+						SNew(STextBlock).Font(SlopUI::Display(72.f)).ColorAndOpacity(SlopUI::Text).ShadowOffset(FVector2D(2, 2))
 						.Text_Lambda([this]() { return bPickingDummy ? LOCTEXT("ChooseDummy", "CHOOSE YOUR OPPONENT") : LOCTEXT("Choose", "CHOOSE YOUR FIGHTER"); })
 					]
 				]
-				+ SConstraintCanvas::Slot().Offset(FMargin(0, 170, 1920, 540))[SNew(SBox).HAlign(HAlign_Center)[Grid]]
-				+ SConstraintCanvas::Slot().Offset(FMargin(120, 720, TwoSides() ? 820 : 1680, 260))[Info(0)];
-			if (TwoSides() || Mode == EMode::Training)
-			{
-				Canvas->AddSlot().Offset(FMargin(TwoSides() ? 980 : 980, 720, 820, 260))[SNew(SBox).Visibility_Lambda([this]()
-				{
-					return (TwoSides() || bPickingDummy) ? EVisibility::Visible : EVisibility::Collapsed;
-				})[Info(1)]];
-			}
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(640, 290, 640, 760))[SNew(SBox).HAlign(HAlign_Center).VAlign(VAlign_Top)[Grid]]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(30, 800, 560, 220))[Info(0)]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(1330, 800, 560, 220))[Info(1)];
 			return Frame(Canvas, [this]()
 			{
 				const EGlyphs G = GI->Router->Glyphs();
 				return FText::Format(LOCTEXT("SelHint", "Directions to choose   ·   {0} or a punch to pick   ·   {1} to go back"), SlopUI::Confirm(G), SlopUI::Back(G));
-			});
+			}, false);
 		}
+
+		// The figures follow the cursors.
+		virtual void Tick(float Dt) override
+		{
+			if (ASlopShowroom* Room = GI->OpenShowroom())
+			{
+				Room->Show(0, Ids[Cursor[0]], bCostume[0]);
+				Room->Show(1, SideShown(1) ? Ids[Cursor[1]] : NAME_None, bCostume[1]);
+			}
+			if (Then && (FinishIn -= Dt) <= 0.f)
+			{
+				TFunction<void()> Go = MoveTemp(Then);
+				Then = nullptr;
+				Go();
+			}
+		}
+
+		virtual void Leave() override { GI->CloseShowroom(); }
+
+		// The win pose plays for a moment before the next screen.
+		void Finish(TFunction<void()> Go)
+		{
+			Then = MoveTemp(Go);
+			FinishIn = 0.9f;
+		}
+		TFunction<void()> Then;
+		float FinishIn = 0.f;
 
 		void Move(int32 Side, int32 DX, int32 DY)
 		{
@@ -211,11 +250,22 @@ namespace SlopScreensFlowImpl
 			if (bPickingDummy)
 			{
 				GI->Flow.Config.P2 = Ids[Cursor[1]];
-				GI->Goto(SlopScreens::Stage());
+				GI->Flow.Config.bCostume[1] = bCostume[1];
+				bLocked[1] = true;
+				GI->Audio->Play(TEXT("select_fighter"), -2.f, 1.f, ESlopBus::Ui);
+				if (ASlopShowroom* Room = GI->OpenShowroom())
+				{
+					Room->Celebrate(1);
+				}
+				Finish([this]() { GI->Goto(SlopScreens::Stage()); });
 				return;
 			}
 			bLocked[Side] = true;
 			GI->Audio->Play(TEXT("select_fighter"), -2.f, 1.f, ESlopBus::Ui);
+			if (ASlopShowroom* Room = GI->OpenShowroom())
+			{
+				Room->Celebrate(Side);
+			}
 			FGameFlow& F = GI->Flow;
 			const FName P1 = Ids[Cursor[0]];
 			if (TwoSides())
@@ -232,24 +282,24 @@ namespace SlopScreensFlowImpl
 				F.Config.P2 = Ids[Cursor[1]];
 				F.Config.bCostume[0] = bCostume[0];
 				F.Config.bCostume[1] = bCostume[1];
-				GI->Goto(SlopScreens::Stage());
+				Finish([this]() { GI->Goto(SlopScreens::Stage()); });
 				return;
 			}
 			switch (Mode)
 			{
 			case EMode::Arcade:
 				F.Config.bCostume[0] = bCostume[0];
-				GI->Goto(SlopScreens::Tower(P1));
+				Finish([this, P1]() { GI->Goto(SlopScreens::Tower(P1)); });
 				break;
 			case EMode::Survival:
 				F.StartSurvival(P1, (int32)(FDateTime::Now().GetTicks() % 100000));
 				F.Config.bCostume[0] = bCostume[0];
-				GI->Goto(SlopScreens::FaceOff());
+				Finish([this]() { GI->Goto(SlopScreens::FaceOff()); });
 				break;
 			case EMode::Trials:
 				F.StartTrials(P1);
 				F.Config.bCostume[0] = bCostume[0];
-				GI->StartMatch();
+				Finish([this]() { GI->StartMatch(); });
 				break;
 			case EMode::Training:
 			default:
@@ -261,13 +311,17 @@ namespace SlopScreensFlowImpl
 				F.Config.bCostume[0] = bCostume[0];
 				F.Config.RoundsToWin = 1;
 				bPickingDummy = true;
-				Cursor[1] = FMath::Max(0, Ids.IndexOfByKey(FName(Json::Str(StoryOf(P1), TEXT("rival"), TEXT("gorm")))));
+				Cursor[1] = Cursor[0];
 				break;
 			}
 		}
 
 		virtual void OnUi(const FUiEvent& E) override
 		{
+			if (Then)
+			{
+				return;
+			}
 			const int32 Side = bPickingDummy ? 1 : (TwoSides() ? FMath::Clamp(E.Side, 0, 1) : 0);
 			if (TwoSides() && E.Side < 0)
 			{
@@ -340,9 +394,9 @@ namespace SlopScreensFlowImpl
 				Labels.Add(StageName(Id));
 			}
 			return Frame(SNew(SConstraintCanvas)
-				+ SConstraintCanvas::Slot().Offset(FMargin(0, 60, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("ChooseStage", "CHOOSE THE GROUND"), 72.f, SlopUI::Text)]]
-				+ SConstraintCanvas::Slot().Offset(FMargin(160, 300, 560, 400))[SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 560.f, 36.f)]
-				+ SConstraintCanvas::Slot().Offset(FMargin(820, 300, 940, 260))
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 60, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("ChooseStage", "CHOOSE THE GROUND"), 72.f, SlopUI::Text)]]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 300, 560, 400))[SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 560.f, 36.f)]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(820, 300, 940, 260))
 				[
 					SlopUI::PanelBox(SNew(STextBlock).Font(SlopUI::Body(30.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Text_Lambda([this]() { return StageBlurb(Ids[Sel]); }))
 				],
@@ -411,9 +465,9 @@ namespace SlopScreensFlowImpl
 				Labels.Add(FText::Format(LOCTEXT("TowerN", "{0} Tower"), FGameFlow::DifficultyName(T)));
 			}
 			return Frame(SNew(SConstraintCanvas)
-				+ SConstraintCanvas::Slot().Offset(FMargin(0, 60, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("ChooseTower", "CHOOSE YOUR TOWER"), 72.f, SlopUI::Text)]]
-				+ SConstraintCanvas::Slot().Offset(FMargin(160, 300, 520, 300))[SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 520.f, 36.f)]
-				+ SConstraintCanvas::Slot().Offset(FMargin(780, 260, 980, 640))
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 60, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("ChooseTower", "CHOOSE YOUR TOWER"), 72.f, SlopUI::Text)]]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 300, 520, 300))[SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 520.f, 36.f)]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(780, 260, 980, 640))
 				[
 					SlopUI::PanelBox(SNew(STextBlock).Font(SlopUI::Body(30.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Text_Lambda([this]()
 					{
@@ -460,56 +514,94 @@ namespace SlopScreensFlowImpl
 	{
 	public:
 		double T = 0;
+		// How long it stays: longer when there are words to read.
+		double Left = 3.4;
 		bool bStarted = false;
-		virtual void Enter() override { GI->Audio->Play(TEXT("gong"), -8.f, 0.9f, ESlopBus::Ui); }
+		virtual void Enter() override
+		{
+			GI->Audio->Play(TEXT("gong"), -6.f, 0.8f, ESlopBus::Ui);
+			GI->Audio->PlayMusic(TEXT("music_select"));
+			const FMatchConfig& C = GI->Flow.Config;
+			if (ASlopShowroom* Room = GI->OpenShowroom())
+			{
+				// Both fighters large, either side of the VS, in a rust haze.
+				Room->SetLayout(440, 1480, 831, 602);
+				Room->SetMood(FLinearColor(0.07f, 0.03f, 0.02f));
+				Room->SetReflection(1, C.bMirrorDark);
+				Room->Show(0, C.P1, C.bCostume[0]);
+				Room->Show(1, C.P2, C.bCostume[1] || (C.P1 == C.P2 && !C.bMirrorDark));
+			}
+		}
+		virtual void Leave() override { GI->CloseShowroom(); }
 		virtual TSharedRef<SWidget> Build() override
 		{
 			const FMatchConfig& C = GI->Flow.Config;
 			const FFighterDef* A = Def(C.P1);
 			const FFighterDef* B = Def(C.P2);
-			FText Above;
-			FText Line1, Line2;
+			FText Above, AboveSmall;
+			FLinearColor AboveColour = SlopUI::Dim;
+			float AboveSize = 24.f;
+			TArray<FText> Lines;
 			if (const FRung* R = GI->Flow.CurrentRung())
 			{
-				Above = FText::Format(LOCTEXT("Fight", "{0} Tower   ·   fight {1} of {2}"), FGameFlow::DifficultyName(GI->Flow.ArcadeTower()), GI->Flow.RungIndex() + 1, GI->Flow.Rungs().Num());
+				Above = FText::Format(LOCTEXT("Fight", "Fight {0} of {1}"), GI->Flow.RungIndex() + 1, GI->Flow.Rungs().Num());
 				if (R->Kind == TEXT("rival"))
 				{
 					if (const TArray<TSharedPtr<FJsonValue>>* L = Json::Arr(StoryOf(C.P1), TEXT("rival_lines")))
 					{
 						if (L->Num() >= 2)
 						{
-							Line1 = FText::FromString(TEXT("“") + (*L)[0]->AsString() + TEXT("”"));
-							Line2 = FText::FromString(TEXT("“") + (*L)[1]->AsString() + TEXT("”"));
+							Lines.Add(FText::FromString(A->Name + TEXT(": “") + (*L)[0]->AsString() + TEXT("”")));
+							Lines.Add(FText::FromString(B->Name + TEXT(": “") + (*L)[1]->AsString() + TEXT("”")));
 						}
 					}
 				}
 				else if (R->Kind == TEXT("mirror"))
 				{
-					Line1 = FText::FromString(Json::Str(GetContent().Story, TEXT("reflection")));
+					Lines.Add(FText::FromString(Json::Str(GetContent().Story, TEXT("reflection"))));
 				}
 				else if (R->Kind == TEXT("boss"))
 				{
-					Line1 = FText::FromString(Json::Str(GetContent().Story, TEXT("boss_intro")));
+					Lines.Add(FText::FromString(Json::Str(GetContent().Story, TEXT("boss_intro"))));
+					GI->Audio->Play(TEXT("screech"), -6.f);
+				}
+				if (Lines.Num() > 0)
+				{
+					Left = 5.2;
 				}
 			}
 			else if (GI->Flow.InSurvival())
 			{
-				Above = FText::Format(LOCTEXT("Wave", "Survival   ·   wave {0}   ·   {1}"), GI->Flow.SurvivalWaves() + 1, FGameFlow::DifficultyName(C.Difficulty));
+				const bool bBoss = C.P2 == TEXT("slopbat");
+				Above = FText::Format(LOCTEXT("Wave", "WAVE {0}"), GI->Flow.SurvivalWaves() + 1);
+				AboveColour = bBoss ? SlopUI::Rust * 1.4f : SlopUI::Amber;
+				AboveSize = 54.f;
+				AboveSmall = FGameFlow::DifficultyName(C.Difficulty);
+				if (bBoss)
+				{
+					Lines.Add(FText::FromString(Json::Str(GetContent().Story, TEXT("boss_intro"))));
+					GI->Audio->Play(TEXT("screech"), -6.f);
+					Left = 4.6;
+				}
 			}
 			const FText BName = C.bMirrorDark ? LOCTEXT("Reflection", "THE REFLECTION") : FText::FromString(B->Name.ToUpper());
-			return Frame(SNew(SConstraintCanvas)
-				+ SConstraintCanvas::Slot().Offset(FMargin(0, 120, 1920, 50))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Label(Above, 30.f, SlopUI::Dim)]]
-				+ SConstraintCanvas::Slot().Offset(FMargin(0, 300, 900, 160))[SNew(SBox).HAlign(HAlign_Right)[SlopUI::Title(FText::FromString(A->Name.ToUpper()), 84.f, SlopUI::Accent)]]
-				+ SConstraintCanvas::Slot().Offset(FMargin(900, 310, 120, 160))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("VS", "VS"), 96.f, SlopUI::Rust * 1.3f)]]
-				+ SConstraintCanvas::Slot().Offset(FMargin(1020, 300, 900, 160))[SNew(SBox).HAlign(HAlign_Left)[SlopUI::Title(BName, 84.f, SlopUI::Amber)]]
-				+ SConstraintCanvas::Slot().Offset(FMargin(0, 520, 1920, 50))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Label(StageName(C.Stage), 34.f, SlopUI::Text)]]
-				+ SConstraintCanvas::Slot().Offset(FMargin(200, 620, 1520, 60))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Label(Line1, 32.f, SlopUI::Text)]]
-				+ SConstraintCanvas::Slot().Offset(FMargin(200, 680, 1520, 60))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Label(Line2, 32.f, SlopUI::Dim)]]
-				+ SConstraintCanvas::Slot().Offset(FMargin(0, 860, 1920, 50))[SNew(SBox).HAlign(HAlign_Center)
+			TSharedRef<SVerticalBox> Said = SNew(SVerticalBox);
+			for (const FText& L : Lines)
+			{
+				Said->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 0, 0, 12)
 				[
-					SNew(STextBlock).Font(SlopUI::Body(28.f)).ColorAndOpacity(SlopUI::Dim).Text_Lambda([this]() { return T > 2.4 ? LOCTEXT("Loading", "Loading") : FText::GetEmpty(); })
-				]],
-				[this]() { return FText::Format(LOCTEXT("FaceHint", "{0} to begin"), SlopUI::Confirm(GI->Router->Glyphs())); });
+					SNew(STextBlock).Font(SlopUI::Body(28.f)).ColorAndOpacity(SlopUI::Text).Text(L).AutoWrapText(true).Justification(ETextJustify::Center).ShadowOffset(FVector2D(1, 1))
+				];
+			}
+			TSharedRef<SConstraintCanvas> Canvas = SNew(SConstraintCanvas)
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, AboveSize > 30.f ? 50 : 70, 1920, 80))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(Above, AboveSize, AboveColour)]]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 125, 1920, 40))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Label(AboveSmall, 24.f, SlopUI::Dim)]]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(760, 310, 400, 260))[SNew(SBox).HAlign(HAlign_Center).VAlign(VAlign_Center)[SlopUI::Title(LOCTEXT("VS", "VS"), 200.f, SlopUI::Rust * 1.3f)]]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(560, 580, 800, 50))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Label(StageName(C.Stage), 30.f, SlopUI::Dim)]]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(400, 640, 1120, 260))[Said]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(120, 930, 640, 80))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(FText::FromString(A->Name.ToUpper()), 60.f, SlopUI::Accent)]]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(1160, 930, 640, 80))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(BName, 60.f, SlopUI::Amber)]];
+			return Frame(Canvas, [this]() { return FText::Format(LOCTEXT("FaceHint", "{0} to begin"), SlopUI::Confirm(GI->Router->Glyphs())); }, false);
 		}
 		void Begin()
 		{
@@ -522,14 +614,14 @@ namespace SlopScreensFlowImpl
 		virtual void Tick(float Dt) override
 		{
 			T += Dt;
-			if (T > 2.6)
+			if (T >= Left)
 			{
 				Begin();
 			}
 		}
 		virtual void OnUi(const FUiEvent& E) override
 		{
-			if (E.Action == EUi::Confirm && T > 0.3)
+			if (E.Action == EUi::Confirm && T > 0.4)
 			{
 				Begin();
 			}
@@ -600,7 +692,7 @@ namespace SlopScreensFlowImpl
 								SNew(STextBlock).Font(SlopUI::Display(34.f)).Text_Lambda([this, D]()
 								{
 									const int32 S = GI->Settings.Assign[D];
-									return S == 0 ? LOCTEXT("P1", "◂  PLAYER 1  ▸") : S == 1 ? LOCTEXT("P2", "◂  PLAYER 2  ▸") : LOCTEXT("Nobody", "◂  nobody  ▸");
+									return S == 0 ? LOCTEXT("P1", "◀  PLAYER 1  ▶") : S == 1 ? LOCTEXT("P2", "◀  PLAYER 2  ▶") : LOCTEXT("Nobody", "◀  nobody  ▶");
 								})
 								.ColorAndOpacity_Lambda([this, D]() { const int32 S = GI->Settings.Assign[D]; return S == 0 ? SlopUI::Accent : S == 1 ? SlopUI::Amber : SlopUI::Dim; })
 							]
@@ -618,9 +710,9 @@ namespace SlopScreensFlowImpl
 				]
 			];
 			return Frame(SNew(SConstraintCanvas)
-				+ SConstraintCanvas::Slot().Offset(FMargin(0, 60, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("Controllers", "WHO PLAYS WITH WHAT"), 72.f, SlopUI::Text)]]
-				+ SConstraintCanvas::Slot().Offset(FMargin(260, 240, 1400, 620))[List]
-				+ SConstraintCanvas::Slot().Offset(FMargin(260, 860, 1400, 50))
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 60, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("Controllers", "WHO PLAYS WITH WHAT"), 72.f, SlopUI::Text)]]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(260, 240, 1400, 620))[List]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(260, 860, 1400, 50))
 				[
 					SNew(STextBlock).Font(SlopUI::Body(26.f)).ColorAndOpacity(SlopUI::Amber)
 					.Text_Lambda([this]() { return Valid() ? FText::GetEmpty() : LOCTEXT("Need", "Each player needs at least one device. Connect a controller to have one each."); })
@@ -800,8 +892,8 @@ namespace SlopScreensFlowImpl
 			O->AddSlot()[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SBox).WidthOverride(1920).HeightOverride(1080)
 			[
 				SNew(SConstraintCanvas)
-				+ SConstraintCanvas::Slot().Offset(FMargin(120, 40, 1680, 90))[SlopUI::Title(FText::Format(LOCTEXT("MovesOf", "{0}: MOVES"), FText::FromString(Def(Fighter)->Name.ToUpper())), 60.f, SlopUI::Text)]
-				+ SConstraintCanvas::Slot().Offset(FMargin(120, 150, 1680, 820))[List]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(120, 40, 1680, 90))[SlopUI::Title(FText::Format(LOCTEXT("MovesOf", "{0}: MOVES"), FText::FromString(Def(Fighter)->Name.ToUpper())), 60.f, SlopUI::Text)]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(120, 150, 1680, 820))[List]
 			]]];
 			O->AddSlot()[SlopUI::Hint([this]() { return FText::Format(LOCTEXT("MovesHint", "Up and down to scroll   ·   left and right for another fighter   ·   {0} to go back"), SlopUI::Back(GI->Router->Glyphs())); })];
 			return O;
@@ -897,9 +989,9 @@ namespace SlopScreensFlowImpl
 				Enter();
 			}
 			return Frame(SNew(SConstraintCanvas)
-				+ SConstraintCanvas::Slot().Offset(FMargin(120, 60, 1200, 110))[SlopUI::Title(LOCTEXT("ExtrasT", "EXTRAS"), 84.f, SlopUI::Accent)]
-				+ SConstraintCanvas::Slot().Offset(FMargin(140, 260, 460, 500))[SlopUI::Menu(Labels(), [this]() { return Sel; }, [this](int32 I) { return I != 3 || StrangerMet(); }, [this](int32 I) { Sel = I; Choose(); }, 460.f, 34.f)]
-				+ SConstraintCanvas::Slot().Offset(FMargin(700, 260, 1100, 640))
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(120, 60, 1200, 110))[SlopUI::Title(LOCTEXT("ExtrasT", "EXTRAS"), 84.f, SlopUI::Accent)]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(140, 260, 460, 500))[SlopUI::Menu(Labels(), [this]() { return Sel; }, [this](int32 I) { return I != 3 || StrangerMet(); }, [this](int32 I) { Sel = I; Choose(); }, 460.f, 34.f)]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(700, 260, 1100, 640))
 				[
 					SlopUI::PanelBox(SNew(STextBlock).Font(SlopUI::Body(26.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Text_Lambda([this]()
 					{
@@ -911,7 +1003,7 @@ namespace SlopScreensFlowImpl
 							FString S = LOCTEXT("EndingsSeen", "Endings seen (left and right to choose, confirm to watch):\n\n").ToString();
 							for (int32 I = 0; I < Seen.Num(); ++I)
 							{
-								S += (I == Page ? TEXT("▸ ") : TEXT("   ")) + Def(Seen[I])->Name + TEXT("\n");
+								S += (I == Page ? TEXT("▶ ") : TEXT("   ")) + Def(Seen[I])->Name + TEXT("\n");
 							}
 							return FText::FromString(S);
 						}
@@ -985,8 +1077,8 @@ namespace SlopScreensFlowImpl
 		virtual TSharedRef<SWidget> Build() override
 		{
 			return Frame(SNew(SConstraintCanvas)
-				+ SConstraintCanvas::Slot().Offset(FMargin(0, 120, 1920, 120))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(FText::FromString(Def(Fighter)->Name.ToUpper()), 84.f, SlopUI::Amber)]]
-				+ SConstraintCanvas::Slot().Offset(FMargin(300, 380, 1320, 400))
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 120, 1920, 120))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(FText::FromString(Def(Fighter)->Name.ToUpper()), 84.f, SlopUI::Amber)]]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(300, 380, 1320, 400))
 				[
 					SNew(STextBlock).Font(SlopUI::Body(38.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Justification(ETextJustify::Center)
 					.Text_Lambda([this]() { return Pages.IsValidIndex(Page) ? FText::FromString(Pages[Page]) : FText::GetEmpty(); })
@@ -1033,8 +1125,8 @@ namespace SlopScreensFlowImpl
 				"Made with Unreal® Engine. Unreal and its logo are Epic Games, Inc.'s trademarks or registered trademarks in the US and elsewhere.\n"
 				"Full licence texts ship with the game in the Licenses folder.");
 			return Frame(SNew(SConstraintCanvas)
-				+ SConstraintCanvas::Slot().Offset(FMargin(0, 90, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("CreditsT", "CREDITS"), 84.f, SlopUI::Accent)]]
-				+ SConstraintCanvas::Slot().Offset(FMargin(240, 260, 1440, 700))
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 90, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("CreditsT", "CREDITS"), 84.f, SlopUI::Accent)]]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(240, 260, 1440, 700))
 				[
 					SNew(STextBlock).Font(SlopUI::Body(28.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Justification(ETextJustify::Center).Text(Body)
 				],

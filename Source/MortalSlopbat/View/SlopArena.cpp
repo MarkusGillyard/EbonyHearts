@@ -20,7 +20,7 @@ namespace SlopArenaImpl
 {
 	using FList = TArray<TSharedPtr<FJsonValue>>;
 
-	double Num(const TSharedPtr<FJsonObject>& O, const TCHAR* Key, double Default = 0.0)
+	double StageNum(const TSharedPtr<FJsonObject>& O, const TCHAR* Key, double Default = 0.0)
 	{
 		double V = Default;
 		return O->TryGetNumberField(Key, V) ? V : Default;
@@ -28,7 +28,7 @@ namespace SlopArenaImpl
 
 	// The stage data's positions are Blender metres: x along the stage, y away from the camera,
 	// z up. The game's world is centimetres with the stage along Y and depth along +X.
-	FVector Pos(const TSharedPtr<FJsonObject>& O, const TCHAR* Key)
+	FVector StagePos(const TSharedPtr<FJsonObject>& O, const TCHAR* Key)
 	{
 		const FList* A = nullptr;
 		if (!O->TryGetArrayField(Key, A) || A->Num() < 3)
@@ -38,12 +38,12 @@ namespace SlopArenaImpl
 		return FVector((*A)[1]->AsNumber(), (*A)[0]->AsNumber(), (*A)[2]->AsNumber()) * 100.0;
 	}
 
-	FVector Dir(const TSharedPtr<FJsonObject>& O, const TCHAR* Key)
+	FVector StageDir(const TSharedPtr<FJsonObject>& O, const TCHAR* Key)
 	{
-		return (Pos(O, Key) / 100.0).GetSafeNormal(UE_SMALL_NUMBER, FVector(1, 0, -1).GetSafeNormal());
+		return (StagePos(O, Key) / 100.0).GetSafeNormal(UE_SMALL_NUMBER, FVector(1, 0, -1).GetSafeNormal());
 	}
 
-	FLinearColor Col(const TSharedPtr<FJsonObject>& O, const TCHAR* Key, float Alpha = 1.f)
+	FLinearColor StageCol(const TSharedPtr<FJsonObject>& O, const TCHAR* Key, float Alpha = 1.f)
 	{
 		const FList* A = nullptr;
 		if (!O->TryGetArrayField(Key, A) || A->Num() < 3)
@@ -131,7 +131,7 @@ bool ASlopArena::Build(FName Stage, bool bHighGraphics)
 	const TSharedPtr<FJsonObject>* Units = nullptr;
 	if (D->TryGetObjectField(TEXT("units"), Units))
 	{
-		ExposureEV100 = Num(*Units, TEXT("exposure_ev100"), 0.0);
+		ExposureEV100 = StageNum(*Units, TEXT("exposure_ev100"), 0.0);
 	}
 	FString Step;
 	D->TryGetStringField(TEXT("footstep"), Step);
@@ -245,8 +245,8 @@ bool ASlopArena::Build(FName Stage, bool bHighGraphics)
 				S.Pivot = FVector(P[0]->AsNumber(), P[1]->AsNumber(), P[2]->AsNumber());
 				const FList* A = nullptr;
 				S.Axis = O->TryGetArrayField(TEXT("axis_ue"), A) && A->Num() >= 3 ? FVector((*A)[0]->AsNumber(), (*A)[1]->AsNumber(), (*A)[2]->AsNumber()).GetSafeNormal() : FVector(1, 0, 0);
-				S.Amp = Num(O, TEXT("amp"), 3.0);
-				S.Speed = Num(O, TEXT("speed"), 0.8);
+				S.Amp = StageNum(O, TEXT("amp"), 3.0);
+				S.Speed = StageNum(O, TEXT("speed"), 0.8);
 				S.Phase = Rng.FRandRange(0.f, 6.28f);
 				Sways.Add(S);
 			}
@@ -293,14 +293,14 @@ void ASlopArena::Lights(const TArray<TSharedPtr<FJsonValue>>& List)
 		if (Type == TEXT("directional"))
 		{
 			UDirectionalLightComponent* Dl = NewObject<UDirectionalLightComponent>(this);
-			Intensity = Num(O, TEXT("lux"), 2.0);
-			Dl->SetLightSourceAngle(Num(O, TEXT("source_angle_deg"), 1.0));
+			Intensity = StageNum(O, TEXT("lux"), 2.0);
+			Dl->SetLightSourceAngle(StageNum(O, TEXT("source_angle_deg"), 1.0));
 			Dl->SetDynamicShadowDistanceMovableLight(bHigh ? 4000.f : 2500.f);
 			Dl->SetDynamicShadowCascades(bHigh ? 3 : 2);
 			Dl->SetCastShadows(bShadows);
 			// The shadowing key is the one directional light that lights translucency and fog.
 			Dl->SetForwardShadingPriority(bShadows ? 1 : 0);
-			Dl->SetRelativeRotation(Dir(O, TEXT("dir")).Rotation());
+			Dl->SetRelativeRotation(StageDir(O, TEXT("dir")).Rotation());
 			Light = Dl;
 		}
 		else
@@ -309,9 +309,9 @@ void ASlopArena::Lights(const TArray<TSharedPtr<FJsonValue>>& List)
 			if (Type == TEXT("spot"))
 			{
 				USpotLightComponent* Sl = NewObject<USpotLightComponent>(this);
-				Sl->SetInnerConeAngle(Num(O, TEXT("cone_inner_deg"), 20.0));
-				Sl->SetOuterConeAngle(Num(O, TEXT("cone_outer_deg"), 40.0));
-				Sl->SetRelativeRotation(Dir(O, TEXT("dir")).Rotation());
+				Sl->SetInnerConeAngle(StageNum(O, TEXT("cone_inner_deg"), 20.0));
+				Sl->SetOuterConeAngle(StageNum(O, TEXT("cone_outer_deg"), 40.0));
+				Sl->SetRelativeRotation(StageDir(O, TEXT("dir")).Rotation());
 				Pl = Sl;
 			}
 			else
@@ -319,21 +319,21 @@ void ASlopArena::Lights(const TArray<TSharedPtr<FJsonValue>>& List)
 				Pl = NewObject<UPointLightComponent>(this);
 			}
 			Pl->SetIntensityUnits(ELightUnits::Candelas);
-			Intensity = Num(O, TEXT("intensity_candela"), 10.0);
-			Pl->SetAttenuationRadius(Num(O, TEXT("radius_m"), 6.0) * 100.0);
-			Pl->SetSourceRadius(Num(O, TEXT("source_radius_m"), 0.1) * 100.0);
+			Intensity = StageNum(O, TEXT("intensity_candela"), 10.0);
+			Pl->SetAttenuationRadius(StageNum(O, TEXT("radius_m"), 6.0) * 100.0);
+			Pl->SetSourceRadius(StageNum(O, TEXT("source_radius_m"), 0.1) * 100.0);
 			Pl->SetCastShadows(bShadows && bHigh);
-			Pl->SetRelativeLocation(Pos(O, TEXT("pos")));
+			Pl->SetRelativeLocation(StagePos(O, TEXT("pos")));
 			Light = Pl;
 		}
 		Light->SetupAttachment(Root);
 		Light->SetMobility(EComponentMobility::Movable);
-		Light->SetLightColor(Col(O, TEXT("color")));
+		Light->SetLightColor(StageCol(O, TEXT("color")));
 		Light->SetIntensity(Intensity);
-		Light->SetSpecularScale(Num(O, TEXT("specular_scale"), 1.0));
+		Light->SetSpecularScale(StageNum(O, TEXT("specular_scale"), 1.0));
 		// In volumetric fog the broad key and rim would haze the whole frame; the stage's own lamps
 		// and shafts scatter (the data's values were set for Blender's volume, about 3x stronger).
-		Light->SetVolumetricScatteringIntensity(Type == TEXT("directional") ? 0.15f : FMath::Min(4.0, Num(O, TEXT("volumetric_scattering"), 0.4)));
+		Light->SetVolumetricScatteringIntensity(Type == TEXT("directional") ? 0.15f : FMath::Min(4.0, StageNum(O, TEXT("volumetric_scattering"), 0.4)));
 		FString Affects;
 		if (O->TryGetStringField(TEXT("affects"), Affects) && Affects == TEXT("fighters_only"))
 		{
@@ -350,14 +350,14 @@ void ASlopArena::Lights(const TArray<TSharedPtr<FJsonValue>>& List)
 			NextFlash = Rng.FRandRange(3.f, 7.f);
 			continue;
 		}
-		const float Flicker = Num(O, TEXT("flicker"));
+		const float Flicker = StageNum(O, TEXT("flicker"));
 		if (Flicker > 0.f)
 		{
 			FFlicker F;
 			F.Light = Light;
 			F.Base = Intensity;
 			F.Depth = Flicker;
-			F.Speed = FMath::Max(0.3, Num(O, TEXT("flicker_speed"), 4.0));
+			F.Speed = FMath::Max(0.3, StageNum(O, TEXT("flicker_speed"), 4.0));
 			F.Phase = Rng.FRandRange(0.f, 6.28f);
 			Flickers.Add(F);
 		}
@@ -372,12 +372,12 @@ void ASlopArena::Atmosphere(const TSharedPtr<FJsonObject>& D)
 		const TSharedPtr<FJsonObject> F = *FogP;
 		UExponentialHeightFogComponent* Fog = NewObject<UExponentialHeightFogComponent>(this);
 		Fog->SetupAttachment(Root);
-		Fog->SetRelativeLocation(FVector(0, 0, Num(F, TEXT("fog_height_m")) * 100.0));
+		Fog->SetRelativeLocation(FVector(0, 0, StageNum(F, TEXT("fog_height_m")) * 100.0));
 		// The data gives the engine's own density and falloff units, judged for Blender's volume;
 		// here the same numbers fog far more, so they are halved.
-		Fog->SetFogDensity(Num(F, TEXT("density"), 0.2) * 0.5);
-		Fog->SetFogHeightFalloff(Num(F, TEXT("height_falloff"), 0.5));
-		Fog->SetFogInscatteringColor(Col(F, TEXT("color")));
+		Fog->SetFogDensity(StageNum(F, TEXT("density"), 0.2) * 0.5);
+		Fog->SetFogHeightFalloff(StageNum(F, TEXT("height_falloff"), 0.5));
+		Fog->SetFogInscatteringColor(StageCol(F, TEXT("color")));
 		Fog->SetStartDistance(150.f);
 		// The sky dome sits beyond this, unfogged.
 		Fog->SetFogCutoffDistance(30000.f);
@@ -402,8 +402,8 @@ void ASlopArena::Atmosphere(const TSharedPtr<FJsonObject>& D)
 	float AmbientK = 0.3f;
 	if (D->TryGetObjectField(TEXT("ambient"), AmbP))
 	{
-		Ambient = Col(*AmbP, TEXT("color"));
-		AmbientK = Num(*AmbP, TEXT("intensity"), 0.3);
+		Ambient = StageCol(*AmbP, TEXT("color"));
+		AmbientK = StageNum(*AmbP, TEXT("intensity"), 0.3);
 	}
 	USkyLightComponent* Sky = NewObject<USkyLightComponent>(this);
 	Sky->SetupAttachment(Root);
@@ -422,14 +422,14 @@ void ASlopArena::Atmosphere(const TSharedPtr<FJsonObject>& D)
 			UMaterialInstanceDynamic* M = UMaterialInstanceDynamic::Create(SkyMat, this);
 			M->SetTextureParameterValue(TEXT("Sky"), Cube);
 			// The HDRs are bright evening skies; at night only a little of them shows.
-			M->SetScalarParameterValue(TEXT("Intensity"), Num(D, TEXT("sky_intensity"), 0.08));
+			M->SetScalarParameterValue(TEXT("Intensity"), StageNum(D, TEXT("sky_intensity"), 0.08));
 			Mats.Add(M);
 			UStaticMeshComponent* Dome = NewObject<UStaticMeshComponent>(this);
 			Dome->SetupAttachment(Root);
 			Dome->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere.Sphere")));
 			Dome->SetMobility(EComponentMobility::Static);
 			Dome->SetRelativeScale3D(FVector(800.0));
-			Dome->SetRelativeRotation(FRotator(0.0, Num(D, TEXT("sky_yaw_deg"), 0.0), 0.0));
+			Dome->SetRelativeRotation(FRotator(0.0, StageNum(D, TEXT("sky_yaw_deg"), 0.0), 0.0));
 			Dome->SetCastShadow(false);
 			Dome->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			Dome->SetMaterial(0, M);
@@ -506,43 +506,43 @@ void ASlopArena::Effects(const TArray<TSharedPtr<FJsonValue>>& List)
 	{
 		const TSharedPtr<FJsonObject> O = V->AsObject();
 		const FString Kind = O->GetStringField(TEXT("kind"));
-		const FLinearColor C = Col(O, TEXT("color"));
+		const FLinearColor C = StageCol(O, TEXT("color"));
 		if (Kind == TEXT("rain"))
 		{
-			FFxLayer& L = AddLayer(EFx::Rain, TEXT("M_SoftDisc"), C, 1.2f * C.A, (int32)Num(O, TEXT("count"), 800));
-			L.Center = Pos(O, TEXT("box_center"));
-			L.Extent = Pos(O, TEXT("box_extent")).GetAbs();
-			L.Vel = Pos(O, TEXT("velocity"));
-			L.Size = Num(O, TEXT("streak_m"), 0.4) * 100.0;
+			FFxLayer& L = AddLayer(EFx::Rain, TEXT("M_SoftDisc"), C, 1.2f * C.A, (int32)StageNum(O, TEXT("count"), 800));
+			L.Center = StagePos(O, TEXT("box_center"));
+			L.Extent = StagePos(O, TEXT("box_extent")).GetAbs();
+			L.Vel = StagePos(O, TEXT("velocity"));
+			L.Size = StageNum(O, TEXT("streak_m"), 0.4) * 100.0;
 		}
 		else if (Kind == TEXT("smoke") || Kind == TEXT("steam") || Kind == TEXT("splash_mist"))
 		{
 			const bool bSmoke = Kind == TEXT("smoke");
 			// Unlit puffs: their colour is what they reflect, scaled to the night's light.
 			FFxLayer& L = AddLayer(EFx::Rise, TEXT("M_Puff"), C, bSmoke ? 0.25f : 0.3f, bSmoke ? 10 : 8);
-			const double Radius = Num(O, TEXT("radius_m"), 0.6) * 100.0;
-			L.Center = Pos(O, TEXT("pos"));
+			const double Radius = StageNum(O, TEXT("radius_m"), 0.6) * 100.0;
+			L.Center = StagePos(O, TEXT("pos"));
 			L.Extent = FVector(Radius, Radius, 10.0);
-			L.Vel = FVector(0, 0, Num(O, TEXT("rise_m_s"), 0.8) * 100.0);
-			L.Size = Num(O, TEXT("size_m"), Radius / 50.0) * 100.0;
+			L.Vel = FVector(0, 0, StageNum(O, TEXT("rise_m_s"), 0.8) * 100.0);
+			L.Size = StageNum(O, TEXT("size_m"), Radius / 50.0) * 100.0;
 			L.Grow = bSmoke ? 2.5f : 1.8f;
 			L.Life = bSmoke ? 7.f : 3.5f;
 		}
 		else if (Kind == TEXT("embers") || Kind == TEXT("motes"))
 		{
 			const bool bEmbers = Kind == TEXT("embers");
-			FFxLayer& L = AddLayer(EFx::Drift, TEXT("M_SoftDisc"), C, bEmbers ? 6.f : 0.8f * C.A, (int32)Num(O, TEXT("count"), 60));
-			L.Center = Pos(O, TEXT("box_center"));
-			L.Extent = Pos(O, TEXT("box_extent")).GetAbs();
-			L.Vel = FVector(0, 0, Num(O, TEXT("rise_m_s"), 0.05) * 100.0);
-			L.Size = Num(O, TEXT("size_m"), bEmbers ? 0.04 : 0.03) * 100.0;
+			FFxLayer& L = AddLayer(EFx::Drift, TEXT("M_SoftDisc"), C, bEmbers ? 6.f : 0.8f * C.A, (int32)StageNum(O, TEXT("count"), 60));
+			L.Center = StagePos(O, TEXT("box_center"));
+			L.Extent = StagePos(O, TEXT("box_extent")).GetAbs();
+			L.Vel = FVector(0, 0, StageNum(O, TEXT("rise_m_s"), 0.05) * 100.0);
+			L.Size = StageNum(O, TEXT("size_m"), bEmbers ? 0.04 : 0.03) * 100.0;
 			L.Life = bEmbers ? 5.f : 9.f;
 		}
 		else if (Kind == TEXT("glints"))
 		{
-			FFxLayer& L = AddLayer(EFx::Twinkle, TEXT("M_SoftDisc"), C, 10.f, (int32)Num(O, TEXT("count"), 6));
-			L.Center = Pos(O, TEXT("center"));
-			L.Extent = Pos(O, TEXT("extent")).GetAbs();
+			FFxLayer& L = AddLayer(EFx::Twinkle, TEXT("M_SoftDisc"), C, 10.f, (int32)StageNum(O, TEXT("count"), 6));
+			L.Center = StagePos(O, TEXT("center"));
+			L.Extent = StagePos(O, TEXT("extent")).GetAbs();
 			L.Size = 7.f;
 			L.Life = 2.5f;
 		}
@@ -555,9 +555,9 @@ void ASlopArena::Effects(const TArray<TSharedPtr<FJsonValue>>& List)
 				Size = FVector2D((*S)[0]->AsNumber(), (*S)[1]->AsNumber());
 			}
 			FLinearColor MC = C;
-			MC.A = Num(O, TEXT("density"), 0.3) * 0.35;
+			MC.A = StageNum(O, TEXT("density"), 0.3) * 0.35;
 			FFxLayer& L = AddLayer(EFx::Mist, TEXT("M_Puff"), MC, 0.2f, FMath::Clamp((int32)(Size.X * Size.Y / 60.0), 6, 24));
-			L.Center = Pos(O, TEXT("center"));
+			L.Center = StagePos(O, TEXT("center"));
 			// Size is (along the stage, depth) in metres.
 			L.Extent = FVector(Size.Y * 50.0, Size.X * 50.0, 20.0);
 			L.Size = FMath::Clamp(Size.Y * 40.0, 400.0, 1400.0);
@@ -566,8 +566,8 @@ void ASlopArena::Effects(const TArray<TSharedPtr<FJsonValue>>& List)
 		else if (Kind == TEXT("drips"))
 		{
 			FFxLayer& L = AddLayer(EFx::Drips, TEXT("M_Ring"), FLinearColor(0.6f, 0.7f, 0.85f), 0.5f, 10);
-			L.Center = Pos(O, TEXT("box_center")) + FVector(0, 0, 0.5);
-			L.Extent = Pos(O, TEXT("box_extent")).GetAbs();
+			L.Center = StagePos(O, TEXT("box_center")) + FVector(0, 0, 0.5);
+			L.Extent = StagePos(O, TEXT("box_extent")).GetAbs();
 			L.Size = 40.f;
 			L.Life = 1.4f;
 		}

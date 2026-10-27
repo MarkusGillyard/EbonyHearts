@@ -48,6 +48,9 @@ public:
 	void OnMatchFinished(const Slop::FMatchResult& R);
 	// The skeletal mesh a fighter wears.
 	static FString MeshFor(FName Fighter);
+	// The menu figures behind the select screen (spawned on first use, taking the view).
+	class ASlopShowroom* OpenShowroom();
+	void CloseShowroom();
 
 	// Settings.
 	void ApplySettings(bool bDisplay = true);
@@ -78,6 +81,8 @@ private:
 	FTSTicker::FDelegateHandle TickHandle;
 	UPROPERTY()
 	TObjectPtr<ASlopMatch> Match;
+	UPROPERTY()
+	TObjectPtr<class ASlopShowroom> Showroom;
 	TSharedPtr<SOverlay> Root;
 	TSharedPtr<SBox> ScreenSlot;
 	TSharedPtr<SBox> HudSlot;
@@ -100,6 +105,12 @@ private:
 	int32 ShotIndex = 0;
 	int32 QuitAtTick = -1;
 	double QuitAtSeconds = -1.0;
+	// Development: the fighters whose portraits are still to be rendered.
+	TArray<FName> PortraitQueue;
+	int32 PortraitWait = 0;
+	// Development: scripted menu actions (-SlopUi=delay:action,...), dispatched as if pressed.
+	TArray<TPair<double, Slop::EUi>> UiScript;
+	double UiScriptAt = 0.0;
 	FDelegateHandle ConnHandle;
 	FDelegateHandle ActiveHandle;
 	bool bStarted = false;

@@ -378,10 +378,10 @@ namespace SlopSettingsImpl
 			O->AddSlot()[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SBox).WidthOverride(1920).HeightOverride(1080)
 			[
 				SNew(SConstraintCanvas)
-				+ SConstraintCanvas::Slot().Offset(FMargin(160, 50, 1600, 90))[SlopUI::Title(LOCTEXT("SettingsT", "SETTINGS"), 72.f, SlopUI::Text)]
-				+ SConstraintCanvas::Slot().Offset(FMargin(160, 150, 1600, 60))[TabRow]
-				+ SConstraintCanvas::Slot().Offset(FMargin(160, 230, 1600, 700))[List]
-				+ SConstraintCanvas::Slot().Offset(FMargin(160, 950, 1600, 50))
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 50, 1600, 90))[SlopUI::Title(LOCTEXT("SettingsT", "SETTINGS"), 72.f, SlopUI::Text)]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 150, 1600, 60))[TabRow]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 230, 1600, 700))[List]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 950, 1600, 50))
 				[
 					SNew(STextBlock).Font(SlopUI::Body(26.f)).ColorAndOpacity(SlopUI::Amber).Text_Lambda([this]()
 					{

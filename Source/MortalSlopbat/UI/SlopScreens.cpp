@@ -275,17 +275,17 @@ namespace SlopScreensImpl
 				+ SOverlay::Slot()[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SBox).WidthOverride(1920).HeightOverride(1080)
 				[
 					SNew(SConstraintCanvas)
-					+ SConstraintCanvas::Slot().Offset(FMargin(120, 80, 1200, 150)).AutoSize(true)[SlopUI::Title(LOCTEXT("Name", "MORTAL SLOPBAT"), 96.f, SlopUI::Accent)]
-					+ SConstraintCanvas::Slot().Offset(FMargin(140, 290, 470, 700)).AutoSize(true)
+					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(120, 80, 1200, 150)).AutoSize(true)[SlopUI::Title(LOCTEXT("Name", "MORTAL SLOPBAT"), 96.f, SlopUI::Accent)]
+					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(140, 290, 470, 700)).AutoSize(true)
 					[
 						SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 460.f, 34.f)
 					]
-					+ SConstraintCanvas::Slot().Offset(FMargin(760, 330, 900, 230))
+					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(760, 330, 900, 230))
 					[
 						SlopUI::PanelBox(SNew(STextBlock).Font(SlopUI::Body(30.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true)
 							.Text_Lambda([this]() { return Entries[Sel].Desc; }))
 					]
-					+ SConstraintCanvas::Slot().Offset(FMargin(780, 590, 900, 50))
+					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(780, 590, 900, 50))
 					[
 						SNew(STextBlock).Font(SlopUI::Body(26.f)).ColorAndOpacity(SlopUI::Amber)
 						.Text_Lambda([this]() { return GI->Progress.TutorialDone() ? FText::GetEmpty() : LOCTEXT("TutTip", "New to Mortal Slopbat? The tutorial takes about five minutes."); })

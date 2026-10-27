@@ -9,6 +9,7 @@
 #include "HAL/PlatformTime.h"
 #include "Misc/CommandLine.h"
 #include "Misc/PackageName.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Scalability.h"
 #include "UnrealClient.h"
@@ -20,6 +21,7 @@
 #include "UI/SlopScreens.h"
 #include "UI/SlopStyle.h"
 #include "View/SlopMatch.h"
+#include "View/SlopShowroom.h"
 #include "View/SlopDevTour.h"
 
 #define LOCTEXT_NAMESPACE "SlopGame"
@@ -351,6 +353,17 @@ void USlopGameInstance::OnActivation(bool bActive)
 void USlopGameInstance::DispatchUi()
 {
 	TArray<FUiEvent> Events = Router->TakeUi();
+#if !UE_BUILD_SHIPPING
+	if (UiScript.Num() > 0 && Now() >= UiScriptAt + UiScript[0].Key)
+	{
+		FUiEvent E;
+		E.Action = UiScript[0].Value;
+		Events.Add(E);
+		UE_LOG(LogSlop, Log, TEXT("Ui script: %d"), (int32)E.Action);
+		UiScriptAt = Now();
+		UiScript.RemoveAt(0);
+	}
+#endif
 	for (const FUiEvent& E : Events)
 	{
 		if (Overlay.IsValid())
@@ -439,6 +452,27 @@ bool USlopGameInstance::Tick(float Dt)
 			QuitAtSeconds = Now() + 1.0;
 		}
 	}
+	if (PortraitQueue.Num() > 0 && Showroom)
+	{
+		if (PortraitWait > 0)
+		{
+			if (--PortraitWait == 0)
+			{
+				PortraitQueue.RemoveAt(0);
+				if (PortraitQueue.Num() == 0)
+				{
+					QuitAtSeconds = Now() + 1.0;
+				}
+			}
+		}
+		else if (Showroom->Portrait(PortraitQueue[0]))
+		{
+			const FString Name = FString::Printf(TEXT("portrait_%s.png"), *PortraitQueue[0].ToString());
+			FScreenshotRequest::RequestScreenshot(Name, false, false);
+			UE_LOG(LogSlop, Log, TEXT("Screenshot %s"), *Name);
+			PortraitWait = 6;
+		}
+	}
 	if (ShotEvery > 0.0 && Now() >= NextShotAt)
 	{
 		NextShotAt = Now() + ShotEvery;
@@ -452,6 +486,32 @@ bool USlopGameInstance::Tick(float Dt)
 	}
 #endif
 	return true;
+}
+
+ASlopShowroom* USlopGameInstance::OpenShowroom()
+{
+	if (!Showroom)
+	{
+		if (UWorld* W = GetWorld())
+		{
+			FActorSpawnParameters P;
+			P.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			Showroom = W->SpawnActor<ASlopShowroom>(P);
+			Showroom->Open(UGameplayStatics::GetPlayerController(W, 0));
+		}
+	}
+	return Showroom;
+}
+
+void USlopGameInstance::CloseShowroom()
+{
+	if (Showroom)
+	{
+		Showroom->Show(0, NAME_None, false);
+		Showroom->Show(1, NAME_None, false);
+		Showroom->Destroy();
+		Showroom = nullptr;
+	}
 }
 
 void USlopGameInstance::RequestShot(int32 Tick, const FString& Name)
@@ -524,6 +584,45 @@ void USlopGameInstance::DevCommandLine()
 				}
 			};
 		}
+	}
+	// Select-screen portraits, head and shoulders, one screenshot per fighter (cropped and
+	// imported by Tools/portraits.py).
+	FString PortraitArg;
+	if (FParse::Value(Cmd, TEXT("SlopPortraits="), PortraitArg, false) || FParse::Param(Cmd, TEXT("SlopPortraits")))
+	{
+		TArray<FString> Parts;
+		PortraitArg.ParseIntoArray(Parts, TEXT(","));
+		for (const FString& S : Parts)
+		{
+			PortraitQueue.Add(FName(*S));
+		}
+		if (PortraitQueue.Num() == 0)
+		{
+			PortraitQueue = FContent::Roster();
+			PortraitQueue.Append(FContent::Special());
+		}
+		Root->SetVisibility(EVisibility::Collapsed);
+		OpenShowroom();
+	}
+	FString UiArg;
+	if (FParse::Value(Cmd, TEXT("SlopUi="), UiArg, false))
+	{
+		// delay:action pairs, the delay in seconds after the previous one; actions as named below.
+		static const TMap<FString, EUi> Names = {
+			{TEXT("up"), EUi::Up}, {TEXT("down"), EUi::Down}, {TEXT("left"), EUi::Left}, {TEXT("right"), EUi::Right},
+			{TEXT("confirm"), EUi::Confirm}, {TEXT("back"), EUi::Back}, {TEXT("pause"), EUi::Pause}, {TEXT("next"), EUi::Next},
+			{TEXT("prev"), EUi::Prev}, {TEXT("reset"), EUi::Reset}, {TEXT("alt"), EUi::Alt}};
+		TArray<FString> Parts;
+		UiArg.ParseIntoArray(Parts, TEXT(","));
+		for (const FString& P : Parts)
+		{
+			FString D, A;
+			if (P.Split(TEXT(":"), &D, &A) && Names.Contains(A))
+			{
+				UiScript.Add({FCString::Atod(*D), Names[A]});
+			}
+		}
+		UiScriptAt = Now();
 	}
 	FString Shots;
 	if (FParse::Value(Cmd, TEXT("SlopShots="), Shots, false))

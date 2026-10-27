@@ -3,7 +3,7 @@
     source Tools/ue.sh && SLOP_IMPORT_ONLY=audio,materials editor_py "$PROJ_DIR/Tools/import_assets.py"
 
 SLOP_IMPORT_ONLY (comma list of steps: audio, materials, bodies, fighters, surfaces, props,
-stages, slots) limits the run; without it every step runs. `slots` gives the imported fighters and
+stages, slots, portraits) limits the run; without it every step runs. `slots` gives the imported fighters and
 stages their material instances; run it in a second editor session after importing them (edits
 made in the session that imported a mesh do not stick).
 
@@ -546,6 +546,9 @@ def fighter(fid, fbx, import_meshes=True):
                 t = texture(png, dest + "/Textures", srgb=(kind == "srgb"), normal=(kind == "normal"))
                 if t:
                     unreal.MaterialEditingLibrary.set_material_instance_texture_parameter_value(mi, param, t)
+        # The maps carry the values: roughness in G, metalness in B, taken as they are.
+        MEL.set_material_instance_scalar_parameter_value(mi, "Roughness", 1.0)
+        MEL.set_material_instance_scalar_parameter_value(mi, "Metallic", 1.0)
         EAL.save_loaded_asset(mi)
         sm.set_editor_property("material_interface", mi)
         mats[i] = sm
@@ -787,10 +790,27 @@ def slots():
     fighters(import_meshes=False)
 
 
+def portraits():
+    """SourceArt/Portraits/<id>.png (Tools/portraits.py) -> /Game/Slop/Portraits/T_portrait_<id>."""
+    root = os.path.join(SRC, "Portraits")
+    n = 0
+    for f in sorted(os.listdir(root)) if os.path.isdir(root) else []:
+        if not f.endswith(".png"):
+            continue
+        tex = import_as(os.path.join(root, f), "/Game/Slop/Portraits", "T_portrait_" + f[:-4])
+        if tex:
+            tex.set_editor_property("lod_group", unreal.TextureGroup.TEXTUREGROUP_UI)
+            tex.set_editor_property("mip_gen_settings", unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
+            tex.set_editor_property("never_stream", True)
+            EAL.save_loaded_asset(tex)
+            n += 1
+    log(f"portraits: {n}")
+
+
 def main():
     only = args()
     steps = [("audio", audio), ("materials", materials), ("bodies", bodies), ("fighters", fighters),
-             ("surfaces", surfaces), ("props", props), ("stages", stages), ("slots", slots)]
+             ("surfaces", surfaces), ("props", props), ("stages", stages), ("slots", slots), ("portraits", portraits)]
     for name, fn in steps:
         if only is None or name in only:
             log("step " + name)
