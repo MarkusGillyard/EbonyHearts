@@ -327,11 +327,12 @@ int32 SSlopHud::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometr
 	{
 		return LayerId;
 	}
-	// Everything is laid out on a 1920x1080 canvas scaled to the widget.
+	// Everything is laid out on a 1920x1080 canvas scaled to fit the widget and centred, so a
+	// 16:10 or 4:3 screen shows all of it (with a margin above and below) and a wider one too.
 	const FVector2D Local = AllottedGeometry.GetLocalSize();
-	const float Scale = Local.Y / 1080.f;
-	const float OffX = (Local.X - 1920.f * Scale) * 0.5f;
-	const FGeometry G = AllottedGeometry.MakeChild(FVector2D(1920.f, 1080.f), FSlateLayoutTransform(Scale, FVector2D(OffX, 0.f)));
+	const float Scale = FMath::Min(Local.Y / 1080.f, Local.X / 1920.f);
+	const FVector2D Off((Local.X - 1920.f * Scale) * 0.5f, (Local.Y - 1080.f * Scale) * 0.5f);
+	const FGeometry G = AllottedGeometry.MakeChild(FVector2D(1920.f, 1080.f), FSlateLayoutTransform(Scale, Off));
 	const bool bStranger = M->Config.Mode == EMode::Stranger;
 	if (M->bShowBoxes)
 	{
