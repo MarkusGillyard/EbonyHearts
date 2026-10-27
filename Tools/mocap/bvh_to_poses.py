@@ -46,6 +46,14 @@ CLIPS = {
     "roundhouse": ("Male2_G9_RoundhouseRight", "RightFoot", (13, 4, 22), {}, "basics"),
     "hk": ("Male2_G2_FrontKick", "RightFoot", (9, 4, 16), {}, "basics"),
     "ashka_teep": ("Male2_G17_PushKickLeft", "LeftFoot", (8, 3, 14), {}, "ashka"),
+    # Daxion's step aside: a lean-away dodge, deepest at frame 8 of its 18 (the simulation moves him).
+    "dax_evade": ("Male2_E19_DodgeLeft", "Head", (8, 0, 10), {}, "daxion"),
+}
+
+# pose -> (take, take frame, the fields taken). Laid over the shared pose of that name; fields not
+# taken stay the original's (the block's hips and stance come from the fighter).
+POSES = {
+    "block": ("Male2_E17_BlockMiddleHigh", 29, ("spine", "chest", "neck", "head", "hand_l", "hand_r", "elbow_l", "elbow_r")),
 }
 
 # cycle -> (take, the foot whose lift-off starts a cycle, travel: +1 forward, -1 backward, the
@@ -153,6 +161,20 @@ def phases(take, joint):
     n = len(take.frames)
     rel = [sub(take.frames[i][joint], take.frames[i]["Hips"]) for i in range(n)]
     foot = joint.endswith("Foot")
+    if joint == "Head":
+        # A dodge or duck: the head at its lowest, the take's start to its recovery.
+        h = [take.frames[i]["Head"][1] for i in range(n)]
+        contact = min(range(n), key=lambda i: h[i])
+        drop = h[0] - h[contact]
+        start = contact
+        while start > 0 and h[start] < h[0] - 0.1 * drop:
+            start -= 1
+        back = contact
+        while back < n - 1 and h[back] < h[0] - 0.25 * drop:
+            back += 1
+        w = take.frames[start]
+        toes = add(norm(sub(w["LeftToeBase_end"], w["LeftFoot"])), norm(sub(w["RightToeBase_end"], w["RightFoot"])))
+        return start, contact, back, norm((toes[0], 0.0, toes[2]))
     if foot:
         contact = max(range(n), key=lambda i: take.frames[i][joint][1])
     else:
@@ -347,6 +369,23 @@ def convert_cycle(name, spec, mirrored=False):
     return dict(poses), {"stride": round(stride, 4), "poses": [n for n, _ in poses]}
 
 
+def convert_pose(name, spec):
+    take_name, t, fields = spec
+    take = Take(take_name)
+    w = take.at(t)
+    mid = scale(add(w["LeftHand"], w["RightHand"]), 0.5)
+    fwd = norm((mid[0] - w["Hips"][0], 0.0, mid[2] - w["Hips"][2]))
+    p = pose(take, t, (w["Hips"][0], 0.0, w["Hips"][2]), fwd, {})
+    if dot(sub(w["LeftFoot"], w["RightFoot"]), fwd) < 0:
+        take.set_mirror()
+        w = take.at(t)
+        mid = scale(add(w["LeftHand"], w["RightHand"]), 0.5)
+        fwd = norm((mid[0] - w["Hips"][0], 0.0, mid[2] - w["Hips"][2]))
+        p = pose(take, t, (w["Hips"][0], 0.0, w["Hips"][2]), fwd, {})
+    print("%-11s %-30s frame %d%s" % (name, take_name, t, " mirrored" if take.mirror else ""))
+    return {f: p[f] for f in fields}
+
+
 def write_poses(path, poses):
     with open(path, "w") as f:
         f.write("{\n" + ",\n".join('\t"%s": %s' % (k, json.dumps(v)) for k, v in poses.items()) + "\n}\n")
@@ -368,6 +407,8 @@ def main():
             basics[move] = {"anim": {"tip": {"LeftHand": "hand_l", "RightHand": "hand_r", "LeftFoot": "foot_l", "RightFoot": "foot_r"}[joint], "keys": keys}}
         else:
             fighter_keys.setdefault(dest, {})[move] = keys
+    for name, spec in POSES.items():
+        all_poses[name] = convert_pose(name, spec)
     cycles = {}
     for name, spec in CYCLES.items():
         poses, cycle = convert_cycle(name, spec)

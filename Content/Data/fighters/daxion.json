@@ -40,13 +40,53 @@
 			"anim": {
 				"keys": [
 					[
-						4,
-						"dax_sidestep",
-						"snap"
+						5,
+						"mc_dax_evade_05",
+						"linear"
+					],
+					[
+						6,
+						"mc_dax_evade_06",
+						"linear"
+					],
+					[
+						7,
+						"mc_dax_evade_07",
+						"linear"
+					],
+					[
+						8,
+						"mc_dax_evade_08",
+						"linear"
+					],
+					[
+						9,
+						"mc_dax_evade_09",
+						"linear"
+					],
+					[
+						10,
+						"mc_dax_evade_10",
+						"linear"
+					],
+					[
+						11,
+						"mc_dax_evade_11",
+						"linear"
 					],
 					[
 						12,
-						"dax_sidestep",
+						"mc_dax_evade_12",
+						"linear"
+					],
+					[
+						13,
+						"mc_dax_evade_13",
+						"linear"
+					],
+					[
+						14,
+						"mc_dax_evade_14",
 						"linear"
 					],
 					[
