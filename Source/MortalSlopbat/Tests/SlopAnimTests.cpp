@@ -590,6 +590,58 @@ bool FSlopThrowPaths::RunTest(const FString&)
 	return true;
 }
 
+// A guard holds the hands in front of the body, not inside it: in the held poses, each hand stays
+// clear of the line from the hips to the neck.
+SLOP_TEST(FSlopHandsOutsideBody, "Anim.HandsStayOutsideTheBody")
+bool FSlopHandsOutsideBody::RunTest(const FString&)
+{
+	TArray<FName> Ids = FContent::Roster();
+	Ids.Append(FContent::Special());
+	const TCHAR* Poses[] = {TEXT("stance"), TEXT("block"), TEXT("crouch"), TEXT("block_low"), TEXT("hit_head"), TEXT("hit_body"), TEXT("hit_leg"), TEXT("block_hit")};
+	for (const FName& Id : Ids)
+	{
+		FFightSim Sim;
+		Sim.bIntro = false;
+		Sim.bTraining = true;
+		Sim.Setup(GetContent().Fighter(Id), GetContent().Fighter(TEXT("gorm")));
+		FAnimator A;
+		A.Setup(Sim.Fighters[0], GetContent().CommonPoses);
+		FPadState Pads[2];
+		for (int32 T = 0; T < 600 && (Sim.Phase != EPhase::Fight || T < 30); ++T)
+		{
+			Sim.Step(Pads);
+			A.SyncFromSim();
+			A.Update(1.0, 1.0 / 60.0);
+		}
+		for (const TCHAR* Pose : Poses)
+		{
+			if (!A.Lib.Has(Pose))
+			{
+				continue;
+			}
+			A.PoseOverride = Pose;
+			for (int32 T = 0; T < 30; ++T)
+			{
+				Sim.Step(Pads);
+				A.SyncFromSim();
+				A.Update(1.0, 1.0 / 60.0);
+			}
+			const FVector Hips = A.Rig.J(EJoint::Hips).P, Neck = A.Rig.J(EJoint::Neck).P;
+			for (int32 Side = 0; Side < 2; ++Side)
+			{
+				const FVector H = A.Rig.HandTip(Side);
+				const FVector C = FMath::ClosestPointOnSegment(H, Hips, Neck);
+				const double D = (H - C).Size();
+				// About half a torso's depth (11 cm on a 1.8 m body): the 2.5.2 crouch had them at 5-8 cm.
+				TestTrue(FString::Printf(TEXT("%s %s: %s hand %.3f m from the spine"), *Id.ToString(), Pose, Side == 0 ? TEXT("left") : TEXT("right"), D),
+					D >= 0.11 * A.Rig.H / 1.8);
+			}
+		}
+		A.PoseOverride = NAME_None;
+	}
+	return true;
+}
+
 // Walking and running play their step cycles by the distance covered, so a foot on the ground stays
 // where it was put: while a foot is planted it should hardly move across the floor (the captured
 // cycles; the sumo shuffle, the circle walk and the diver's plod are the fighters' own and logged).
