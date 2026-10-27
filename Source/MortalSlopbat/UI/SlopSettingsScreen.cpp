@@ -154,6 +154,7 @@ namespace SlopSettingsImpl
 			S.Resolution = Before.Resolution;
 			S.bVSync = Before.bVSync;
 			S.FrameCap = Before.FrameCap;
+			S.bDynamicRes = Before.bDynamicRes;
 			S.Graphics = Before.Graphics;
 			bPendingDisplay = false;
 			GI->ApplySettings(true);
@@ -186,11 +187,14 @@ namespace SlopSettingsImpl
 				}, [&S](int32 V) { S.Resolution = Res[V]; }, true));
 				Rows.Add(Toggle(LOCTEXT("VSync", "VSync"), &S.bVSync, true));
 				Rows.Last().bDisplay = true;
-				static const int32 Caps[] = {30, 60, 120, 144, 0};
-				Rows.Add(Choice(LOCTEXT("Cap", "Frame rate cap"), {LOCTEXT("C30", "30"), LOCTEXT("C60", "60"), LOCTEXT("C120", "120"), LOCTEXT("C144", "144"), LOCTEXT("None", "None")},
-					[&S]() { for (int32 I = 0; I < 5; ++I) { if (Caps[I] == S.FrameCap) return I; } return 1; }, [&S](int32 V) { S.FrameCap = Caps[V]; }, true));
-				Rows.Add(Choice(LOCTEXT("Graphics", "Graphics"), {LOCTEXT("High", "High"), LOCTEXT("Low", "Low (no depth of field, simpler shadows)")},
-					[&S]() { return S.Graphics == TEXT("low") ? 1 : 0; }, [&S](int32 V) { S.Graphics = V == 1 ? TEXT("low") : TEXT("high"); }, true));
+				static const int32 Caps[] = {-1, 30, 60, 120, 144, 0};
+				Rows.Add(Choice(LOCTEXT("Cap", "Frame rate cap"), {LOCTEXT("CDisplay", "Match the display"), LOCTEXT("C30", "30"), LOCTEXT("C60", "60"), LOCTEXT("C120", "120"), LOCTEXT("C144", "144"), LOCTEXT("None", "None")},
+					[&S]() { for (int32 I = 0; I < UE_ARRAY_COUNT(Caps); ++I) { if (Caps[I] == S.FrameCap) return I; } return 0; }, [&S](int32 V) { S.FrameCap = Caps[V]; }, true));
+				Rows.Add(Choice(LOCTEXT("RenderRes", "Render resolution"), {LOCTEXT("ResDynamic", "Dynamic (holds the frame rate)"), LOCTEXT("ResFull", "Full")},
+					[&S]() { return S.bDynamicRes ? 0 : 1; }, [&S](int32 V) { S.bDynamicRes = V == 0; }, true));
+				Rows.Add(Choice(LOCTEXT("Graphics", "Graphics"), {LOCTEXT("High", "High"), LOCTEXT("Epic", "Epic (finer shadows and effects; a faster GPU)"), LOCTEXT("Low", "Low (no depth of field, simpler shadows)")},
+					[&S]() { return S.Graphics == TEXT("low") ? 2 : (S.Graphics == TEXT("epic") ? 1 : 0); },
+					[&S](int32 V) { S.Graphics = V == 2 ? TEXT("low") : (V == 1 ? TEXT("epic") : TEXT("high")); }, true));
 				Rows.Add(Toggle(LOCTEXT("PostFx", "Vignette and grain"), &S.bPostFx));
 				Rows.Add(Toggle(LOCTEXT("Smooth", "Motion smoothing between ticks"), &S.bMotionSmoothing));
 				break;

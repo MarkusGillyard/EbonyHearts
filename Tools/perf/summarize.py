@@ -5,7 +5,8 @@
 For the whole run and for each scene (stage and fighters) it prints frame time median, p95,
 p99 and maximum; average FPS; the 1% low (1000 / mean of the slowest 1% of frame times); hitches
 (frames over the threshold, default 25 ms, i.e. a 60 Hz frame missed by more than half); the
-game-thread, render-thread and GPU medians and p95; and peak resident memory. The first
+game-thread, render-thread and GPU medians and p95; peak resident memory; how evenly frames are
+paced (the share within 1 ms of the median); and the render scale dynamic resolution chose. The first
 `--warmup` seconds of each match (loading, first-use shader compilation) are reported apart.
 """
 import csv
@@ -45,6 +46,12 @@ def report(name, rows, hitch):
     print(f"  game ms   median {pct(g, 50):.2f}  p95 {pct(g, 95):.2f}   render ms median {pct(rt, 50):.2f}  p95 {pct(rt, 95):.2f}")
     print(f"  gpu ms    median {pct(gpu, 50):.2f}  p95 {pct(gpu, 95):.2f}  p99 {pct(gpu, 99):.2f}")
     print(f"  memory    peak resident {max(r['rss_mb'] for r in rows):.0f} MB")
+    med = pct(f, 50)
+    even = sum(1 for x in f if abs(x - med) <= 1.0) / len(f) * 100.0
+    print(f"  pacing    {even:.1f} % of frames within 1 ms of the median")
+    if "res_pct" in rows[0]:
+        rp = [r["res_pct"] for r in rows]
+        print(f"  render    scale median {pct(rp, 50):.0f} %  lowest {min(rp):.0f} %")
 
 
 def main():
@@ -61,8 +68,9 @@ def main():
     rows = []
     with open(args[0]) as fh:
         for r in csv.DictReader(fh):
-            for k in ("match_s", "frame_ms", "game_ms", "render_ms", "gpu_ms", "rss_mb"):
-                r[k] = float(r[k])
+            for k in ("match_s", "frame_ms", "game_ms", "render_ms", "gpu_ms", "rss_mb", "res_pct"):
+                if k in r:
+                    r[k] = float(r[k])
             rows.append(r)
     warm = [r for r in rows if r["match_s"] >= warmup]
     cold = [r for r in rows if r["match_s"] < warmup]

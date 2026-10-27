@@ -162,6 +162,12 @@ bool FSlopSettingsRoundTrip::RunTest(const FString&)
 	TestEqual("resolution default", B.Resolution, D.Resolution);
 	TestEqual("gore default", B.Gore, D.Gore);
 	TestEqual("cap default", B.FrameCap, D.FrameCap);
+	// The old default cap in a version 1 file follows the display now; chosen in version 2, it stays.
+	FSlopSettings V1, V2;
+	V1.FromJson(FContent::ParseJson(TEXT(R"({"version": 1, "frame_cap": 60})")));
+	V2.FromJson(FContent::ParseJson(TEXT(R"({"version": 2, "frame_cap": 60})")));
+	TestEqual("version 1's 60 follows the display", V1.FrameCap, -1);
+	TestEqual("a chosen 60 stays", V2.FrameCap, 60);
 	TestEqual("bad key ignored", B.Keys[0][(int32)EGameAction::HP], D.Keys[0][(int32)EGameAction::HP]);
 	return true;
 }

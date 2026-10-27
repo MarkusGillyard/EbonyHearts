@@ -57,6 +57,11 @@ public:
 
 	// Settings.
 	void ApplySettings(bool bDisplay = true);
+	// The frame rate the cap aims for (0: none beyond VSync); with the cap following the display,
+	// its refresh rate, or every second or third refresh above 100 Hz.
+	double TargetFrameRate() const;
+	// The refresh rate of the display the game window is on (0 when unknown, as offscreen).
+	double DisplayRefresh() const;
 	void SaveSettings() { Settings.Save(); }
 	void Quit();
 	double Now() const;
@@ -112,6 +117,8 @@ private:
 	double NextShotAt = 0.0;
 	int32 ShotIndex = 0;
 	int32 QuitAtTick = -1;
+	// Development: console commands run at set times after start (-SlopExec=40:ProfileGPU;60:stat unit).
+	TArray<TPair<double, FString>> ExecAt;
 	double QuitAtSeconds = -1.0;
 	// Development: the fighters whose portraits are still to be rendered.
 	TArray<FName> PortraitQueue;

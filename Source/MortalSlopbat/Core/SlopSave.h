@@ -27,7 +27,7 @@ namespace Slop
 
 	struct FSlopSettings
 	{
-		static constexpr int32 Version = 1;
+		static constexpr int32 Version = 2;
 		// Set by Load when the file had to be set aside; shown to the player once.
 		FString LoadNote;
 
@@ -35,9 +35,13 @@ namespace Slop
 		int32 WindowMode = 1;
 		FIntPoint Resolution = FIntPoint(1920, 1080);
 		bool bVSync = true;
+		// -1 follows the display (its refresh rate, or every second or third refresh above 100 Hz);
 		// 0 means no cap beyond VSync.
-		int32 FrameCap = 60;
-		// "high" or "low".
+		int32 FrameCap = -1;
+		// The render resolution drops (to half at most) as far as needed to hold the frame rate, the
+		// image rebuilt to full size; or it always renders at full size.
+		bool bDynamicRes = true;
+		// "high", "epic" (the engine's highest scalability level) or "low".
 		FString Graphics = TEXT("high");
 		double UIScale = 1.0;
 		// Audio (0..1).

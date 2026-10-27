@@ -192,6 +192,7 @@ namespace Slop
 		J->SetNumberField(TEXT("res_y"), Resolution.Y);
 		J->SetBoolField(TEXT("vsync"), bVSync);
 		J->SetNumberField(TEXT("frame_cap"), FrameCap);
+		J->SetBoolField(TEXT("dynamic_res"), bDynamicRes);
 		J->SetStringField(TEXT("graphics"), Graphics);
 		J->SetNumberField(TEXT("ui_scale"), UIScale);
 		J->SetNumberField(TEXT("master_volume"), MasterVolume);
@@ -246,12 +247,18 @@ namespace Slop
 		Resolution = (RX >= 640 && RY >= 360 && RX <= 7680 && RY <= 4320) ? FIntPoint(RX, RY) : D.Resolution;
 		bVSync = Json::Bool(J, TEXT("vsync"), D.bVSync);
 		FrameCap = Json::Int(J, TEXT("frame_cap"), D.FrameCap);
-		if (FrameCap != 0 && FrameCap != 30 && FrameCap != 60 && FrameCap != 120 && FrameCap != 144)
+		// Version 1 wrote its default cap, 60, into every file; follow the display instead.
+		if (Json::Int(J, TEXT("version"), 1) < 2 && FrameCap == 60)
 		{
 			FrameCap = D.FrameCap;
 		}
+		if (FrameCap != -1 && FrameCap != 0 && FrameCap != 30 && FrameCap != 60 && FrameCap != 120 && FrameCap != 144)
+		{
+			FrameCap = D.FrameCap;
+		}
+		bDynamicRes = Json::Bool(J, TEXT("dynamic_res"), D.bDynamicRes);
 		const FString G = Json::Str(J, TEXT("graphics"), D.Graphics);
-		Graphics = (G == TEXT("low") || G == TEXT("high")) ? G : D.Graphics;
+		Graphics = (G == TEXT("low") || G == TEXT("high") || G == TEXT("epic")) ? G : D.Graphics;
 		UIScale = FMath::Clamp(Json::Num(J, TEXT("ui_scale"), D.UIScale), 0.85, 1.25);
 		MasterVolume = FMath::Clamp(Json::Num(J, TEXT("master_volume"), D.MasterVolume), 0.0, 1.0);
 		MusicVolume = FMath::Clamp(Json::Num(J, TEXT("music_volume"), D.MusicVolume), 0.0, 1.0);

@@ -334,8 +334,27 @@ void USlopGameInstance::ApplySettings(bool bDisplay)
 			U->SetScreenResolution(Mode == EWindowMode::WindowedFullscreen && Desktop.X > 0 && Desktop.Y > 0 ? Desktop : Settings.Resolution);
 		}
 		U->SetVSyncEnabled(Settings.bVSync);
-		U->SetFrameRateLimit((float)Settings.FrameCap);
-		const int32 Q = Settings.Graphics == TEXT("low") ? 1 : 3;
+		const double Target = TargetFrameRate();
+		U->SetFrameRateLimit((float)Target);
+		// Dynamic resolution keeps the GPU inside the frame's time: the render scale drops (to
+		// half at most) when the frame would run over, and TSR rebuilds the image to full size.
+		const double Budget = 1000.0 / (Target > 0.0 ? Target : FMath::Max(DisplayRefresh(), 60.0));
+		const auto SetCVar = [](const TCHAR* Name, float V)
+		{
+			if (IConsoleVariable* C = IConsoleManager::Get().FindConsoleVariable(Name))
+			{
+				C->Set(V, ECVF_SetByGameSetting);
+			}
+		};
+		SetCVar(TEXT("r.DynamicRes.OperationMode"), Settings.bDynamicRes ? 2.f : 0.f);
+		SetCVar(TEXT("r.DynamicRes.FrameTimeBudget"), (float)Budget);
+		SetCVar(TEXT("r.DynamicRes.MinScreenPercentage"), 50.f);
+		SetCVar(TEXT("r.DynamicRes.MaxScreenPercentage"), 100.f);
+		UE_LOG(LogSlop, Log, TEXT("Display: %.2f Hz, frame rate target %.1f, render resolution %s"), DisplayRefresh(), Target,
+			Settings.bDynamicRes ? TEXT("dynamic") : TEXT("full"));
+		// The engine's High level for "high": Epic costs a quarter of the render scale dynamic
+		// resolution can hold at a high refresh rate, for detail that barely shows side-on.
+		const int32 Q = Settings.Graphics == TEXT("low") ? 1 : (Settings.Graphics == TEXT("epic") ? 3 : 2);
 		U->SetOverallScalabilityLevel(Q);
 		if (bWindowFromCommandLine)
 		{
@@ -347,6 +366,40 @@ void USlopGameInstance::ApplySettings(bool bDisplay)
 			U->ApplySettings(false);
 		}
 	}
+}
+
+double USlopGameInstance::DisplayRefresh() const
+{
+#if PLATFORM_LINUX
+	if (FSlateApplication::IsInitialized() && !FSlateApplication::Get().IsRenderingOffScreen() && GEngine && GEngine->GameViewport)
+	{
+		const TSharedPtr<SWindow> W = GEngine->GameViewport->GetWindow();
+		SDL_Window* H = W.IsValid() && W->GetNativeWindow().IsValid() ? static_cast<SDL_Window*>(W->GetNativeWindow()->GetOSWindowHandle()) : nullptr;
+		const SDL_DisplayID D = H ? SDL_GetDisplayForWindow(H) : SDL_GetPrimaryDisplay();
+		if (const SDL_DisplayMode* M = D ? SDL_GetCurrentDisplayMode(D) : nullptr)
+		{
+			return M->refresh_rate;
+		}
+	}
+#endif
+	return 0.0;
+}
+
+double USlopGameInstance::TargetFrameRate() const
+{
+	if (Settings.FrameCap >= 0)
+	{
+		return Settings.FrameCap;
+	}
+	const double R = DisplayRefresh();
+	if (R <= 1.0)
+	{
+		return 60.0;
+	}
+	// A frame on every refresh up to 100 Hz; above that every second (or third) refresh, an even
+	// pace the GPU can hold at a fair render scale.
+	const int32 N = FMath::Max(1, FMath::CeilToInt(R / 100.0 - 0.01));
+	return R / N;
 }
 
 // The engine sets the game window's mode while the window is still hidden, and some X11 window
@@ -539,6 +592,15 @@ bool USlopGameInstance::Tick(float Dt)
 	if (Tour && Match && static_cast<FMoveTour*>(Tour)->Done() && ShotTicks.Num() == 0 && QuitAtSeconds < 0.0)
 	{
 		QuitAtSeconds = Now() + 1.0;
+	}
+	for (int32 I = ExecAt.Num() - 1; I >= 0; --I)
+	{
+		if (Now() >= ExecAt[I].Key && GEngine)
+		{
+			UE_LOG(LogSlop, Log, TEXT("Exec: %s"), *ExecAt[I].Value);
+			GEngine->Exec(GetWorld(), *ExecAt[I].Value);
+			ExecAt.RemoveAt(I);
+		}
 	}
 	if (Match && (ShotTicks.Num() > 0 || QuitAtTick >= 0))
 	{
@@ -783,6 +845,20 @@ void USlopGameInstance::DevCommandLine()
 	if (FParse::Value(Cmd, TEXT("SlopShotEvery="), ShotEvery))
 	{
 		NextShotAt = Now() + ShotEvery;
+	}
+	FString Exec;
+	if (FParse::Value(Cmd, TEXT("SlopExec="), Exec, false))
+	{
+		TArray<FString> Parts;
+		Exec.ParseIntoArray(Parts, TEXT(";"));
+		for (const FString& P : Parts)
+		{
+			FString At, Command;
+			if (P.Split(TEXT(":"), &At, &Command))
+			{
+				ExecAt.Add({Now() + FCString::Atod(*At), Command});
+			}
+		}
 	}
 #endif
 }
