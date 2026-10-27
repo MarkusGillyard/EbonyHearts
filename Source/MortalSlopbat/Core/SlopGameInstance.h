@@ -48,6 +48,7 @@ public:
 	void StartMatch();
 	void EndMatch();
 	ASlopMatch* GetMatch() const { return Match; }
+	SSlopHud* GetHud() const { return Hud.Get(); }
 	void OnMatchFinished(const Slop::FMatchResult& R);
 	// The skeletal mesh a fighter wears.
 	static FString MeshFor(FName Fighter);

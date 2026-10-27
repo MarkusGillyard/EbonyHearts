@@ -85,6 +85,8 @@ public:
 	TArray<Slop::FSimEvent> FrameEvents;
 	// The pads fed to the simulation on the last tick (input display).
 	Slop::FPadState LastPads[2];
+	// Frame advantage of the last exchange (training's frame view).
+	Slop::FAdvantageMeter Advantage;
 	// Development: freeze, single-step and slow motion; hit/hurtbox and frame-data views.
 	bool bDebugPause = false;
 	bool bDebugStep = false;

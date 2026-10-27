@@ -3,6 +3,7 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
 #include "Tests/SlopSimHarness.h"
+#include "Core/SlopLog.h"
 
 namespace SlopCombatTestSuite
 {
@@ -397,6 +398,56 @@ bool FSlopRunEmpty::RunTest(const FString&)
 	H.Idle(4, R);
 	TestNotEqual("an empty meter ends the run", (int32)H.F(0).State, (int32)EState::Run);
 	H.Hold[0] = 0;
+	return true;
+}
+
+// --- Frame advantage ------------------------------------------------------------------------------------
+
+// Training's advantage readout measures what happened; for a basic strike, blocked or landing on
+// a fighter standing still, it must match the advantage the move list prints from the frame data.
+SLOP_TEST(FSlopAdvantageMeter, "Combat.Frames.MeasuredAdvantageMatchesTheMoveList")
+bool FSlopAdvantageMeter::RunTest(const FString&)
+{
+	const FFighterDef* Ashka = GetContent().Fighter(TEXT("ashka"));
+	const FFighterDef* Bram = GetContent().Fighter(TEXT("bram"));
+	struct FCase { const TCHAR* Id; int32 Dirs; int32 Btn; double Gap; };
+	const FCase Cases[] = {{TEXT("hp"), 0, HP, 0.75}, {TEXT("lp"), 0, LP, 0.75}, {TEXT("hk"), 0, HK, 1.0}, {TEXT("lk"), 0, LK, 1.0}, {TEXT("roundhouse"), L, HK, 1.0}};
+	for (const FCase& C : Cases)
+	{
+		for (int32 bBlock = 0; bBlock < 2; ++bBlock)
+		{
+			FSimHarness H(Ashka, Bram);
+			FAdvantageMeter Meter;
+			H.Place(C.Gap);
+			H.Hold[1] = bBlock ? BL : 0;
+			H.Step(C.Dirs, C.Btn);
+			Meter.Update(H.Sim);
+			const FName Started = H.MoveId(0);
+			for (int32 T = 0; T < 240 && !Meter.bHas; ++T)
+			{
+				H.Idle(1);
+				Meter.Update(H.Sim);
+			}
+			const FMoveDef* M = Ashka->Move(C.Id);
+			const TCHAR* How = bBlock ? TEXT("blocked") : TEXT("hit");
+			TestEqual(FString::Printf(TEXT("%s %s: the move"), C.Id, How), Started, FName(C.Id));
+			TestTrue(FString::Printf(TEXT("%s %s: an exchange is measured"), C.Id, How), Meter.bHas);
+			TestEqual(FString::Printf(TEXT("%s %s: blocked or not"), C.Id, How), Meter.bBlocked, (bool)bBlock);
+			if (bBlock)
+			{
+				TestEqual(FString::Printf(TEXT("%s blocked: advantage"), C.Id), Meter.Value, M->BlockAdvantage());
+			}
+			else if (M->HitAdvantage() < 999)
+			{
+				TestFalse(FString::Printf(TEXT("%s hit: no knockdown"), C.Id), Meter.bKnockdown);
+				TestEqual(FString::Printf(TEXT("%s hit: advantage"), C.Id), Meter.Value, M->HitAdvantage());
+			}
+			else
+			{
+				TestTrue(FString::Printf(TEXT("%s hit: a knockdown"), C.Id), Meter.bKnockdown);
+			}
+		}
+	}
 	return true;
 }
 

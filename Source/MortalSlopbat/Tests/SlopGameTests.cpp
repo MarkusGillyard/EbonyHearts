@@ -273,6 +273,11 @@ bool FSlopSaveFilesRecover::RunTest(const FString&)
 		FFileHelper::LoadFileToString(Copy, *Keep);
 		TestTrue("the copy has the later version's fields", Copy.Contains(TEXT("future_field")));
 	}
+	// Leave nothing of the test profile beside the player's own files.
+	for (const FString& F : {SPath, SPath + TEXT(".tmp"), SPath + TEXT(".bad"), PPath, PPath + TEXT(".tmp"), Keep})
+	{
+		PF.DeleteFile(*F);
+	}
 	FCommandLine::Set(*Saved);
 	return true;
 }

@@ -139,7 +139,7 @@ namespace Slop
 		{
 			return 999;
 		}
-		return Hitstun - (Active - 1 + Recovery);
+		return Hitstun - (Active + Recovery);
 	}
 
 	double FMoveDef::CurveAt(const TArray<FVector2D>& Curve, double Frame)

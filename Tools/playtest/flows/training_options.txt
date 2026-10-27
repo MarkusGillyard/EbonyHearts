@@ -1,0 +1,6 @@
+# Training options from the pause menu, by controller actions only: the dummy set to fight back
+# (six presses through its modes), frame data and advantage on, then reset positions; the CPU
+# dummy's blows on the idle player show the advantage readout; then out to the main menu.
+14:confirm,1.5:down,0.4:down,0.4:down,0.5:confirm,2:confirm,2:right,0.5:confirm,2:confirm,6:pause,1:down,0.4:down,0.5:confirm,1:confirm,0.4:confirm,0.4:confirm,0.4:confirm,0.4:confirm,0.4:confirm,0.6:down,0.4:down,0.4:confirm,0.6:down,0.4:down,0.4:down,0.4:down,0.5:confirm,12:pause,1:down,0.4:down,0.4:down,0.4:down,0.4:down,0.4:down,0.5:confirm
+-SlopFrameStats
+60

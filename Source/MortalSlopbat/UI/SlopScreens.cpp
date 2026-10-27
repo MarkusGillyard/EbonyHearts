@@ -3,6 +3,7 @@
 #include "Core/SlopAudio.h"
 #include "Core/SlopGameInstance.h"
 #include "View/SlopMatch.h"
+#include "UI/SlopHud.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
@@ -96,6 +97,8 @@ namespace SlopScreensImpl
 		int32 Sel = 0;
 		TFunction<void()> OnBack;
 		TFunction<void(float)> OnTick;
+		// When set, the label of item I as of now (empty: its fixed label); read whenever it builds.
+		TFunction<FText(int32)> LiveLabel;
 		bool bOverlay = false;
 		bool bMatchBehind = false;
 		float Top = 200.f;
@@ -118,9 +121,10 @@ namespace SlopScreensImpl
 				];
 			}
 			TArray<FText> Labels;
-			for (const FItem& I : Items)
+			for (int32 I = 0; I < Items.Num(); ++I)
 			{
-				Labels.Add(I.Label);
+				const FText Live = LiveLabel ? LiveLabel(I) : FText();
+				Labels.Add(Live.IsEmpty() ? Items[I].Label : Live);
 			}
 			Col->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 36, 0, 0)
 			[
@@ -406,6 +410,18 @@ namespace SlopScreensImpl
 				P->GI->ShowOverlay(SlopScreens::MoveList(P->GI->GetMatch()->Config.P1, true));
 			}
 		});
+		S->Item(LOCTEXT("TrainingItem", "Training Options"), [W]()
+		{
+			if (TSharedPtr<FListScreen> P = W.Pin())
+			{
+				P->GI->ShowOverlay(SlopScreens::TrainingOptions());
+			}
+		}, [W]()
+		{
+			TSharedPtr<FListScreen> P = W.Pin();
+			const EMode M = P ? P->GI->Flow.Config.Mode : EMode::Arcade;
+			return M == EMode::Training || M == EMode::Trials;
+		});
 		S->Item(LOCTEXT("PauseSettings", "Settings"), [W]()
 		{
 			if (TSharedPtr<FListScreen> P = W.Pin())
@@ -448,6 +464,91 @@ namespace SlopScreensImpl
 				P->GI->Goto(SlopScreens::MainMenu());
 			}
 		});
+		return S;
+	}
+
+	// --- Training options ------------------------------------------------------------------------------
+
+	// The training views and the dummy, reachable from a controller (the keyboard also has F1 to F8).
+	// Each row shows its current state and changes it in place.
+	TSharedPtr<FSlopScreen> MakeTraining()
+	{
+		TSharedRef<FListScreen> S = MakeShared<FListScreen>();
+		S->bOverlay = true;
+		S->Heading = LOCTEXT("TrainingHead", "TRAINING");
+		S->HeadingSize = 80.f;
+		S->Top = 200.f;
+		TWeakPtr<FListScreen> W = S;
+		struct FRow
+		{
+			FText Name;
+			TFunction<FText(ASlopMatch&, SSlopHud&)> Value;
+			TFunction<void(ASlopMatch&, SSlopHud&)> Change;
+		};
+		const auto OnOff = [](bool b) { return b ? LOCTEXT("On", "On") : LOCTEXT("Off", "Off"); };
+		TSharedRef<TArray<FRow>> Rows = MakeShared<TArray<FRow>>();
+		Rows->Add({LOCTEXT("TrDummy", "Dummy"), [](ASlopMatch& M, SSlopHud&) { return M.Dummy ? FText::FromString(M.Dummy->ModeName()) : FText(); },
+			[](ASlopMatch& M, SSlopHud&) { if (M.Dummy) M.Dummy->NextMode(); }});
+		Rows->Add({LOCTEXT("TrBoxes", "Hit and hurt boxes"), [OnOff](ASlopMatch& M, SSlopHud&) { return OnOff(M.bShowBoxes); },
+			[](ASlopMatch& M, SSlopHud&) { M.bShowBoxes = !M.bShowBoxes; }});
+		Rows->Add({LOCTEXT("TrFrames", "Frame data and advantage"), [OnOff](ASlopMatch&, SSlopHud& H) { return OnOff(H.bShowFrames); },
+			[](ASlopMatch&, SSlopHud& H) { H.bShowFrames = !H.bShowFrames; }});
+		Rows->Add({LOCTEXT("TrStates", "Fighter states"), [OnOff](ASlopMatch&, SSlopHud& H) { return OnOff(H.bShowStates); },
+			[](ASlopMatch&, SSlopHud& H) { H.bShowStates = !H.bShowStates; }});
+		Rows->Add({LOCTEXT("TrInput", "Input display"), [OnOff](ASlopMatch&, SSlopHud& H) { return OnOff(H.bInputDisplay); },
+			[](ASlopMatch&, SSlopHud& H) { H.bInputDisplay = !H.bInputDisplay; }});
+		Rows->Add({LOCTEXT("TrSpeed", "Speed"), [](ASlopMatch& M, SSlopHud&) { return M.bDebugSlow ? LOCTEXT("TrSlow", "Slow") : LOCTEXT("TrNormal", "Normal"); },
+			[](ASlopMatch& M, SSlopHud&) { M.bDebugSlow = !M.bDebugSlow; }});
+		const auto Label = [W, Rows](int32 I)
+		{
+			TSharedPtr<FListScreen> P = W.Pin();
+			ASlopMatch* M = P && P->GI ? P->GI->GetMatch() : nullptr;
+			SSlopHud* H = P && P->GI ? P->GI->GetHud() : nullptr;
+			const FRow& R = (*Rows)[I];
+			return M && H ? FText::Format(LOCTEXT("TrRow", "{0}: {1}"), R.Name, R.Value(*M, *H)) : R.Name;
+		};
+		const auto Back = [W]()
+		{
+			if (TSharedPtr<FListScreen> P = W.Pin())
+			{
+				P->GI->ShowOverlay(SlopScreens::Pause());
+			}
+		};
+		for (int32 I = 0; I < Rows->Num(); ++I)
+		{
+			S->Item((*Rows)[I].Name, [W, Rows, I]()
+			{
+				TSharedPtr<FListScreen> P = W.Pin();
+				ASlopMatch* M = P ? P->GI->GetMatch() : nullptr;
+				SSlopHud* H = P ? P->GI->GetHud() : nullptr;
+				if (!M || !H)
+				{
+					return;
+				}
+				(*Rows)[I].Change(*M, *H);
+				P->GI->RebuildScreen();
+			}, I == 0 ? TFunction<bool()>([W]()
+			{
+				TSharedPtr<FListScreen> P = W.Pin();
+				ASlopMatch* M = P ? P->GI->GetMatch() : nullptr;
+				return M && M->Dummy && !M->Guide;
+			}) : TFunction<bool()>());
+		}
+		S->Item(LOCTEXT("TrReset", "Reset positions"), [W]()
+		{
+			if (TSharedPtr<FListScreen> P = W.Pin())
+			{
+				if (ASlopMatch* M = P->GI->GetMatch())
+				{
+					M->ResetPositions();
+					M->SetPaused(false);
+				}
+				P->GI->CloseOverlay();
+			}
+		});
+		S->Item(LOCTEXT("TrBack", "Back"), Back);
+		S->OnBack = Back;
+		S->LiveLabel = [Rows, Label](int32 I) { return I < Rows->Num() ? Label(I) : FText(); };
 		return S;
 	}
 
@@ -654,6 +755,7 @@ namespace SlopScreens
 	TSharedPtr<FSlopScreen> MainMenu() { return Named(MakeShared<FMainMenu>(), TEXT("MainMenu")); }
 	TSharedPtr<FSlopScreen> MatchScreen() { return Named(MakeShared<FMatchScreen>(), TEXT("Match")); }
 	TSharedPtr<FSlopScreen> Pause() { return Named(MakePause(), TEXT("Pause")); }
+	TSharedPtr<FSlopScreen> TrainingOptions() { return Named(MakeTraining(), TEXT("TrainingOptions")); }
 	TSharedPtr<FSlopScreen> Results(const FMatchResult& R) { return Named(MakeResults(R), TEXT("Results")); }
 	TSharedPtr<FSlopScreen> DataError() { return Named(MakeDataError(), TEXT("DataError")); }
 

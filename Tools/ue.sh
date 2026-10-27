@@ -38,6 +38,10 @@ offscreen_flag() {
 
 # SDL drops pad events for a window without focus (and an offscreen run has no window); the
 # virtual-pad playtests need them, so development runs allow background pad events.
+# Development runs keep their own settings and progress (profile "dev") unless given a -profile=,
+# so the player's own files are never read or rewritten by them.
 run_game() {
-	SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1 capped "$UE/Engine/Binaries/Linux/UnrealEditor" "$P" -game -windowed -resx="${RESX:-1920}" -resy="${RESY:-1080}" -log -NoSplash -nosound=false $(offscreen_flag) "$@"
+	local profile=-profile=dev
+	case " $* " in *" -profile="*) profile= ;; esac
+	SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1 capped "$UE/Engine/Binaries/Linux/UnrealEditor" "$P" -game -windowed -resx="${RESX:-1920}" -resy="${RESY:-1080}" -log -NoSplash -nosound=false $(offscreen_flag) $profile "$@"
 }

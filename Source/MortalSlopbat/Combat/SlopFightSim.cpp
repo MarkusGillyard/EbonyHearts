@@ -66,6 +66,42 @@ namespace Slop
 		}
 	}
 
+	void FAdvantageMeter::Update(const FFightSim& Sim)
+	{
+		for (const FSimEvent& E : Sim.Events)
+		{
+			if ((E.Type == EEvent::Hit || E.Type == EEvent::Block) && E.By >= 0 && E.By <= 1 && E.By != E.Who)
+			{
+				Attacker = E.By;
+				FreeAt[0] = FreeAt[1] = -1;
+				bWatchBlocked = E.Type == EEvent::Block;
+				bWatchDown = false;
+			}
+		}
+		if (Attacker < 0)
+		{
+			return;
+		}
+		const FFighter& D = Sim.Fighters[1 - Attacker];
+		bWatchDown |= D.State == EState::Down || D.State == EState::WakeUp;
+		for (int32 I = 0; I < 2; ++I)
+		{
+			if (FreeAt[I] < 0 && Sim.Fighters[I].IsActionable())
+			{
+				FreeAt[I] = Sim.TickCount;
+			}
+		}
+		if (FreeAt[0] >= 0 && FreeAt[1] >= 0)
+		{
+			bHas = true;
+			By = Attacker;
+			Value = FreeAt[1 - Attacker] - FreeAt[Attacker];
+			bBlocked = bWatchBlocked;
+			bKnockdown = bWatchDown;
+			Attacker = -1;
+		}
+	}
+
 	FVector2D PathAt(const TArray<FVector>& Path, int32 T)
 	{
 		FVector Prev = Path[0];

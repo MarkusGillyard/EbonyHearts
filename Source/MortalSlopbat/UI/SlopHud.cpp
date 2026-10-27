@@ -428,6 +428,17 @@ int32 SSlopHud::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometr
 			}
 			PaintText(OutDrawElements, G, L, FText::FromString(S), SlopUI::Body(22.f), FVector2D(I == 0 ? 460.f : 1460.f, 112.f), SlopUI::Accent, I == 0 ? 0 : 2);
 		}
+		// What the last exchange actually left, measured, beside the move's listed numbers.
+		const Slop::FAdvantageMeter& A = M->Advantage;
+		if (bShowFrames && A.bHas && A.By >= 0)
+		{
+			const FText Who = FText::FromString(M->Sim.Fighters[A.By].Def->Name);
+			const FText Line = A.bKnockdown
+				? FText::Format(LOCTEXT("AdvKD", "Last exchange: {0}, knockdown"), Who)
+				: FText::Format(A.bBlocked ? LOCTEXT("AdvBlock", "Last exchange: {0} {1} on block") : LOCTEXT("AdvHit", "Last exchange: {0} {1} on hit"),
+					Who, FText::FromString(FString::Printf(TEXT("%+d"), A.Value)));
+			PaintText(OutDrawElements, G, L, Line, SlopUI::Body(26.f), FVector2D(960.f, 150.f), A.Value >= 0 || A.bKnockdown ? SlopUI::Accent : SlopUI::Amber, 1);
+		}
 	}
 	return L + 2;
 }

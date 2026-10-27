@@ -10,6 +10,8 @@ namespace SlopScreens
 	TSharedPtr<FSlopScreen> MainMenu();
 	TSharedPtr<FSlopScreen> MatchScreen();
 	TSharedPtr<FSlopScreen> Pause();
+	// Training views and the dummy, from the pause menu.
+	TSharedPtr<FSlopScreen> TrainingOptions();
 	TSharedPtr<FSlopScreen> Results(const Slop::FMatchResult& R);
 	TSharedPtr<FSlopScreen> DataError();
 	// Fighter select for a mode; Versus asks both sides.

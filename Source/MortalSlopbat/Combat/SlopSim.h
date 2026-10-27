@@ -288,6 +288,29 @@ namespace Slop
 		void Reset() { Progress = 0; bDone = false; }
 	};
 
+	// Frame advantage of the last exchange, as training shows it: once a blow lands or is blocked,
+	// the ticks from the attacker being free to act again to the defender being free (positive: the
+	// attacker moves first). A knockdown is reported as such rather than as a count.
+	struct FAdvantageMeter
+	{
+		bool bHas = false;
+		// Who struck, and by how many ticks they are free first.
+		int32 By = -1;
+		int32 Value = 0;
+		bool bBlocked = false;
+		bool bKnockdown = false;
+
+		// Call after each step of the simulation.
+		void Update(const FFightSim& Sim);
+		void Reset() { *this = FAdvantageMeter(); }
+
+	private:
+		int32 Attacker = -1;
+		int32 FreeAt[2] = {-1, -1};
+		bool bWatchBlocked = false;
+		bool bWatchDown = false;
+	};
+
 	// Throw path keys [tick, forward, up] interpolated at tick T.
 	FVector2D PathAt(const TArray<FVector>& Path, int32 T);
 }

@@ -166,7 +166,10 @@ namespace Slop
 		bool InActive(int32 Frame) const { return Active > 0 && Frame >= Startup && Frame <= LastActive(); }
 		bool HasTag(FName T) const { return Tags.Contains(T); }
 		// Frame advantage on block / hit when the first active frame connects (move lists, tests).
-		int32 BlockAdvantage() const { return Blockstun - (Active - 1 + Recovery); }
+		// Ticks the attacker is free before the defender after a block on the first active frame. The
+		// stun's last tick is the one the defender is free on, so the count is Active + Recovery (the
+		// original game's lists said Active - 1 + Recovery, a frame too kind).
+		int32 BlockAdvantage() const { return Blockstun - (Active + Recovery); }
 		int32 HitAdvantage() const;
 		bool IsThrowKind() const { return Kind == EMoveKind::Throw || Kind == EMoveKind::Grab; }
 

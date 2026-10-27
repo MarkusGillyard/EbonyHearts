@@ -218,6 +218,7 @@ void ASlopMatch::SetPaused(bool bPause)
 
 void ASlopMatch::ResetPositions()
 {
+	Advantage.Reset();
 	Sim.RestartRound();
 	Sim.Phase = EPhase::Fight;
 	for (FFighter& F : Sim.Fighters)
@@ -306,6 +307,7 @@ void ASlopMatch::FixedTick()
 	}
 	const double T0 = FPlatformTime::Seconds();
 	Sim.Step(Pads);
+	Advantage.Update(Sim);
 	SimMicros += (FPlatformTime::Seconds() - T0) * 1e6;
 	++TicksRun;
 	++SteppedThisFrame;
