@@ -74,7 +74,8 @@ namespace Slop::Anim
 		Out = Lib.Get(TEXT("stance"));
 		// Each fighter keeps its own rhythm in the stance: taller bodies a little slower, and the
 		// two sides out of step with each other.
-		const uint32 Hash = GetTypeHash(InFighter.Def->Id) + uint32(InFighter.Index) * 2654435761u;
+		// Hashed from the name's text, which is the same every run (a name's own hash follows load order).
+		const uint32 Hash = FCrc::StrCrc32(*InFighter.Def->Id.ToString()) + uint32(InFighter.Index) * 2654435761u;
 		Pace = 1.15 * FMath::Sqrt(1.8 / FMath::Max(InFighter.Def->Height, 0.5)) * (0.92 + 0.16 * double(Hash % 1000) / 1000.0) * InFighter.Def->Motion.Pace;
 		IdlePhase = double((Hash / 1000) % 628) / 100.0;
 		SyncFromSim(true);
