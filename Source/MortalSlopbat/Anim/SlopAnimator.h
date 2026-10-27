@@ -64,6 +64,7 @@ namespace Slop::Anim
 		void HoldPose(FName Name, double Blend);
 		void EvaluateSource(double Frac);
 		void RunCycle();
+		bool PlayCycle(FName Name, double BlendTicks);
 		FPose ReactionPose(FName React, FName Back, double StunTotal);
 		void Procedural(double Delta, bool bFrozen, FQuat Extra[(int32)EJoint::Count]);
 		FXf AirTilt(double Delta, bool bFrozen);
@@ -136,5 +137,10 @@ namespace Slop::Anim
 		double AirPitchV = 0;
 		double Flip = 0;
 		double RunPhase = 0;
+		// Distance covered in the current walk or run, for the captured step cycles; whether one
+		// drives the legs this frame (the feet then follow it instead of being planted).
+		double CycleDist = 0;
+		double CycleX = 0;
+		bool bCycleFeet = false;
 	};
 }

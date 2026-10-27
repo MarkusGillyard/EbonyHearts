@@ -192,6 +192,18 @@ namespace Slop
 		double CircleWalk = 0.0;
 		// The head moves only with the chest (a diving helmet fixed to its breastplate).
 		bool bHeadLocked = false;
+		// Walking and running take the captured step cycles (cycles_mocap.json) where there are
+		// any; a style with its own footwork (sumo's sliding feet, a diving suit) keeps the
+		// procedural steps.
+		bool bWalkCycle = true;
+		bool bRunCycle = true;
+	};
+
+	// One captured step cycle: poses over one stride, played by distance covered.
+	struct FCycleDef
+	{
+		double Stride = 1.0;
+		TArray<FName> Poses;
 	};
 
 	struct FFighterDef
@@ -218,6 +230,8 @@ namespace Slop
 		bool bHidden = false;
 		bool bUnthrowable = false;
 		FMotionStyle Motion;
+		// "walk_f", "walk_b", "run": the captured cycles this fighter uses (by its Motion).
+		TMap<FName, FCycleDef> Cycles;
 		TMap<FName, TSharedRef<FMoveDef>> Moves;
 		// Ground and air commands, highest priority first.
 		TArray<FCommand> Commands;
@@ -271,6 +285,8 @@ namespace Slop
 		TSharedPtr<FJsonObject> CommonPosesOriginal;
 		// Per fighter, fields from motion capture laid over its data (fighters_mocap.json).
 		TSharedPtr<FJsonObject> FightersMocap;
+		// The captured step cycles (cycles_mocap.json, from Tools/mocap).
+		TSharedPtr<FJsonObject> CyclesMocap;
 		TSharedPtr<FJsonObject> Trials;
 		TArray<FString> Errors;
 		FString Dir;

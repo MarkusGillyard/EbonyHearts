@@ -103,6 +103,10 @@ namespace Slop::Anim
 		{
 			PoseLead = 0.0;
 		}
+		if (LastState != F.State)
+		{
+			CycleDist = 0.0;
+		}
 		LastState = F.State;
 		LastMove = F.Move;
 		if (bTeleport)
@@ -198,6 +202,12 @@ namespace Slop::Anim
 		}
 		Root = FXf(Look, P + LiftExtra) * AirTilt(Delta, bFrozen);
 		WorldScale = ExtraScale;
+		if (Delta > 0.0)
+		{
+			CycleDist += FMath::Abs(P2.X - CycleX);
+		}
+		CycleX = P2.X;
+		bCycleFeet = false;
 		EvaluateSource(Frac);
 		if (Delta > 0.0)
 		{
@@ -430,7 +440,7 @@ namespace Slop::Anim
 		if (Delta > 0.0 && !bFrozen)
 		{
 			IdleW = MoveToward(IdleW, IdleTarget, Delta * 4.0);
-			WalkW = MoveToward(WalkW, bWalk ? 1.0 : 0.0, Delta * 7.0);
+			WalkW = MoveToward(WalkW, bWalk && !bCycleFeet ? 1.0 : 0.0, Delta * 7.0);
 			IdlePhase = FMath::Fmod(IdlePhase + Delta * Tau * Pace, Tau * 2.0);
 		}
 		const double H = Rig.H;
@@ -526,9 +536,14 @@ namespace Slop::Anim
 		}
 		switch (F.State)
 		{
-		case EState::Idle:
 		case EState::WalkF:
 		case EState::WalkB:
+			if (!PlayCycle(F.State == EState::WalkF ? FName(TEXT("walk_f")) : FName(TEXT("walk_b")), 6.0))
+			{
+				HoldPose(TEXT("stance"), 7.0);
+			}
+			break;
+		case EState::Idle:
 			HoldPose(TEXT("stance"), 7.0);
 			break;
 		case EState::Intro:
@@ -563,7 +578,10 @@ namespace Slop::Anim
 			HoldPose(TEXT("block_low"), 3.0);
 			break;
 		case EState::Run:
-			RunCycle();
+			if (!PlayCycle(TEXT("run"), 4.0))
+			{
+				RunCycle();
+			}
 			break;
 		case EState::Air:
 			HoldPose(F.JumpDir != 0 ? FName(TEXT("jump_tuck")) : FName(TEXT("jump")), F.JumpDir != 0 ? 4.0 : 5.0);
@@ -696,6 +714,24 @@ namespace Slop::Anim
 		RunPhase = FMath::Fmod(FMath::Abs(Fighter->Pos.X) / Stride, 1.0);
 		const double U = 0.5 - 0.5 * FMath::Cos(RunPhase * Tau);
 		Src.BlendInto(Lib.Get(TEXT("run_a")), Lib.Get(TEXT("run_b")), U);
+	}
+
+	// A captured step cycle, played by the distance covered so the feet keep pace with the ground.
+	bool FAnimator::PlayCycle(FName Name, double BlendTicks)
+	{
+		const FCycleDef* C = Fighter->Def->Cycles.Find(Name);
+		if (!C)
+		{
+			return false;
+		}
+		SetSource(TEXT("cycle:") + Name.ToString(), BlendTicks);
+		const double Stride = C->Stride * Rig.H / 1.8;
+		const double Phase = FMath::Fmod(CycleDist / Stride, 1.0) * C->Poses.Num();
+		const int32 I0 = FMath::FloorToInt(Phase) % C->Poses.Num();
+		const int32 I1 = (I0 + 1) % C->Poses.Num();
+		Src.BlendInto(Lib.Get(C->Poses[I0]), Lib.Get(C->Poses[I1]), Phase - FMath::FloorToDouble(Phase));
+		bCycleFeet = true;
+		return true;
 	}
 
 	// The reaction pose for a fresh stun, only partly reached for short stuns.
@@ -954,7 +990,7 @@ namespace Slop::Anim
 		const double RootYaw = FMath::Atan2(-GZ.X, -GZ.Z);
 		const double Speed = FMath::Abs(VisVel.X);
 		const bool bLoose = In(F.State, {EState::Air, EState::Juggle, EState::Fall, EState::Down, EState::KO, EState::Thrown, EState::Run, EState::WakeUp})
-			|| F.IsAirborne() || FMath::Abs(Flip) > 1.0 || FMath::Abs(AirPitch) > 1.0 || TurnT < 1.0;
+			|| F.IsAirborne() || FMath::Abs(Flip) > 1.0 || FMath::Abs(AirPitch) > 1.0 || TurnT < 1.0 || bCycleFeet;
 		const double Thresh = 0.085 * Rig.H;
 		for (int32 I = 0; I < 2; ++I)
 		{

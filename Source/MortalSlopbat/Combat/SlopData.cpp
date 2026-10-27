@@ -606,6 +606,7 @@ namespace Slop
 			}
 		}
 		FightersMocap = LoadJson(DataDir / TEXT("fighters_mocap.json"));
+		CyclesMocap = LoadJson(DataDir / TEXT("cycles_mocap.json"));
 		Story = LoadJson(DataDir / TEXT("story.json"), &Errors);
 		Trials = LoadJson(DataDir / TEXT("trials.json"), &Errors);
 		if (Trials.IsValid())
@@ -703,6 +704,34 @@ namespace Slop
 			M.WalkTwist = Num(Mo, TEXT("walk_twist"), M.WalkTwist);
 			M.CircleWalk = Num(Mo, TEXT("circle_walk"), M.CircleWalk);
 			M.bHeadLocked = Bool(Mo, TEXT("head_locked"), M.bHeadLocked);
+			M.bWalkCycle = Bool(Mo, TEXT("walk_cycle"), M.bWalkCycle);
+			M.bRunCycle = Bool(Mo, TEXT("run_cycle"), M.bRunCycle);
+		}
+		if (CyclesMocap.IsValid() && !F.bBoss)
+		{
+			for (const auto& KV : CyclesMocap->Values)
+			{
+				const FName Name(*KV.Key);
+				const bool bRun = Name == FName(TEXT("run"));
+				if ((bRun && !F.Motion.bRunCycle) || (!bRun && !F.Motion.bWalkCycle))
+				{
+					continue;
+				}
+				const TSharedPtr<FJsonObject> C = KV.Value->AsObject();
+				FCycleDef Cycle;
+				Cycle.Stride = Num(C, TEXT("stride"), 1.0);
+				if (const TArray<TSharedPtr<FJsonValue>>* P = Arr(C, TEXT("poses")))
+				{
+					for (const TSharedPtr<FJsonValue>& V : *P)
+					{
+						Cycle.Poses.Add(FName(*V->AsString()));
+					}
+				}
+				if (Cycle.Poses.Num() > 1 && Cycle.Stride > 0.05)
+				{
+					F.Cycles.Add(Name, Cycle);
+				}
+			}
 		}
 		const TSharedPtr<FJsonObject> S = Obj(D, TEXT("stats"));
 		F.Height = Num(S, TEXT("height"), F.Height);

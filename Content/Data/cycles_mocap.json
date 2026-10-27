@@ -1,0 +1,5 @@
+{
+	"run": {"stride": 2.989, "poses": ["mc_cycle_run_00", "mc_cycle_run_01", "mc_cycle_run_02", "mc_cycle_run_03", "mc_cycle_run_04", "mc_cycle_run_05", "mc_cycle_run_06", "mc_cycle_run_07", "mc_cycle_run_08", "mc_cycle_run_09", "mc_cycle_run_10", "mc_cycle_run_11", "mc_cycle_run_12", "mc_cycle_run_13", "mc_cycle_run_14", "mc_cycle_run_15"]},
+	"walk_f": {"stride": 1.0325, "poses": ["mc_cycle_walk_f_00", "mc_cycle_walk_f_01", "mc_cycle_walk_f_02", "mc_cycle_walk_f_03", "mc_cycle_walk_f_04", "mc_cycle_walk_f_05", "mc_cycle_walk_f_06", "mc_cycle_walk_f_07", "mc_cycle_walk_f_08", "mc_cycle_walk_f_09", "mc_cycle_walk_f_10", "mc_cycle_walk_f_11", "mc_cycle_walk_f_12", "mc_cycle_walk_f_13", "mc_cycle_walk_f_14", "mc_cycle_walk_f_15"]},
+	"walk_b": {"stride": 0.8221, "poses": ["mc_cycle_walk_b_00", "mc_cycle_walk_b_01", "mc_cycle_walk_b_02", "mc_cycle_walk_b_03", "mc_cycle_walk_b_04", "mc_cycle_walk_b_05", "mc_cycle_walk_b_06", "mc_cycle_walk_b_07", "mc_cycle_walk_b_08", "mc_cycle_walk_b_09", "mc_cycle_walk_b_10", "mc_cycle_walk_b_11", "mc_cycle_walk_b_12", "mc_cycle_walk_b_13", "mc_cycle_walk_b_14", "mc_cycle_walk_b_15"]}
+}

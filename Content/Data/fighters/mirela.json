@@ -18,7 +18,8 @@
 		"walk_bob": 0.2,
 		"step_lift": 0.4,
 		"walk_twist": 1.2,
-		"circle_walk": 1.0
+		"circle_walk": 1.0,
+		"walk_cycle": false
 	},
 	"basic_tweaks": {
 		"hp": {

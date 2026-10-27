@@ -20,7 +20,9 @@
 		"walk_bob": 1.4,
 		"step_lift": 0.5,
 		"walk_twist": 0.25,
-		"head_locked": true
+		"head_locked": true,
+		"walk_cycle": false,
+		"run_cycle": false
 	},
 	"basic_tweaks": {
 		"hp": {

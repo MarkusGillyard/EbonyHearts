@@ -48,6 +48,18 @@ CLIPS = {
     "ashka_teep": ("Male2_G17_PushKickLeft", "LeftFoot", (8, 3, 14), {}, "ashka"),
 }
 
+# cycle -> (take, the foot whose lift-off starts a cycle, travel: +1 forward, -1 backward, the
+# pose fields taken: "all" or "legs" (hips, legs and feet only: the fighter's own guard and upper
+# body stay)). One cycle is cut between two lift-offs of that foot in the take's steadiest stretch
+# and sampled at CYCLE_POSES points; the game plays it by distance covered, so feet do not slide.
+CYCLES = {
+    "run": ("Male2_C3_Run", "LeftFoot", 1, "all"),
+    "walk_f": ("Male2_E4_QuickAdvance", "LeftFoot", 1, "legs"),
+    "walk_b": ("Male2_E6_QuickRetreat", "RightFoot", -1, "legs"),
+}
+CYCLE_POSES = 16
+LEGS = ("hips", "foot_l", "foot_r", "knee_l", "knee_r", "yaw_l", "yaw_r", "free_l", "free_r", "toe_l", "toe_r")
+
 # fighter -> state -> (take, first and last take frames). Played at the take's own speed (two game
 # frames a take frame), turned 45 degrees toward the camera as fighting games show a win.
 STATES = {
@@ -106,18 +118,25 @@ class Take:
         self.s = H / (stand["Head_end"][1] - self.ground)
         self.mirror = False
 
+    def set_mirror(self):
+        """The performer reflected (left for right): sides swapped and positions mirrored."""
+        if self.mirror:
+            return
+        out = []
+        for w in self.frames:
+            m = {k: (-v[0], v[1], v[2]) for k, v in w.items()}
+            for l, r in L_R:
+                m[l], m[r] = m[r], m[l]
+            out.append(m)
+        self.frames = out
+        self.mirror = True
+
     def at(self, t):
         a = int(math.floor(max(0, min(len(self.frames) - 1, t))))
         b = min(a + 1, len(self.frames) - 1)
         u = max(0.0, min(1.0, t - a))
         pa, pb = self.frames[a], self.frames[b]
-        w = {k: tuple(pa[k][i] * (1 - u) + pb[k][i] * u for i in range(3)) for k in pa}
-        if self.mirror:
-            m = dict(w)
-            for l, r in L_R:
-                m[l], m[r] = w[r], w[l]
-            w = m
-        return w
+        return {k: tuple(pa[k][i] * (1 - u) + pb[k][i] * u for i in range(3)) for k in pa}
 
 
 def speed(take, joint, i):
@@ -235,8 +254,9 @@ def convert(move, spec):
     # The poses are authored with the left foot leading; a right-lead start is mirrored.
     lead = dot(sub(f0["LeftFoot"], f0["RightFoot"]), fwd)
     if lead < 0:
-        take.mirror = True
+        take.set_mirror()
         joint = joint.replace("Left", "@").replace("Right", "Left").replace("@", "Right")
+        start, contact, back, fwd = phases(take, joint)
     origin = (take.at(start)["Hips"][0], 0.0, take.at(start)["Hips"][2])
     total = startup + active + recovery
     hold = 0.5  # take frames per game frame across the active frames (the blow drives on)
@@ -256,7 +276,7 @@ def convert(move, spec):
     keys.append([total, "stance", "inout"])
     print("%-11s %-30s start %3d contact %3d back %3d (%d take frames to %d game frames)%s" %
           (move, name, start, contact, back, back - start, total, " mirrored" if take.mirror else ""))
-    return poses, keys, dest
+    return poses, keys, dest, joint
 
 
 def convert_state(fighter, state, spec):
@@ -278,6 +298,55 @@ def convert_state(fighter, state, spec):
     return poses, keys
 
 
+def lift_offs(take, joint):
+    n = len(take.frames)
+    floor = min(take.frames[i][joint][1] for i in range(n))
+    up = [take.frames[i][joint][1] > floor + 4.0 for i in range(n)]
+    return [i for i in range(1, n) if up[i] and not up[i - 1]]
+
+
+def convert_cycle(name, spec, mirrored=False):
+    take_name, foot, travel, fields = spec
+    take = Take(take_name)
+    if mirrored:
+        take.set_mirror()
+        foot = foot.replace("Left", "@").replace("Right", "Left").replace("@", "Right")
+    lifts = lift_offs(take, foot)
+    # The steadiest cycle: consecutive lift-offs whose hips speed is closest to the take's median.
+    best, best_err = None, 1e9
+    spans = [(a, b) for a, b in zip(lifts, lifts[1:])]
+    speeds = []
+    for a, b in spans:
+        d = math.dist((take.frames[a]["Hips"][0], take.frames[a]["Hips"][2]), (take.frames[b]["Hips"][0], take.frames[b]["Hips"][2]))
+        speeds.append(d / ((b - a) * take.clip.dt))
+    med = sorted(speeds)[len(speeds) // 2]
+    for (a, b), v in zip(spans, speeds):
+        if abs(v - med) < best_err and b - a > 6:
+            best, best_err = (a, b), abs(v - med)
+    a, b = best
+    ha, hb = take.frames[a]["Hips"], take.frames[b]["Hips"]
+    move = norm((hb[0] - ha[0], 0.0, hb[2] - ha[2]))
+    fwd = move if travel > 0 else scale(move, -1.0)
+    stride = math.dist((ha[0], ha[2]), (hb[0], hb[2])) * take.s
+    poses = []
+    for k in range(CYCLE_POSES):
+        t = a + (b - a) * k / CYCLE_POSES
+        h = take.at(t)["Hips"]
+        p = pose(take, t, (h[0], 0.0, h[2]), fwd, {})
+        if fields == "legs":
+            p = {f: p[f] for f in LEGS}
+            p["base"] = "stance"
+        n = "mc_cycle_%s_%02d" % (name, k)
+        poses.append((n, p))
+    # The poses lead with the left foot; a cycle whose right foot leads is taken again mirrored.
+    lead = sum(p["foot_l"][0] - p["foot_r"][0] for _, p in poses)
+    if lead < 0 and not mirrored and fields == "legs":
+        return convert_cycle(name, spec, True)
+    print("%-11s %-30s frames %d-%d, stride %.2f m, %.2f m/s as captured%s" % (name, take_name, a, b, stride, stride / ((b - a) * take.clip.dt),
+                                                                           " mirrored" if mirrored else ""))
+    return dict(poses), {"stride": round(stride, 4), "poses": [n for n, _ in poses]}
+
+
 def write_poses(path, poses):
     with open(path, "w") as f:
         f.write("{\n" + ",\n".join('\t"%s": %s' % (k, json.dumps(v)) for k, v in poses.items()) + "\n}\n")
@@ -292,12 +361,20 @@ def main():
     all_poses, basics = {}, {}
     fighter_keys = {}
     for move, spec in CLIPS.items():
-        poses, keys, dest = convert(move, spec)
+        poses, keys, dest, joint = convert(move, spec)
         all_poses.update(poses)
         if dest == "basics":
-            basics[move] = {"anim": {"tip": {"LeftHand": "hand_l", "RightHand": "hand_r", "LeftFoot": "foot_l", "RightFoot": "foot_r"}[spec[1]], "keys": keys}}
+            # The limb that lands the blow as the poses show it (a mirrored take swaps sides).
+            basics[move] = {"anim": {"tip": {"LeftHand": "hand_l", "RightHand": "hand_r", "LeftFoot": "foot_l", "RightFoot": "foot_r"}[joint], "keys": keys}}
         else:
             fighter_keys.setdefault(dest, {})[move] = keys
+    cycles = {}
+    for name, spec in CYCLES.items():
+        poses, cycle = convert_cycle(name, spec)
+        all_poses.update(poses)
+        cycles[name] = cycle
+    with open(os.path.join(DATA, "cycles_mocap.json"), "w") as f:
+        f.write("{\n" + ",\n".join('\t"%s": %s' % (k, json.dumps(v)) for k, v in cycles.items()) + "\n}\n")
     states = {}
     for fighter, by_state in STATES.items():
         for state, spec in by_state.items():
