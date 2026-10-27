@@ -7,12 +7,12 @@ for sessions, `Saved/Logs/tests.log` for the last test run.
 
 ## Automated tests
 
-`run_tests` (Unreal automation, headless): **70 tests, all passing** on the final source.
+`run_tests` (Unreal automation, headless): **71 tests, all passing** on the final source.
 
 | Area | What the tests hold |
 |---|---|
 | Timing and input | Same inputs at 30/60/144 Hz and uneven frame times give the same match; the clock's catch-up and overload; the 6-tick buffer and its expiry; presses during hit-stop kept; held directions; motions from either side and through a crossover; opposite directions cancel; one press starts one move. |
-| Combat | A counter hit's extra freeze falls on the victim alone and leaves frame advantage as it was; active windows from the first frame; whiffs out of range; highs, lows, overheads and guards from either side; chip only from specials and projectiles; throws, breaks, back throws, command grabs beating block; trades; counter hits; damage scaling; juggle limit; run-meter costs; projectiles one at a time and clashing; parry, armour, teleport; bodies never overlap or leave the stage. |
+| Combat | A counter hit's extra freeze falls on the victim alone and leaves frame advantage as it was; Ashka's teep comes out on forward + low kick and pushes far for little damage; active windows from the first frame; whiffs out of range; highs, lows, overheads and guards from either side; chip only from specials and projectiles; throws, breaks, back throws, command grabs beating block; trades; counter hits; damage scaling; juggle limit; run-meter costs; projectiles one at a time and clashing; parry, armour, teleport; bodies never overlap or leave the stage. |
 | Match rules | KO and the next round, double KO, timeout and draw, deciding KO with finisher, the finish window timing out, restart clearing everything, input after KO changing nothing, flawless, no match running forever. |
 | Roster and AI | All data loads and validates; every trial possible; CPU against CPU in every pairing; the CPU never reacts before its delay; the boss can't be thrown, fights to an end, and storms only below half health; the stranger's memory only moves forward. |
 | Animation | The ported rig matches the Godot original joint by joint on every pose of every fighter; the animator follows every state of a match; through the follow-through the arm carrying a blow stays exactly on its authored pose until the blow is over; a straight drives the struck head away, a hook turns the face the way the fist travels, an uppercut lifts the chin and a body shot folds the torso, from either side; turning round after a cross-over moves no joint more than 30 cm in a frame and ends facing the new way. |
