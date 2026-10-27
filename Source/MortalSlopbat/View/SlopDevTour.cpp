@@ -22,6 +22,8 @@ namespace Slop
 			F->Hitstop = 0;
 			F->Health = F->MaxHealth();
 		}
+		// Under half health, so moves kept for a desperate fighter (the Storm Shroud) show too.
+		A.Health = A.MaxHealth() * 45 / 100;
 		Sim.Projectiles.Reset();
 		A.ProjectilesOut = B.ProjectilesOut = 0;
 	}

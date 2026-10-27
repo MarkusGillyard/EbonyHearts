@@ -66,4 +66,11 @@ private:
 	// The move frame each fighter last sent out a sound ring on (moves tagged "sound").
 	int32 SoundMF[2] = {-1, -1};
 	void SoundRings();
+	// The Storm Shroud's telegraph: a green light swelling over the charge with slime bursting
+	// off the body, then thunder, a flash and lightning while it is live.
+	void StormStep(double Delta);
+	UPROPERTY()
+	TObjectPtr<UPointLightComponent> StormLight;
+	int32 StormFired = -1;
+	double StormTime = 0;
 };

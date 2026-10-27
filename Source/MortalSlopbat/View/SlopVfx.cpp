@@ -7,6 +7,8 @@
 #include "Anim/SlopMeshRig.h"
 #include "View/SlopMatch.h"
 #include "View/SlopFighterActor.h"
+#include "Core/SlopAudio.h"
+#include "Core/SlopGameInstance.h"
 
 using namespace Slop;
 using Slop::Anim::WorldToUE;
@@ -484,10 +486,91 @@ void ASlopVfx::SoundRings()
 	}
 }
 
+void ASlopVfx::StormStep(double Delta)
+{
+	ASlopMatch* M = Match.Get();
+	if (!M)
+	{
+		return;
+	}
+	StormTime += Delta;
+	const FFighter* Storm = nullptr;
+	for (const FFighter& F : M->Sim.Fighters)
+	{
+		if (F.State == EState::Move && F.Move && F.Move->HasTag(TEXT("storm")))
+		{
+			Storm = &F;
+		}
+	}
+	if (!Storm)
+	{
+		if (StormLight)
+		{
+			StormLight->SetVisibility(false);
+		}
+		return;
+	}
+	if (!StormLight)
+	{
+		StormLight = NewObject<UPointLightComponent>(this);
+		StormLight->SetupAttachment(RootComponent);
+		StormLight->SetLightColor(FLinearColor(0.6f, 1.f, 0.4f));
+		StormLight->SetIntensityUnits(ELightUnits::Candelas);
+		StormLight->SetAttenuationRadius(900.f);
+		StormLight->SetCastShadows(false);
+		StormLight->RegisterComponent();
+	}
+	const FFighterDef& D = *Storm->Def;
+	const FMoveDef& Mv = *Storm->Move;
+	const FVector C(Storm->Pos.X, 1.4 * D.Scale(), 0.0);
+	const float Calm = bReduced ? 0.6f : 1.f;
+	StormLight->SetVisibility(true);
+	StormLight->SetWorldLocation(WorldToUE(C + FVector(0.0, 0.6, 0.6)));
+	if (Storm->MF < Mv.Startup)
+	{
+		// The charge: a pulse that quickens and brightens, and slime bursting off the body.
+		const double K = double(Storm->MF) / FMath::Max(1, Mv.Startup);
+		StormLight->SetIntensity(float((60.0 + K * 260.0) * (0.6 + 0.4 * FMath::Sin(StormTime * 40.0))) * Calm);
+		if (FMath::FRand() < (0.35 + K * 0.4) * Delta * 60.0)
+		{
+			Burst(EKind::Slop, C + FVector(FMath::FRandRange(-0.8, 0.8), FMath::FRandRange(-0.6, 1.2), 0.2), bReduced ? 3 : 6, 2.5, 0.25, 0.03);
+		}
+		return;
+	}
+	if (Storm->MF < Mv.Startup + Mv.Active)
+	{
+		const int32 Began = M->Sim.TickCount - Storm->MF;
+		if (StormFired != Began)
+		{
+			StormFired = Began;
+			if (USlopGameInstance* G = M->GetGI())
+			{
+				if (G->Audio)
+				{
+					G->Audio->Play(TEXT("thunder"), 2.f);
+				}
+			}
+			Flash(C, FLinearColor(0.7f, 1.f, 0.5f), 3.f);
+		}
+		StormLight->SetIntensity(400.f * Calm);
+		// Lightning: bright streaks raking down round the body, thinned for the comfort setting.
+		const int32 N = bReduced || !bFlashes ? 1 : 3;
+		for (int32 I = 0; I < N; ++I)
+		{
+			const double A = FMath::FRandRange(0.0, UE_DOUBLE_TWO_PI);
+			const double R = FMath::FRandRange(0.6, 2.4) * D.Scale();
+			Spawn(EKind::Spark, FVector(C.X + FMath::Cos(A) * R, 3.2 * D.Scale(), FMath::Sin(A) * 0.3), FVector(FMath::FRandRange(-2.0, 2.0), -14.0, 0.0), 0.16, 0.05, 0, 0.5, 0);
+		}
+		return;
+	}
+	StormLight->SetIntensity(0.f);
+}
+
 void ASlopVfx::Step(double Delta)
 {
 	SyncProjectiles(Delta);
 	SoundRings();
+	StormStep(Delta);
 	for (int32 K = 0; K < (int32)EKind::Count; ++K)
 	{
 		TArray<FParticle>& A = Parts[K];
