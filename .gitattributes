@@ -30,3 +30,4 @@
 
 # Third-party files exactly as delivered (no line-ending normalisation)
 SourceArt/ThirdParty/** -text
+Docs/Licenses/** -text
