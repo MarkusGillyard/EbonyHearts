@@ -312,28 +312,33 @@ void USlopGameInstance::ApplySettings(bool bDisplay)
 	{
 		return;
 	}
-	// A window size given on the command line (development and capture runs) wins.
-	if (FParse::Param(FCommandLine::Get(), TEXT("windowed")) || FParse::Param(FCommandLine::Get(), TEXT("fullscreen")))
-	{
-		return;
-	}
 	if (UGameUserSettings* U = GEngine->GetGameUserSettings())
 	{
-		const EWindowMode::Type Mode = Settings.WindowMode == 0 ? EWindowMode::Windowed : (Settings.WindowMode == 1 ? EWindowMode::WindowedFullscreen : EWindowMode::Fullscreen);
-		U->SetFullscreenMode(Mode);
-		if (Mode == EWindowMode::WindowedFullscreen)
+		// A window given on the command line (development and capture runs) keeps its mode and
+		// size; the frame cap, VSync and quality always follow the settings. (Uncapped and with
+		// nothing presented, as offscreen, the CPU runs frames far ahead of the GPU and the
+		// driver's memory balloons.)
+		const bool bWindowFromCommandLine = FParse::Param(FCommandLine::Get(), TEXT("windowed")) || FParse::Param(FCommandLine::Get(), TEXT("fullscreen"));
+		if (!bWindowFromCommandLine)
 		{
-			U->SetScreenResolution(U->GetDesktopResolution());
-		}
-		else
-		{
-			U->SetScreenResolution(Settings.Resolution);
+			const EWindowMode::Type Mode = Settings.WindowMode == 0 ? EWindowMode::Windowed : (Settings.WindowMode == 1 ? EWindowMode::WindowedFullscreen : EWindowMode::Fullscreen);
+			U->SetFullscreenMode(Mode);
+			const FIntPoint Desktop = U->GetDesktopResolution();
+			U->SetScreenResolution(Mode == EWindowMode::WindowedFullscreen && Desktop.X > 0 && Desktop.Y > 0 ? Desktop : Settings.Resolution);
 		}
 		U->SetVSyncEnabled(Settings.bVSync);
 		U->SetFrameRateLimit((float)Settings.FrameCap);
 		const int32 Q = Settings.Graphics == TEXT("low") ? 1 : 3;
 		U->SetOverallScalabilityLevel(Q);
-		U->ApplySettings(false);
+		if (bWindowFromCommandLine)
+		{
+			U->ApplyNonResolutionSettings();
+			U->SaveSettings();
+		}
+		else
+		{
+			U->ApplySettings(false);
+		}
 	}
 }
 
