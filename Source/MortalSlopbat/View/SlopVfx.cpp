@@ -10,7 +10,7 @@
 using namespace Slop;
 using Slop::Anim::WorldToUE;
 
-static UStaticMesh* Shape(const TCHAR* Name)
+static UStaticMesh* VfxShape(const TCHAR* Name)
 {
 	return LoadObject<UStaticMesh>(nullptr, *FString::Printf(TEXT("/Engine/BasicShapes/%s.%s"), Name, Name));
 }
@@ -41,7 +41,7 @@ void ASlopVfx::Setup(ASlopMatch* InMatch)
 	{
 		UInstancedStaticMeshComponent* C = NewObject<UInstancedStaticMeshComponent>(this);
 		C->SetupAttachment(RootComponent);
-		C->SetStaticMesh(Shape(Specs[K].Shape));
+		C->SetStaticMesh(VfxShape(Specs[K].Shape));
 		C->SetMobility(EComponentMobility::Movable);
 		C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		C->SetCastShadow(false);
@@ -209,7 +209,7 @@ void ASlopVfx::SyncProjectiles()
 			N.Kind = P.Kind;
 			N.Mesh = NewObject<UStaticMeshComponent>(this);
 			N.Mesh->SetupAttachment(RootComponent);
-			N.Mesh->SetStaticMesh(Shape(TEXT("Sphere")));
+			N.Mesh->SetStaticMesh(VfxShape(TEXT("Sphere")));
 			N.Mesh->SetMobility(EComponentMobility::Movable);
 			N.Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			N.Mesh->SetCastShadow(false);
