@@ -157,7 +157,7 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 	}
 	GI()->Audio->PlayMusic(Arena->Music);
 	Clock.Reset();
-	UE_LOG(LogSlop, Log, TEXT("Match: %s v %s, %s, %s, difficulty %d"), *Config.P1.ToString(), *Config.P2.ToString(), ModeName(M), *Config.Stage.ToString(), Config.Difficulty);
+	GI()->Note(FString::Printf(TEXT("Match: %s v %s, %s, %s, difficulty %d"), *Config.P1.ToString(), *Config.P2.ToString(), ModeName(M), *Config.Stage.ToString(), Config.Difficulty));
 	return true;
 }
 
@@ -210,6 +210,7 @@ void ASlopMatch::SetPaused(bool bPause)
 	}
 	bPaused = bPause;
 	GI()->Router->ResetAll();
+	GI()->Router->StopRumble();
 	GI()->Router->bFightActive = !bPause;
 	GI()->Audio->PauseMusic(bPause);
 }
@@ -370,6 +371,8 @@ void ASlopMatch::HandleEvent(const FSimEvent& E)
 		const double Strength = FMath::Clamp(E.Damage / 100.0, 0.15, 1.3);
 		const bool bHeavy = E.Effect == TEXT("launch") || E.Effect == TEXT("knockdown") || E.Effect == TEXT("sweep") || E.Effect == TEXT("crumple") || E.bThrow;
 		Views[E.Who]->Anim.Impact(Dir, Strength, E.Level, false);
+		// The struck player's pad feels it: in weight with the blow, longest for a knockout.
+		GI()->Router->Rumble(E.Who, E.bKO ? 1.f : (float)FMath::Clamp(0.2 + Strength * 0.5, 0.2, 0.8), E.bKO ? 0.45f : (bHeavy ? 0.22f : 0.12f));
 		// Every blow moves the camera a little; the big ones move it a lot, along the blow.
 		Camera->AddShake(0.004 + Strength * 0.022 + (bHeavy ? 0.014 : 0.0) + (E.bCounter ? 0.01 : 0.0));
 		Camera->Kick(FVector(Dir, bHeavy ? -0.25 : 0.0, 0.0), 0.02 + Strength * 0.045 + (bHeavy ? 0.02 : 0.0));

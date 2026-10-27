@@ -186,6 +186,8 @@ void USlopAudio::PlayMusic(const FString& Name)
 {
 	if (Name == MusicName && Music && Music->IsPlaying())
 	{
+		// The same track carries on, and a paused one (a match left from its pause menu) resumes.
+		Music->SetPaused(false);
 		return;
 	}
 	MusicName = Name;

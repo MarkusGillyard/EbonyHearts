@@ -23,7 +23,12 @@ Tools/blender/**/.blender_user/
 Tools/**/__pycache__/
 # Raw third-party downloads: provenance and hashes live in SourceArt/ThirdParty/ledger.json;
 # what the game uses is imported under Content/ and licensed in Docs/ThirdParty.
-SourceArt/ThirdParty/*/
+SourceArt/ThirdParty/*/*
+!SourceArt/ThirdParty/*/_license/
+!SourceArt/ThirdParty/MakeHuman/PROVENANCE.json
+!SourceArt/ThirdParty/MakeHuman/downloads/
+SourceArt/ThirdParty/MakeHuman/downloads/*
+!SourceArt/ThirdParty/MakeHuman/downloads/*license_files*/
 
 # Derived art that the scripts rebuild (Tools/prep_surfaces.py, Tools/blender/*): the game's
 # imported copies live under Content/, the inputs are the scripts and the ledger.

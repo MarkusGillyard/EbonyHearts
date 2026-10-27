@@ -16,6 +16,8 @@ namespace Slop
 		// match's first frame, so warm-up can be told apart from settled play.
 		void Add(double FrameSeconds, double MatchSeconds, const FString& Scene);
 		void Flush();
+		// One timestamped line in the events file beside the CSV (<name>.events.txt).
+		void Note(const FString& Line);
 		const FString& GetPath() const { return Path; }
 
 	private:

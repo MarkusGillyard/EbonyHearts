@@ -43,6 +43,8 @@ private:
 		TObjectPtr<ASlopFighterActor> View;
 		FName Id;
 		bool bCostume = false;
+		// This choice could not be shown (no data or no body); not retried until it changes.
+		bool bFailed = false;
 		double Celebrate = 0.0;
 		double Age = 0.0;
 		TObjectPtr<USpotLightComponent> Key;

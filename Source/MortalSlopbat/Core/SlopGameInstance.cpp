@@ -55,9 +55,12 @@ void USlopGameInstance::Init()
 	}
 	Settings.Load();
 	Progress.Load();
-	if (!Progress.LoadNote.IsEmpty())
+	for (const FString& N : {Settings.LoadNote, Progress.LoadNote})
 	{
-		UE_LOG(LogSlop, Log, TEXT("%s"), *Progress.LoadNote);
+		if (!N.IsEmpty())
+		{
+			UE_LOG(LogSlop, Log, TEXT("%s"), *N);
+		}
 	}
 	Router = MakeShared<FSlopInputRouter>(Settings);
 	if (FSlateApplication::IsInitialized())
@@ -115,6 +118,12 @@ void USlopGameInstance::OnStart()
 	{
 		Goto(GetContent().Errors.Num() > 0 ? SlopScreens::DataError() : SlopScreens::Title());
 	}
+	// What happened to the save files, if anything did, once, over the title.
+	const FString Notes = FString::Join(TArray<FString>({Settings.LoadNote, Progress.LoadNote}).FilterByPredicate([](const FString& N) { return !N.IsEmpty(); }), TEXT("\n"));
+	if (!Notes.IsEmpty())
+	{
+		Notice(FText::FromString(Notes), 8.0);
+	}
 }
 
 void USlopGameInstance::BuildRoot()
@@ -151,7 +160,7 @@ void USlopGameInstance::Goto(const TSharedPtr<FSlopScreen>& S)
 		return;
 	}
 	Screen->GI = this;
-	UE_LOG(LogSlop, Log, TEXT("Screen: %s"), *Screen->ScreenName);
+	Note(TEXT("Screen: ") + Screen->ScreenName);
 	ScreenSlot->SetContent(Screen->Build());
 	Screen->Enter();
 	if (!Screen->ShowsMatch() && Match)
@@ -186,7 +195,7 @@ void USlopGameInstance::ShowOverlay(const TSharedPtr<FSlopScreen>& S)
 	if (Overlay.IsValid())
 	{
 		Overlay->GI = this;
-		UE_LOG(LogSlop, Log, TEXT("Overlay: %s"), *Overlay->ScreenName);
+		Note(TEXT("Overlay: ") + Overlay->ScreenName);
 		OverlaySlot->SetContent(Overlay->Build());
 		Overlay->Enter();
 	}
@@ -198,10 +207,10 @@ void USlopGameInstance::ShowOverlay(const TSharedPtr<FSlopScreen>& S)
 
 void USlopGameInstance::CloseOverlay() { ShowOverlay(nullptr); }
 
-void USlopGameInstance::Notice(const FText& Text)
+void USlopGameInstance::Notice(const FText& Text, double Seconds)
 {
 	NoticeText = Text;
-	NoticeUntil = Now() + 3.5;
+	NoticeUntil = Now() + Seconds;
 }
 
 FString USlopGameInstance::MeshFor(FName Fighter)
@@ -263,8 +272,8 @@ void USlopGameInstance::EndMatch()
 void USlopGameInstance::OnMatchFinished(const FMatchResult& R)
 {
 	LastResult = R;
-	UE_LOG(LogSlop, Log, TEXT("Result: %s %d-%d %s, winner %d%s%s, %d s left"), *R.P1.ToString(), R.Wins[0], R.Wins[1], *R.P2.ToString(), R.Winner,
-		R.bFlawless ? TEXT(", flawless") : TEXT(""), R.Finisher.IsNone() ? TEXT("") : *(TEXT(", ") + R.Finisher.ToString()), R.TimeLeft);
+	Note(FString::Printf(TEXT("Result: %s %d-%d %s, winner %d%s%s, %d s left"), *R.P1.ToString(), R.Wins[0], R.Wins[1], *R.P2.ToString(), R.Winner,
+		R.bFlawless ? TEXT(", flawless") : TEXT(""), R.Finisher.IsNone() ? TEXT("") : *(TEXT(", ") + R.Finisher.ToString()), R.TimeLeft));
 	Router->bFightActive = false;
 	Progress.Count(TEXT("matches"));
 	if (R.Winner == 0 && Flow.Config.Mode != EMode::Versus)
@@ -288,6 +297,16 @@ void USlopGameInstance::ApplySettings(bool bDisplay)
 	if (Audio)
 	{
 		Audio->SetVolumes((float)Settings.MasterVolume, (float)Settings.MusicVolume, (float)Settings.EffectsVolume, (float)Settings.VoiceVolume);
+	}
+	static float AppliedTextScale = 1.f;
+	if ((float)Settings.UIScale != AppliedTextScale)
+	{
+		AppliedTextScale = (float)Settings.UIScale;
+		SlopUI::SetTextScale(AppliedTextScale);
+		if (Screen.IsValid())
+		{
+			RebuildScreen();
+		}
 	}
 	if (!bDisplay || !GEngine)
 	{
@@ -331,8 +350,8 @@ void USlopGameInstance::Quit()
 void USlopGameInstance::OnDeviceConnection(EInputDeviceConnectionState State, FPlatformUserId User, FInputDeviceId Device)
 {
 	const bool bConnected = State == EInputDeviceConnectionState::Connected;
+	// Only the pad that came or went loses what it held; everyone else's inputs carry on.
 	Router->OnConnectionChanged(Device, bConnected);
-	Router->ResetAll();
 	Notice(bConnected ? LOCTEXT("PadOn", "Controller connected") : LOCTEXT("PadOff", "Controller disconnected"));
 	if (!bConnected && Match && !Match->IsPaused() && !Match->HasEnded())
 	{
@@ -505,13 +524,24 @@ bool USlopGameInstance::Tick(float Dt)
 		const FString Name = FString::Printf(TEXT("%s_%03d.png"), *ShotPrefix, ShotIndex++);
 		FScreenshotRequest::RequestScreenshot(Name, true, false);
 	}
+#endif
 	if (QuitAtSeconds > 0.0 && Now() >= QuitAtSeconds)
 	{
 		QuitAtSeconds = -1.0;
+		Note(TEXT("Quit after the set time"));
 		Quit();
 	}
-#endif
 	return true;
+}
+
+void USlopGameInstance::Note(const FString& Line)
+{
+	UE_LOG(LogSlop, Log, TEXT("%s"), *Line);
+	// Shipping builds keep no log; an unattended run's events go beside its frame record.
+	if (FrameStats)
+	{
+		FrameStats->Note(Line);
+	}
 }
 
 ASlopShowroom* USlopGameInstance::OpenShowroom()
@@ -556,6 +586,11 @@ void USlopGameInstance::TestCommandLine()
 		FParse::Value(Cmd, TEXT("SlopAutoPlay="), AutoPlayLevel);
 		AutoPlayLevel = FMath::Clamp(AutoPlayLevel < 0 ? 2 : AutoPlayLevel, 0, 2);
 		AutoConfirmAt = Now() + 12.0;
+	}
+	double QuitSecs = -1.0;
+	if (FParse::Value(Cmd, TEXT("SlopQuitAfter="), QuitSecs))
+	{
+		QuitAtSeconds = Now() + QuitSecs;
 	}
 	FString UiArg;
 	if (FParse::Value(Cmd, TEXT("SlopUi="), UiArg, false))
@@ -689,11 +724,6 @@ void USlopGameInstance::DevCommandLine()
 	if (FParse::Value(Cmd, TEXT("SlopShotEvery="), ShotEvery))
 	{
 		NextShotAt = Now() + ShotEvery;
-	}
-	double QuitSecs = -1.0;
-	if (FParse::Value(Cmd, TEXT("SlopQuitAfter="), QuitSecs))
-	{
-		QuitAtSeconds = Now() + QuitSecs;
 	}
 #endif
 }

@@ -82,8 +82,7 @@ namespace Slop
 		else if (Id == TEXT("run")) Text = FText::Format(S.Text, Keys(EGameAction::RN));
 		else if (Id == TEXT("finish")) ArmFinish();
 		const EGlyphs G = GI->Router->Glyphs();
-		PromptText = FText::Format(LOCTEXT("StepN", "Step {0} of {1}.  {2}   ({3}: skip)"), StepIndex + 1, Steps.Num(), Text,
-			G == EGlyphs::Keyboard ? FText::FromString(TEXT("Tab")) : LOCTEXT("R1", "R1"));
+		PromptText = FText::Format(LOCTEXT("StepN", "Step {0} of {1}.  {2}   ({3}: skip)"), StepIndex + 1, Steps.Num(), Text, SlopUI::NextName(G));
 		GI->Audio->Play(TEXT("ui_select"), -4.f, 1.f, ESlopBus::Ui);
 	}
 
@@ -272,7 +271,7 @@ namespace Slop
 		const EGlyphs G = GI->Router->Glyphs();
 		PromptText = FText::FromString(FString::Printf(TEXT("Trial %d of %d:  %s%s\n%s     %s%s   (%s: next trial, %s: reset)"), Index + 1, Trials.Num(), *Tr.Name,
 			bDoneBefore ? TEXT("  ✓") : TEXT(""), *FString::Join(Pretty, TEXT("   ")), *Ticks, Note.IsEmpty() ? TEXT("") : *(TEXT("   ") + Note),
-			G == EGlyphs::Keyboard ? TEXT("Tab") : TEXT("R1"), G == EGlyphs::Keyboard ? TEXT("F4") : (G == EGlyphs::PlayStation ? TEXT("Create") : TEXT("View"))));
+			*SlopUI::NextName(G).ToString(), *SlopUI::ResetName(G).ToString()));
 	}
 
 	void FTrialsRunner::OnEvent(const FSimEvent& E)

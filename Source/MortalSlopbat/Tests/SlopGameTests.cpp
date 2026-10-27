@@ -1,4 +1,5 @@
 #include "Misc/AutomationTest.h"
+#include "HAL/PlatformFileManager.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -188,6 +189,85 @@ bool FSlopRebindSwaps::RunTest(const FString&)
 	TestFalse("Start cannot be bound", S.RebindPad(EGameAction::HP, EKeys::Gamepad_Special_Right));
 	S.ResetBindings();
 	TestEqual("reset", S.Keys[0][(int32)EGameAction::HP], OldHP);
+	return true;
+}
+
+SLOP_TEST(FSlopReservedInputs, "Saves.ReservedInputsAreRefused")
+bool FSlopReservedInputs::RunTest(const FString&)
+{
+	FSlopSettings S;
+	const FKey Old = S.PadButtons[(int32)EGameAction::HP];
+	// Directions, the sticks' directions, the right stick's click (next) and the menu buttons
+	// never become fighting buttons, and pad directions are not rebindable at all.
+	TestFalse("D-pad refused", S.RebindPad(EGameAction::HP, EKeys::Gamepad_DPad_Up));
+	TestFalse("stick direction refused", S.RebindPad(EGameAction::HP, EKeys::Gamepad_LeftStick_Up));
+	TestFalse("right stick click refused", S.RebindPad(EGameAction::HP, EKeys::Gamepad_RightThumbstick));
+	TestFalse("Select refused", S.RebindPad(EGameAction::HP, EKeys::Gamepad_Special_Left));
+	TestFalse("directions stay the D-pad's", S.RebindPad(EGameAction::Up, EKeys::Gamepad_FaceButton_Top));
+	TestEqual("unchanged", S.PadButtons[(int32)EGameAction::HP], Old);
+	TestTrue("left stick click allowed", S.RebindPad(EGameAction::HP, EKeys::Gamepad_LeftThumbstick));
+	for (const FKey& K : {EKeys::Tab, EKeys::SpaceBar, EKeys::Escape, EKeys::Enter, EKeys::F1, EKeys::F4, EKeys::F8})
+	{
+		TestTrue(*FString::Printf(TEXT("%s reserved"), *K.ToString()), FSlopSettings::IsReservedKey(K));
+	}
+	TestFalse("letters are free", FSlopSettings::IsReservedKey(EKeys::Q));
+	// A saved file naming a reserved key or a direction button keeps the default.
+	TSharedPtr<FJsonObject> J = FContent::ParseJson(TEXT(R"({"version": 1, "keys_left": {"hp": "Tab"}, "pad": {"hp": "Gamepad_DPad_Up", "up": "Gamepad_FaceButton_Top"}})"));
+	FSlopSettings R;
+	R.FromJson(J);
+	const FSlopSettings D;
+	TestEqual("reserved key ignored", R.Keys[0][(int32)EGameAction::HP], D.Keys[0][(int32)EGameAction::HP]);
+	TestEqual("direction button ignored", R.PadButtons[(int32)EGameAction::HP], D.PadButtons[(int32)EGameAction::HP]);
+	TestEqual("pad up stays the D-pad", R.PadButtons[(int32)EGameAction::Up], EKeys::Gamepad_DPad_Up);
+	return true;
+}
+
+SLOP_TEST(FSlopSaveFilesRecover, "Saves.InterruptedAndDamagedFiles")
+bool FSlopSaveFilesRecover::RunTest(const FString&)
+{
+	const FString Saved = FCommandLine::Get();
+	FCommandLine::Set(*(Saved + TEXT(" -profile=autotest")));
+	IPlatformFile& PF = FPlatformFileManager::Get().GetPlatformFile();
+	const FString SPath = FSlopSettings::Path();
+	for (const FString& F : {SPath, SPath + TEXT(".tmp"), SPath + TEXT(".bad")})
+	{
+		PF.DeleteFile(*F);
+	}
+	// A write that stopped after the new file was flushed but before it replaced the old one.
+	FSlopSettings S;
+	S.MasterVolume = 0.25;
+	TestTrue("saved", S.Save());
+	PF.MoveFile(*(SPath + TEXT(".tmp")), *SPath);
+	{
+		FSlopSettings L;
+		TestTrue("recovered from the flushed temporary file", L.Load());
+		TestEqual("its contents", L.MasterVolume, 0.25);
+	}
+	// A damaged settings file is set aside, the defaults are used, and the player is told.
+	FFileHelper::SaveStringToFile(TEXT("not json at all"), *SPath);
+	{
+		FSlopSettings L;
+		TestFalse("not loaded", L.Load());
+		TestTrue("kept as .bad", FPaths::FileExists(SPath + TEXT(".bad")));
+		TestFalse("note for the player", L.LoadNote.IsEmpty());
+		TestEqual("defaults", L.MasterVolume, FSlopSettings().MasterVolume);
+	}
+	// Progress written by a later version is read, and the file is copied aside before this
+	// version saves over it.
+	const FString PPath = FSlopProgress::Path();
+	const FString Keep = PPath + TEXT(".v2");
+	PF.DeleteFile(*Keep);
+	FFileHelper::SaveStringToFile(TEXT(R"({"version": 2, "survival": {"gorm": 9}, "future_field": [1, 2, 3]})"), *PPath);
+	{
+		FSlopProgress P;
+		P.Load();
+		TestEqual("what is understood is read", P.BestSurvival(TEXT("gorm")), 9);
+		TestTrue("copy kept", FPaths::FileExists(Keep));
+		FString Copy;
+		FFileHelper::LoadFileToString(Copy, *Keep);
+		TestTrue("the copy has the later version's fields", Copy.Contains(TEXT("future_field")));
+	}
+	FCommandLine::Set(*Saved);
 	return true;
 }
 

@@ -3,6 +3,7 @@
 #include "HAL/PlatformMemory.h"
 #include "HAL/PlatformTime.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 #include "RenderTimer.h"
 
 namespace Slop
@@ -31,6 +32,13 @@ namespace Slop
 		{
 			Flush();
 		}
+	}
+
+	void FFrameStats::Note(const FString& Line)
+	{
+		const FString Events = FPaths::ChangeExtension(Path, TEXT("events.txt"));
+		FFileHelper::SaveStringToFile(FString::Printf(TEXT("%s %s\n"), *FDateTime::Now().ToString(TEXT("%H:%M:%S")), *Line), *Events,
+			FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM, &IFileManager::Get(), FILEWRITE_Append);
 	}
 
 	void FFrameStats::Flush()

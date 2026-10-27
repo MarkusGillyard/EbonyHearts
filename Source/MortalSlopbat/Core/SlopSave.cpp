@@ -1,4 +1,5 @@
 #include "Core/SlopSave.h"
+#include "HAL/PlatformFileManager.h"
 #include "Core/SlopLog.h"
 #include "Combat/SlopData.h"
 #include "HAL/FileManager.h"
@@ -59,19 +60,36 @@ namespace Slop
 
 	bool WriteFileAtomic(const FString& Path, const FString& Text)
 	{
-		IFileManager::Get().MakeDirectory(*FPaths::GetPath(Path), true);
+		// Written beside the old file, flushed to the disk, then renamed over it in one step
+		// (rename(2)), so a crash at any moment leaves either the old file or the new one.
+		IPlatformFile& PF = FPlatformFileManager::Get().GetPlatformFile();
+		PF.CreateDirectoryTree(*FPaths::GetPath(Path));
 		const FString Tmp = Path + TEXT(".tmp");
-		if (!FFileHelper::SaveStringToFile(Text, *Tmp, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+		const FTCHARToUTF8 Utf8(*Text);
 		{
-			UE_LOG(LogSlop, Error, TEXT("Cannot write %s"), *Tmp);
-			return false;
+			TUniquePtr<IFileHandle> H(PF.OpenWrite(*Tmp));
+			if (!H || !H->Write(reinterpret_cast<const uint8*>(Utf8.Get()), Utf8.Length()) || !H->Flush(true))
+			{
+				UE_LOG(LogSlop, Error, TEXT("Cannot write %s"), *Tmp);
+				return false;
+			}
 		}
-		if (!IFileManager::Get().Move(*Path, *Tmp, true, true))
+		if (!PF.MoveFile(*Path, *Tmp))
 		{
 			UE_LOG(LogSlop, Error, TEXT("Cannot replace %s"), *Path);
 			return false;
 		}
 		return true;
+	}
+
+	// A write interrupted between the two steps leaves only the flushed temporary file.
+	static void RecoverInterruptedWrite(const FString& Path)
+	{
+		const FString Tmp = Path + TEXT(".tmp");
+		if (!FPaths::FileExists(Path) && FPaths::FileExists(Tmp))
+		{
+			FPlatformFileManager::Get().GetPlatformFile().MoveFile(*Path, *Tmp);
+		}
 	}
 
 	static FString ToText(const TSharedRef<FJsonObject>& J)
@@ -127,12 +145,27 @@ namespace Slop
 
 	bool FSlopSettings::IsReservedPadButton(const FKey& K)
 	{
-		return K == EKeys::Gamepad_Special_Right || K == EKeys::Gamepad_Special_Left || !K.IsGamepadKey() || K.IsAnalog();
+		// Pause, reset and "next" (the right stick's click), the D-pad and the sticks' directions
+		// (which the platform also reports as buttons) are never fighting buttons.
+		return K == EKeys::Gamepad_Special_Right || K == EKeys::Gamepad_Special_Left || K == EKeys::Gamepad_RightThumbstick
+			|| K == EKeys::Gamepad_DPad_Up || K == EKeys::Gamepad_DPad_Down || K == EKeys::Gamepad_DPad_Left || K == EKeys::Gamepad_DPad_Right
+			|| K == EKeys::Gamepad_LeftStick_Up || K == EKeys::Gamepad_LeftStick_Down || K == EKeys::Gamepad_LeftStick_Left || K == EKeys::Gamepad_LeftStick_Right
+			|| K == EKeys::Gamepad_RightStick_Up || K == EKeys::Gamepad_RightStick_Down || K == EKeys::Gamepad_RightStick_Left || K == EKeys::Gamepad_RightStick_Right
+			|| !K.IsGamepadKey() || K.IsAnalog();
+	}
+
+	bool FSlopSettings::IsReservedKey(const FKey& K)
+	{
+		// The menus' and the window's keys, and the training and debug function keys.
+		return K == EKeys::Enter || K == EKeys::BackSpace || K == EKeys::Escape || K == EKeys::Tab || K == EKeys::SpaceBar
+			|| K == EKeys::Tilde || K == EKeys::F11 || K == EKeys::F1 || K == EKeys::F2 || K == EKeys::F3 || K == EKeys::F4
+			|| K == EKeys::F5 || K == EKeys::F6 || K == EKeys::F7 || K == EKeys::F8;
 	}
 
 	bool FSlopSettings::RebindPad(EGameAction Action, const FKey& Button)
 	{
-		if (IsReservedPadButton(Button))
+		// Pad directions are the D-pad and the stick, always; only buttons are rebound.
+		if (IsReservedPadButton(Button) || DirBitOf(Action))
 		{
 			return false;
 		}
@@ -219,7 +252,7 @@ namespace Slop
 		}
 		const FString G = Json::Str(J, TEXT("graphics"), D.Graphics);
 		Graphics = (G == TEXT("low") || G == TEXT("high")) ? G : D.Graphics;
-		UIScale = FMath::Clamp(Json::Num(J, TEXT("ui_scale"), D.UIScale), 0.75, 1.5);
+		UIScale = FMath::Clamp(Json::Num(J, TEXT("ui_scale"), D.UIScale), 0.85, 1.25);
 		MasterVolume = FMath::Clamp(Json::Num(J, TEXT("master_volume"), D.MasterVolume), 0.0, 1.0);
 		MusicVolume = FMath::Clamp(Json::Num(J, TEXT("music_volume"), D.MusicVolume), 0.0, 1.0);
 		EffectsVolume = FMath::Clamp(Json::Num(J, TEXT("effects_volume"), D.EffectsVolume), 0.0, 1.0);
@@ -244,7 +277,7 @@ namespace Slop
 			for (int32 A = 0; A < (int32)EGameAction::Count; ++A)
 			{
 				const FKey Key(*Json::Str(K, ActionId((EGameAction)A), FString()));
-				if (Key.IsValid() && !Key.IsGamepadKey() && !Key.IsMouseButton())
+				if (Key.IsValid() && !Key.IsGamepadKey() && !Key.IsMouseButton() && !IsReservedKey(Key))
 				{
 					Keys[H][A] = Key;
 				}
@@ -254,7 +287,7 @@ namespace Slop
 		for (int32 A = 0; A < (int32)EGameAction::Count; ++A)
 		{
 			const FKey Key(*Json::Str(P, ActionId((EGameAction)A), FString()));
-			if (Key.IsValid() && !IsReservedPadButton(Key))
+			if (Key.IsValid() && !IsReservedPadButton(Key) && !DirBitOf((EGameAction)A))
 			{
 				PadButtons[A] = Key;
 			}
@@ -298,9 +331,19 @@ namespace Slop
 
 	bool FSlopSettings::Load()
 	{
-		const TSharedPtr<FJsonObject> J = FContent::LoadJson(Path());
-		if (!J.IsValid())
+		const FString P = Path();
+		RecoverInterruptedWrite(P);
+		if (!FPaths::FileExists(P))
 		{
+			return false;
+		}
+		const TSharedPtr<FJsonObject> J = FContent::LoadJson(P);
+		if (!J.IsValid() || Json::Int(J, TEXT("version"), 0) < 1)
+		{
+			// Unreadable: kept aside, and the defaults are used (and saved on the next change).
+			UE_LOG(LogSlop, Warning, TEXT("Settings file unreadable; using defaults and keeping the old one as .bad"));
+			FPlatformFileManager::Get().GetPlatformFile().MoveFile(*(P + TEXT(".bad")), *P);
+			LoadNote = TEXT("The settings file could not be read; it was kept aside and the defaults are in use.");
 			return false;
 		}
 		FromJson(J);
@@ -337,6 +380,7 @@ namespace Slop
 		Reset();
 		LoadNote.Reset();
 		const FString P = Path();
+		RecoverInterruptedWrite(P);
 		if (!FPaths::FileExists(P))
 		{
 			// First run of this version: bring over what the original game recorded, read-only.
@@ -359,6 +403,18 @@ namespace Slop
 			IFileManager::Get().Move(*(P + TEXT(".bad")), *P, true, true);
 			LoadNote = TEXT("The progress file could not be read; it was kept aside and a fresh one started.");
 			return;
+		}
+		const int32 FileVersion = Json::Int(J, TEXT("version"), 0);
+		if (FileVersion > Version)
+		{
+			// Written by a later version: what this one understands is read, and the file itself
+			// is copied aside once before this version first saves over it.
+			const FString Keep = FString::Printf(TEXT("%s.v%d"), *P, FileVersion);
+			if (!FPaths::FileExists(Keep))
+			{
+				FPlatformFileManager::Get().GetPlatformFile().CopyFile(*Keep, *P);
+			}
+			LoadNote = TEXT("The progress file is from a later version; a copy was kept beside it.");
 		}
 		// Take only fields of the expected types, so a damaged entry cannot break the game.
 		for (const TCHAR* K : {TEXT("arcade"), TEXT("survival"), TEXT("trials"), TEXT("stats")})

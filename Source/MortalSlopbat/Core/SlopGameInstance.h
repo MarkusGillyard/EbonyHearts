@@ -40,7 +40,9 @@ public:
 	TSharedPtr<FSlopScreen> CurrentScreen() const { return Screen; }
 	TSharedPtr<FSlopScreen> CurrentOverlay() const { return Overlay; }
 	// A short message over everything for a few seconds (controller connected, saved...).
-	void Notice(const FText& Text);
+	void Notice(const FText& Text, double Seconds = 3.5);
+	// A line for the log (and, in unattended runs, the events file beside the frame record).
+	void Note(const FString& Line);
 
 	// Matches.
 	void StartMatch();

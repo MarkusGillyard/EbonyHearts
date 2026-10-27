@@ -185,7 +185,7 @@ void ASlopShowroom::SetReflection(int32 Side, bool bOn)
 void ASlopShowroom::Show(int32 Side, FName Id, bool bCostume)
 {
 	FFigure& F = Figures[Side];
-	if (F.Id == Id && F.bCostume == bCostume && (F.View || Id.IsNone()))
+	if (F.Id == Id && F.bCostume == bCostume && (F.View || Id.IsNone() || F.bFailed))
 	{
 		return;
 	}
@@ -199,11 +199,13 @@ void ASlopShowroom::Show(int32 Side, FName Id, bool bCostume)
 	F.bCostume = bCostume;
 	F.Celebrate = 0.0;
 	F.Age = 0.0;
+	F.bFailed = false;
 	const Slop::FFighterDef* D = Id.IsNone() ? nullptr : Slop::GetContent().Fighter(Id);
 	if (F.Key) F.Key->SetVisibility(D != nullptr);
 	if (F.Rim) F.Rim->SetVisibility(D != nullptr);
 	if (!D)
 	{
+		F.bFailed = !Id.IsNone();
 		return;
 	}
 	F.Sim = MakeUnique<Slop::FFightSim>();
@@ -223,6 +225,7 @@ void ASlopShowroom::Show(int32 Side, FName Id, bool bCostume)
 	{
 		F.View->Destroy();
 		F.View = nullptr;
+		F.bFailed = true;
 		return;
 	}
 	if (bCostume)

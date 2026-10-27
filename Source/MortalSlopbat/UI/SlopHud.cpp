@@ -383,8 +383,7 @@ int32 SSlopHud::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometr
 	if (M->Dummy && !M->Guide)
 	{
 		PaintText(OutDrawElements, G, L, FText::Format(LOCTEXT("Dummy", "Dummy: {0}    ({1} to change, {2} to reset)"),
-			FText::FromString(M->Dummy->ModeName()), GI->Router->Glyphs() == EGlyphs::Keyboard ? FText::FromString(TEXT("Tab")) : LOCTEXT("R1", "R1"),
-			GI->Router->Glyphs() == EGlyphs::Keyboard ? FText::FromString(TEXT("F4")) : (GI->Router->Glyphs() == EGlyphs::PlayStation ? LOCTEXT("Share", "Create") : LOCTEXT("View", "View"))),
+			FText::FromString(M->Dummy->ModeName()), SlopUI::NextName(GI->Router->Glyphs()), SlopUI::ResetName(GI->Router->Glyphs())),
 			SlopUI::Body(24.f), FVector2D(48.f, 112.f), SlopUI::Text, 0);
 	}
 	if (bInputDisplay)

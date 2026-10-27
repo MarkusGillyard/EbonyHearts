@@ -208,7 +208,7 @@ namespace SlopSettingsImpl
 					[&S](int32 V) { S.Effects = V ? TEXT("reduced") : TEXT("full"); }));
 				Rows.Add(Choice(LOCTEXT("Gore", "Blood"), {LOCTEXT("GFull", "Full"), LOCTEXT("GLow", "Low"), LOCTEXT("GOff", "Off")},
 					[&S]() { return S.Gore == TEXT("low") ? 1 : (S.Gore == TEXT("off") ? 2 : 0); }, [&S](int32 V) { S.Gore = V == 1 ? TEXT("low") : (V == 2 ? TEXT("off") : TEXT("full")); }));
-				Rows.Add(Slider(LOCTEXT("UIScale", "Interface size"), &S.UIScale, 0.75, 1.5, 0.05));
+				Rows.Add(Slider(LOCTEXT("UIScale", "Text size"), &S.UIScale, 0.85, 1.25, 0.05));
 				Rows.Add(Toggle(LOCTEXT("InputDisp", "Input display in fights"), &S.bInputDisplay));
 				Rows.Add(Choice(LOCTEXT("Diff", "CPU difficulty (Versus CPU, Training)"), {FGameFlow::DifficultyName(0), FGameFlow::DifficultyName(1), FGameFlow::DifficultyName(2)},
 					[&S]() { return S.Difficulty; }, [&S](int32 V) { S.Difficulty = V; }));
@@ -291,9 +291,9 @@ namespace SlopSettingsImpl
 					CaptureMessage = LOCTEXT("NeedKey", "That is not a keyboard key; the binding is unchanged.");
 					return;
 				}
-				if (C.Key == EKeys::Enter || C.Key == EKeys::BackSpace || C.Key == EKeys::Tilde || C.Key == EKeys::F11)
+				if (FSlopSettings::IsReservedKey(C.Key))
 				{
-					CaptureMessage = FText::Format(LOCTEXT("Reserved", "{0} is kept for the menus and the window; choose another key."), C.Key.GetDisplayName());
+					CaptureMessage = FText::Format(LOCTEXT("Reserved", "{0} is kept for the menus, training and the window; choose another key."), C.Key.GetDisplayName());
 					return;
 				}
 				S.RebindKey(Half, CaptureAction, C.Key);
@@ -307,7 +307,7 @@ namespace SlopSettingsImpl
 				}
 				if (!S.RebindPad(CaptureAction, C.Key))
 				{
-					CaptureMessage = LOCTEXT("ReservedPad", "That button pauses or is a direction; choose another.");
+					CaptureMessage = LOCTEXT("ReservedPad", "That button pauses, resets, moves on in training, or is a direction; choose another.");
 					return;
 				}
 			}

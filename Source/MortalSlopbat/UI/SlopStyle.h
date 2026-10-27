@@ -22,6 +22,8 @@ namespace SlopUI
 	extern const FLinearColor Panel;
 	extern const FLinearColor PanelEdge;
 
+	// Every game font's size is multiplied by this (Settings > Comfort > Interface size).
+	void SetTextScale(float Scale);
 	FSlateFontInfo Display(float Size);
 	FSlateFontInfo Body(float Size);
 	const FSlateBrush* White();
@@ -44,6 +46,9 @@ namespace SlopUI
 	FText Confirm(Slop::EGlyphs G);
 	FText Back(Slop::EGlyphs G);
 	FText PauseName(Slop::EGlyphs G);
+	// Practice fights: change the dummy, skip a tutorial step, next trial; and reset.
+	FText NextName(Slop::EGlyphs G);
+	FText ResetName(Slop::EGlyphs G);
 	FText KeyName(const FKey& K, Slop::EGlyphs G);
 	FText ActionKey(USlopGameInstance* GI, Slop::EGameAction A, int32 Side = 0);
 	// A dark gradient-free backdrop for menus with a faint vignette.

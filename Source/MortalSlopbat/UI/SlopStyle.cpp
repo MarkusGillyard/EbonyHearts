@@ -34,18 +34,22 @@ namespace SlopUI
 		return F;
 	}
 
+	static float TextScale = 1.f;
+
+	void SetTextScale(float Scale) { TextScale = FMath::Clamp(Scale, 0.85f, 1.25f); }
+
 	FSlateFontInfo Display(float Size)
 	{
 		// Loaded once and kept for the life of the process (Slate holds it until exit).
 		static TSharedPtr<const FCompositeFont>* F = new TSharedPtr<const FCompositeFont>(LoadFont(TEXT("NewRocker"), TEXT("NewRocker-Regular.ttf")));
 		// Sizes are written in pixels at 1080p, as the original's were; Slate's are points.
-		return FSlateFontInfo(*F, Size * 0.75f);
+		return FSlateFontInfo(*F, Size * 0.75f * TextScale);
 	}
 
 	FSlateFontInfo Body(float Size)
 	{
 		static TSharedPtr<const FCompositeFont>* F = new TSharedPtr<const FCompositeFont>(LoadFont(TEXT("Oswald"), TEXT("Oswald-Variable.ttf")));
-		return FSlateFontInfo(*F, Size * 0.75f);
+		return FSlateFontInfo(*F, Size * 0.75f * TextScale);
 	}
 
 	const FSlateBrush* White() { return FCoreStyle::Get().GetBrush("GenericWhiteBox"); }
@@ -152,6 +156,26 @@ namespace SlopUI
 		case Slop::EGlyphs::PlayStation: return LOCTEXT("PsBack", "Circle");
 		case Slop::EGlyphs::Xbox: return LOCTEXT("XbBack", "B");
 		default: return LOCTEXT("KbBack", "Esc");
+		}
+	}
+
+	FText NextName(Slop::EGlyphs G)
+	{
+		switch (G)
+		{
+		case Slop::EGlyphs::PlayStation: return LOCTEXT("PsNext", "R3");
+		case Slop::EGlyphs::Xbox: return LOCTEXT("XbNext", "RS");
+		default: return LOCTEXT("KbNext", "Tab");
+		}
+	}
+
+	FText ResetName(Slop::EGlyphs G)
+	{
+		switch (G)
+		{
+		case Slop::EGlyphs::PlayStation: return LOCTEXT("PsReset", "Create");
+		case Slop::EGlyphs::Xbox: return LOCTEXT("XbReset", "View");
+		default: return LOCTEXT("KbReset", "F4");
 		}
 	}
 

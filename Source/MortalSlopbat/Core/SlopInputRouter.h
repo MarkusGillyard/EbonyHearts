@@ -71,6 +71,10 @@ namespace Slop
 		// The prompt style for what was used last (or what the setting forces).
 		EGlyphs Glyphs() const;
 		int32 LastDevice() const { return LastUsed; }
+		// Shakes the pads that play a side (in a one-player mode, the pad last used) for a moment,
+		// when vibration is on. Ticked by Tick.
+		void Rumble(int32 Side, float Strength, float Seconds);
+		void StopRumble();
 		// Counts connection changes so screens can notice them.
 		int32 ConnectionSerial() const { return Serial; }
 		void OnConnectionChanged(FInputDeviceId Id, bool bConnected);
@@ -87,6 +91,8 @@ namespace Slop
 			// Digital directions (keys, D-pad) and the stick's, kept apart so either can release.
 			int32 DirKeys = 0;
 			int32 DirStick = 0;
+			// The stick's one dominant direction, for menus.
+			int32 MenuStick = 0;
 			// Menu directions held (any source), for auto-repeat; buttons held by the triggers.
 			int32 NavKeys = 0;
 			int32 TrigHeld = 0;
@@ -109,6 +115,9 @@ namespace Slop
 		bool bCapturing = false;
 		TOptional<FCapture> Captured;
 		int32 LastUsed = 0;
+		void SetPadRumble(int32 Device, float Strength);
+		// Per device: when its rumble stops (0 when still).
+		double RumbleUntil[NumDevices] = {};
 		int32 Serial = 0;
 		TArray<FKey> DebugKeys;
 		// Menu auto-repeat for held directions.

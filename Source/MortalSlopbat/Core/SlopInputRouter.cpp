@@ -1,4 +1,7 @@
 #include "Core/SlopInputRouter.h"
+#include "HAL/PlatformTime.h"
+#include "GenericPlatform/IInputInterface.h"
+#include "GenericPlatform/GenericPlatformInputDeviceMapper.h"
 #include "Framework/Application/SlateApplication.h"
 #include "GenericPlatform/InputDeviceRegistry.h"
 #include "Core/SlopLog.h"
@@ -102,7 +105,7 @@ namespace Slop
 		{
 			// A pad that vanishes leaves nothing held.
 			FDeviceState& S = Devices[Slot];
-			S.Held = S.Pressed = S.DirKeys = S.DirStick = S.NavKeys = S.TrigHeld = 0;
+			S.Held = S.Pressed = S.DirKeys = S.DirStick = S.MenuStick = S.NavKeys = S.TrigHeld = 0;
 			S.StickX = S.StickY = S.TrigL = S.TrigR = 0;
 			S.bConnected = false;
 		}
@@ -271,6 +274,9 @@ namespace Slop
 			else if (K == EKeys::Gamepad_FaceButton_Top) Menu(EUi::Alt);
 			else if (!bFightActive && K == EKeys::Gamepad_RightShoulder) Menu(EUi::Next);
 			else if (!bFightActive && K == EKeys::Gamepad_LeftShoulder) Menu(EUi::Prev);
+			// In a fight the shoulders fight; the right stick's click (never a fighting button)
+			// changes the dummy, skips a tutorial step or moves to the next trial.
+			else if (K == EKeys::Gamepad_RightThumbstick) Menu(EUi::Next);
 		}
 		else
 		{
@@ -281,7 +287,9 @@ namespace Slop
 			else if (K == EKeys::Right || K == Keys[(int32)EGameAction::Right]) Menu(EUi::Right);
 			else if (K == EKeys::Enter || K == EKeys::SpaceBar || (!bFightActive && (K == Keys[(int32)EGameAction::LP] || K == Keys[(int32)EGameAction::HP])))
 				Menu(EUi::Confirm);
-			else if (K == EKeys::BackSpace) Menu(EUi::Back);
+			// Each half's Block key goes back for that half, as Backspace does (the original's
+			// "Block or Backspace"), so the right-hand player can undo a pick too.
+			else if (K == EKeys::BackSpace || (!bFightActive && K == Keys[(int32)EGameAction::BL])) Menu(EUi::Back);
 			else if (K == EKeys::Escape) Menu(bFightActive ? EUi::Pause : EUi::Back);
 			else if (K == EKeys::Tab) Menu(EUi::Next);
 			else if (!bFightActive && K == Keys[(int32)EGameAction::HK]) Menu(EUi::Alt);
@@ -395,16 +403,22 @@ namespace Slop
 		if (K == EKeys::Gamepad_LeftX || K == EKeys::Gamepad_LeftY)
 		{
 			(K == EKeys::Gamepad_LeftX ? S.StickX : S.StickY) = V;
-			const int32 Before = S.DirStick;
 			UpdateStickDirs(S);
-			const int32 New = S.DirStick & ~Before;
-			if (New)
+			// Menus take only the stick's dominant direction, so an angled push down a list never
+			// also changes a value; fights keep all eight (DirStick).
+			int32 Menu = 0;
+			if (FMath::Sqrt(S.StickX * S.StickX + S.StickY * S.StickY) >= Settings.DeadZone)
 			{
-				LastUsed = Device;
-				if (New & PadUp) PushUi(EUi::Up, Device, false);
-				if (New & PadDown) PushUi(EUi::Down, Device, false);
-				if (New & PadLeft) PushUi(EUi::Left, Device, false);
-				if (New & PadRight) PushUi(EUi::Right, Device, false);
+				Menu = FMath::Abs(S.StickX) > FMath::Abs(S.StickY) ? (S.StickX > 0 ? PadRight : PadLeft) : (S.StickY > 0 ? PadUp : PadDown);
+			}
+			if (Menu != S.MenuStick)
+			{
+				S.MenuStick = Menu;
+				if (Menu)
+				{
+					LastUsed = Device;
+					PushUi(Menu == PadUp ? EUi::Up : Menu == PadDown ? EUi::Down : Menu == PadLeft ? EUi::Left : EUi::Right, Device, false);
+				}
 			}
 			if (S.DirStick == 0 && Device == RepeatDevice && (S.DirKeys == 0))
 			{
@@ -442,8 +456,70 @@ namespace Slop
 		return false;
 	}
 
+	void FSlopInputRouter::SetPadRumble(int32 Device, float Strength)
+	{
+		if (!FSlateApplication::IsInitialized() || !Devices[Device].Id.IsValid())
+		{
+			return;
+		}
+		if (IInputInterface* In = FSlateApplication::Get().GetInputInterface())
+		{
+			FForceFeedbackValues V;
+			V.LeftLarge = V.RightLarge = Strength;
+			V.LeftSmall = V.RightSmall = Strength * 0.6f;
+			// The platform addresses force feedback by controller id, mapped from the device as the
+			// Linux application itself maps it.
+			IPlatformInputDeviceMapper& Mapper = IPlatformInputDeviceMapper::Get();
+			int32 ControllerId = INDEX_NONE;
+			Mapper.RemapUserAndDeviceToControllerId(Mapper.GetUserForInputDevice(Devices[Device].Id), ControllerId, Devices[Device].Id);
+			if (ControllerId != INDEX_NONE)
+			{
+				In->SetForceFeedbackChannelValues(ControllerId, V);
+			}
+		}
+	}
+
+	void FSlopInputRouter::Rumble(int32 Side, float Strength, float Seconds)
+	{
+		if (!Settings.bVibration)
+		{
+			return;
+		}
+		const double Until = FPlatformTime::Seconds() + Seconds;
+		for (int32 D = (int32)EDevice::FirstPad; D < NumDevices; ++D)
+		{
+			const bool bTheirs = bSolo ? D == LastUsed : Settings.Assign[D] == Side;
+			if (Devices[D].bConnected && bTheirs)
+			{
+				SetPadRumble(D, FMath::Clamp(Strength, 0.f, 1.f));
+				RumbleUntil[D] = FMath::Max(RumbleUntil[D], Until);
+			}
+		}
+	}
+
+	void FSlopInputRouter::StopRumble()
+	{
+		for (int32 D = (int32)EDevice::FirstPad; D < NumDevices; ++D)
+		{
+			if (RumbleUntil[D] > 0.0)
+			{
+				RumbleUntil[D] = 0.0;
+				SetPadRumble(D, 0.f);
+			}
+		}
+	}
+
 	void FSlopInputRouter::Tick(const float DeltaTime, FSlateApplication& SlateApp, TSharedRef<ICursor> Cursor)
 	{
+		const double Now = FPlatformTime::Seconds();
+		for (int32 D = (int32)EDevice::FirstPad; D < NumDevices; ++D)
+		{
+			if (RumbleUntil[D] > 0.0 && Now >= RumbleUntil[D])
+			{
+				RumbleUntil[D] = 0.0;
+				SetPadRumble(D, 0.f);
+			}
+		}
 		if (RepeatDevice >= 0)
 		{
 			const FDeviceState& S = Devices[RepeatDevice];
@@ -457,7 +533,7 @@ namespace Slop
 			case EUi::Right: Need = PadRight; break;
 			default: break;
 			}
-			const bool bHeld = ((Dirs | S.NavKeys) & Need) != 0;
+			const bool bHeld = ((S.DirKeys | S.MenuStick | S.NavKeys) & Need) != 0;
 			if (!bHeld)
 			{
 				RepeatDevice = -1;
@@ -513,7 +589,7 @@ namespace Slop
 	{
 		for (FDeviceState& S : Devices)
 		{
-			S.Held = S.Pressed = S.DirKeys = S.DirStick = S.NavKeys = S.TrigHeld = 0;
+			S.Held = S.Pressed = S.DirKeys = S.DirStick = S.MenuStick = S.NavKeys = S.TrigHeld = 0;
 			S.StickX = S.StickY = 0;
 			S.TrigL = S.TrigR = 0;
 		}

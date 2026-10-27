@@ -28,6 +28,8 @@ namespace Slop
 	struct FSlopSettings
 	{
 		static constexpr int32 Version = 1;
+		// Set by Load when the file had to be set aside; shown to the player once.
+		FString LoadNote;
 
 		// Display. Window mode: 0 window, 1 borderless full screen, 2 exclusive full screen.
 		int32 WindowMode = 1;
@@ -76,6 +78,8 @@ namespace Slop
 		// buttons that are reserved (Start pauses).
 		bool RebindPad(EGameAction Action, const FKey& Button);
 		static bool IsReservedPadButton(const FKey& K);
+		static bool IsReservedKey(const FKey& K);
+		static bool DirBitOf(EGameAction A) { return A == EGameAction::Up || A == EGameAction::Down || A == EGameAction::Left || A == EGameAction::Right; }
 
 		TSharedRef<FJsonObject> ToJson() const;
 		// Reads key by key: anything missing or invalid keeps its default.
