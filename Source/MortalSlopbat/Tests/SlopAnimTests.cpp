@@ -256,7 +256,8 @@ bool FSlopBlowDirections::RunTest(const FString&)
 }
 
 // A blow should be seen to land: on its first active frame some striking part of the body (a hand,
-// foot, elbow, knee or the head) is inside, or close to, the move's hitbox. (Moves tagged "sound"
+// foot, elbow, knee or the head) is inside, or close to, the move's hitbox, on the ground or in
+// the air. (Moves tagged "sound"
 // reach further than any limb and are shown by rings instead.)
 SLOP_TEST(FSlopStrikesReachBoxes, "Anim.StrikesReachTheirHitboxes")
 bool FSlopStrikesReachBoxes::RunTest(const FString&)
@@ -270,7 +271,7 @@ bool FSlopStrikesReachBoxes::RunTest(const FString&)
 		for (const TPair<FName, TSharedRef<FMoveDef>>& Pair : Def->Moves)
 		{
 			const FMoveDef& M = *Pair.Value;
-			if (M.bAir || M.Projectile.bHas || M.IsThrowKind() || M.Hitboxes.Num() == 0 || M.Active <= 0 || M.bFinisher)
+			if (M.Projectile.bHas || M.IsThrowKind() || M.Hitboxes.Num() == 0 || M.Active <= 0 || M.bFinisher)
 			{
 				continue;
 			}
@@ -288,7 +289,9 @@ bool FSlopStrikesReachBoxes::RunTest(const FString&)
 				A.Update(1.0, 1.0 / 60.0);
 			}
 			FFighter& F = Sim.Fighters[0];
-			F.Pos = FVector2D(-2.0, 0.0);
+			// Air attacks start high enough to reach their first active frame before landing.
+			F.Pos = FVector2D(-2.0, M.bAir ? 1.4 : 0.0);
+			F.Vel = FVector2D::ZeroVector;
 			Sim.Fighters[1].Pos = FVector2D(6.0, 0.0);
 			F.StartMove(M);
 			F.SetState(EState::Move);
@@ -330,6 +333,7 @@ bool FSlopStrikesReachBoxes::RunTest(const FString&)
 			}
 		}
 	}
+	UE_LOG(LogSlop, Display, TEXT("Reach: %d strikes checked"), Checked);
 	TestTrue(FString::Printf(TEXT("strikes checked (%d)"), Checked), Checked > 80);
 	return true;
 }
