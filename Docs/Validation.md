@@ -58,6 +58,13 @@ whether it is felt on a real pad is unverified.
 
 ### On Markus's monitor (2.2.0)
 
+2.5.1 (commit `27c727f`, the Slopbat's tar, wind and bite changes on 2.5.0) was checked
+offscreen only, as the monitor was off (`Monitors: 0`; a window run then blocks in Vulkan
+presentation, as noted under Display): unpacked fresh (checksums matched), the CPU played an arcade
+fight for 85 s at 60 fps with every frame within 1 ms, no hitches, GPU 14.91 ms at a 75 % render
+scale, peak memory 1,415 MB (`Saved/Perf/offscreen-2.5.1`). Full screen on the monitor is not yet
+checked for 2.5.1; nothing that touches the window or rendering changed since 2.5.0.
+
 2.5.0 (commit `60bf254`, with captured footwork, block and evade, rippled water, the Roost's lit
 slop lake and contact shadows), unpacked fresh from the archive (checksums matched): 7,007 frames
 over 85 s at a 12.12 ms median, every frame within 1 ms of it, 1% low 82.5, slowest settled frame

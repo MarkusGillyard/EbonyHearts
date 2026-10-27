@@ -13,7 +13,7 @@ evidence behind every claim here.
 | Art | All eight fighters built from CC0 MakeHuman bodies with scripted costumes (`Tools/blender`); four stage sets built in Blender (`Tools/blender/stages`); CC0 surfaces, props, skies and sounds. |
 | Tests | Automation tests (`run_tests`), scripted flows for every mode (`Tools/playtest`), unattended packaged sessions (`Tools/perf/soak.sh`). |
 | Combat feel | 2.2.0 applies the presentation changes ranked by the study in `Docs/Martial-arts.md` (strikes, hit-stop, reactions, styles, sound) and one rule change (counter-hit freeze on the victim); frame data otherwise unchanged. 2.3.0 to 2.5.0 bring in motion capture: strikes, footwork, the block, Daxion's evade, intros and wins. |
-| Package | `MortalSlopbat-2.5.0-linux-x86_64.tar.gz` (498 MB, SHA-256 `2fd5a6784b678f62d65ac11e46020d2313dfb7c07056e284bf6f0ef1e13d377d`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `60bf254`; unpack and run `./MortalSlopbat.sh`. Earlier archives (2.0.0 to 2.4.0) are kept beside it. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
+| Package | `MortalSlopbat-2.5.1-linux-x86_64.tar.gz` (498 MB, SHA-256 `fa8f66c71529af41f43982911c40daa4c6178b6246e3bd5fee85a46ab764aa7c`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `27c727f` (2.5.0 plus the Slopbat's fairer tar, wind and bite); unpack and run `./MortalSlopbat.sh`. Earlier archives (2.0.0 to 2.5.0) are kept beside it. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
 | Saves | Markus's own settings and progress from playing 2.1.0 are in `~/.local/share/MortalSlopbat/UE5/` (settings version 1: its default cap of 60 becomes Match the display when 2.2.0 loads it). Test runs used separate profiles, cleared afterwards. The Godot game's own files in `~/.local/share/MortalSlopbat/` are untouched. |
 
 ## Picking it up
@@ -48,6 +48,10 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   the Roost's slop lake is a lit liquid over its glow, and contact shadows ground feet and hands
   (`M_Water`, `ASlopArena`). The meshes and textures are the original CC0 builds. Real hair
   (grooms), cloth simulation and new props are not done.
+- **The Slopbat after Markus's play (2.5.1).** He found it spammy, with too many unblockables: tar
+  and wind now wait between uses, and the bite can be broken, comes slower and less often. The Storm
+  Shroud is still unblockable (telegraphed, broken by a blow); making it blockable with heavy chip
+  is the next step if it still feels unfair. Not yet played since the change.
 - **The study's other rule changes.** Ashka's teep is in (forward + low kick; a combat test holds
   it), Gorm's blocked thrusts push further, and Bram throws with a chancery and a cross-buttock.
   Not done: a shin check for Ashka, optional leg damage. Each touches balance, so each needs a playtest.
