@@ -184,4 +184,4 @@ were checked.
 - Audio by ear: levels, mix and the layering were checked in code and logs only.
 - Other aspect ratios on a real display. At 1920 x 1200 (offscreen) the menus letterbox, the
   fight camera frames both fighters and the HUD fits with a margin above and below (fixed: it
-  had run off both sides); 4:3 and ultrawide follow the same rules but were not rendered.
+  had run off both sides); ultrawide is Markus's own display (3440 x 1440), where every check since 2.2.0 ran; 4:3 follows the same rules but was not rendered.

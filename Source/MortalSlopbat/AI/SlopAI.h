@@ -155,7 +155,10 @@ namespace Slop
 	};
 
 	// The training partner: stands, crouches, blocks (all, random height, low only), jumps in
-	// place, or fights back as the CPU at Warrior.
+	// place, fights back as the CPU at Warrior, or plays back what the player recorded on it.
+	// Recording hands the player's own pad to the dummy for up to ten seconds (the player's fighter
+	// stands meanwhile); directions are kept relative to the way the dummy faced, so a recording
+	// still walks in and out the right way after the fighters change sides.
 	class FTrainingDummy : public IBrain
 	{
 	public:
@@ -164,8 +167,14 @@ namespace Slop
 		void NextMode() { SetMode((Mode + 1) % Modes().Num()); }
 		void SetMode(int32 M);
 		int32 GetMode() const { return Mode; }
-		const FString& ModeName() const { return Modes()[Mode]; }
+		FString ModeName() const;
 		virtual FPadState Think() override;
+		// While recording, the player's pad drives the dummy: Record takes it and returns what the
+		// dummy plays this tick.
+		bool TakesPlayerPad() const;
+		FPadState Record(const FPadState& Player);
+		static constexpr int32 MaxTape = 600;
+		static constexpr int32 LoopGap = 40;
 
 	private:
 		FFightSim& Sim;
@@ -175,6 +184,8 @@ namespace Slop
 		FRandomStream Rng;
 		bool bLow = false;
 		int32 SwitchT = 0;
+		TArray<FPadState> Tape;
+		int32 PlayAt = 0;
 	};
 
 	// The optional encounter with the stranger in white. He cannot be hurt and does not fight; he

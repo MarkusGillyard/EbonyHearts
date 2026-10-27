@@ -329,6 +329,72 @@ bool FSlopBossPatterns::RunTest(const FString&)
 	return true;
 }
 
+// Record and playback: what the player did with the dummy comes back the same, and still walks
+// toward the opponent when the dummy plays it from the other side of the screen.
+SLOP_TEST(FSlopDummyRecord, "AI.DummyRecordsAndPlaysBack")
+bool FSlopDummyRecord::RunTest(const FString&)
+{
+	const FFighterDef* Ashka = GetContent().Fighter(TEXT("ashka"));
+	const FFighterDef* Bram = GetContent().Fighter(TEXT("bram"));
+	const int32 RecordMode = FTrainingDummy::Modes().IndexOfByKey(TEXT("Record"));
+	const int32 PlayMode = FTrainingDummy::Modes().IndexOfByKey(TEXT("Playback"));
+	TestTrue("the modes exist", RecordMode >= 0 && PlayMode >= 0);
+	const auto Place = [](FSimHarness& H, bool bSwapped)
+	{
+		H.Place(2.6);
+		if (bSwapped)
+		{
+			H.F(0).Pos.X = 1.3;
+			H.F(1).Pos.X = -1.3;
+			H.F(0).Facing = -1;
+			H.F(1).Facing = 1;
+		}
+	};
+	for (int32 Swap = 0; Swap < 2; ++Swap)
+	{
+		FSimHarness H(Ashka, Bram);
+		FTrainingDummy D(H.Sim, 1);
+		D.SetMode(RecordMode);
+		Place(H, false);
+		// Walk the dummy in (screen left, toward the player), then a high punch, then nothing.
+		FName Recorded;
+		for (int32 T = 0; T < 60; ++T)
+		{
+			FPadState P;
+			P.Dirs = T < 24 ? PadLeft : 0;
+			P.Pressed = P.Held = T == 24 ? BtnHP : 0;
+			TestTrue("the player's pad drives the dummy while recording", D.TakesPlayerPad());
+			FPadState Pads[2] = {FPadState(), D.Record(P)};
+			H.Sim.Step(Pads);
+			for (const FSimEvent& E : H.Sim.Events)
+			{
+				Recorded = E.Type == EEvent::Move && E.Who == 1 && Recorded.IsNone() ? E.Move : Recorded;
+			}
+		}
+		TestFalse("a move was recorded", Recorded.IsNone());
+		D.SetMode(PlayMode);
+		Place(H, Swap == 1);
+		const double Gap0 = FMath::Abs(H.F(1).Pos.X - H.F(0).Pos.X);
+		FName Played;
+		for (int32 T = 0; T < 60; ++T)
+		{
+			FPadState Pads[2] = {FPadState(), D.Think()};
+			H.Sim.Step(Pads);
+			if (T == 22)
+			{
+				TestTrue(FString::Printf(TEXT("%s: the dummy walks toward the player"), Swap ? TEXT("swapped") : TEXT("same side")),
+					FMath::Abs(H.F(1).Pos.X - H.F(0).Pos.X) < Gap0 - 0.3);
+			}
+			for (const FSimEvent& E : H.Sim.Events)
+			{
+				Played = E.Type == EEvent::Move && E.Who == 1 && Played.IsNone() ? E.Move : Played;
+			}
+		}
+		TestEqual(FString::Printf(TEXT("%s: the same move comes back"), Swap ? TEXT("swapped") : TEXT("same side")), Played, Recorded);
+	}
+	return true;
+}
+
 // A grab beats a block, so against a player who only blocks the Bite was most of the damage the
 // Slopbat did. It now waits between bites (and the bite can be broken, see Rounds).
 SLOP_TEST(FSlopBossBites, "AI.BossWaitsBetweenBites")

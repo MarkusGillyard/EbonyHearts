@@ -789,8 +789,46 @@ namespace Slop
 
 	const TArray<FString>& FTrainingDummy::Modes()
 	{
-		static const TArray<FString> M = {TEXT("Stand"), TEXT("Crouch"), TEXT("Block All"), TEXT("Block Random"), TEXT("Crouch Block"), TEXT("Jump"), TEXT("CPU")};
+		static const TArray<FString> M = {TEXT("Stand"), TEXT("Crouch"), TEXT("Block All"), TEXT("Block Random"), TEXT("Crouch Block"), TEXT("Jump"), TEXT("CPU"),
+			TEXT("Record"), TEXT("Playback")};
 		return M;
+	}
+
+	FString FTrainingDummy::ModeName() const
+	{
+		const FString& Name = Modes()[Mode];
+		if (Name == TEXT("Record"))
+		{
+			return TakesPlayerPad() ? FString::Printf(TEXT("Record (you control it, %.1f s left)"), (MaxTape - Tape.Num()) / 60.0) : FString(TEXT("Record (done)"));
+		}
+		if (Name == TEXT("Playback") && Tape.Num() == 0)
+		{
+			return TEXT("Playback (nothing recorded)");
+		}
+		return Name;
+	}
+
+	// Left and right swapped: from screen directions to "as if facing right" and back.
+	static int32 SwapSides(int32 Dirs)
+	{
+		const int32 X = Dirs & (PadLeft | PadRight);
+		return (Dirs & ~(PadLeft | PadRight)) | (X == PadLeft ? PadRight : X == PadRight ? PadLeft : X);
+	}
+
+	bool FTrainingDummy::TakesPlayerPad() const
+	{
+		return Modes()[Mode] == TEXT("Record") && Tape.Num() < MaxTape;
+	}
+
+	FPadState FTrainingDummy::Record(const FPadState& Player)
+	{
+		FPadState Kept = Player;
+		if (Sim.Fighters[Index].Facing < 0)
+		{
+			Kept.Dirs = SwapSides(Kept.Dirs);
+		}
+		Tape.Add(Kept);
+		return Player;
 	}
 
 	FTrainingDummy::FTrainingDummy(FFightSim& InSim, int32 InIndex) : Sim(InSim), Index(InIndex)
@@ -802,6 +840,11 @@ namespace Slop
 	{
 		Mode = M;
 		Cpu.Reset();
+		PlayAt = 0;
+		if (Modes()[Mode] == TEXT("Record"))
+		{
+			Tape.Reset();
+		}
 		if (Modes()[Mode] == TEXT("CPU"))
 		{
 			Cpu = MakeUnique<FCpuBrain>(Sim, Index, 1);
@@ -850,6 +893,22 @@ namespace Slop
 		if (Name == TEXT("CPU") && Cpu)
 		{
 			return Cpu->Think();
+		}
+		if (Name == TEXT("Playback") && Tape.Num() > 0)
+		{
+			// The recording, then a short pause, round and round.
+			const int32 At = PlayAt;
+			PlayAt = (PlayAt + 1) % (Tape.Num() + LoopGap);
+			if (At >= Tape.Num())
+			{
+				return FPadState();
+			}
+			FPadState P = Tape[At];
+			if (F.Facing < 0)
+			{
+				P.Dirs = SwapSides(P.Dirs);
+			}
+			return P;
 		}
 		return FPadState();
 	}

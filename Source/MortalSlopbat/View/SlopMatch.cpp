@@ -301,6 +301,12 @@ void ASlopMatch::FixedTick()
 			Pads[I] = Brains[I]->Think();
 		}
 	}
+	if (Dummy && Dummy->TakesPlayerPad())
+	{
+		// Recording the dummy: the player's own pad drives it while their fighter stands.
+		Pads[1] = Dummy->Record(Pads[0]);
+		Pads[0] = FPadState();
+	}
 	if (Guide)
 	{
 		Guide->FilterPads(Pads);
