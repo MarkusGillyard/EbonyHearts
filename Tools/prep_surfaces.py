@@ -4,8 +4,9 @@ ORM map (R ambient occlusion, G roughness, B metallic) per set, with stable name
     /home/cinqic/Documents/Mortal Slopbat/.venv/bin/python -I Tools/prep_surfaces.py
 
 Reads SourceArt/ThirdParty/{ambientCG,PolyHaven/textures} (see ledger.json for provenance) and
-writes SourceArt/Surfaces/<Set>/<Set>_{basecolor,normal,orm}.png. Large sets are reduced to
-2048 px; nothing else about the images is changed.
+writes SourceArt/Surfaces/<Set>/<Set>_{basecolor,normal,orm}.png. The four fighting floors keep
+2048 px; every other set, seen smaller and further off, is reduced to 1024 px. Nothing else about
+the images is changed.
 """
 import glob
 import os
@@ -17,7 +18,8 @@ from PIL import Image
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 TP = os.path.join(ROOT, "SourceArt", "ThirdParty")
 OUT = os.path.join(ROOT, "SourceArt", "Surfaces")
-MAX = 2048
+FLOORS = {"MetalPlates013", "monastery_stone_floor", "weathered_planks", "Rock035"}
+MAX = 1024
 
 
 def load(path, mode):
@@ -29,6 +31,8 @@ def load(path, mode):
 
 
 def write(set_id, color, normal, ao, rough, metal):
+    global MAX
+    MAX = 2048 if set_id in FLOORS else 1024
     d = os.path.join(OUT, set_id)
     os.makedirs(d, exist_ok=True)
     c = load(color, "RGB")

@@ -3,6 +3,7 @@
 #include "Engine/GameInstance.h"
 #include "Containers/Ticker.h"
 #include "Core/SlopFlow.h"
+#include "Core/SlopFrameStats.h"
 #include "Core/SlopInputRouter.h"
 #include "Core/SlopSave.h"
 #include "SlopGameInstance.generated.h"
@@ -67,6 +68,9 @@ public:
 	// The main menu item chosen last, so coming back lands there.
 	int32 MenuChoice = 0;
 	bool bDebugKeys = false;
+	// Development: the CPU plays the first side at this level, and idle menus are confirmed, so
+	// whole modes run unattended (-SlopAutoPlay[=0..2]). -1 when off.
+	int32 AutoPlayLevel = -1;
 	TOptional<Slop::FMatchResult> LastResult;
 
 private:
@@ -111,6 +115,10 @@ private:
 	// Development: scripted menu actions (-SlopUi=delay:action,...), dispatched as if pressed.
 	TArray<TPair<double, Slop::EUi>> UiScript;
 	double UiScriptAt = 0.0;
+	double AutoConfirmAt = 0.0;
+	// The performance record (-SlopFrameStats, any build): match frames to a CSV in the save folder.
+	TUniquePtr<Slop::FFrameStats> FrameStats;
+	double MatchStartAt = -1.0;
 	FDelegateHandle ConnHandle;
 	FDelegateHandle ActiveHandle;
 	bool bStarted = false;

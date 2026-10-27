@@ -111,7 +111,7 @@ def nonarm_masks(ctx, objs):
 def wrap_skirt(ctx, key, surface, z_top, z_hem, open_frac=0.14, open_at="front", gap=0.012,
                flare=0.03, folds=(0.006, 7), slit_z=None, share=(0.85, 0.45, 0.2), thickness=0.004,
                nu=40, row=0.028, y_c=None, objs=None, tatter=None, hips_z=None, weight_mode="legs",
-               snug_rows=1):
+               snug_rows=1, arc=None, side=None, calf_share=0.0):
     """A sheet hanging round a vertical axis from z_top to z_hem: each column hangs from the
     widest point above it (so it drapes over hips, belly or shoulders), flares and folds
     towards the hem. `open_frac` of the circumference is left open at the front (coats,
@@ -125,7 +125,9 @@ def wrap_skirt(ctx, key, surface, z_top, z_hem, open_frac=0.14, open_at="front",
     objs = objs or ctx.colliders
     coll = geo.Collider(objs, nonarm_masks(ctx, objs))
     half_open = math.pi * open_frac
-    if open_at == "front":
+    if arc is not None:                     # explicit panel (wrap-over skirts): angles from the front, +x = left
+        phis = np.linspace(arc[0], arc[1], nu + 1)
+    elif open_at == "front":
         phis = np.linspace(half_open, 2 * math.pi - half_open, nu + 1)
     else:
         phis = np.linspace(math.pi + half_open, 3 * math.pi - half_open, nu + 1)
@@ -220,6 +222,8 @@ def wrap_skirt(ctx, key, surface, z_top, z_hem, open_frac=0.14, open_at="front",
         sh = np.where(a < 0.5, share[0] + (share[1] - share[0]) * a / 0.5,
                       share[1] + (share[2] - share[1]) * (a - 0.5) / 0.5)
         left = np.clip(c[:, 0] / (0.06 * s) * 0.5 + 0.5, 0, 1)
+        if side is not None:
+            left = np.full(len(c), 1.0 if side == "l" else 0.0)
         if back_j is not None:
             left = np.where((a > 0.9) & (c[:, 2] < slit_z), (c[:, 0] > 0).astype(float), left)
         zero = np.zeros(len(c))
@@ -231,6 +235,25 @@ def wrap_skirt(ctx, key, surface, z_top, z_hem, open_frac=0.14, open_at="front",
         newW["pelvis"] = newW.get("pelvis", zero) + sb * (1 - sh)
         newW["thigh_l"] = sb * sh * left + (W.get("thigh_l", zero) * (1 - sb))
         newW["thigh_r"] = sb * sh * (1 - left) + (W.get("thigh_r", zero) * (1 - sb))
+        if calf_share:
+            # below the knee the hem is handed over to the shin on its side (from the pelvis and
+            # thigh shares alike; fully at the back, half at the front, where a forward-tilting
+            # shin would push it down), so a long hem rides the shins in a deep crouch instead of
+            # sinking through the floor with the pelvis
+            sc = calf_share * np.clip((kz - c[:, 2]) / max(kz - z_hem, 1e-6), 0, 1) ** 0.6 * (0.5 + 0.5 * a)
+            for b in ("pelvis", "thigh_l", "thigh_r"):
+                newW[b] = newW[b] * (1 - sc)
+            newW["calf_l"] = sc * left
+            newW["calf_r"] = sc * (1 - left)
+            # the pelvis drops about 40% of the height in a deep crouch: cap its share by the
+            # height above the floor and hand the rest to the thigh (above the knee) or shin
+            cap = np.clip((c[:, 2] - 0.025 * s) / (0.6 * ctx.H), 0, 1)
+            ex = np.maximum(newW["pelvis"] - cap, 0)
+            newW["pelvis"] = newW["pelvis"] - ex
+            above = c[:, 2] > kz
+            for b, lr in (("l", left), ("r", 1 - left)):
+                newW["thigh_" + b] = newW["thigh_" + b] + ex * lr * above
+                newW["calf_" + b] = newW["calf_" + b] + ex * lr * ~above
         geo.set_weights(ob, newW)
     if thickness:
         geo.solidify(ob, thickness * s)

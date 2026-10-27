@@ -525,9 +525,10 @@ def tiled_slot(fid, cfg, built, out_dir, slot, objs, size):
             base[m] = lin_to_srgb(np.broadcast_to(target, (m.sum(), 3)))
             orm[m] = np.stack([np.ones(m.sum()), np.full(m.sum(), sp["roughness"]),
                                np.full(m.sum(), sp["metallic"])], 1)
-            if sp["set"] == "procedural:lace":
+            if sp["set"] in ("procedural:lace", "procedural:lace_dense"):
                 k = mpu / sp["tile_m"]
-                alpha[m] = lace_alpha(u[m] * k, v[m] * k)
+                fn = lace_alpha if sp["set"] == "procedural:lace" else lace_dense_alpha
+                alpha[m] = fn(u[m] * k, v[m] * k)
                 any_alpha = True
             if sp.get("emission"):
                 emis[m] = lin_to_srgb(target * sp["emission"])
@@ -574,6 +575,30 @@ def lace_alpha(u, v):
     hole = d < 0.55
     flower = (np.mod(cq, 3) == 0) & (np.mod(cr, 3) == 0) & (np.abs(d - 0.38) < 0.08)
     return np.where(hole & ~flower, 0.0, 1.0)
+
+
+def lace_dense_alpha(u, v):
+    """Close mourning lace for bodices: a solid five-petal flower on a brick lattice (one per
+    tile) with an open eye and five small openings between the petals, a solid ring round it,
+    and an open net of round holes between the flowers (about 70% cover, so it reads as dark
+    cloth at fight distance and as lace close up)."""
+    row = np.floor(v)
+    x = u + 0.5 * (np.mod(row, 2))
+    fx, fy = x - np.floor(x) - 0.5, v - row - 0.5
+    rho, ang = np.hypot(fx, fy), np.arctan2(fy, fx)
+    petal = rho < 0.27 + 0.09 * np.cos(5 * ang)
+    eye = rho < 0.05
+    gaps = np.zeros_like(rho, bool)
+    for k in range(5):
+        a = (2 * k + 1) * math.pi / 5
+        gaps |= np.hypot(fx - 0.16 * math.cos(a), fy - 0.16 * math.sin(a)) < 0.04
+    ring = np.abs(rho - 0.43) < 0.03
+    gx, gy = u * 5.0, v * 5.0
+    grow = np.floor(gy)
+    hx = gx + 0.5 * np.mod(grow, 2)
+    net_hole = np.hypot(hx - np.floor(hx) - 0.5, gy - grow - 0.5) < 0.36
+    solid = (petal & ~eye & ~gaps) | ring | ~net_hole
+    return np.where(solid, 1.0, 0.0)
 
 
 # ----------------------------------------------------------------------------- output + materials

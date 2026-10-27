@@ -24,3 +24,15 @@ Tools/**/__pycache__/
 # Raw third-party downloads: provenance and hashes live in SourceArt/ThirdParty/ledger.json;
 # what the game uses is imported under Content/ and licensed in Docs/ThirdParty.
 SourceArt/ThirdParty/*/
+
+# Derived art that the scripts rebuild (Tools/prep_surfaces.py, Tools/blender/*): the game's
+# imported copies live under Content/, the inputs are the scripts and the ledger.
+SourceArt/Surfaces/
+SourceArt/Fighters/*/*.png
+SourceArt/Fighters/*/*.blend
+SourceArt/Fighters/*/*.blend1
+SourceArt/Fighters/*/*.fbx
+SourceArt/Fighters/*/*.log
+SourceArt/Fighters/*/renders/
+SourceArt/Stages/*/review/*
+!SourceArt/Stages/*/review/*_sheet.png

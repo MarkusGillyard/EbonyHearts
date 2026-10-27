@@ -1,5 +1,4 @@
 #include "View/SlopMatch.h"
-#include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "HAL/PlatformTime.h"
@@ -141,6 +140,12 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 				}
 			}
 		}
+		const int32 Auto = GI()->AutoPlayLevel;
+		if (Auto >= 0 && !Brains[0])
+		{
+			// Development autoplay: the CPU takes the player's side.
+			Brains[0] = MakeUnique<FCpuBrain>(Sim, 0, Auto, (int32)(FPlatformTime::Cycles() & 0x7fff));
+		}
 	}
 	if (M == EMode::Tutorial)
 	{
@@ -261,10 +266,7 @@ void ASlopMatch::Tick(float DeltaSeconds)
 	Director.Step(D);
 	Vfx->Step(D);
 	Arena->Step(D, Camera->GetActorLocation());
-	if (bShowBoxes)
-	{
-		DrawDebugBoxes();
-	}
+
 }
 
 void ASlopMatch::FixedTick()
@@ -516,16 +518,8 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 	}
 }
 
-void ASlopMatch::DrawDebugBoxes() const
+void ASlopMatch::CollectBoxes(TArray<TPair<FRect, FLinearColor>>& Out) const
 {
-#if ENABLE_DRAW_DEBUG
-	UWorld* W = GetWorld();
-	auto Box = [W](const FRect& R, const FColor& C)
-	{
-		const FVector Center = Anim::WorldToUE(FVector(R.X + R.W * 0.5, R.Y + R.H * 0.5, 0.0));
-		const FVector Extent(2.0, R.W * 50.0, R.H * 50.0);
-		DrawDebugBox(W, Center, Extent, C, false, -1.f, SDPG_Foreground, 1.5f);
-	};
 	TArray<FRect> Hurt;
 	TArray<TPair<int32, FRect>> Hits;
 	for (const FFighter& F : Sim.Fighters)
@@ -533,18 +527,17 @@ void ASlopMatch::DrawDebugBoxes() const
 		F.Hurtboxes(Hurt);
 		for (const FRect& R : Hurt)
 		{
-			Box(R, FColor(80, 160, 255));
+			Out.Add({R, FLinearColor(FColor(80, 160, 255))});
 		}
 		F.ActiveHitboxes(Hits);
 		for (const TPair<int32, FRect>& H : Hits)
 		{
-			Box(H.Value, FColor(255, 60, 40));
+			Out.Add({H.Value, FLinearColor(FColor(255, 60, 40))});
 		}
-		Box(F.Pushbox(), FColor(255, 220, 80));
+		Out.Add({F.Pushbox(), FLinearColor(FColor(255, 220, 80))});
 	}
 	for (const FProjectile& P : Sim.Projectiles)
 	{
-		Box(P.Rect(), FColor(255, 120, 40));
+		Out.Add({P.Rect(), FLinearColor(FColor(255, 120, 40))});
 	}
-#endif
 }

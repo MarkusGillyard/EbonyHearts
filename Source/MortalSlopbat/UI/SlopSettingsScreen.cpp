@@ -350,9 +350,14 @@ namespace SlopSettingsImpl
 					SNew(STextBlock).Text(Tabs[I]).Font(SlopUI::Display(40.f)).ColorAndOpacity_Lambda([this, I]() { return Tab == I ? SlopUI::Accent : SlopUI::Dim; })
 				];
 			}
+			// As many rows as fit above the message line; the window follows the selection.
 			TSharedRef<SVerticalBox> List = SNew(SVerticalBox);
-			const int32 Visible = 15;
+			const int32 Visible = 11;
 			const int32 First = FMath::Clamp(Sel - Visible / 2, 0, FMath::Max(0, Rows.Num() - Visible));
+			if (First > 0)
+			{
+				List->AddSlot().AutoHeight().HAlign(HAlign_Center)[SlopUI::Label(LOCTEXT("More", "▲"), 20.f, SlopUI::Dim)];
+			}
 			for (int32 I = First; I < FMath::Min(Rows.Num(), First + Visible); ++I)
 			{
 				const FRow& R = Rows[I];
@@ -372,6 +377,10 @@ namespace SlopSettingsImpl
 						+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Font(SlopUI::Body(28.f)).ColorAndOpacity(SlopUI::Text).Text_Lambda([V = R.Value]() { return V ? V() : FText::GetEmpty(); })]
 					]
 				];
+			}
+			if (First + Visible < Rows.Num())
+			{
+				List->AddSlot().AutoHeight().HAlign(HAlign_Center)[SlopUI::Label(LOCTEXT("MoreDown", "▼"), 20.f, SlopUI::Dim)];
 			}
 			TSharedRef<SOverlay> O = SNew(SOverlay);
 			O->AddSlot()[bFromPause ? StaticCastSharedRef<SWidget>(SNew(SImage).Image(SlopUI::Box()).ColorAndOpacity(FLinearColor(0, 0, 0, 0.82f))) : SlopUI::Backdrop()];

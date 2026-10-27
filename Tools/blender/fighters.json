@@ -306,8 +306,8 @@
         "muscle": 0.35,
         "weight": 0.35,
         "proportions": 0.8,
-        "cupsize": 0.4,
-        "firmness": 0.6,
+        "cupsize": 0.15,
+        "firmness": 0.5,
         "race": {
           "african": 0.02,
           "asian": 0.08,
@@ -327,7 +327,7 @@
         "arms/upperarm-fat-decr-incr": -0.3,
         "breast/nipple-point-decr-incr": -1.0,
         "breast/nipple-size-decr-incr": -0.5,
-        "breast/breast-point-decr-incr": -0.6
+        "breast/breast-point-decr-incr": -1.0
       },
       "skin": {
         "mhmat": "young_caucasian_female",
@@ -373,12 +373,15 @@
         }
       },
       "surfaces": {
-        "gown": {"slot": "gown", "set": "Fabric040", "color": "#e8dfcc", "roughness": 0.55, "metallic": 0.0, "tile_m": 0.04, "normal": 0.1, "contrast": 0.15},
-        "underdress": {"slot": "gown", "set": "Fabric040", "color": "#d5cbb6", "roughness": 0.6, "metallic": 0.0, "tile_m": 0.04, "normal": 0.1, "contrast": 0.15},
+        "gown": {"slot": "gown", "set": "Fabric040", "color": "#b6b0a1", "roughness": 0.58, "metallic": 0.0, "tile_m": 0.04, "normal": 0.4, "contrast": 0.5},
+        "underdress": {"slot": "gown", "set": "Fabric040", "color": "#a7a193", "roughness": 0.6, "metallic": 0.0, "tile_m": 0.04, "normal": 0.35, "contrast": 0.5},
         "lace": {"slot": "gown", "set": "Fabric040", "color": "#121115", "roughness": 0.5, "metallic": 0.0, "tile_m": 0.03, "normal": 0.3, "contrast": 0.4},
         "gloves": {"slot": "leather", "set": "Leather026", "color": "#141317", "roughness": 0.42, "metallic": 0.0, "tile_m": 0.15, "normal": 0.6},
         "boots": {"slot": "leather", "set": "Leather026", "color": "#18161a", "roughness": 0.45, "metallic": 0.0, "tile_m": 0.2, "normal": 0.8},
-        "veil": {"slot": "veil", "set": "procedural:lace", "color": "#100f13", "roughness": 0.6, "metallic": 0.0, "tile_m": 0.025, "normal": 0.0}
+        "veil": {"slot": "veil", "set": "procedural:lace", "color": "#100f13", "roughness": 0.6, "metallic": 0.0, "tile_m": 0.025, "normal": 0.0},
+        "corset": {"slot": "gown", "set": "Fabric040", "color": "#1b191d", "roughness": 0.42, "metallic": 0.0, "tile_m": 0.03, "normal": 0.3, "contrast": 0.3},
+        "trim": {"slot": "gown", "set": "Fabric040", "color": "#ddd6c4", "roughness": 0.45, "metallic": 0.0, "tile_m": 0.03, "normal": 0.2, "contrast": 0.3},
+        "yoke_lace": {"slot": "veil", "set": "procedural:lace_dense", "color": "#121115", "roughness": 0.55, "metallic": 0.0, "tile_m": 0.035, "normal": 0.0}
       },
       "glow": "#9fd4ff"
     },
@@ -458,7 +461,6 @@
         }
       },
       "surfaces": {
-        "beard": {"slot": "skin", "color": "#5f5449", "paint": "mutton chops and moustache"},
         "coat": {"slot": "coat", "set": "Fabric034", "color": "#273760", "roughness": 0.86, "metallic": 0.0, "tile_m": 0.22, "normal": 0.7, "contrast": 0.55},
         "coat_dark": {"slot": "coat", "set": "Fabric034", "color": "#1a2342", "roughness": 0.8, "metallic": 0.0, "tile_m": 0.2, "normal": 0.7, "contrast": 0.55},
         "trousers": {"slot": "coat", "set": "Fabric066", "color": "#2c2d33", "roughness": 0.88, "metallic": 0.0, "tile_m": 0.08, "normal": 0.6, "contrast": 0.4},

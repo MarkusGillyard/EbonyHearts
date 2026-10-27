@@ -93,6 +93,27 @@ Rivals (the second-to-last arcade fight): Ashka and Nix (the Drowned Hand put ou
 beacon), Gorm and Bram (Bram once arrested him for a vat fire he did not start), Mirela and
 Hollis (she sang at the funeral of the diver who never came back up).
 
+### Roster sheet: how each one plays
+
+From the fighters' data (`Content/Data/fighters/*.json`, the same files as the original). Walk is
+forward/back in m/s; frame data are startup frames at 60 Hz.
+
+| Fighter | Archetype and feel | Strengths | Weaknesses | Signature tools | Counterplay |
+|---|---|---|---|---|---|
+| Ashka | All-rounder; quick upright Muay Thai stance, walk 2.5/2.05, run 5.4 | 6-frame elbow and knee starters, a fireball, a 5-frame anti-air knee | No armour, average range; the knee and rush are punishable on block | Ember Shot, Wick Knee, Elbow Rush, Rising Knee | Block the rush low-high, punish Rising Knee's 24 recovery frames |
+| Gorm | Grappler; low wide sumo stance, slow walk 1.9/1.6, heavy jump | Command grab (Vat Press), Tallow Hide armour, armoured charge, overhead hammer | Slowest walk and run, almost no zoning, big recoveries | Vat Press, Tallow Hide, Rendering Charge, Ground Slap | Stay out of grab range, zone him, jump the slap, punish the 32-frame grab whiff |
+| Nix | Mix-up; slim crouched ninja stance, fastest walk 2.7/2.3, run 5.8 | Overheads and lows from the same chain, a returning sickle, a teleport behind | Low damage per hit; Sinkstep (34 frames) and Undertow are slow and reactable | Sickle Throw, Sinkstep, Undertow, Drowned Drop | Block on reaction to the teleport, crouch the trip, anti-air the dive |
+| Mirela | Zoner; tall floating palm stance, walk 2.4/2.0, 1040 health | Slow large wave, a scream that passes through projectiles and dazes, hover, a backward fade | Slow startups (13-14 frames), weak up close | Lament, Keen, Grave Float, Veil Step | Close the distance under the wave, punish Keen's recovery, catch the hover landing |
+| Bram | Rushdown; forward-leaning boxer, walk 2.6/2.0, run 5.6 | Fast hooks, a long-reaching Bull Rush (9 active frames), high and low flares, a 3-frame counter stance | Flares are slow (13), the counter loses to throws and lows | Signal Flare high/low, Baton Trip, Bull Rush, Stand Down | Throw the counter stance, block the rush and punish, low-block the trip |
+| Hollis | Heavy zoner and trapper; planted suit, walk 2.0/1.7, 1080 health | The pull (Harpoon) from range, an overhead from above, a slow trapping bubble, a steam reversal | Slowest normals (9-10 frames), slow projectiles, poor mobility | Harpoon, Anchor Drop, Bubble, Vent | Jump the harpoon, dash in behind the bubble, bait Vent and punish its 30 recovery frames |
+
+All six share the original's procedural animation vocabulary, driven from the same pose data:
+idle with breathing, walk forward and back, run, crouch, jump (neutral, forward, back, with
+somersaults), every normal and special, block high and low, hit reactions by height, juggle,
+fall, knockdown, get-up, throw and being thrown, dizzy, KO, intro, win pose and finisher. Stance,
+lean, sway and step lengths differ per fighter (their pose files); the bodies are new
+(`SourceArt/Fighters`).
+
 ## The Slopbat (final boss), 2.65 m
 
 A gaunt, towering sovereign of tar: glossy black-green skin traced with glowing green veins, long arms

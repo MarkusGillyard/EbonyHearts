@@ -2,6 +2,11 @@
 #include "Fonts/FontMeasure.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Rendering/DrawElements.h"
+#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
+#include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
+#include "Anim/SlopMeshRig.h"
 #include "Core/SlopGameInstance.h"
 #include "UI/SlopStyle.h"
 #include "View/SlopMatch.h"
@@ -275,6 +280,45 @@ void SSlopHud::PaintBars(FSlateWindowElementList& Out, const FGeometry& G, int32
 	PaintText(Out, G, Layer + 4, Timer, SlopUI::Display(64.f), FVector2D(960.f, 14.f), Sim.TimerSeconds() <= 10 && !Sim.bTraining ? SlopUI::Rust * 1.4f : SlopUI::Text, 1);
 }
 
+void SSlopHud::PaintBoxes(FSlateWindowElementList& Out, const FGeometry& AllottedGeometry, int32 Layer) const
+{
+	const ASlopMatch* M = Match.Get();
+	APlayerController* PC = UGameplayStatics::GetPlayerController(const_cast<ASlopMatch*>(M), 0);
+	FVector2D Viewport(0, 0);
+	if (!PC || !GEngine || !GEngine->GameViewport)
+	{
+		return;
+	}
+	GEngine->GameViewport->GetViewportSize(Viewport);
+	if (Viewport.X <= 0 || Viewport.Y <= 0)
+	{
+		return;
+	}
+	const FVector2D Local = AllottedGeometry.GetLocalSize();
+	TArray<TPair<FRect, FLinearColor>> Boxes;
+	M->CollectBoxes(Boxes);
+	TArray<FVector2D> Pts;
+	for (const TPair<FRect, FLinearColor>& B : Boxes)
+	{
+		const FRect& R = B.Key;
+		const FVector2D Corners[] = {{R.X, R.Y}, {R.X + R.W, R.Y}, {R.X + R.W, R.Y + R.H}, {R.X, R.Y + R.H}};
+		Pts.Reset();
+		bool bOk = true;
+		for (const FVector2D& C : Corners)
+		{
+			FVector2D S;
+			bOk &= PC->ProjectWorldLocationToScreen(Slop::Anim::WorldToUE(FVector(C.X, C.Y, 0.0)), S, true);
+			Pts.Add(S / Viewport * Local);
+		}
+		if (bOk)
+		{
+			const FVector2D First = Pts[0];
+			Pts.Add(First);
+			FSlateDrawElement::MakeLines(Out, Layer, AllottedGeometry.ToPaintGeometry(), Pts, ESlateDrawEffect::None, B.Value, true, 2.f);
+		}
+	}
+}
+
 int32 SSlopHud::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect,
 	FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
 {
@@ -289,6 +333,10 @@ int32 SSlopHud::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometr
 	const float OffX = (Local.X - 1920.f * Scale) * 0.5f;
 	const FGeometry G = AllottedGeometry.MakeChild(FVector2D(1920.f, 1080.f), FSlateLayoutTransform(Scale, FVector2D(OffX, 0.f)));
 	const bool bStranger = M->Config.Mode == EMode::Stranger;
+	if (M->bShowBoxes)
+	{
+		PaintBoxes(OutDrawElements, AllottedGeometry, LayerId);
+	}
 	if (!bStranger && M->Config.Mode != EMode::Tutorial)
 	{
 		PaintBars(OutDrawElements, G, LayerId);

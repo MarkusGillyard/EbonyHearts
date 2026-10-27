@@ -47,10 +47,13 @@ bool ASlopFighterActor::Setup(const FFighter& Fighter, const FString& MeshPath)
 		UMaterialInstanceDynamic* D = Body->CreateDynamicMaterialInstance(I, M);
 		Mats.Add(D);
 		const FString Slot = Mesh->GetMaterials().IsValidIndex(I) ? Mesh->GetMaterials()[I].MaterialSlotName.ToString().ToLower() : FString();
-		IsSkin.Add(Slot.Contains(TEXT("skin")) || Slot.Contains(TEXT("body")) || Slot.Contains(TEXT("eye")) || Slot.Contains(TEXT("brow")) || Slot.Contains(TEXT("lash")));
+		// Alternate colours dye the costume, never skin, faces or hair.
+		IsSkin.Add(Slot.Contains(TEXT("skin")) || Slot.Contains(TEXT("body")) || Slot.Contains(TEXT("eye")) || Slot.Contains(TEXT("brow")) || Slot.Contains(TEXT("lash"))
+			|| Slot.Contains(TEXT("face")) || Slot.Contains(TEXT("hair")));
 	}
 	const FString Glow = Json::Str(Fighter.Def->Look, TEXT("glow"), TEXT("#ffffff"));
-	SetAccent(FLinearColor(FColor::FromHex(Glow)), (float)Json::Num(Fighter.Def->Look, TEXT("accent"), 0.24));
+	// The original's rim strengths were set for its brighter exposure; here they read at half.
+	SetAccent(FLinearColor(FColor::FromHex(Glow)), 0.5f * (float)Json::Num(Fighter.Def->Look, TEXT("accent"), 0.24));
 	UpdateVisual(1.0, 0.0);
 	return true;
 }

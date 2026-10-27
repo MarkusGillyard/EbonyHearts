@@ -29,3 +29,10 @@ protected:
 	static int32 Step(int32 Index, int32 Count, int32 Delta, TFunction<bool(int32)> Enabled = nullptr);
 	void Sound(const TCHAR* Name);
 };
+
+// Gives a screen the name the log and the tests know it by.
+inline TSharedPtr<FSlopScreen> Named(TSharedPtr<FSlopScreen> S, const TCHAR* Name)
+{
+	S->ScreenName = Name;
+	return S;
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UObject/Object.h"
+#include "Engine/StreamableManager.h"
 #include "SlopAudio.generated.h"
 
 class USoundWave;
@@ -27,11 +28,16 @@ public:
 	void PauseMusic(bool bPause);
 	void StopAll();
 	USoundWave* Find(const FString& Name);
+	// Streams every sound in the background at start-up, so a fight never waits on a load the
+	// first time a variant plays.
+	void Preload();
 
 private:
 	UWorld* World() const;
 	void IndexFamilies();
+	void OnPreloaded();
 	bool bIndexed = false;
+	TSharedPtr<FStreamableHandle> PreloadHandle;
 	float BusVolume(ESlopBus Bus) const;
 	UPROPERTY()
 	TObjectPtr<UGameInstance> Owner;

@@ -1121,8 +1121,10 @@ namespace SlopScreensFlowImpl
 				"Bodies: MakeHuman (makehumancommunity.org) base mesh, skins, eyes and hair, CC0, made with MPFB for Blender.\n"
 				"Surfaces: ambientCG (ambientcg.com) and Poly Haven (polyhaven.com), CC0.\n"
 				"Props and skies: Poly Haven, CC0.   Sound effects: Kenney (kenney.nl), CC0.\n"
-				"Typefaces: New Rocker by Pablo Impallari, Brenda Gallo and Rodrigo Fuenzalida; Oswald by The Oswald Project Authors; SIL Open Font License 1.1.\n\n"
-				"Made with Unreal® Engine. Unreal and its logo are Epic Games, Inc.'s trademarks or registered trademarks in the US and elsewhere.\n"
+				"Typefaces: New Rocker by Pablo Impallari, Brenda Gallo and Rodrigo Fuenzalida; Oswald by The Oswald Project Authors; SIL Open Font License 1.1. "
+				"Symbols: Droid Sans Fallback, The Android Open Source Project, Apache License 2.0.\n\n"
+				"Mortal Slopbat uses the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc. in the United States of America and elsewhere.\n"
+				"Unreal® Engine, Copyright 1998 – 2026, Epic Games, Inc. All rights reserved.\n"
 				"Full licence texts ship with the game in the Licenses folder.");
 			return Frame(SNew(SConstraintCanvas)
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 90, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("CreditsT", "CREDITS"), 84.f, SlopUI::Accent)]]
@@ -1147,11 +1149,6 @@ using namespace SlopScreensFlowImpl;
 
 namespace SlopScreens
 {
-	static TSharedPtr<FSlopScreen> Named(TSharedPtr<FSlopScreen> S, const TCHAR* Name)
-	{
-		S->ScreenName = Name;
-		return S;
-	}
 	TSharedPtr<FSlopScreen> Select(EMode Mode) { return Named(MakeShared<FSelect>(Mode == EMode::Cpu ? EMode::Training : Mode), TEXT("Select")); }
 	TSharedPtr<FSlopScreen> Stage() { return Named(MakeShared<FStage>(), TEXT("Stage")); }
 	TSharedPtr<FSlopScreen> Tower(FName Fighter) { return Named(MakeShared<FTower>(Fighter), TEXT("Tower")); }

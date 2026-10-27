@@ -2,7 +2,7 @@
 
     source Tools/ue.sh && SLOP_IMPORT_ONLY=audio,materials editor_py "$PROJ_DIR/Tools/import_assets.py"
 
-SLOP_IMPORT_ONLY (comma list of steps: audio, materials, bodies, fighters, surfaces, props,
+SLOP_IMPORT_ONLY (comma list of steps: audio, materials, fighters, surfaces, props,
 stages, slots, portraits) limits the run; without it every step runs. `slots` gives the imported fighters and
 stages their material instances; run it in a second editor session after importing them (edits
 made in the session that imported a mesh do not stick).
@@ -525,7 +525,7 @@ def fighter(fid, fbx, import_meshes=True):
         key = slot[len(f"M_{fid}_"):] if slot.startswith(f"M_{fid}_") else slot
         prefix = f"{fid}_{key}_".lower()
         if not any(c.lower().endswith(".png") and c.lower().startswith(prefix) for c in os.listdir(folder)):
-            # No textures of ours for this slot (development bodies): keep what the FBX brought.
+            # No textures of ours for this slot: keep what the FBX brought.
             continue
         mi_path = f"{dest}/MI_{fid}_{key}"
         if EAL.does_asset_exist(mi_path):
@@ -537,11 +537,6 @@ def fighter(fid, fbx, import_meshes=True):
             png = os.path.join(folder, f"{fid}_{key}_{suffix}.png")
             if not os.path.exists(png):
                 png = None
-                # Development bodies: any texture naming the slot.
-                for cand in os.listdir(folder):
-                    low = cand.lower()
-                    if low.endswith(f"_{suffix}.png") and key.lower() in low:
-                        png = os.path.join(folder, cand)
             if png:
                 t = texture(png, dest + "/Textures", srgb=(kind == "srgb"), normal=(kind == "normal"))
                 if t:
@@ -573,14 +568,6 @@ def fighters(import_meshes=True):
         fbx = os.path.join(root, fid, fid + ".fbx")
         if os.path.exists(fbx):
             fighter(fid, fbx, import_meshes)
-
-
-def bodies():
-    """Development bodies from SourceArt/Bodies (before costumes exist)."""
-    root = os.path.join(SRC, "Bodies")
-    for f in sorted(os.listdir(root)):
-        if f.endswith(".fbx"):
-            fighter("body_" + f[:-4], os.path.join(root, f))
 
 
 # ------------------------------------------------------------------------------ stages
@@ -809,7 +796,7 @@ def portraits():
 
 def main():
     only = args()
-    steps = [("audio", audio), ("materials", materials), ("bodies", bodies), ("fighters", fighters),
+    steps = [("audio", audio), ("materials", materials), ("fighters", fighters),
              ("surfaces", surfaces), ("props", props), ("stages", stages), ("slots", slots), ("portraits", portraits)]
     for name, fn in steps:
         if only is None or name in only:

@@ -163,6 +163,24 @@ def palm_frame(ctx, side):
     return centre, across, fwd, n
 
 
+def ellipsoid_patch(name, centre, radii, keep, like):
+    """Temporary collider: the faces of an ellipsoid whose centres pass keep((n,3) points)."""
+    import bmesh
+    bm = bmesh.new()
+    bmesh.ops.create_uvsphere(bm, u_segments=64, v_segments=32, radius=1.0)
+    for v in bm.verts:
+        v.co = Vector((centre[0] + v.co.x * radii[0], centre[1] + v.co.y * radii[1], centre[2] + v.co.z * radii[2]))
+    cen = np.array([tuple(f.calc_center_median()) for f in bm.faces])
+    ok = keep(cen)
+    bmesh.ops.delete(bm, geom=[f for f, k in zip(bm.faces, ok) if not k], context="FACES")
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    ob = bpy.data.objects.new(name, me)
+    geo.link(ob, like)
+    return ob
+
+
 def hair_collider(ctx):
     objs = [ctx.body] + ([ctx.parts["hair"]] if "hair" in ctx.parts else [])
     return geo.Collider(objs)
@@ -215,8 +233,40 @@ def nix(ctx):
         c += nrm * (0.016 * s * cape)[:, None]
         geo.set_co(ob, c)
 
-    wd.field_shell(ctx, "hood", "hood", sel, 0.026 * s, wd.f_and(opening, wd.f_plane((0, 0, 0.735 * H), (0, 0, 1))),
-                   smooth=14, gap=0.012, thickness=0.004, extra=hood_shape, decimate=0.45)
+    # the ears: cut out of the hood shell, the holes closed with patches that are pushed onto a
+    # smooth cap over the side of the skull, and hidden under the hood, so no ear shape shows
+    ear = ((ctx.w("head") > 0.5) & (np.abs(V[:, 0] - hc[0]) > hf["half"][0] * 0.72)
+           & (z > hf["eye_z"] - 0.075 * s) & (z < hf["eye_z"] + 0.05 * s) & (V[:, 1] > hc[1] - 0.045 * s))
+    ear_f = geo.face_mask(ctx.FV, ear, "any")
+    ctx.hide_faces(ear_f, 0)
+    zone = np.zeros(len(V), bool)
+    zone[np.unique(np.concatenate([f for f, m in zip(ctx.FV, ear_f) if m]))] = True
+    hv = (ctx.w("head") > 0.5) & ~ear
+    band_v = hv & (np.abs(z - hf["eye_z"]) < 0.06 * s)
+    radii = np.array([np.abs(V[band_v, 0] - hc[0]).max(), np.abs(V[hv, 1] - hc[1]).max(),
+                      np.abs(V[hv, 2] - hc[2]).max()])
+    near = hv & (np.abs(V[:, 0] - hc[0]) > hf["half"][0] * 0.55) & (z > hf["eye_z"] - 0.1 * s) & (z < hf["eye_z"] + 0.08 * s)
+    k = np.sqrt((((V[near] - hc) / radii) ** 2).sum(1))
+    radii = radii * float(np.clip(np.quantile(k, 0.98), 1.0, 1.15))     # the cap clears the skull round it
+    ez = V[ear]
+
+    def in_window(c):
+        return ((np.abs(c[:, 0] - hc[0]) > 0.5 * radii[0]) & (c[:, 2] > ez[:, 2].min() - 0.025 * s)
+                & (c[:, 2] < ez[:, 2].max() + 0.025 * s) & (c[:, 1] > ez[:, 1].min() - 0.025 * s)
+                & (c[:, 1] < ez[:, 1].max() + 0.025 * s))
+
+    cap = ellipsoid_patch("nix_earcap_tmp", hc, radii, in_window, ctx.body)
+    hood_coll = geo.Collider([ctx.body, cap] + ctx.colliders[1:], [~ear_f, None] + [None] * (len(ctx.colliders) - 1))
+
+    def hood_extra(ob, nrm):
+        hood_shape(ob, nrm)
+        n = geo.fill_holes(ob, zone[geo.source_index(ob)], rings=2)
+        fo.core.log("nix hood: closed %d ear holes" % n)
+
+    wd.field_shell(ctx, "hood", "hood", sel & ~ear, 0.026 * s,
+                   wd.f_and(opening, wd.f_plane((0, 0, 0.735 * H), (0, 0, 1))),
+                   smooth=24, gap=0.014, thickness=0.004, extra=hood_extra, decimate=0.45, collider=hood_coll)
+    bpy.data.objects.remove(cap)
     # cloth mask over nose and mouth
     msel = (ctx.w("head") > 0.8) & (V[:, 1] < hc[1] - 0.02 * s) & (z < hf["eye_z"]) & (np.abs(V[:, 0]) < 0.075 * s)
     mfield = lambda c: (hf["eye_z"] - 0.013 * s - 0.008 * s * np.exp(-(c[:, 0] / (0.018 * s)) ** 2)) - c[:, 2]
@@ -305,33 +355,138 @@ def nix(ctx):
 
 # ============================================================================ Mirela
 
+def gigot(ctx, ob, amount, folds=0.0, t_peak=0.3):
+    """Leg-of-mutton sleeves on a finished top: the upper sleeve puffed out round the upper-arm
+    axis (most a third of the way down, less on the side towards the body, gone by the elbow)
+    and gathered into folds under the shoulder seam. Both layers of the solidified shell move
+    together (they share their source vertex)."""
+    s = ctx.s
+    src = src_coords(ctx, ob)
+    c = geo.co(ob)
+    uw = ctx.w("upperarm_l", "upperarm_r")[geo.source_index(ob)]
+    for side in ("l", "r"):
+        a, b = ctx.head("upperarm_" + side), ctx.head("lowerarm_" + side)
+        d = (b - a) / np.linalg.norm(b - a)
+        e1 = np.cross(d, (0, 0, 1.0))
+        e1 /= np.linalg.norm(e1)
+        e2 = np.cross(d, e1)
+        t, r, foot = geo.axis_t(src, a, b)
+        m = side_mask_pts(src, side) & (r < 0.13 * s) & (t > -0.3) & (t < 1.0)
+        radial = src - foot
+        radial /= np.linalg.norm(radial, axis=1)[:, None] + 1e-9
+        inner = np.clip(-radial[:, 0] * (1 if side == "l" else -1), 0, 1)
+        prof = smoothstep((t + 0.15) / 0.3) * (1 - smoothstep((t - t_peak) / (0.85 - t_peak)))
+        amt = amount * s * prof * (1 - 0.75 * inner) * np.clip(uw * 1.5, 0, 1)
+        if folds:
+            ang = np.arctan2(radial @ e2, radial @ e1)
+            amt = amt + folds * s * np.sin(9 * ang) * prof * (1 - smoothstep(t / 0.65)) * np.clip(uw * 1.5, 0, 1)
+        c[m] += radial[m] * amt[m, None]
+    geo.set_co(ob, c)
+
+
 def mirela(ctx):
+    """Ivory mourning gown that reads as cloth at fight distance: an ash-ivory gown with a high
+    collar, puffed (leg-of-mutton) sleeves and black cuffs; a black overbust corset with seams
+    and ivory piping over the bust and waist; black close lace from the corset to the throat;
+    a long skirt of two wrap-over panels (closed at the front, each riding its own shin below
+    the knee) tucked under the corset."""
     H, s, V = ctx.H, ctx.s, ctx.V
     z = V[:, 2]
     hf = wd.head_frame(ctx)
     hc = hf["c"]
-    nb = ctx.head("neck_01")
-    top_with_sleeves(ctx, "gown", "gown", 0.485 * H, 0.90, 0.010, flare=0.06, flare_from=0.55,
-                     neck_top=0.872 * H, smooth=18, folds=0.0015, gap=0.009)
+    nb, nt = ctx.head("neck_01"), ctx.head("head")
+    chin = V[(ctx.w("head") > 0.9) & (V[:, 1] < hc[1] - 0.04 * s)]
+    z_chin = float(chin[:, 2].min()) if len(chin) else 0.88 * H
+    z_collar = min(0.888 * H, z_chin - 0.012 * s)
+    gown = top_with_sleeves(ctx, "gown", "gown", 0.485 * H, 0.90, 0.012, flare=0.012, flare_from=0.7,
+                            neck_top=z_collar, smooth=22, gap=0.010)
+    gigot(ctx, gown, 0.036, folds=0.005)
     gloves(ctx, "glove_%s", "gloves", 0.60, 0.0022, fingers=True, decimate=0.55)
     leg_shell(ctx, "leggings", "underdress", 0.50 * H, 0.07 * H, 0.010, folds=0.002, gap=0.006, smooth=18, medial=0.6)
     boots(ctx, "boots", "boots", 0.11, 0.02)
-    # choker over the collar top, black ribbon and bow at the waist
+    # black cuffs at the sleeve ends, choker at the collar top
+    for side in ("l", "r"):
+        el, wr = ctx.head("lowerarm_" + side), ctx.head("hand_" + side)
+        am = (ctx.w("lowerarm_" + side) > 0.3) & side_mask(ctx, side)
+        wd.ring_band(ctx, "cuff_" + side, "lace", am, el, wr, [0.80, 0.85, 0.895], [0.020, 0.023, 0.021])
     nk = (ctx.w("neck_01", "head") > 0.3)
-    nt = ctx.head("head")
-    t_ch = (0.874 * H - nb[2]) / (nt[2] - nb[2])
-    wd.ring_band(ctx, "choker", "lace", nk, nb, nt, [t_ch - 0.04, t_ch, t_ch + 0.04], [0.010, 0.013, 0.010])
-    band(ctx, "ribbon", "lace", 0.593 * H, 0.607 * H, 0.014, gap=0.004, thickness=0.004)
-    yb = ctx.ray_front(0.0, 0.6 * H, ctx.collider())
-    for sgn in (-1, 1):
-        wd.lathe_part(ctx, "bow%d" % (sgn + 1), "lace", [(0, -0.018 * s), (0.011 * s, -0.01 * s), (0.012 * s, 0.006 * s), (0, 0.018 * s)],
-                      (sgn * 0.017 * s, yb - 0.006 * s, 0.6 * H), (sgn * 0.6, 0, 1), 8, rigid="spine_01")
-    wd.lathe_part(ctx, "bowknot", "lace", [(0, -0.008 * s), (0.008 * s, 0), (0, 0.008 * s)], (0, yb - 0.008 * s, 0.6 * H), (0, -1, 0), 8,
-                  rigid="spine_01")
-    # long skirt open at the front, over the leggings
-    wd.wrap_skirt(ctx, "skirt", "gown", 0.545 * H, 0.085 * H, open_frac=0.14, gap=0.012, flare=0.17,
-                  folds=(0.013, 10), slit_z=0.30 * H, share=(0.7, 0.4, 0.15), thickness=0.004, row=0.035,
-                  objs=[ctx.body, ctx.parts["leggings"], ctx.parts["gown"]])
+    t_ch = (z_collar - nb[2]) / (nt[2] - nb[2])
+    wd.ring_band(ctx, "choker", "lace", nk, nb, nt, [t_ch - 0.05, t_ch - 0.01, t_ch + 0.03], [0.036, 0.040, 0.036])
+    # long skirt: two wrap-over panels, closed at the front and overlapping at the back; the top
+    # sits at the waist, under the corset (no ledge)
+    objs = [ctx.body, ctx.parts["leggings"], ctx.parts["gown"]]
+    skirts = []
+    for side, arc, gap in (("l", (-0.30, math.pi + 0.18), 0.005), ("r", (math.pi - 0.18, 2 * math.pi + 0.30), 0.011)):
+        ob, _, _, _ = wd.wrap_skirt(ctx, "skirt_" + side, "gown", 0.585 * H, 0.085 * H, gap=gap, flare=0.17,
+                                    folds=(0.013, 10), share=(0.75, 0.45, 0.2), thickness=0.004, row=0.035, objs=objs,
+                                    arc=arc, side=side, calf_share=0.9, nu=28)
+        skirts.append(ob)
+    # overbust corset: black, with vertical seams, a front point, ivory piping along both edges
+    z0, z1 = 0.535 * H, 0.745 * H
+    yc = float(ctx.head("spine_02")[1])
+
+    def bottom_edge(c):
+        return z0 - 0.03 * s * np.clip(1 - np.abs(c[:, 0]) / (0.09 * s), 0, 1) * (c[:, 1] < yc)
+
+    x_side = 0.07 * s
+
+    def top_edge(c):     # straight over the bust, a little higher at the back, dipping under the arms
+        return (z1 + 0.012 * s * (c[:, 1] > yc)
+                - 0.035 * s * smoothstep((np.abs(c[:, 0]) - x_side) / (0.06 * s)))
+
+    tors = (ctx.arm_w < 0.25) & (z >= z0 - 0.06 * s) & (z <= z1 + 0.04 * s)
+
+    def seams(ob, nrm):
+        src = src_coords(ctx, ob)
+        ang = np.arctan2(src[:, 0], -(src[:, 1] - yc))
+        groove = np.zeros(len(src))
+        for k in range(10):
+            a0 = -math.pi + k * 2 * math.pi / 10
+            dd = np.abs(((ang - a0 + math.pi) % (2 * math.pi)) - math.pi)
+            groove += np.exp(-(dd / 0.035) ** 2)
+        geo.offset_along(ob, nrm, -0.0015 * s * np.clip(groove, 0, 1))
+
+    corset = wd.field_shell(ctx, "corset", "corset", tors, 0.024 * s,
+                            lambda c: np.minimum(c[:, 2] - bottom_edge(c), top_edge(c) - c[:, 2]),
+                            smooth=20, gap=0.024, thickness=0.004, extra=seams, hide=False)
+
+    def on_corset(key, field, lift, thick):
+        """A strip of the corset's outer surface, lifted off it: piping that follows it exactly."""
+        ob = geo.duplicate(corset, key)
+        me = ob.data
+        cen = np.array([tuple(p.center) for p in me.polygons])
+        nr = np.array([tuple(p.normal) for p in me.polygons])
+        rad = cen - (0.0, yc, 0.0)
+        rad[:, 2] = 0
+        rad /= np.linalg.norm(rad, axis=1)[:, None] + 1e-9
+        geo.keep_faces(ob, (nr * rad).sum(1) > 0.2)
+        geo.cut_field(ob, field)
+        geo.offset_along(ob, geo.vnormals(ob), lift * s)
+        if thick:
+            geo.solidify(ob, thick * s)
+        ctx.add(key, ob, "trim", collide=False)
+
+    for key, edge in (("corset_trim_top", top_edge), ("corset_trim_bottom", bottom_edge)):
+        on_corset(key, lambda c, e=edge: 0.011 * s - np.abs(c[:, 2] - e(c)), 0.0025, 0.003)
+    seam_a = np.array([-math.pi + k * 2 * math.pi / 10 for k in range(10)])
+
+    def seam_field(c):
+        ang = np.arctan2(c[:, 0], -(c[:, 1] - yc))
+        dd = np.abs(((ang[:, None] - seam_a[None] + math.pi) % (2 * math.pi)) - math.pi).min(1)
+        dist = dd * np.hypot(c[:, 0], c[:, 1] - yc)
+        return np.minimum(0.003 * s - dist, np.minimum(c[:, 2] - bottom_edge(c) - 0.009 * s, top_edge(c) - 0.009 * s - c[:, 2]))
+
+    on_corset("corset_seams", seam_field, 0.0035, 0.0)
+    # black close lace from the corset up to the collar, over the chest, shoulders and upper back
+    x_sh = abs(ctx.head("upperarm_l")[0])
+    ysel = ((z >= z1 - 0.02 * s) & (z <= z_collar + 0.02 * s) & (ctx.w("head") < 0.45) & (ctx.arm_w < 0.5)
+            & (np.abs(V[:, 0]) < x_sh * 0.95))
+    z_arm = float(ctx.head("upperarm_l")[2]) - 0.05 * s
+    yfield = wd.f_and(lambda c: c[:, 2] - (top_edge(c) + 0.004 * s), wd.f_plane((0, 0, z_collar + 0.002 * s), (0, 0, -1)),
+                      lambda c: x_sh * 0.78 - np.abs(c[:, 0]),
+                      wd.f_or(wd.f_plane((0, 0, z_arm), (0, 0, 1)), lambda c: x_sh * 0.6 - np.abs(c[:, 0])))
+    wd.field_shell(ctx, "yoke", "yoke_lace", ysel, 0.014 * s, yfield, smooth=22, gap=0.006, thickness=0.0,
+                   hide=False, largest=True)
     # black lace veil over the hair and shoulders, open at the face
     objs = [ctx.body] + [ctx.parts[k] for k in ("hair", "gown") if k in ctx.parts]
     wd.wrap_skirt(ctx, "veil", "veil", hf["top"] + 0.004 * s, nb[2] - 0.035 * s, open_frac=0.36, gap=0.010, flare=0.015,
@@ -382,13 +537,7 @@ def bram(ctx):
         wd.ring_band(ctx, "cuff_" + side, "coat_dark", am, el, wr, [0.80, 0.86, 0.94], [0.019, 0.021, 0.024])
     # peaked watch cap over the hair, rigid on the head
     cap(ctx, hf)
-    # mutton chops: a shell over the sideburns and moustache, painted into the skin texture too
-    rel = V - hc
-    chops = (ctx.w("head") > 0.9) & (rel[:, 1] < 0.02 * s) & (z < hf["eye_z"] - 0.005 * s)
-    side_burn = chops & (np.abs(rel[:, 0]) > 0.048 * s) & (z > hf["eye_z"] - 0.105 * s)
-    mous = chops & (np.abs(rel[:, 0]) < 0.034 * s) & (z < hf["eye_z"] - 0.058 * s) & (z > hf["eye_z"] - 0.078 * s) & (rel[:, 1] < -0.06 * s)
-    wd.field_shell(ctx, "chops", "beard", side_burn | mous, 0.004 * s, None, smooth=3, gap=0.003, thickness=0.002, hide=False,
-                   decimate=0.45)
+    # clean-shaven: the mutton chops read as a dark smudge in-engine and were removed
     # hardwood baton in the right hand, lantern at the left hip
     centre, across, fwd, pn = palm_frame(ctx, "r")
     c0 = centre + pn * 0.022 * s

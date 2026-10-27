@@ -342,6 +342,61 @@ def triangulate_ngons(ob):
     bm.free()
 
 
+def fill_holes(ob, vmask, rings=2):
+    """Close the boundary loops made only of `vmask` vertices with a fan round a new centre
+    vertex, its spokes cut `rings` times so the patch can bend. New vertices take the mean
+    weights, UVs and src_vi of their loop. Returns the number of holes filled."""
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    bm.verts.ensure_lookup_table()
+    edges = [e for e in bm.edges if e.is_boundary and vmask[e.verts[0].index] and vmask[e.verts[1].index]]
+    if not edges:
+        bm.free()
+        return 0
+    uvl = bm.loops.layers.uv.active
+    dl = bm.verts.layers.deform.active
+    src = bm.verts.layers.int.get("src_vi")
+    holes = bmesh.ops.holes_fill(bm, edges=edges, sides=0)["faces"]
+    for f in holes:
+        ring = list(f.verts)
+        uv_of = {}
+        for v in ring:
+            uvs = [lp[uvl].uv.copy() for lp in v.link_loops if lp.face is not f]
+            uv_of[v] = sum(uvs, Vector((0.0, 0.0))) / max(len(uvs), 1)
+        uv_c = sum(uv_of.values(), Vector((0.0, 0.0))) / len(ring)
+        wsum = {}
+        if dl is not None:
+            for v in ring:
+                for g, w in v[dl].items():
+                    wsum[g] = wsum.get(g, 0.0) + w / len(ring)
+        src_val = ring[0][src] if src is not None else 0
+        r = bmesh.ops.poke(bm, faces=[f], center_mode="MEAN")
+        c = r["verts"][0]
+        for g, w in wsum.items():
+            c[dl][g] = w
+        if src is not None:
+            c[src] = src_val
+        for nf in r["faces"]:
+            for lp in nf.loops:
+                lp[uvl].uv = uv_of.get(lp.vert, uv_c)
+        if rings:
+            spokes = [e for e in c.link_edges]
+            sub = bmesh.ops.subdivide_edges(bm, edges=spokes, cuts=rings, use_grid_fill=False)
+            new_v = [x for x in sub["geom_inner"] if isinstance(x, bmesh.types.BMVert)]
+            for v in new_v:
+                if src is not None:
+                    v[src] = src_val      # (an interpolated index would point anywhere)
+                if dl is not None and not v[dl].items():
+                    for g, w in wsum.items():
+                        v[dl][g] = w
+            fan = {g for v in new_v for g in v.link_faces}   # (subdivide invalidates c)
+            bmesh.ops.triangulate(bm, faces=[g for g in fan if len(g.verts) > 3])
+    bm.to_mesh(ob.data)
+    bm.free()
+    ob.data.update()
+    return len(holes)
+
+
 # ----------------------------------------------------------------------------- shaping
 
 class Collider:

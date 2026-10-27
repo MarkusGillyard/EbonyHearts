@@ -1,6 +1,7 @@
 #include "Core/SlopAudio.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Components/AudioComponent.h"
+#include "Engine/AssetManager.h"
 #include "Engine/GameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundConcurrency.h"
@@ -53,6 +54,52 @@ void USlopAudio::IndexFamilies()
 		Families.FindOrAdd(TEXT("kenney:") + Family).Add(A.GetObjectPathString());
 	}
 	UE_LOG(LogSlop, Log, TEXT("Audio: %d Kenney families indexed"), Families.Num());
+}
+
+void USlopAudio::Preload()
+{
+	if (!bIndexed)
+	{
+		IndexFamilies();
+	}
+	TArray<FSoftObjectPath> Paths;
+	for (const TPair<FString, TArray<FString>>& F : Families)
+	{
+		for (const FString& P : F.Value)
+		{
+			Paths.Add(FSoftObjectPath(P));
+		}
+	}
+	IAssetRegistry& AR = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry").Get();
+#if WITH_EDITOR
+	AR.ScanPathsSynchronous({TEXT("/Game/Slop/Audio/Original")}, false);
+#endif
+	TArray<FAssetData> Assets;
+	AR.GetAssetsByPath(FName(TEXT("/Game/Slop/Audio/Original")), Assets, true);
+	for (const FAssetData& A : Assets)
+	{
+		Paths.Add(A.GetSoftObjectPath());
+	}
+	PreloadHandle = UAssetManager::GetStreamableManager().RequestAsyncLoad(Paths, FStreamableDelegate::CreateUObject(this, &USlopAudio::OnPreloaded));
+	UE_LOG(LogSlop, Log, TEXT("Audio: streaming %d sounds"), Paths.Num());
+}
+
+void USlopAudio::OnPreloaded()
+{
+	TArray<UObject*> Loaded;
+	if (PreloadHandle.IsValid())
+	{
+		PreloadHandle->GetLoadedAssets(Loaded);
+	}
+	for (UObject* O : Loaded)
+	{
+		if (USoundWave* W = Cast<USoundWave>(O))
+		{
+			Cache.Add(W->GetPathName(), W);
+		}
+	}
+	UE_LOG(LogSlop, Log, TEXT("Audio: %d sounds ready"), Cache.Num());
+	PreloadHandle.Reset();
 }
 
 UWorld* USlopAudio::World() const { return Owner ? Owner->GetWorld() : nullptr; }

@@ -33,6 +33,8 @@ public:
 
 private:
 	void PaintBars(FSlateWindowElementList& Out, const FGeometry& G, int32 Layer) const;
+	// Training's hit, hurt and push boxes, projected through the fight camera.
+	void PaintBoxes(FSlateWindowElementList& Out, const FGeometry& AllottedGeometry, int32 Layer) const;
 	void PaintText(FSlateWindowElementList& Out, const FGeometry& G, int32 Layer, const FText& T, const FSlateFontInfo& F,
 		const FVector2D& Pos, const FLinearColor& C, int32 Align, float Scale = 1.f) const;
 	FText NameOf(int32 Side) const;

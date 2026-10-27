@@ -102,6 +102,13 @@ void USlopGameInstance::OnStart()
 	bStarted = true;
 	BuildRoot();
 	ApplySettings(true);
+	Audio->Preload();
+	if (FParse::Param(FCommandLine::Get(), TEXT("SlopFrameStats")))
+	{
+		const FString Path = SaveDir() / FString::Printf(TEXT("framestats-%s.csv"), *FDateTime::Now().ToString(TEXT("%Y%m%d-%H%M%S")));
+		FrameStats = MakeUnique<FFrameStats>(Path);
+		UE_LOG(LogSlop, Log, TEXT("Frame stats to %s"), *Path);
+	}
 	DevCommandLine();
 	if (!Screen.IsValid())
 	{
@@ -199,16 +206,7 @@ void USlopGameInstance::Notice(const FText& Text)
 FString USlopGameInstance::MeshFor(FName Fighter)
 {
 	const FString Id = Fighter.ToString();
-	const FString Pkg = FString::Printf(TEXT("/Game/Slop/Fighters/%s/%s"), *Id, *Id);
-	if (FPackageName::DoesPackageExist(Pkg))
-	{
-		return Pkg + TEXT(".") + Id;
-	}
-	// Until every fighter is built, the development bodies stand in.
-	const FFighterDef* D = GetContent().Fighter(Fighter);
-	const bool bHer = D && D->Pronoun == TEXT("her");
-	return bHer ? TEXT("/Game/Slop/Fighters/body_woman_athletic_174/woman_athletic_174.woman_athletic_174")
-		: TEXT("/Game/Slop/Fighters/body_man_heavy_212/man_heavy_212.man_heavy_212");
+	return FString::Printf(TEXT("/Game/Slop/Fighters/%s/%s.%s"), *Id, *Id, *Id);
 }
 
 void USlopGameInstance::StartMatch()
@@ -264,6 +262,8 @@ void USlopGameInstance::EndMatch()
 void USlopGameInstance::OnMatchFinished(const FMatchResult& R)
 {
 	LastResult = R;
+	UE_LOG(LogSlop, Log, TEXT("Result: %s %d-%d %s, winner %d%s%s, %d s left"), *R.P1.ToString(), R.Wins[0], R.Wins[1], *R.P2.ToString(), R.Winner,
+		R.bFlawless ? TEXT(", flawless") : TEXT(""), R.Finisher.IsNone() ? TEXT("") : *(TEXT(", ") + R.Finisher.ToString()), R.TimeLeft);
 	Router->bFightActive = false;
 	Progress.Count(TEXT("matches"));
 	if (R.Winner == 0 && Flow.Config.Mode != EMode::Versus)
@@ -343,7 +343,7 @@ void USlopGameInstance::OnDeviceConnection(EInputDeviceConnectionState State, FP
 void USlopGameInstance::OnActivation(bool bActive)
 {
 	Router->ResetAll();
-	if (!bActive && Match && !Match->IsPaused() && !Match->HasEnded() && Flow.Config.Mode != EMode::Watch && QuitAtTick < 0 && ShotTicks.Num() == 0)
+	if (!bActive && Match && !Match->IsPaused() && !Match->HasEnded() && Flow.Config.Mode != EMode::Watch && QuitAtTick < 0 && ShotTicks.Num() == 0 && AutoPlayLevel < 0)
 	{
 		Match->SetPaused(true);
 		ShowOverlay(SlopScreens::Pause());
@@ -362,6 +362,13 @@ void USlopGameInstance::DispatchUi()
 		UE_LOG(LogSlop, Log, TEXT("Ui script: %d"), (int32)E.Action);
 		UiScriptAt = Now();
 		UiScript.RemoveAt(0);
+	}
+	if (AutoPlayLevel >= 0 && !(Match && !Match->HasEnded()) && !Overlay.IsValid() && Now() >= AutoConfirmAt)
+	{
+		FUiEvent E;
+		E.Action = EUi::Confirm;
+		Events.Add(E);
+		AutoConfirmAt = Now() + 2.0;
 	}
 #endif
 	for (const FUiEvent& E : Events)
@@ -423,6 +430,23 @@ bool USlopGameInstance::Tick(float Dt)
 	}
 	DispatchUi();
 	HandleDebugKeys();
+	if (FrameStats)
+	{
+		if (Match)
+		{
+			if (MatchStartAt < 0.0)
+			{
+				MatchStartAt = Now();
+			}
+			const FMatchConfig& C = Match->Config;
+			FrameStats->Add(Dt, Now() - MatchStartAt, FString::Printf(TEXT("%s %s %s"), *C.Stage.ToString(), *C.P1.ToString(), *C.P2.ToString()));
+		}
+		else if (MatchStartAt >= 0.0)
+		{
+			MatchStartAt = -1.0;
+			FrameStats->Flush();
+		}
+	}
 	if (Screen.IsValid())
 	{
 		Screen->Tick(Dt);
@@ -603,6 +627,12 @@ void USlopGameInstance::DevCommandLine()
 		}
 		Root->SetVisibility(EVisibility::Collapsed);
 		OpenShowroom();
+	}
+	if (FParse::Param(Cmd, TEXT("SlopAutoPlay")) || FParse::Value(Cmd, TEXT("SlopAutoPlay="), AutoPlayLevel))
+	{
+		FParse::Value(Cmd, TEXT("SlopAutoPlay="), AutoPlayLevel);
+		AutoPlayLevel = FMath::Clamp(AutoPlayLevel < 0 ? 2 : AutoPlayLevel, 0, 2);
+		AutoConfirmAt = Now() + 12.0;
 	}
 	FString UiArg;
 	if (FParse::Value(Cmd, TEXT("SlopUi="), UiArg, false))

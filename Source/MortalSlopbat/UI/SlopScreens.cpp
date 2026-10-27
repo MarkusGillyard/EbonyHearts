@@ -650,11 +650,6 @@ using namespace SlopScreensImpl;
 
 namespace SlopScreens
 {
-	static TSharedPtr<FSlopScreen> Named(TSharedPtr<FSlopScreen> S, const TCHAR* Name)
-	{
-		S->ScreenName = Name;
-		return S;
-	}
 	TSharedPtr<FSlopScreen> Title() { return Named(MakeShared<FTitle>(), TEXT("Title")); }
 	TSharedPtr<FSlopScreen> MainMenu() { return Named(MakeShared<FMainMenu>(), TEXT("MainMenu")); }
 	TSharedPtr<FSlopScreen> MatchScreen() { return Named(MakeShared<FMatchScreen>(), TEXT("Match")); }

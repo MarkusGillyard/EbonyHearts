@@ -113,7 +113,11 @@ private:
 	void FixedTick();
 	void HandleEvent(const Slop::FSimEvent& E);
 	void PlayEventSound(const Slop::FSimEvent& E);
-	void DrawDebugBoxes() const;
+public:
+	// Every box in play, in simulation space, with the colour it is drawn in (training's box
+	// view, drawn by the HUD so it works in any build).
+	void CollectBoxes(TArray<TPair<Slop::FRect, FLinearColor>>& Out) const;
+private:
 	USlopGameInstance* GI() const;
 
 	Slop::FFixedClock Clock;

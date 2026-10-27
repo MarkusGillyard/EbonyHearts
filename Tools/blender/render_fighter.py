@@ -5,6 +5,7 @@
 Re-imports <id>.fbx, rebuilds each material from the slot PNGs beside it (DirectX normals
 converted for Blender), and writes into <dir>/renders/:
   <id>_front.png, <id>_side.png, <id>_threequarter.png      rest pose, 1024 px
+  <id>_portrait.png     head and shoulders from the front right (select-screen framing)
   <id>_pose_<name>.png  for stance, kick, crouch, punch, guard_up: side view (the game camera)
                         on the left, three-quarter view on the right, 1024 px
 Eevee, neutral grey, warm key + cool rim + soft camera-side fill.
@@ -112,6 +113,16 @@ def main():
         fr.render(os.path.join(out, a.id + "_side.png"))
         frame_portrait(cam, meshes, (math.sin(math.radians(35)), -math.cos(math.radians(35)), 0.12), lens=50, margin=1.0)
         fr.render(os.path.join(out, a.id + "_threequarter.png"))
+        # select-screen style portrait: head and shoulders from the front right
+        nb = fr.bone_head(arm, "neck_01")
+        hd = fr.bone_head(arm, "head")
+        size = (hd - nb).length
+        tgt = hd + Vector((0, 0, -0.25 * size))
+        cam.data.type = "PERSP"
+        cam.data.lens = 85
+        view = Vector((-math.sin(math.radians(30)), -math.cos(math.radians(30)), 0.08)).normalized()
+        fr.look_at(cam, tgt + view * size * 13.0, tgt)
+        fr.render(os.path.join(out, a.id + "_portrait.png"))
         log("views done")
     for pose in fr.POSES:
         if only and pose not in only:
