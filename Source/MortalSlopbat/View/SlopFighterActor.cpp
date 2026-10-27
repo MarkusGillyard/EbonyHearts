@@ -52,8 +52,9 @@ bool ASlopFighterActor::Setup(const FFighter& Fighter, const FString& MeshPath)
 			|| Slot.Contains(TEXT("face")) || Slot.Contains(TEXT("hair")));
 	}
 	const FString Glow = Json::Str(Fighter.Def->Look, TEXT("glow"), TEXT("#ffffff"));
-	// The original's rim strengths were set for its brighter exposure; here they read at half.
-	SetAccent(FLinearColor(FColor::FromHex(Glow)), 0.5f * (float)Json::Num(Fighter.Def->Look, TEXT("accent"), 0.24));
+	// The original's rim strengths were set for its brighter exposure and a stylised look; here, for
+	// realistic bodies, they read at three tenths.
+	SetAccent(FLinearColor(FColor::FromHex(Glow)), 0.3f * (float)Json::Num(Fighter.Def->Look, TEXT("accent"), 0.24));
 	UpdateVisual(1.0, 0.0);
 	return true;
 }

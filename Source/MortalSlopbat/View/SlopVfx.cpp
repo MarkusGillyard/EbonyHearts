@@ -145,10 +145,34 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 		const double S = FMath::Clamp(E.Damage / 100.0, 0.2, 1.4);
 		const FFighter& A = M->Sim.Fighters[FMath::Clamp(E.By, 0, 1)];
 		const FVector Along(A.Facing, 0.15, 0);
-		Burst(EKind::Spark, P, 10 + (int32)(S * 14), 5.0 + S * 4.0, 0.22, 0.025, Along);
-		Spawn(EKind::Ring, P, FVector::ZeroVector, 0.16 + S * 0.06, 0.12, 3.0 + S * 2.0, 0, 0);
-		Spawn(EKind::Disc, P, FVector::ZeroVector, 0.09, 0.25 + S * 0.25, 1.0, 0, 0);
-		Flash(P, FLinearColor(1.f, 0.8f, 0.55f), 4.f + S * 8.f);
+		const FMoveDef* Mv = A.Def->Move(E.Move);
+		const FName Mat = Mv ? Mv->HitSound : NAME_None;
+		const bool bMetal = Mat == TEXT("metal") || Mat == TEXT("blade") || Mat == TEXT("chain");
+		// What a blow throws off is what it lands on: steel, brass and the specials' energy spark;
+		// a fist or shin sprays sweat from the head and raises a faint puff from the body; a club
+		// knocks out a little dust. The ring marks counters and the heaviest blows only.
+		if (bMetal || E.bProj)
+		{
+			Burst(EKind::Spark, P, 10 + (int32)(S * 14), 5.0 + S * 4.0, 0.22, 0.025, Along);
+		}
+		else if (E.Level == ELevel::High)
+		{
+			Burst(EKind::Pale, P, 6 + (int32)(S * 10), 2.6 + S * 2.0, 0.35, 0.012, Along + FVector(0, 0.35, 0));
+		}
+		else
+		{
+			Burst(EKind::Dust, P, 3 + (int32)(S * 4), 1.0, 0.35, 0.045, Along * 0.6);
+		}
+		if (Mat == TEXT("wood"))
+		{
+			Burst(EKind::Dust, P, 5, 1.6, 0.4, 0.03, Along);
+		}
+		if (E.bCounter || S >= 1.0)
+		{
+			Spawn(EKind::Ring, P, FVector::ZeroVector, 0.16 + S * 0.06, 0.12, 3.0 + S * 2.0, 0, 0);
+		}
+		Spawn(EKind::Disc, P, FVector::ZeroVector, 0.07, 0.2 + S * 0.2, 1.0, 0, 0);
+		Flash(P, FLinearColor(1.f, 0.8f, 0.55f), 2.5f + S * 5.f);
 		if (Gore != TEXT("off") && !E.bProj && E.Damage > 0)
 		{
 			const int32 N = Gore == TEXT("low") ? 3 : 6 + (int32)(S * 10);
@@ -157,10 +181,23 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 		break;
 	}
 	case EEvent::Block:
-		Burst(EKind::Spark, P, 8, 4.0, 0.16, 0.02);
-		Spawn(EKind::Ring, P, FVector::ZeroVector, 0.12, 0.1, 2.5, 0, 0);
-		Flash(P, FLinearColor(0.7f, 0.85f, 1.f), 3.f);
+	{
+		// Forearms take a blow with a slap and a puff of dust off the cloth; a blocked weapon of
+		// metal still sparks.
+		const FFighter& A = M->Sim.Fighters[FMath::Clamp(E.By, 0, 1)];
+		const FMoveDef* Mv = A.Def->Move(E.Move);
+		const FName Mat = Mv ? Mv->HitSound : NAME_None;
+		if (Mat == TEXT("metal") || Mat == TEXT("blade") || Mat == TEXT("chain") || E.bProj)
+		{
+			Burst(EKind::Spark, P, 8, 4.0, 0.16, 0.02);
+			Flash(P, FLinearColor(0.7f, 0.85f, 1.f), 3.f);
+		}
+		else
+		{
+			Burst(EKind::Dust, P, 4, 0.9, 0.3, 0.04, FVector(A.Facing * 0.5, 0.2, 0));
+		}
 		break;
+	}
 	case EEvent::Armor:
 		Burst(EKind::Ember, P, 12, 3.0, 0.3, 0.025);
 		break;

@@ -582,6 +582,8 @@ SLOT_EXTRA = {
     "gown": {"ClothDetail": 0.5},
     "leather": {"ClothDetail": 0.3},
     "ashka_cloth": {"ClothDetail": 0.35},
+    # The stranger in white stays clean.
+    "daxion_cloth": {"ClothDetail": 0.15},
 }
 
 
