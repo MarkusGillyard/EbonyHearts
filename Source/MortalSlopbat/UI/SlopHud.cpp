@@ -430,7 +430,7 @@ int32 SSlopHud::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometr
 			FString S;
 			if (bShowStates)
 			{
-				S += FString::Printf(TEXT("%s  sf %d  hitstop %d  stun %d\n"), StateName(F.State), F.SF, F.Hitstop, F.Stun);
+				S += FString::Printf(TEXT("%s  sf %d  hitstop %d  stun %d\nhp %d  run %d  combo %d\n"), StateName(F.State), F.SF, F.Hitstop, F.Stun, F.Health, (int32)F.RunMeter, F.ComboHits);
 			}
 			if (bShowFrames && F.Move)
 			{

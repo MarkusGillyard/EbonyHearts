@@ -421,19 +421,21 @@ namespace SlopScreensFlowImpl
 			{
 				Labels.Add(StageName(Id));
 			}
+			// Random, after the grounds, as the original had it.
+			Labels.Add(LOCTEXT("RandomStage", "Random"));
 			return Frame(SNew(SConstraintCanvas)
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 60, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("ChooseStage", "CHOOSE THE GROUND"), 72.f, SlopUI::Text)]]
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 300, 560, 400))[SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 560.f, 36.f)]
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(820, 300, 940, 260))
 				[
-					SlopUI::PanelBox(SNew(STextBlock).Font(SlopUI::Body(30.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Text_Lambda([this]() { return StageBlurb(Ids[Sel]); }))
+					SlopUI::PanelBox(SNew(STextBlock).Font(SlopUI::Body(30.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Text_Lambda([this]() { return Ids.IsValidIndex(Sel) ? StageBlurb(Ids[Sel]) : LOCTEXT("RandomBlurb", "Any of the grounds above, chosen as the fight begins."); }))
 				],
 				[this]() { return FText::Format(LOCTEXT("StageHint", "{0} to choose   ·   {1} to go back"), SlopUI::Confirm(GI->Router->Glyphs()), SlopUI::Back(GI->Router->Glyphs())); });
 		}
 		void Choose()
 		{
 			Sound(TEXT("ui_select"));
-			GI->Flow.Config.Stage = Ids[Sel];
+			GI->Flow.Config.Stage = Ids.IsValidIndex(Sel) ? Ids[Sel] : Ids[FMath::RandRange(0, Ids.Num() - 1)];
 			if (GI->Flow.Config.Mode == EMode::Training)
 			{
 				GI->StartMatch();
@@ -447,8 +449,8 @@ namespace SlopScreensFlowImpl
 		{
 			switch (E.Action)
 			{
-			case EUi::Up: Sel = Step(Sel, Ids.Num(), -1); Sound(TEXT("ui_move")); break;
-			case EUi::Down: Sel = Step(Sel, Ids.Num(), 1); Sound(TEXT("ui_move")); break;
+			case EUi::Up: Sel = Step(Sel, Ids.Num() + 1, -1); Sound(TEXT("ui_move")); break;
+			case EUi::Down: Sel = Step(Sel, Ids.Num() + 1, 1); Sound(TEXT("ui_move")); break;
 			case EUi::Confirm: Choose(); break;
 			case EUi::Back: Sound(TEXT("ui_back")); GI->Goto(SlopScreens::Select(GI->Flow.Config.Mode)); break;
 			default: break;
@@ -504,10 +506,17 @@ namespace SlopScreensFlowImpl
 						{
 							S += FString::Printf(TEXT("%d.  %s\n"), Plan[Sel].Num() - I, *RungText(Plan[Sel][Plan[Sel].Num() - 1 - I]).ToString());
 						}
-						const int32 Best = GI->Progress.BestScore(Fighter, Sel);
-						if (Best > 0)
+						// This fighter's record on the tower, as the original showed under each ladder.
+						const int32 Clears = GI->Progress.Clears(Fighter, Sel);
+						if (Clears > 0)
 						{
-							S += TEXT("\n") + FText::Format(LOCTEXT("BestScore", "Best score {0}"), FText::AsNumber(Best)).ToString();
+							const double Secs = GI->Progress.BestTime(Fighter, Sel);
+							S += TEXT("\n") + FText::Format(LOCTEXT("TowerRecord", "Cleared {0}x   ·   best {1}:{2}   ·   {3} pts"), Clears, (int32)Secs / 60,
+								FText::FromString(FString::Printf(TEXT("%02d"), (int32)Secs % 60)), FText::AsNumber(GI->Progress.BestScore(Fighter, Sel))).ToString();
+						}
+						else
+						{
+							S += TEXT("\n") + LOCTEXT("NotCleared", "Not yet cleared").ToString();
 						}
 						return FText::FromString(S);
 					}))
@@ -527,8 +536,11 @@ namespace SlopScreensFlowImpl
 		{
 			switch (E.Action)
 			{
-			case EUi::Up: Sel = Step(Sel, 3, -1); Sound(TEXT("ui_move")); break;
-			case EUi::Down: Sel = Step(Sel, 3, 1); Sound(TEXT("ui_move")); break;
+			// Left and right choose a tower too, the original's keys (it laid them side by side).
+			case EUi::Up:
+			case EUi::Left: Sel = Step(Sel, 3, -1); Sound(TEXT("ui_move")); break;
+			case EUi::Down:
+			case EUi::Right: Sel = Step(Sel, 3, 1); Sound(TEXT("ui_move")); break;
 			case EUi::Confirm: Choose(); break;
 			case EUi::Back: Sound(TEXT("ui_back")); GI->Goto(SlopScreens::Select(EMode::Arcade)); break;
 			default: break;
@@ -743,7 +755,14 @@ namespace SlopScreensFlowImpl
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(260, 860, 1400, 50))
 				[
 					SNew(STextBlock).Font(SlopUI::Body(26.f)).ColorAndOpacity(SlopUI::Amber)
-					.Text_Lambda([this]() { return Valid() ? FText::GetEmpty() : LOCTEXT("Need", "Each player needs at least one device. Connect a controller to have one each."); })
+					.Text_Lambda([this]()
+					{
+						// A pad connected before the game started is unknown until it sends input, so say how to bring it in.
+						const FText Seen = GI->Router->ConnectedPadCount() == 0
+							? LOCTEXT("NoPads", "Both keyboard halves are always here. A controller shows up once you press a button on it.") : FText::GetEmpty();
+						return Valid() ? Seen : FText::Format(LOCTEXT("Need", "Each player needs at least one device. {0}"),
+							GI->Router->ConnectedPadCount() == 0 ? LOCTEXT("NeedPad", "Connect a controller and press a button on it to have one each.") : LOCTEXT("NeedAssign", "Give each player a row."));
+					})
 				],
 				[this]() { return FText::Format(LOCTEXT("DevHint", "Up and down to choose a device   ·   left and right to give it to a player   ·   {0} to continue   ·   {1} to go back"), SlopUI::Confirm(GI->Router->Glyphs()), SlopUI::Back(GI->Router->Glyphs())); });
 		}
