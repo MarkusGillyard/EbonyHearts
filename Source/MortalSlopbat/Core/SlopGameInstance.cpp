@@ -227,6 +227,21 @@ FString USlopGameInstance::MeshFor(FName Fighter)
 	return FString::Printf(TEXT("/Game/Slop/Fighters/%s/%s.%s"), *Id, *Id, *Id);
 }
 
+void USlopGameInstance::RestartMatch()
+{
+	FMatchConfig& C = Flow.Config;
+	if (C.Mode == EMode::Cpu || C.Mode == EMode::Training)
+	{
+		C.Difficulty = FMath::Clamp(Settings.Difficulty, 0, 2);
+	}
+	if (C.Mode == EMode::Cpu || C.Mode == EMode::Versus)
+	{
+		C.RoundsToWin = FMath::Clamp(Settings.VersusRounds, 1, 5);
+		C.RoundSeconds = Settings.RoundSeconds;
+	}
+	StartMatch();
+}
+
 void USlopGameInstance::StartMatch()
 {
 	UWorld* W = GetWorld();

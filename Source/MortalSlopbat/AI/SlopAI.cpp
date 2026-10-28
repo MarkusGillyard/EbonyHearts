@@ -261,7 +261,7 @@ namespace Slop
 		// Punish a whiffed attack still recovering, judged once a move, with a blow that reaches it
 		// in the time left after the delay. (The old check left a tick or two to act in, and then
 		// threw the launcher whatever the distance.)
-		if (Seen.State == EState::Move && SM && SM->IsAttack() && Seen.MF > SM->LastActive() && Seen.Tick - Seen.MF != WhiffJudged)
+		if (Seen.State == EState::Move && SM && SM->IsAttack() && Seen.MF > SM->LastActive() && Seen.Tick - Seen.MF != WhiffJudged && M.IsActionable() && Sim.TickCount >= NoWhiffBefore)
 		{
 			WhiffJudged = Seen.Tick - Seen.MF;
 			const FName Best = PunisherFor(SM->Total - Seen.MF - L.React, Dist);
@@ -567,11 +567,33 @@ namespace Slop
 		{
 			if (E.Type == EEvent::Block && E.Who == Index && E.By == 1 - Index && !E.bProj && O.State == EState::Move && O.Move && O.Move->Id == E.Move)
 			{
+				// A jump-in is over when its attacker lands, and a few frames after: when that is
+				// follows from the arc, stepped as the simulation steps it (a deep one lands at
+				// once, while its frames would say it had far longer to run).
+				int32 Rest = O.Move->Total - O.MF;
+				if (O.Move->bAir)
+				{
+					double Y = O.Pos.Y, Vy = O.Vel.Y;
+					int32 Fall = 0;
+					while (Y > 0.0 && Fall < 240)
+					{
+						Vy -= O.Def->Gravity * DT;
+						Y += Vy * DT;
+						++Fall;
+					}
+					Rest = Fall + FFighter::LandFrames;
+					// Down and free before the guard is: an anti-air timed from the sight of the
+					// jump would only swing at a fighter already guarding again.
+					if (Rest <= M.Stun)
+					{
+						AaAt = -1;
+					}
+				}
 				// The attacker is free once the hit-stop and the rest of the move are over. The push
 				// felt on the guard opens the distance by its whole travel (in a corner the
 				// attacker is the one pushed back).
 				Blocked = O.Move;
-				BlockedFreeAt = Sim.TickCount + O.Hitstop + (O.Move->Total - O.MF);
+				BlockedFreeAt = Sim.TickCount + O.Hitstop + Rest;
 				BlockedDist = FMath::Abs(O.Pos.X - M.Pos.X);
 				for (double V = FMath::Abs(M.PushV); V > 0.0; V = FMath::Max(0.0, V - M.PushDec))
 				{
@@ -588,6 +610,7 @@ namespace Slop
 			return false;
 		}
 		Blocked = nullptr;
+		NoWhiffBefore = BlockedFreeAt;
 		if (Rng.FRand() >= L.Punish)
 		{
 			return false;
@@ -600,6 +623,17 @@ namespace Slop
 		}
 		Intent.Command(Notation(Best));
 		return true;
+	}
+
+	void FCpuBrain::Forget()
+	{
+		Intent = FPadIntent();
+		BlockT = 0;
+		AaAt = -1;
+		Blocked = nullptr;
+		WhiffJudged = -1;
+		NoWhiffBefore = 0;
+		SeenHistory.Reset();
 	}
 
 	FName FCpuBrain::PunisherFor(int32 Gap, double Dist)
@@ -1002,6 +1036,27 @@ namespace Slop
 	FTrainingDummy::FTrainingDummy(FFightSim& InSim, int32 InIndex, int32 InLevel) : Sim(InSim), Index(InIndex), Level(FMath::Clamp(InLevel, 0, 2))
 	{
 		Rng.Initialize(77);
+	}
+
+	void FTrainingDummy::SetLevel(int32 InLevel)
+	{
+		const int32 L = FMath::Clamp(InLevel, 0, 2);
+		if (L != Level)
+		{
+			Level = L;
+			if (Cpu)
+			{
+				Cpu = MakeUnique<FCpuBrain>(Sim, Index, Level);
+			}
+		}
+	}
+
+	void FTrainingDummy::Forget()
+	{
+		if (Cpu)
+		{
+			Cpu->Forget();
+		}
 	}
 
 	void FTrainingDummy::SetMode(int32 M)

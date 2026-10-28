@@ -134,13 +134,22 @@ namespace SlopScreensFlowImpl
 					const bool bOn = Cursor[0] == I || ((TwoSides() || bPickingDummy) && Cursor[1] == I);
 					return FMargin(bOn ? 6.f : 3.f);
 				})
-				.OnMouseButtonDown_Lambda([this, I](const FGeometry&, const FPointerEvent&) { Cursor[0] = I; Confirm(0); return FReply::Handled(); })
+				.OnMouseButtonDown_Lambda([this, I](const FGeometry&, const FPointerEvent&)
+				{
+					// While the other side's fighter is picked (Training, Versus CPU), the mouse
+					// picks that one.
+					const int32 Side = bPickingDummy ? 1 : 0;
+					Cursor[Side] = I;
+					Confirm(Side);
+					return FReply::Handled();
+				})
 				.OnMouseMove_Lambda([this, I](const FGeometry&, const FPointerEvent&)
 				{
-					if (Cursor[0] != I && !bLocked[0])
+					const int32 Side = bPickingDummy ? 1 : 0;
+					if (Cursor[Side] != I && !bLocked[Side])
 					{
 						// The figure follows the cursor (Tick).
-						Cursor[0] = I;
+						Cursor[Side] = I;
 						Sound(TEXT("ui_move"));
 					}
 					return FReply::Unhandled();
@@ -920,9 +929,10 @@ namespace SlopScreensFlowImpl
 					return FString::Printf(TEXT("total %d frames"), M.Total);
 				}
 				const int32 Hit = M.HitAdvantage();
-				return FString::Printf(TEXT("%s   %d dmg   startup %d  active %d  recovery %d   on block %+d   on hit %s"),
+				return FString::Printf(TEXT("%s   %d dmg   startup %d  active %d  recovery %d   on block %+d   on hit %s%s"),
 					LevelName(M.Level), M.Damage + (M.Throw.bHas ? M.Throw.Damage : 0) + (M.Projectile.bHas ? M.Projectile.Damage : 0), M.Startup, M.Active, M.Recovery,
-					M.BlockAdvantage(), Hit >= 999 ? TEXT("knockdown") : *FString::Printf(TEXT("%+d"), Hit));
+					M.BlockAdvantage(), Hit >= 999 ? TEXT("knockdown") : *FString::Printf(TEXT("%+d"), Hit),
+					M.SelfCancels > 0 ? *FString::Printf(TEXT("   up to %d in a row"), M.SelfCancels + 1) : TEXT(""));
 			};
 			auto Section = [this](const FText& T) { Rows.Add(TEXT("#") + T.ToString()); };
 			Section(LOCTEXT("Specials", "SPECIALS"));

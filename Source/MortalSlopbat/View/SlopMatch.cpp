@@ -237,6 +237,11 @@ void ASlopMatch::SetPaused(bool bPause)
 		return;
 	}
 	bPaused = bPause;
+	if (!bPause && Dummy)
+	{
+		// The difficulty may have changed in Settings from the pause menu.
+		Dummy->SetLevel(GI()->Settings.Difficulty);
+	}
 	GI()->Router->ResetAll();
 	GI()->Router->StopRumble();
 	GI()->Router->bFightActive = !bPause;
@@ -255,6 +260,13 @@ void ASlopMatch::ResetPositions()
 	for (ASlopFighterActor* V : Views)
 	{
 		V->SyncFromSim(true);
+	}
+	for (TUniquePtr<IBrain>& B : Brains)
+	{
+		if (B)
+		{
+			B->Forget();
+		}
 	}
 	Camera->Snap();
 }

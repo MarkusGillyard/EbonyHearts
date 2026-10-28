@@ -458,7 +458,7 @@ namespace SlopScreensImpl
 		{
 			if (TSharedPtr<FListScreen> P = W.Pin())
 			{
-				P->GI->StartMatch();
+				P->GI->RestartMatch();
 			}
 		}, [W]()
 		{
@@ -751,7 +751,7 @@ namespace SlopScreensImpl
 					FGameFlow::DifficultyName(F.Config.Difficulty)), 34.f, R.Winner == 1 ? SlopUI::Amber : SlopUI::Accent);
 			}
 			Flourish();
-			S->Item(LOCTEXT("Rematch", "Rematch"), [GI]() { GI->StartMatch(); });
+			S->Item(LOCTEXT("Rematch", "Rematch"), [GI]() { GI->RestartMatch(); });
 			S->Item(LOCTEXT("CharSelect", "Character Select"), [GI, M]() { GI->Goto(SlopScreens::Select(M)); });
 			S->Item(LOCTEXT("MainMenu", "Main Menu"), GoMenu);
 		}

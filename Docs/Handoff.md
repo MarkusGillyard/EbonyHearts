@@ -145,7 +145,10 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   its heaviest blow that fits (`FCpuBrain::PunishRead`); a roundhouse at its own range is pushed
   out of reach of everything, so it stays safe. Since 2.6.7 a whiffed move is judged the same
   way (once, with a blow that reaches in the time its delay leaves; the old check left it a tick
-  or two). Climbing a tower and turning an ending's page
+  or two), a blocked jump-in by when its attacker lands, and Training's reset clears the CPU's
+  reads. Restart and Rematch take up the CPU difficulty, rounds and round time as Settings have
+  them now (they kept the select screen's), and a running dummy takes up a new difficulty on
+  resume. While the other side's fighter is picked (Training, Versus CPU), the mouse picks it. Climbing a tower and turning an ending's page
   have their sounds again.
 - **The camera on other screens (2.6.1).** The fight view is 30 degrees tall on every shape of
   screen now; before, Unreal held a 16:9 camera's vertical angle, so 4:3 cut the fighters off and

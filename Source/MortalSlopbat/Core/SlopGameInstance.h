@@ -46,6 +46,9 @@ public:
 
 	// Matches.
 	void StartMatch();
+	// Restart and Rematch: the CPU difficulty, rounds and round time as Settings now have them,
+	// for the modes that take them.
+	void RestartMatch();
 	void EndMatch();
 	ASlopMatch* GetMatch() const { return Match; }
 	SSlopHud* GetHud() const { return Hud.Get(); }

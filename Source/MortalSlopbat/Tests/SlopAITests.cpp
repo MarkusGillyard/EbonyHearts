@@ -793,6 +793,107 @@ bool FSlopPunishWhiffs::RunTest(const FString&)
 	return true;
 }
 
+// A blocked jump-in is over when its attacker lands, not when its long active frames run out
+// (the CPU's read of it follows the fall). Kicked deep (low, landing at once) it leaves nothing
+// to punish, and the CPU does not swing at once, into the guard or the air; kicked early (high, a long
+// way to fall) it leaves the attacker hanging, and what the CPU answers with lands.
+SLOP_TEST(FSlopJumpInRead, "AI.BlockedJumpInsReadByTheLanding")
+bool FSlopJumpInRead::RunTest(const FString&)
+{
+	const FFighterDef* Ashka = GetContent().Fighter(TEXT("ashka"));
+	const FFighterDef* Bram = GetContent().Fighter(TEXT("bram"));
+	if (!TestNotNull("ashka", Ashka) || !TestNotNull("bram", Bram))
+	{
+		return false;
+	}
+	for (const bool bDeep : {true, false})
+	{
+		int32 Blocked = 0, Answers = 0, Guarded = 0, Landed = 0;
+		for (int32 Seed = 0; Seed < 6; ++Seed)
+		{
+			FFightSim Sim;
+			Sim.bIntro = false;
+			Sim.bTraining = true;
+			Sim.Setup(Ashka, Bram);
+			Sim.Fighters[1].AutoBlock = TEXT("stand");
+			FCpuBrain Cpu(Sim, 1, 2, 300 + Seed);
+			bool bKicked = false, bWatch = false, bWasFree = true, bAnswer = false;
+			int32 FreeAt = -1, AnsweredAt = 0;
+			for (int32 T = 0; T < 60 * 60; ++T)
+			{
+				// Ashka jumps in from 1.6-2.4 m, kicks on the way down (deep: under 1.3 m), and
+				// guards once she lands.
+				const FFighter& A = Sim.Fighters[0];
+				const FFighter& B = Sim.Fighters[1];
+				const double Gap = FMath::Abs(B.Pos.X - A.Pos.X);
+				FPadState Pads[2];
+				if (A.State == EState::Air)
+				{
+					const bool bNow = !bKicked && A.Vel.Y < 0.0 && (!bDeep || A.Pos.Y < 1.3);
+					Pads[0] = bNow ? FPadIntent::Pad(5, A.Facing, BtnHK) : FPadState();
+					bKicked |= bNow;
+				}
+				else
+				{
+					bKicked = false;
+					Pads[0] = A.IsActionable() && Gap >= 1.6 && Gap <= 2.4 && T % 30 == 0 ? FPadIntent::Pad(9, A.Facing)
+						: FPadIntent::Pad(Gap > 2.4 ? 6 : 4, A.Facing);
+				}
+				Pads[1] = Cpu.Think();
+				Sim.Step(Pads);
+				for (const FSimEvent& E : Sim.Events)
+				{
+					if (E.Type == EEvent::Block && E.Who == 1 && (E.Move == TEXT("jump_kick") || E.Move == TEXT("jump_kick_n")))
+					{
+						++Blocked;
+						bWatch = true;
+					}
+					// The CPU's first blow after its guard ends, and what became of it.
+					if (E.Type == EEvent::Move && E.Who == 1 && FreeAt >= 0 && Sim.TickCount - FreeAt <= 8)
+					{
+						++Answers;
+						bAnswer = true;
+						AnsweredAt = Sim.TickCount;
+						FreeAt = -1;
+					}
+					if (bAnswer && FreeAt < 0 && Sim.TickCount - AnsweredAt > 40)
+					{
+						bAnswer = false;
+					}
+					if (bAnswer && E.Who == 0 && E.By == 1 && (E.Type == EEvent::Hit || E.Type == EEvent::Block))
+					{
+						Guarded += E.Type == EEvent::Block;
+						Landed += E.Type == EEvent::Hit;
+						bAnswer = false;
+					}
+				}
+				const bool bFree = B.IsActionable();
+				if (bWatch && bFree && !bWasFree)
+				{
+					FreeAt = Sim.TickCount;
+					bWatch = false;
+					bAnswer = false;
+				}
+				bWasFree = bFree;
+			}
+		}
+		UE_LOG(LogSlop, Display, TEXT("Blocked %s jump-ins: %d; answered at once %d, %d landing, %d guarded"), bDeep ? TEXT("deep") : TEXT("early"), Blocked, Answers, Landed, Guarded);
+		TestTrue(FString::Printf(TEXT("%s jump-ins blocked (%d)"), bDeep ? TEXT("deep") : TEXT("early"), Blocked), Blocked >= 5);
+		if (bDeep)
+		{
+			TestTrue(FString::Printf(TEXT("no swinging into a deep jump-in's guard (%d of %d)"), Guarded, Blocked), Guarded * 10 <= Blocked);
+			// Nor at the air where it was: the anti-air planned from the sight of the jump is
+			// dropped once the guard shows the jumper is down first (7 of 9 swung before).
+			TestTrue(FString::Printf(TEXT("and no swing at once (%d of %d)"), Answers, Blocked), Answers * 10 <= Blocked * 3);
+		}
+		else
+		{
+			TestTrue(FString::Printf(TEXT("answers to an early one land (%d of %d)"), Landed, Answers), Landed * 10 >= Answers * 7);
+		}
+	}
+	return true;
+}
+
 SLOP_TEST(FSlopStranger, "AI.StrangerMemoryOnlyMovesForward")
 bool FSlopStranger::RunTest(const FString&)
 {

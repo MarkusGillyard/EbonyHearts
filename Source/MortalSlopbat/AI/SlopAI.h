@@ -38,6 +38,8 @@ namespace Slop
 	public:
 		virtual ~IBrain() = default;
 		virtual FPadState Think() = 0;
+		// Training's reset put the fighters back: forget reads of what came before.
+		virtual void Forget() {}
 	};
 
 	// Difficulty parameters of a CPU opponent.
@@ -83,6 +85,7 @@ namespace Slop
 
 		FCpuBrain(FFightSim& InSim, int32 InIndex, int32 Difficulty, int32 Seed = 0);
 		virtual FPadState Think() override;
+		virtual void Forget() override;
 
 		FFighter& Me() const { return Sim.Fighters[Index]; }
 		FFighter& Opp() const { return Sim.Fighters[1 - Index]; }
@@ -129,8 +132,10 @@ namespace Slop
 		// The blow last blocked (null once judged): the tick its attacker is free again, and how
 		// far apart the push leaves the two.
 		const FMoveDef* Blocked = nullptr;
-		// The start tick (as seen) of the last whiffed move judged for a punish.
+		// The start tick (as seen) of the last whiffed move judged for a punish, and the tick before
+		// which none is (a blocked move already judged is not judged again as a whiff).
 		int32 WhiffJudged = -1;
+		int32 NoWhiffBefore = 0;
 		int32 BlockedFreeAt = 0;
 		double BlockedDist = 0.0;
 		TMap<FName, double> ReachCache;
@@ -186,6 +191,9 @@ namespace Slop
 		FTrainingDummy(FFightSim& InSim, int32 InIndex, int32 InLevel = 1);
 		void NextMode() { SetMode((Mode + 1) % Modes().Num()); }
 		void SetMode(int32 M);
+		// A new difficulty for the CPU mode (Settings changed mid-session).
+		void SetLevel(int32 InLevel);
+		virtual void Forget() override;
 		int32 GetMode() const { return Mode; }
 		FString ModeName() const;
 		virtual FPadState Think() override;
