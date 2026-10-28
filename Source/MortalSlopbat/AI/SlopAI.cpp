@@ -164,6 +164,12 @@ namespace Slop
 		{
 			return Intent.Next(M.Facing);
 		}
+		// A blow ending as seen can be read before a held guard runs out.
+		if (ParryRead(M, Seen))
+		{
+			BlockT = 0;
+			return Intent.Next(M.Facing);
+		}
 		if (BlockT > 0)
 		{
 			--BlockT;
@@ -187,21 +193,6 @@ namespace Slop
 			if (Seen.bAir && Dist < 2.6)
 			{
 				Intent.Command(Notation(AaMove));
-				return Intent.Next(M.Facing);
-			}
-		}
-		// A check that catches lows (the fighter's "checks", Ashka's shin check) is a read, not a
-		// reaction: through the CPU's delay a low is already out when it is seen. Swept before,
-		// the CPU lifts it as the sweeper's low ends (its last frames, allowing for the delay),
-		// into the next one.
-		if (const TArray<TSharedPtr<FJsonValue>>* Checks = AiArr(TEXT("checks")))
-		{
-			const FMoveDef* SL = Seen.Move;
-			const int32 Now = Seen.MF + L.React;
-			if (Checks->Num() > 0 && SL && Seen.State == EState::Move && SL->Level == ELevel::Low && Now >= SL->Total - 1 && Now <= SL->Total + 1
-				&& Dist < 1.6 && CountHitBy(TEXT("low")) >= 2 && Rng.FRand() < L.Block * 0.5)
-			{
-				Intent.Command(Notation(FName(*(*Checks)[0]->AsString())));
 				return Intent.Next(M.Facing);
 			}
 		}
@@ -496,6 +487,69 @@ namespace Slop
 		const int32 Startup = Mv ? Mv->Startup : 8;
 		const int32 TicksLeft = (int32)(T * 60.0) - (Sim.TickCount - Seen.Tick);
 		AaAt = Sim.TickCount + FMath::Max(0, TicksLeft - Startup + 1);
+	}
+
+	// A parry (the fighter's "parries": Ashka's shin check for lows, Bram's Stand Down for highs
+	// and mids) is a read, not a reaction: through the CPU's delay a blow is already out when it is
+	// seen. Hit that way before, the CPU bets the attacker throws the same blow again the moment
+	// it can, and times the parry's window (after the inputs and the parry's own startup) to be
+	// open when that blow would land.
+	bool FCpuBrain::ParryRead(const FFighter& M, const FSeen& Seen)
+	{
+		const TArray<TSharedPtr<FJsonValue>>* Parries = AiArr(TEXT("parries"));
+		const FMoveDef* SL = Seen.Move;
+		if (!Parries || !SL || Seen.State != EState::Move || !SL->IsAttack() || SL->bAir || M.State == EState::Air || FMath::Abs(Seen.Pos.X - M.Pos.X) >= 1.6)
+		{
+			return false;
+		}
+		if (CountHitBy(SL->Level == ELevel::Low ? TEXT("low") : TEXT("other")) < 2 || SL->Projectile.bHas)
+		{
+			return false;
+		}
+		// The bet needs the attacker still in reach of the same blow (a blocked one often pushes
+		// them out, and then they walk in instead).
+		double Reach = 0.0;
+		for (const FFrameBox& B : SL->Hitboxes)
+		{
+			Reach = FMath::Max(Reach, B.Rect.EndX());
+		}
+		if (SL->Motion.Num() > 0)
+		{
+			Reach += SL->Motion.Last().Y;
+		}
+		if (FMath::Abs(Seen.Pos.X - M.Pos.X) > Reach + 0.22 * M.Def->Scale() + 0.1)
+		{
+			return false;
+		}
+		// Where the attacker's move is now, allowing for the delay.
+		const int32 Now = Seen.MF + L.React;
+		for (const TSharedPtr<FJsonValue>& V : *Parries)
+		{
+			const FMoveDef* PM = M.Def->Move(FName(*V->AsString()));
+			if (!PM || !PM->bParry || !PM->Parries(SL->Level))
+			{
+				continue;
+			}
+			const FString Cmd = Notation(PM->Id);
+			const int32 Lead = FCommand::Parse(Cmd).Steps.Num() + 1;
+			// The repeated blow lands at Total + Startup; the window must open a tick before it and
+			// still be open when its active frames end.
+			const int32 Target = SL->Total + SL->Startup;
+			const int32 Latest = Target - 1 - Lead - PM->ParryFrames.X;
+			const int32 Earliest = FMath::Max(Latest - 2, Target + SL->Active - Lead - PM->ParryFrames.Y);
+			const bool bFree = M.IsActionable() || (M.State == EState::BlockStun && M.Stun <= Lead);
+			if (!bFree || Now < Earliest || Now > Latest)
+			{
+				return false;
+			}
+			if (Rng.FRand() < L.Block * 0.5)
+			{
+				Intent.Command(Cmd);
+				return true;
+			}
+			return false;
+		}
+		return false;
 	}
 
 	void FCpuBrain::NoteHit(FFighter& M)

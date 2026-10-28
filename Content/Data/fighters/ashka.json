@@ -954,7 +954,7 @@
 			"rising_knee",
 			"uppercut"
 		],
-		"checks": [
+		"parries": [
 			"shin_check"
 		],
 		"combos": [

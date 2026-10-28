@@ -555,7 +555,7 @@ bool FSlopAshkaChecks::RunTest(const FString&)
 	}
 	FFighterDef NoChecks = *Ashka;
 	NoChecks.AI = MakeShared<FJsonObject>(*Ashka->AI);
-	NoChecks.AI->RemoveField(TEXT("checks"));
+	NoChecks.AI->RemoveField(TEXT("parries"));
 	int32 Swept[2] = {0, 0}, Sweeps[2] = {0, 0}, Caught[2] = {0, 0};
 	for (int32 Pass = 0; Pass < 2; ++Pass)
 	{
@@ -590,6 +590,58 @@ bool FSlopAshkaChecks::RunTest(const FString&)
 	const double With = double(Swept[0]) / FMath::Max(1, Sweeps[0]);
 	const double Without = double(Swept[1]) / FMath::Max(1, Sweeps[1]);
 	TestTrue(FString::Printf(TEXT("swept no more often (%.2f of sweeps with the check, %.2f without)"), With, Without), With <= Without + 0.03);
+	return true;
+}
+
+// Jabbed again and again, the CPU Bram reads the next one with Stand Down and answers with the
+// baton, and is hit no more often for it than he would be blocking alone.
+SLOP_TEST(FSlopBramParries, "AI.JabbedBramParriesWithoutLosingHisGuard")
+bool FSlopBramParries::RunTest(const FString&)
+{
+	const FFighterDef* Bram = GetContent().Fighter(TEXT("bram"));
+	const FFighterDef* Ashka = GetContent().Fighter(TEXT("ashka"));
+	if (!TestNotNull("bram", Bram) || !TestNotNull("ashka", Ashka) || !TestTrue("bram has ai", Bram->AI.IsValid()))
+	{
+		return false;
+	}
+	FFighterDef NoParry = *Bram;
+	NoParry.AI = MakeShared<FJsonObject>(*Bram->AI);
+	NoParry.AI->RemoveField(TEXT("parries"));
+	int32 Hit[2] = {0, 0}, Jabs[2] = {0, 0}, Caught[2] = {0, 0}, Tried[2] = {0, 0};
+	for (int32 Pass = 0; Pass < 2; ++Pass)
+	{
+		for (int32 Seed = 0; Seed < 4; ++Seed)
+		{
+			FFightSim Sim;
+			Sim.bIntro = false;
+			Sim.bTraining = true;
+			Sim.Setup(Ashka, Pass == 0 ? Bram : &NoParry);
+			FCpuBrain Cpu(Sim, 1, 2, 400 + Seed);
+			for (int32 T = 0; T < 60 * 60; ++T)
+			{
+				// Ashka jabs whenever she can from close in, and otherwise walks in.
+				const FFighter& A = Sim.Fighters[0];
+				const double Gap = FMath::Abs(Sim.Fighters[1].Pos.X - A.Pos.X);
+				FPadState Pads[2];
+				Pads[0] = A.IsActionable() ? (Gap < 1.0 ? FPadIntent::Pad(5, A.Facing, BtnHP, 0) : FPadIntent::Pad(6, A.Facing)) : FPadState();
+				Pads[1] = Cpu.Think();
+				Sim.Step(Pads);
+				for (const FSimEvent& E : Sim.Events)
+				{
+					Jabs[Pass] += E.Type == EEvent::Move && E.Who == 0 && E.Move == TEXT("hp");
+					Hit[Pass] += E.Type == EEvent::Hit && E.Who == 1 && E.Move == TEXT("hp");
+					Caught[Pass] += E.Type == EEvent::Parry && E.Who == 1;
+					Tried[Pass] += E.Type == EEvent::Move && E.Who == 1 && E.Move == TEXT("stand_down");
+				}
+			}
+		}
+	}
+	UE_LOG(LogSlop, Display, TEXT("Bram hit by %d of %d jabs with Stand Down, %d of %d without; %d caught of %d tried"), Hit[0], Jabs[0], Hit[1], Jabs[1], Caught[0], Tried[0]);
+	TestTrue("he parries some jabs", Caught[0] > 0);
+	TestEqual("never without a parry to use", Caught[1], 0);
+	const double With = double(Hit[0]) / FMath::Max(1, Jabs[0]);
+	const double Without = double(Hit[1]) / FMath::Max(1, Jabs[1]);
+	TestTrue(FString::Printf(TEXT("hit no more often (%.2f of jabs with it, %.2f without)"), With, Without), With <= Without + 0.03);
 	return true;
 }
 

@@ -889,6 +889,9 @@
 		"anti_air": [
 			"uppercut"
 		],
+		"parries": [
+			"stand_down"
+		],
 		"combos": [
 			[
 				"HP",

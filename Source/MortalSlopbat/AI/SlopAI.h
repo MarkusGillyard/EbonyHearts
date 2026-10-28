@@ -92,6 +92,9 @@ namespace Slop
 		void Plan(FFighter& M, const FSeen& O, double Dist);
 		void PlanAntiAir(FFighter& M, const FSeen& Seen);
 		void NoteHit(FFighter& M);
+		// A parry taken as a read into the attacker's next blow (see the definition); true when
+		// one was started.
+		bool ParryRead(const FFighter& M, const FSeen& Seen);
 		void StartCombo(bool bPunish);
 		FPadState Finish();
 		double Reach(FName MoveId);
