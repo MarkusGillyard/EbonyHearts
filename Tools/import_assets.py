@@ -255,16 +255,23 @@ def skin_damage(m, col, pre):
     bruise_col = expr(m, unreal.MaterialExpressionConstant3Vector, x0 + 2100, y0 + 900)
     bruise_col.set_editor_property("constant", unreal.LinearColor(0.62, 0.42, 0.48, 1.0))
     bruised = mul(m, flushed, lerp(m, const(m, 1.0, x0 + 2250, y0 + 900), bruise_col, mul(m, bruise, const(m, 0.6, x0 + 2250, y0 + 980), x0 + 2400, y0 + 960), x0 + 2550, y0 + 900), x0 + 2700, y0 + 700)
-    # Blood: thin vertical streaks (noise squashed upright) on a beaten head, half as much on the
-    # torso, none on the legs; it starts once a region is about a third of the way gone.
-    stretch = expr(m, unreal.MaterialExpressionConstant3Vector, x0 + 1350, y0 + 1060)
-    stretch.set_editor_property("constant", unreal.LinearColor(1.0, 1.0, 0.25, 1.0))
-    n2 = noise(m, mul(m, pre, stretch, x0 + 1500, y0 + 1040), 0.3, 2, x0 + 1650, y0 + 1040)
-    where = add(m, head, mul(m, body, const(m, 0.5, x0 + 1500, y0 + 1180), x0 + 1650, y0 + 1160), x0 + 1800, y0 + 1140)
+    # Blood: a few cuts, not a rash. Sparse sites (broad noise stretched upright, so each runs
+    # down from where it opens) broken into drips by finer upright noise; on a beaten head, a
+    # third as much on the torso, none on the legs, starting once a region is about a third of
+    # the way gone.
+    tall = expr(m, unreal.MaterialExpressionConstant3Vector, x0 + 1350, y0 + 1060)
+    tall.set_editor_property("constant", unreal.LinearColor(1.0, 1.0, 0.2, 1.0))
+    upright = mul(m, pre, tall, x0 + 1500, y0 + 1040)
+    sites = noise(m, upright, 0.07, 1, x0 + 1650, y0 + 1000)
+    drips = noise(m, upright, 0.28, 1, x0 + 1650, y0 + 1080)
+    where = add(m, head, mul(m, body, const(m, 0.33, x0 + 1500, y0 + 1180), x0 + 1650, y0 + 1160), x0 + 1800, y0 + 1140)
     grown = sat(m, sub(m, mul(m, k, const(m, 1.4, x0 + 1500, y0 + 1260), x0 + 1650, y0 + 1240), const(m, 0.45, x0 + 1650, y0 + 1300), x0 + 1800, y0 + 1240), x0 + 1950, y0 + 1240)
-    bk = mul(m, mul(m, mul(m, where, grown, x0 + 2100, y0 + 1180), dmg, x0 + 2250, y0 + 1200, "", "A"), const(m, 0.4, x0 + 2250, y0 + 1280), x0 + 2400, y0 + 1220)
-    t2 = sub(m, const(m, 1.0, x0 + 2400, y0 + 1100), bk, x0 + 2550, y0 + 1120)
-    blood = sat(m, mul(m, sub(m, n2, t2, x0 + 2700, y0 + 1060), const(m, 8.0, x0 + 2700, y0 + 1140), x0 + 2850, y0 + 1080), x0 + 3000, y0 + 1080)
+    bk = mul(m, mul(m, mul(m, where, grown, x0 + 2100, y0 + 1180), dmg, x0 + 2250, y0 + 1200, "", "A"), const(m, 0.25, x0 + 2250, y0 + 1280), x0 + 2400, y0 + 1220)
+    # One octave of noise rarely leaves 0.2-0.8, so the sites open from 0.78 down.
+    t2 = sub(m, const(m, 0.78, x0 + 2400, y0 + 1100), bk, x0 + 2550, y0 + 1120)
+    cut = sat(m, mul(m, sub(m, sites, t2, x0 + 2700, y0 + 1000), const(m, 10.0, x0 + 2700, y0 + 1060), x0 + 2850, y0 + 1000), x0 + 3000, y0 + 1000)
+    drip = sat(m, mul(m, sub(m, drips, const(m, 0.4, x0 + 2700, y0 + 1180), x0 + 2850, y0 + 1120), const(m, 5.0, x0 + 2850, y0 + 1180), x0 + 3000, y0 + 1120), x0 + 3150, y0 + 1120)
+    blood = mul(m, cut, drip, x0 + 3150, y0 + 1040)
     blood_col = expr(m, unreal.MaterialExpressionConstant3Vector, x0 + 2850, y0 + 1180)
     blood_col.set_editor_property("constant", unreal.LinearColor(0.16, 0.012, 0.01, 1.0))
     marked = lerp(m, bruised, blood_col, mul(m, blood, const(m, 0.9, x0 + 3000, y0 + 1180), x0 + 3150, y0 + 1160), x0 + 3300, y0 + 800)

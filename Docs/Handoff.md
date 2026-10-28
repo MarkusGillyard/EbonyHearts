@@ -97,8 +97,9 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   unfair in play, the change is to make it blockable with heavy chip. Not yet played since.
 - **The fight shows on the bodies (2.6.0).** Each blow marks the part of the body it lands on
   (head, torso or legs, by the nearest joint of the struck pose): the skin flushes, then bruises in
-  patches that spread and darken, and a beaten head and torso bleed in thin streaks (the gore
-  setting scales the blood; Off shows none). The marks last the match (`M_CharacterSkin`'s Damage,
+  patches that spread and darken, and a beaten head (less the torso) opens a few cuts that run
+  down (the gore setting scales the blood; Off shows none; since 2.6.2 cuts, not the rash of
+  specks 2.6.0 drew on pale skin). The marks last the match (`M_CharacterSkin`'s Damage,
   `ASlopFighterActor::TakeBlow`). Legs beaten past a third limp: standing, the weight sits back off
   the lead leg; walking, the hips drop as it takes the weight. The limp is drawn only, with walk
   speed unchanged, as the study advised for leg damage. `-SlopMarks=0.8` (development) starts a

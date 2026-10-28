@@ -63,7 +63,7 @@ bool ASlopFighterActor::Setup(const FFighter& Fighter, const FString& MeshPath)
 	SetScalar(TEXT("NeckZ"), float(0.85 * Anim.Rig.H * 100.0));
 	SetScalar(TEXT("WaistZ"), float(0.5 * Anim.Rig.H * 100.0));
 	SetScalar(TEXT("HeadRadius"), float(0.075 * Anim.Rig.H * 100.0));
-	SetScalar(TEXT("BodyRadius"), float(0.15 * Anim.Rig.H * 100.0));
+	SetScalar(TEXT("BodyRadius"), float(0.125 * Anim.Rig.H * 100.0));
 	UpdateVisual(1.0, 0.0);
 	return true;
 }
