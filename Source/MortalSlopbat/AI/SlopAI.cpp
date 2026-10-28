@@ -1,4 +1,5 @@
 #include "AI/SlopAI.h"
+#include "Core/SlopFlow.h"
 
 namespace Slop
 {
@@ -966,6 +967,11 @@ namespace Slop
 		if (Name == TEXT("Playback") && Tape.Num() == 0)
 		{
 			return TEXT("Playback (nothing recorded)");
+		}
+		if (Name == TEXT("CPU"))
+		{
+			// At the difficulty set in Settings.
+			return FString::Printf(TEXT("CPU (%s)"), *FGameFlow::DifficultyName(Level).ToString());
 		}
 		return Name;
 	}
