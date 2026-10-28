@@ -75,6 +75,8 @@ public:
 	TObjectPtr<USlopAudio> Audio;
 	// The main menu item chosen last, so coming back lands there.
 	int32 MenuChoice = 0;
+	// The Extras item last chosen, so coming back from a move list or the credits lands on it.
+	int32 ExtrasChoice = 0;
 	bool bDebugKeys = false;
 	// Test automation: the CPU plays the first side at this level, and idle menus are confirmed,
 	// so whole modes run unattended (-SlopAutoPlay[=0..2], any build). -1 when off.

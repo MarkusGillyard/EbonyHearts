@@ -817,7 +817,12 @@ namespace SlopScreensFlowImpl
 					return FString::Printf(TEXT("parry   catches %s on frames %d-%d   total %d%s"), *FString::Join(Lv, TEXT(", ")), M.ParryFrames.X, M.ParryFrames.Y, M.Total,
 						M.ParryDamage > 0 ? *FString::Printf(TEXT("   stings %d"), M.ParryDamage) : TEXT(""));
 				}
-				if (!M.IsAttack() && !M.Projectile.bHas && !M.Throw.bHas)
+				// A projectile's advantage depends on how far it travels, so only what it is.
+				if (M.Projectile.bHas)
+				{
+					return FString::Printf(TEXT("%s projectile   %d dmg   leaves on frame %d   total %d"), LevelName(M.Projectile.Level), M.Damage + M.Projectile.Damage, M.Projectile.Frame, M.Total);
+				}
+				if (!M.IsAttack() && !M.Throw.bHas)
 				{
 					return FString::Printf(TEXT("total %d frames"), M.Total);
 				}
@@ -927,7 +932,8 @@ namespace SlopScreensFlowImpl
 			[
 				SNew(SConstraintCanvas)
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(120, 40, 1680, 90))[SlopUI::Title(FText::Format(LOCTEXT("MovesOf", "{0}: MOVES"), FText::FromString(Def(Fighter)->Name.ToUpper())), 60.f, SlopUI::Text)]
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(120, 150, 1680, 820))[List]
+				// Clipped: rows that wrap make the page taller than its count, and must not run under the hint.
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(120, 150, 1680, 820))[SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[List]]
 			]]];
 			O->AddSlot()[SlopUI::Hint([this]() { return FText::Format(LOCTEXT("MovesHint", "Up and down to scroll   ·   left and right for another fighter   ·   {0} to go back"), SlopUI::Back(GI->Router->Glyphs())); })];
 			return O;
@@ -939,7 +945,8 @@ namespace SlopScreensFlowImpl
 			switch (E.Action)
 			{
 			case EUi::Up: Scroll = FMath::Max(0, Scroll - 1); GI->RebuildScreen(); break;
-			case EUi::Down: Scroll = FMath::Min(FMath::Max(0, Rows.Num() - 17), Scroll + 1); GI->RebuildScreen(); break;
+			// Far enough that the last rows always come into view, however many lines the page's rows wrap to.
+			case EUi::Down: Scroll = FMath::Min(FMath::Max(0, Rows.Num() - 8), Scroll + 1); GI->RebuildScreen(); break;
 			case EUi::Left:
 			case EUi::Right:
 				if (!bOverlay)
@@ -987,6 +994,11 @@ namespace SlopScreensFlowImpl
 				{
 					Seen.Add(Id);
 				}
+			}
+			Sel = FMath::Clamp(GI->ExtrasChoice, 0, 5);
+			if (Sel == 3 && !StrangerMet())
+			{
+				Sel = 0;
 			}
 		}
 		bool StrangerMet() const { return GI->Progress.Stranger() > 0; }
@@ -1054,6 +1066,7 @@ namespace SlopScreensFlowImpl
 		void Choose()
 		{
 			Sound(TEXT("ui_select"));
+			GI->ExtrasChoice = Sel == 5 ? 0 : Sel;
 			switch (Sel)
 			{
 			case 0: if (Seen.IsValidIndex(Page)) GI->Goto(SlopScreens::Ending(Seen[Page], false)); break;
@@ -1065,7 +1078,7 @@ namespace SlopScreensFlowImpl
 					GI->StartMatch();
 				}
 				break;
-			case 4: GI->Goto(SlopScreens::Credits()); break;
+			case 4: GI->Goto(SlopScreens::Credits(true)); break;
 			case 5: GI->Goto(SlopScreens::MainMenu()); break;
 			default: break;
 			}
@@ -1079,7 +1092,7 @@ namespace SlopScreensFlowImpl
 			case EUi::Left: if (Sel == 0 && Seen.Num()) Page = (Page + Seen.Num() - 1) % Seen.Num(); break;
 			case EUi::Right: if (Sel == 0 && Seen.Num()) Page = (Page + 1) % Seen.Num(); break;
 			case EUi::Confirm: Choose(); break;
-			case EUi::Back: Sound(TEXT("ui_back")); GI->Goto(SlopScreens::MainMenu()); break;
+			case EUi::Back: Sound(TEXT("ui_back")); GI->ExtrasChoice = 0; GI->Goto(SlopScreens::MainMenu()); break;
 			default: break;
 			}
 		}
@@ -1146,6 +1159,8 @@ namespace SlopScreensFlowImpl
 	class FCredits : public FSlopScreen
 	{
 	public:
+		bool bFromExtras = false;
+		explicit FCredits(bool bE) : bFromExtras(bE) {}
 		virtual TSharedRef<SWidget> Build() override
 		{
 			const FText Body = LOCTEXT("CreditsBody",
@@ -1174,7 +1189,7 @@ namespace SlopScreensFlowImpl
 			if (E.Action == EUi::Back || E.Action == EUi::Confirm)
 			{
 				Sound(TEXT("ui_back"));
-				GI->Goto(SlopScreens::MainMenu());
+				GI->Goto(bFromExtras ? SlopScreens::Extras() : SlopScreens::MainMenu());
 			}
 		}
 	};
@@ -1192,7 +1207,7 @@ namespace SlopScreens
 	TSharedPtr<FSlopScreen> MoveList(FName Fighter, bool bOverlay) { return Named(MakeShared<FMoveList>(Fighter, bOverlay), TEXT("MoveList")); }
 	TSharedPtr<FSlopScreen> Extras() { return Named(MakeShared<FExtras>(), TEXT("Extras")); }
 	TSharedPtr<FSlopScreen> Ending(FName Fighter, bool bFromArcade) { return Named(MakeShared<FEnding>(Fighter, bFromArcade), TEXT("Ending")); }
-	TSharedPtr<FSlopScreen> Credits() { return Named(MakeShared<FCredits>(), TEXT("Credits")); }
+	TSharedPtr<FSlopScreen> Credits(bool bFromExtras) { return Named(MakeShared<FCredits>(bFromExtras), TEXT("Credits")); }
 	TSharedPtr<FSlopScreen> TrialsPick() { return Named(MakeShared<FSelect>(EMode::Trials), TEXT("Select")); }
 }
 

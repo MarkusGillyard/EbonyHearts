@@ -1,4 +1,6 @@
-# Extras: endings, records, move lists (paging through fighters), credits, and back.
-14:confirm,1.5:up,0.4:up,0.4:up,0.5:confirm,2:confirm,3:back,1:down,0.5:confirm,3:back,1:down,0.5:confirm,2:right,2:right,2:back,1:down,0.4:down,0.5:confirm,3:back,1:back
+# Extras: records (shown in the panel), move lists (paging through fighters), credits, and back.
+# Endings and Records open no screen of their own (with none earned, Endings does nothing), so
+# the script only passes over them: a back pressed there leaves Extras.
+14:confirm,1.5:up,0.4:up,0.4:up,0.5:confirm,2:down,2.5:down,0.5:confirm,3:right,3:right,3:back,1:down,0.5:confirm,3:back,1:up,0.4:up,0.4:up,0.4:up,1:back
 -SlopFrameStats
 60
