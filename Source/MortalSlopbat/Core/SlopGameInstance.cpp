@@ -298,6 +298,10 @@ void USlopGameInstance::OnMatchFinished(const FMatchResult& R)
 	}
 	Progress.Save();
 	Goto(SlopScreens::Results(R));
+	if (SoakConfig)
+	{
+		SoakRestartAt = Now() + 3.0;
+	}
 }
 
 void USlopGameInstance::ApplySettings(bool bDisplay)
@@ -658,6 +662,12 @@ bool USlopGameInstance::Tick(float Dt)
 		FScreenshotRequest::RequestScreenshot(Name, true, false);
 	}
 #endif
+	if (SoakConfig && SoakRestartAt >= 0.0 && Now() >= SoakRestartAt)
+	{
+		SoakRestartAt = -1.0;
+		Flow.Config = *SoakConfig;
+		StartMatch();
+	}
 	if (QuitAtSeconds > 0.0 && Now() >= QuitAtSeconds)
 	{
 		QuitAtSeconds = -1.0;
@@ -719,6 +729,29 @@ void USlopGameInstance::TestCommandLine()
 		FParse::Value(Cmd, TEXT("SlopAutoPlay="), AutoPlayLevel);
 		AutoPlayLevel = FMath::Clamp(AutoPlayLevel < 0 ? 2 : AutoPlayLevel, 0, 2);
 		AutoConfirmAt = Now() + 12.0;
+	}
+	FString SoakArg;
+	if (FParse::Value(Cmd, TEXT("SlopSoakMatch="), SoakArg, false))
+	{
+		TArray<FString> Parts;
+		SoakArg.ParseIntoArray(Parts, TEXT(","));
+		if (Parts.Num() >= 2 && GetContent().Fighter(FName(*Parts[0])) && GetContent().Fighter(FName(*Parts[1])))
+		{
+			FMatchConfig C;
+			C.P1 = FName(*Parts[0]);
+			C.P2 = FName(*Parts[1]);
+			C.Mode = EMode::Watch;
+			C.Stage = Parts.Num() >= 3 ? FName(*Parts[2]) : FName(TEXT("rendering_yards"));
+			C.Difficulty = 2;
+			SoakConfig = C;
+			Flow.Config = C;
+			Note(FString::Printf(TEXT("Soak: %s v %s at %s, again and again"), *C.P1.ToString(), *C.P2.ToString(), *C.Stage.ToString()));
+			StartMatch();
+		}
+		else
+		{
+			UE_LOG(LogSlop, Error, TEXT("-SlopSoakMatch=%s: expected two fighter ids and a stage"), *SoakArg);
+		}
 	}
 	double QuitSecs = -1.0;
 	if (FParse::Value(Cmd, TEXT("SlopQuitAfter="), QuitSecs))

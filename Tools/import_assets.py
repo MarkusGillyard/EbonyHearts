@@ -384,9 +384,11 @@ def character_material(path="/Game/Slop/Materials/M_Character", skin=False):
     accent = vector(m, "AccentColor", (1, 1, 1, 1), -1100, 820)
     accent_k = scalar(m, "AccentStrength", 0.24, -1100, 940)
     rim = mul(m, mul(m, fres, accent, -850, 760), accent_k, -650, 800)
+    # The hit flash brightens the body's own colours (a light on it), so a dark suit reads lit,
+    # not washed white as an added glow had it.
     flash = scalar(m, "Flash", 0.0, -1100, 1060)
     flash_col = vector(m, "FlashColor", (1, 0.95, 0.85, 1), -1100, 1160)
-    fl = mul(m, flash_col, flash, -850, 1100)
+    fl = mul(m, mul(m, col, flash_col, -950, 1140), mul(m, flash, const(m, 2.5, -950, 1060), -850, 1060), -850, 1100)
     glow = scalar(m, "Glow", 0.0, -1100, 1280)
     glow_e = mul(m, col, glow, -850, 1260)
     # Painted self-light (eyes, embers, runes): an emissive map x strength.

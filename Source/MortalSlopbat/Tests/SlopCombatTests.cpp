@@ -3,6 +3,7 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
 #include "Tests/SlopSimHarness.h"
+#include "AI/SlopAI.h"
 #include "Core/SlopLog.h"
 
 namespace SlopCombatTestSuite
@@ -659,6 +660,146 @@ bool FSlopNoOverlap::RunTest(const FString&)
 	}
 	TestEqual("never outside the stage", Outside, 0);
 	TestEqual("grounded bodies do not overlap", Overlaps, 0);
+	return true;
+}
+
+
+// No ground infinite: mashing any one button (and the dial-a-combo openers) on a defender who
+// never blocks, a combo ends within a string's length. Markus found Ashka's jab string looping
+// (high punch to its second and back) to a 29-hit combo for all of Nix's health.
+SLOP_TEST(FSlopNoInfinite, "Combat.Combo.NoGroundInfinite")
+bool FSlopNoInfinite::RunTest(const FString&)
+{
+	for (const FName& Id : FContent::Roster())
+	{
+		for (const int32 Btn : {HP, LP, HK, LK})
+		{
+			FSimHarness H(GetContent().Fighter(Id), GetContent().Fighter(TEXT("bram")));
+			H.Place(0.8);
+			int32 Longest = 0;
+			for (int32 T = 0; T < 60 * 20; ++T)
+			{
+				// A press every fourth tick, as a player mashing does.
+				H.Step(0, T % 4 == 0 ? Btn : 0);
+				Longest = FMath::Max(Longest, H.F(1).ComboHits);
+				if (H.F(1).Health < 300)
+				{
+					H.F(1).Health = H.F(1).MaxHealth();
+				}
+			}
+			TestTrue(FString::Printf(TEXT("%s mashing %d: longest combo %d hits"), *Id.ToString(), Btn, Longest), Longest <= 8);
+		}
+	}
+	return true;
+}
+
+
+// No special loops either: each fighter's ground specials, thrown again as early as the input
+// buffer allows on a defender who never blocks, never chain into a combo longer than a string.
+SLOP_TEST(FSlopNoSpecialLoop, "Combat.Combo.NoSpecialLoops")
+bool FSlopNoSpecialLoop::RunTest(const FString&)
+{
+	for (const FName& Id : FContent::Roster())
+	{
+		const FFighterDef* D = GetContent().Fighter(Id);
+		for (const FCommand& C : D->Commands)
+		{
+			const FMoveDef* M = D->Move(C.Move);
+			if (!M || M->Kind != EMoveKind::Special || !M->IsAttack() || M->Projectile.bHas)
+			{
+				continue;
+			}
+			FSimHarness H(D, GetContent().Fighter(TEXT("bram")));
+			H.Place(0.9);
+			int32 Longest = 0;
+			for (int32 Rep = 0; Rep < 40; ++Rep)
+			{
+				// Each step of the motion one tick apart (directions as the attacker faces), the
+				// button with the last; then wait for it to finish, entering the next as soon as the
+				// buffer takes it (six ticks before the move ends).
+				TArray<int32> Dirs;
+				for (int32 Step : C.Steps)
+				{
+					const int32 Rel = Step;
+					int32 Bits = 0;
+					const bool bFwd = Rel == 6 || Rel == 3 || Rel == 9;
+					const bool bBack = Rel == 4 || Rel == 1 || Rel == 7;
+					if (bFwd) Bits |= H.F(0).Facing > 0 ? R : L;
+					if (bBack) Bits |= H.F(0).Facing > 0 ? L : R;
+					if (Rel <= 3) Bits |= PadDown;
+					if (Rel >= 7) Bits |= U;
+					Dirs.Add(Bits);
+				}
+				for (int32 W = 0; W < 120 && !(H.F(0).IsActionable() || (H.F(0).Move && H.F(0).Move->Total - H.F(0).MF <= 6)); ++W)
+				{
+					H.Idle(1);
+					Longest = FMath::Max(Longest, H.F(1).ComboHits);
+				}
+				if (Dirs.Num() == 0)
+				{
+					H.Step(0, C.Mask);
+				}
+				else
+				{
+					for (int32 K = 0; K < Dirs.Num(); ++K)
+					{
+						H.Step(Dirs[K], K + 1 == Dirs.Num() ? C.Mask : 0);
+					}
+				}
+				Longest = FMath::Max(Longest, H.F(1).ComboHits);
+				H.F(1).Health = H.F(1).MaxHealth();
+			}
+			UE_LOG(LogSlop, Display, TEXT("%s %s (%s) repeated: longest combo %d"), *Id.ToString(), *M->Id.ToString(), *C.Text, Longest);
+			TestTrue(FString::Printf(TEXT("%s repeating %s: longest combo %d hits"), *Id.ToString(), *M->Id.ToString(), Longest), Longest <= 6);
+		}
+	}
+	return true;
+}
+
+
+
+
+// No cancel loops: every fighter's specials, input again every few ticks (so inside any cancel
+// window) on a defender who never blocks, mid-stage and at the edge. Markus found Ashka's Elbow
+// Rush cancelling into itself, a 29-hit combo for all of Nix's health; the exploration that found
+// the cause read 42 to 48 hits in 15 s.
+SLOP_TEST(FSlopNoCancelLoop, "Combat.Combo.NoCancelLoops")
+bool FSlopNoCancelLoop::RunTest(const FString&)
+{
+	for (const FName& Id : FContent::Roster())
+	{
+		const FFighterDef* D = GetContent().Fighter(Id);
+		for (const FCommand& C : D->Commands)
+		{
+			const FMoveDef* M = D->Move(C.Move);
+			if (!M || M->Kind != EMoveKind::Special || !M->IsAttack() || M->SelfCancels > 0)
+			{
+				continue;
+			}
+			for (const bool bEdge : {false, true})
+			{
+				FSimHarness H(D, GetContent().Fighter(TEXT("bram")));
+				H.Place(0.8, bEdge ? FFightSim::StageHalf - 0.6 : 0.0);
+				int32 Longest = 0;
+				FPadIntent Intent;
+				for (int32 T = 0; T < 60 * 15; ++T)
+				{
+					// The command again every seven ticks, input as a player does (neutral between
+					// repeated directions), so some land inside any cancel window.
+					if (T % 7 == 0 && !Intent.Busy())
+					{
+						Intent.Command(C.Text);
+					}
+					const FPadState P = Intent.Busy() ? Intent.Next(H.F(0).Facing) : FPadState();
+					H.Step(P.Dirs, P.Pressed);
+					Longest = FMath::Max(Longest, H.F(1).ComboHits);
+					H.F(1).Health = H.F(1).MaxHealth();
+				}
+				TestTrue(FString::Printf(TEXT("%s repeating %s (%s)%s: longest combo %d hits"), *Id.ToString(), *M->Id.ToString(), *C.Text, bEdge ? TEXT(" at the edge") : TEXT(""), Longest),
+					Longest <= 8);
+			}
+		}
+	}
 	return true;
 }
 

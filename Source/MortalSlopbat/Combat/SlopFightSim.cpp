@@ -168,6 +168,8 @@ namespace Slop
 			F.JugglePoints = 0;
 			F.ComboHits = 0;
 			F.ComboDamage = 0;
+			F.bDazedThisCombo = false;
+			F.SelfCancelsUsed = 0;
 			F.ProjectilesOut = 0;
 			F.DamageTaken = 0;
 			F.ThrowVictim = -1;
@@ -824,14 +826,17 @@ namespace Slop
 		{
 			D.TakeStun(Hitstun, EStun::Pulled);
 		}
-		else if (Effect == TEXT("daze"))
+		else if (Effect == TEXT("daze") && !D.bDazedThisCombo)
 		{
 			D.TakeStun(Hitstun, EStun::Dazed);
+			D.bDazedThisCombo = true;
 		}
 		else
 		{
 			const EStun Kind = D.IsCrouching() ? EStun::Crouch : (Level == ELevel::High ? EStun::High : EStun::Mid);
-			D.TakeStun(Hitstun, Kind);
+			// A second daze in one combo lands as an ordinary blow: Mirela's Keen, dazing for 70
+			// frames and free again after 31, had looped into itself without end.
+			D.TakeStun(Effect == TEXT("daze") ? FMath::Min(Hitstun, 20) : Hitstun, Kind);
 			// The first blow of a combo pushes the full distance; later ones push less, so a
 			// dial-a-combo's later links reach the body the first ones drove back.
 			double PushK = 1.0;

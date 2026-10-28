@@ -122,6 +122,10 @@ namespace Slop
 		bool bEndsCrouched = false;
 		TArray<FChainLink> Chain;
 		FIntPoint Cancel = FIntPoint::ZeroValue;
+		// How many times in a row the move may cancel into itself (data "self_cancels"; 0, the
+		// default: never). Ashka's Elbow Rush cancelling into itself was an infinite (from the
+		// original's data); a fighter meant to have that string gets a count instead.
+		int32 SelfCancels = 0;
 		FProjectileDef Projectile;
 		FThrowDef Throw;
 		FName Requires;

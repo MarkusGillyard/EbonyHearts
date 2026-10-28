@@ -78,6 +78,27 @@ dizzy (FINISH HIM / FINISH HER / FINISH IT) for seven seconds: the winner may en
 **Sloptality** at the right distance (close, sweep or far), or simply hit them. The Rendering
 Yards also has a stage finisher (D,D,D+LP up close).
 
+### Loops closed, and one kept for later
+
+Markus's playthrough of 2.6.1 found two infinites inherited from the original's data, both now
+closed, with tests that repeat every special inside its cancel window (`Combat.Combo.*`).
+
+- **Ashka's elbow loop (saved: Markus wants another fighter to have it).** Elbow Rush (forward,
+  forward + low punch) has a cancel window on frames 11-20 once it lands, and a cancel may start
+  any special, itself included. It starts in 9 frames, travels 1.5 m and leaves 24 frames of
+  hitstun, so a second rush cancelled from the first lands well inside the first one's hitstun,
+  and so on without end: 29 hits for all of Nix's health in play, 42 to 50 in 15 s in the tests,
+  mid-stage as well as at the edge. Now a special may cancel into itself only as many times in a
+  row as its `self_cancels` allows (0 by default). To give that string to another fighter: a
+  rushing special with a cancel window that opens before its hitstun runs out (Elbow Rush:
+  `"cancel": [11, 20]`, `"hitstun": 24`, `"startup": 9`, a forward `motion`) and
+  `"self_cancels": N` for at most N + 1 rushes in a row; damage scaling (to 40 % from the
+  third hit) and the run meter are the only other limits, so N decides how far it goes.
+- **Mirela's Keen.** It dazes for 70 frames and she is free 31 frames after it lands, so it
+  landed again inside its own daze. Now a fighter is dazed once per combo; another dazing hit
+  in the same combo is an ordinary one (at most 20 frames of hitstun). Hollis's dazing bubble
+  follows the same rule.
+
 ## Roster
 
 | Fighter | Look | Style and role | Specials (planned) | Sloptality |

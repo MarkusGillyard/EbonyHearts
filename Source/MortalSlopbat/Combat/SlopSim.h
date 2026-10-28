@@ -76,6 +76,8 @@ namespace Slop
 		int32 HealthMax = 0;
 		double RunMeter = RunMax;
 		int32 RunIdle = 0;
+		// Times in a row the current move was entered by cancelling into itself.
+		int32 SelfCancelsUsed = 0;
 		int32 Stun = 0;
 		EStun StunKind = EStun::None;
 		int32 Hitstop = 0;
@@ -85,6 +87,8 @@ namespace Slop
 		int32 PushFrom = -1;
 		int32 JugglePoints = 0;
 		int32 ComboHits = 0;
+		// Dazed once in the current combo: another daze in it is an ordinary hit (no loops).
+		bool bDazedThisCombo = false;
 		int32 ComboDamage = 0;
 		bool bAirAttackUsed = false;
 		// Relative direction of the jump: -1 back, 0 straight up, 1 forward.

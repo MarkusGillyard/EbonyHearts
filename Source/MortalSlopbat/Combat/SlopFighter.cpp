@@ -346,6 +346,7 @@ namespace Slop
 	{
 		Move = nullptr;
 		MF = 0;
+		SelfCancelsUsed = 0;
 		Vel.X = 0.0;
 		ComboReset();
 		const int32 D = Input.Dir();
@@ -377,6 +378,7 @@ namespace Slop
 		}
 		ComboHits = 0;
 		ComboDamage = 0;
+		bDazedThisCombo = false;
 	}
 
 	// --- Neutral, walking, running, jumping -----------------------------------------------------------
@@ -536,6 +538,13 @@ namespace Slop
 			{
 				continue;
 			}
+			// A cancel into the same move only as many times running as the move allows: a rush
+			// that cancels into itself without end is an infinite.
+			const bool bSelf = bSpecialsOnly && M == Move;
+			if (bSelf && SelfCancelsUsed >= M->SelfCancels)
+			{
+				continue;
+			}
 			const int32 Age = Input.ChordAge(C.Mask);
 			if (Age < 0 || !C.Matches(Input, Age, Facing))
 			{
@@ -547,7 +556,9 @@ namespace Slop
 			}
 			Input.Consume(C.Mask);
 			MoveCmdPriority = C.Priority();
+			const int32 Used = bSelf ? SelfCancelsUsed + 1 : 0;
 			StartMove(*M);
+			SelfCancelsUsed = Used;
 			return true;
 		}
 		return false;

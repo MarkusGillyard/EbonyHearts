@@ -81,6 +81,10 @@ public:
 	// Test automation: the CPU plays the first side at this level, and idle menus are confirmed,
 	// so whole modes run unattended (-SlopAutoPlay[=0..2], any build). -1 when off.
 	int32 AutoPlayLevel = -1;
+	// Test automation: -SlopSoakMatch=p1,p2[,stage] (any build) has the CPU play that one match
+	// on both sides over and over, so a long session loads the same things throughout.
+	TOptional<Slop::FMatchConfig> SoakConfig;
+	double SoakRestartAt = -1.0;
 	TOptional<Slop::FMatchResult> LastResult;
 
 private:

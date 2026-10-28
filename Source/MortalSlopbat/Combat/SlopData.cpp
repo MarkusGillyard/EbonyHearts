@@ -340,6 +340,7 @@ namespace Slop
 			}
 		}
 		M.Cancel = ParseRange(D, TEXT("cancel"));
+		M.SelfCancels = FMath::Max(0, Int(D, TEXT("self_cancels"), 0));
 		if (const TSharedPtr<FJsonObject> P = Obj(D, TEXT("projectile")))
 		{
 			FProjectileDef& PD = M.Projectile;

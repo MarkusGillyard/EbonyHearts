@@ -5,6 +5,9 @@
 #
 #   Tools/perf/soak.sh <package dir> <seconds> [label] [extra game flags...]
 #
+# SOAK_MATCH=p1,p2[,stage] plays that one match over and over instead (-SlopSoakMatch), so memory
+# can be read without the changes that different fighters and stages bring.
+#
 # Results go to Saved/Perf/<label>-<time>/ (frame CSV, memory CSV, summary.txt, game log).
 set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -17,7 +20,7 @@ SAVES="${XDG_DATA_HOME:-$HOME/.local/share}/MortalSlopbat/UE5"
 BEFORE="$(ls "$SAVES"/framestats-*.csv 2>/dev/null)"
 nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader > "$OUT/gpu.txt" 2>/dev/null
 timeout -k 10 $((SECS + 180)) systemd-run --user --scope -p MemoryMax=10G --quiet "$PKG/MortalSlopbat.sh" -windowed -resx=1920 -resy=1080 \
-	$(offscreen_flag) -SlopAutoPlay=2 -SlopFrameStats -SlopQuitAfter="$SECS" -profile="$LABEL" "$@" > "$OUT/stdout.log" 2>&1 &
+	$(offscreen_flag) $([ -n "${SOAK_MATCH:-}" ] && echo "-SlopSoakMatch=$SOAK_MATCH" || echo -SlopAutoPlay=2) -SlopFrameStats -SlopQuitAfter="$SECS" -profile="$LABEL" "$@" > "$OUT/stdout.log" 2>&1 &
 GAME=$!
 sleep 5
 echo "t_s,rss_mb,gpu_used_mb" > "$OUT/memory.csv"
