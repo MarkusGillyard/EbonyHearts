@@ -209,7 +209,7 @@ namespace SlopScreensFlowImpl
 			return Frame(Canvas, [this]()
 			{
 				const EGlyphs G = GI->Router->Glyphs();
-				return FText::Format(LOCTEXT("SelHint", "Directions to choose   ·   {0} or a punch to pick   ·   {1} to go back"), SlopUI::Confirm(G), SlopUI::Back(G));
+				return FText::Format(LOCTEXT("SelHint", "Directions to choose   ·   {0} or a punch to pick   ·   {2} for a random fighter   ·   {1} to go back"), SlopUI::Confirm(G), SlopUI::Back(G), SlopUI::NextName(G));
 			}, false);
 		}
 
@@ -344,6 +344,15 @@ namespace SlopScreensFlowImpl
 			case EUi::Up: Move(Side, 0, -1); break;
 			case EUi::Down: Move(Side, 0, 1); break;
 			case EUi::Confirm: Confirm(Side); break;
+			case EUi::Next:
+				// A random fighter (never the one already under the cursor), to pick or move on from.
+				if (Ids.Num() > 1)
+				{
+					Cursor[Side] = (Cursor[Side] + FMath::RandRange(1, Ids.Num() - 1)) % Ids.Num();
+					bCostume[Side] = false;
+					Sound(TEXT("ui_move"));
+				}
+				break;
 			case EUi::Alt:
 				if (GI->Progress.IsUnlocked(TEXT("costume:") + Ids[Cursor[Side]].ToString()))
 				{

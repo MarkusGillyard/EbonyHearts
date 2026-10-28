@@ -56,6 +56,15 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   apart (the chancery had the victim's head inside Bram, the back throws clipped heads); fighters
   pushed together stay 31 cm clear. Bram's cross-buttock is the closest, at 11 cm, as it rolls the
   victim over his back.
+- **Restored from the original (2.5.5).** Comparing the port's presentation with the Godot
+  scripts found features lost in the port: projectiles were all glowing spheres (now the sickle's
+  blade on its chain, the harpoon on its line, the anchor, the tar glob, the faint bubble, dust for
+  the ground slap and the gust, as the original drew them); the Storm Shroud's telegraph (the
+  green light swelling over its charge, thunder and lightning when it fires) was missing, which
+  matters for the one unblockable left; Nix's chain was not drawn whipping out to Undertow's reach;
+  throw breaks, the deciding blow and projectiles breaking up had lost their effects. Not restored:
+  the original's simulated cloth and hair sheets (`look.cloth`), which the port's meshes have no
+  bones for.
 - **Smaller fixes (2.5.4).** Slate's font cache no longer flushes mid-fight (it did every few
   seconds: animated text made new glyph sizes every frame and the cache allowed one page); a
   standing fighter kicked in the legs buckles at the knee instead of flinching at the chest; the
@@ -84,7 +93,8 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   it), Gorm's blocked thrusts push further, and Bram throws with a chancery and a cross-buttock.
   Not done: a shin check for Ashka, optional leg damage. Each touches balance, so each needs a playtest.
 - **Costume secondary motion** (coat tails, veil, ponytail, chain) and damage that builds up on the
-  body: need rig bones and material work.
+  body: need rig bones and material work. The original simulated cloth and hair as sheets driven
+  from `look.cloth`; a port would need those sheets as skinned meshes with bones of their own.
 - **Physical controllers.** Markus played menus and fights on his DualShock 4 over Bluetooth with
   2.1.0. Rumble on it, reconnecting mid-fight, DualSense, USB and two physical pads are
   unconfirmed (`Docs/Validation.md`).
