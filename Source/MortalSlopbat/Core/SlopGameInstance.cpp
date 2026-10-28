@@ -630,7 +630,9 @@ bool USlopGameInstance::Tick(float Dt)
 		if (ShotTicks.Num() > 0 && T >= ShotTicks[0].Key)
 		{
 			const FString Name = ShotTicks[0].Value.IsEmpty() ? FString::Printf(TEXT("%s_%05d.png"), *ShotPrefix, T) : ShotTicks[0].Value;
-			FScreenshotRequest::RequestScreenshot(Name, true, false);
+			// -SlopShotsNoUi: the picture alone (stage pictures for the stage screen).
+			static const bool bNoUi = FParse::Param(FCommandLine::Get(), TEXT("SlopShotsNoUi"));
+			FScreenshotRequest::RequestScreenshot(Name, !bNoUi, false);
 			UE_LOG(LogSlop, Log, TEXT("Screenshot %s"), *Name);
 			ShotTicks.RemoveAt(0);
 		}

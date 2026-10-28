@@ -30,6 +30,8 @@ namespace SlopUI
 	const FSlateBrush* Rounded();
 	// A fighter's select-screen portrait (head and shoulders, 420 x 500), or null when it has none.
 	const FSlateBrush* Portrait(FName Fighter);
+	// The stage screen's picture of a ground (T_stage_<id>), or null when there is none.
+	const FSlateBrush* StagePicture(FName Stage);
 	// A plain coloured box brush.
 	const FSlateBrush* Box();
 

@@ -104,6 +104,16 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 	Director.Setup(this);
 	ApplySettings();
 #if !UE_BUILD_SHIPPING
+	// Development: -SlopHideFighters leaves the stage empty and the two far apart, so the camera
+	// takes in the ground (its picture for the stage screen). Kept hidden every frame, as each
+	// round start shows the bodies again.
+	bDevHideFighters = FParse::Param(FCommandLine::Get(), TEXT("SlopHideFighters"));
+	if (bDevHideFighters)
+	{
+		Sim.Fighters[0].Pos.X = -2.6;
+		Sim.Fighters[1].Pos.X = 2.6;
+		Camera->Snap();
+	}
 	// Development: -SlopMarks=<0..1> starts both fighters as beaten as that on head, body and legs
 	// (to look at the skin's marks without fighting for them).
 	float StartMarks = 0.f;
@@ -294,6 +304,13 @@ void ASlopMatch::Tick(float DeltaSeconds)
 	}
 #endif
 	Director.Step(D);
+	if (bDevHideFighters)
+	{
+		for (ASlopFighterActor* V : Views)
+		{
+			V->SetHidden(true);
+		}
+	}
 	Vfx->Step(D);
 	Arena->Step(D, Camera->GetActorLocation());
 

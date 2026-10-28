@@ -240,6 +240,29 @@ namespace SlopUI
 		return B.Get();
 	}
 
+	const FSlateBrush* StagePicture(FName Stage)
+	{
+		// Kept for the life of the process, like the portraits.
+		static TMap<FName, TSharedPtr<FSlateBrush>>* Cache = new TMap<FName, TSharedPtr<FSlateBrush>>();
+		if (const TSharedPtr<FSlateBrush>* Found = Cache->Find(Stage))
+		{
+			return Found->Get();
+		}
+		const FString Name = FString::Printf(TEXT("T_stage_%s"), *Stage.ToString());
+		UTexture2D* T = LoadObject<UTexture2D>(nullptr, *FString::Printf(TEXT("/Game/Slop/UI/%s.%s"), *Name, *Name), nullptr, LOAD_Quiet | LOAD_NoWarn);
+		TSharedPtr<FSlateBrush> B;
+		if (T)
+		{
+			T->AddToRoot();
+			B = MakeShared<FSlateBrush>();
+			B->SetResourceObject(T);
+			B->ImageSize = FVector2D(960, 540);
+			B->DrawAs = ESlateBrushDrawType::Image;
+		}
+		Cache->Add(Stage, B);
+		return B.Get();
+	}
+
 	TSharedRef<SWidget> Backdrop()
 	{
 		return SNew(SOverlay)

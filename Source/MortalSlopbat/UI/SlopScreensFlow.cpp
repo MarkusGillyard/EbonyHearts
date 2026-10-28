@@ -426,9 +426,15 @@ namespace SlopScreensFlowImpl
 			return Frame(SNew(SConstraintCanvas)
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 60, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("ChooseStage", "CHOOSE THE GROUND"), 72.f, SlopUI::Text)]]
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 300, 560, 400))[SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 560.f, 36.f)]
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(820, 300, 940, 260))
+				// The ground itself, as the original showed it (renders of the rebuilt sets), and its words below.
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(820, 220, 940, 529))
 				[
-					SlopUI::PanelBox(SNew(STextBlock).Font(SlopUI::Body(30.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Text_Lambda([this]() { return Ids.IsValidIndex(Sel) ? StageBlurb(Ids[Sel]) : LOCTEXT("RandomBlurb", "Any of the grounds above, chosen as the fight begins."); }))
+					SNew(SImage).Image_Lambda([this]() { return Ids.IsValidIndex(Sel) ? SlopUI::StagePicture(Ids[Sel]) : nullptr; })
+					.Visibility_Lambda([this]() { return Ids.IsValidIndex(Sel) && SlopUI::StagePicture(Ids[Sel]) ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
+				]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(820, 770, 940, 200))
+				[
+					SlopUI::PanelBox(SNew(STextBlock).Font(SlopUI::Body(28.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Text_Lambda([this]() { return Ids.IsValidIndex(Sel) ? StageBlurb(Ids[Sel]) : LOCTEXT("RandomBlurb", "Any of the grounds above, chosen as the fight begins."); }))
 				],
 				[this]() { return FText::Format(LOCTEXT("StageHint", "{0} to choose   ·   {1} to go back"), SlopUI::Confirm(GI->Router->Glyphs()), SlopUI::Back(GI->Router->Glyphs())); });
 		}

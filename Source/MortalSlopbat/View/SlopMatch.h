@@ -92,6 +92,8 @@ public:
 	bool bDebugStep = false;
 	bool bDebugSlow = false;
 	bool bShowBoxes = false;
+	// Development: -SlopHideFighters keeps both bodies hidden (stage pictures).
+	bool bDevHideFighters = false;
 	int32 TicksRun = 0;
 	double SimMicros = 0.0;
 	// Seconds left on the clock at the end of each round won by player 1, summed (time bonus).
