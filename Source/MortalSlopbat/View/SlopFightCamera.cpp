@@ -132,8 +132,14 @@ void ASlopFightCamera::Apply()
 	const FVector P = Anim::WorldToUE(Pos + Off);
 	const FVector L = Anim::WorldToUE(LookAt + Off);
 	SetActorLocationAndRotation(P, (L - P).Rotation());
-	// The original framed by vertical field of view; Unreal's is horizontal.
-	const double HFov = 2.0 * FMath::RadiansToDegrees(FMath::Atan(FMath::Tan(FMath::DegreesToRadians(VFov * 0.5)) * Aspect()));
+	// The original framed by vertical field of view; Unreal's is horizontal, and the engine keeps
+	// the vertical angle it gives at the camera's own aspect (MaintainYFOV, default 16:9). Given
+	// the screen's aspect, the view is VFov tall on any screen: at 4:3 it had come out 22 degrees
+	// tall and 30 wide, cutting the fighters off at the edges, and at 21:9 39 tall, drawing them a
+	// quarter smaller than the framing meant.
+	const double Asp = Aspect();
+	const double HFov = 2.0 * FMath::RadiansToDegrees(FMath::Atan(FMath::Tan(FMath::DegreesToRadians(VFov * 0.5)) * Asp));
+	Camera->SetAspectRatio((float)Asp);
 	Camera->SetFieldOfView((float)HFov);
 	if (bDof)
 	{
