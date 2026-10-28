@@ -107,7 +107,11 @@ namespace Slop
 		Arcade.StartedAt = Now;
 		Survival = FSurvival();
 		bStrangerPending = false;
+		// The player's colours outlive the fresh configuration (here and below: a stranger met in
+		// Arcade, Survival's Try Again had dropped them).
+		const bool bCostume = Config.bCostume[0];
 		Config = FMatchConfig();
+		Config.bCostume[0] = bCostume;
 		Config.Mode = EMode::Arcade;
 		Config.P1 = Fighter;
 		Config.Difficulty = TowerIndex;
@@ -204,7 +208,9 @@ namespace Slop
 		Survival.Seed = Seed;
 		Arcade = FArcade();
 		bStrangerPending = false;
+		const bool bCostume = Config.bCostume[0];
 		Config = FMatchConfig();
+		Config.bCostume[0] = bCostume;
 		Config.Mode = EMode::Survival;
 		Config.P1 = Fighter;
 		ConfigureWave();
@@ -259,7 +265,9 @@ namespace Slop
 	void FGameFlow::StartStranger(bool bFromArcade)
 	{
 		const FName P1 = Config.P1;
+		const bool bCostume = Config.bCostume[0];
 		Config = FMatchConfig();
+		Config.bCostume[0] = bCostume;
 		Config.Mode = EMode::Stranger;
 		Config.P1 = P1.IsNone() ? FName(TEXT("ashka")) : P1;
 		Config.P2 = TEXT("daxion");

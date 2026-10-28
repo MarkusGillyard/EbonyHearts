@@ -350,6 +350,26 @@ bool FSlopProgressFile::RunTest(const FString&)
 
 // --- Flow -------------------------------------------------------------------------------------------------
 
+// The alternate colours chosen at the select screen last the whole run: through a stranger met
+// mid-Arcade and back, and into Survival's Try Again (both had dropped them).
+SLOP_TEST(FSlopFlowColours, "Flow.ColoursLastTheRun")
+bool FSlopFlowColours::RunTest(const FString&)
+{
+	FGameFlow F;
+	F.Config.bCostume[0] = true;
+	F.StartArcade(TEXT("ashka"), 1, F.PlanArcade(TEXT("ashka"), 1, 7));
+	TestTrue("arcade keeps them", F.Config.bCostume[0]);
+	F.StartStranger(true);
+	TestTrue("the stranger fight too", F.Config.bCostume[0]);
+	F.ResumeArcade();
+	TestTrue("and the rest of the run", F.Config.bCostume[0]);
+	F.StartSurvival(TEXT("ashka"), 3);
+	TestTrue("survival keeps them", F.Config.bCostume[0]);
+	F.StartSurvival(TEXT("ashka"), 4);
+	TestTrue("and so does trying again", F.Config.bCostume[0]);
+	return true;
+}
+
 SLOP_TEST(FSlopFlowArcade, "Flow.ArcadeLadderScoringAndEnd")
 bool FSlopFlowArcade::RunTest(const FString&)
 {
