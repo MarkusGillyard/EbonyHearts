@@ -123,6 +123,25 @@ bool FSlopRoundTimeout::RunTest(const FString&)
 	return true;
 }
 
+// Versus can be played on a shorter clock or none.
+SLOP_TEST(FSlopRoundClock, "Rounds.ClockCanBeShortOrOff")
+bool FSlopRoundClock::RunTest(const FString&)
+{
+	TUniquePtr<FSimHarness> H = MakeMatch();
+	H->Sim.RoundLength = 0;
+	H->Sim.Timer = 2;
+	H->Idle(4);
+	TestNull("no clock, no time out", H->Find(EEvent::Timeout));
+	TestEqual("and the clock stands still", H->Sim.Timer, 2);
+	TUniquePtr<FSimHarness> H2 = MakeMatch();
+	H2->Sim.RoundLength = 30 * 60;
+	KnockOut(*H2, 1);
+	H2->Idle(FFightSim::RoundEndTicks + FFightSim::IntroTicks + FFightSim::ReadyTicks + 30);
+	TestEqual("the next round has begun", H2->Sim.RoundNum, 2);
+	TestTrue(FString::Printf(TEXT("on the short clock (%d ticks left)"), H2->Sim.Timer), H2->Sim.Timer <= 30 * 60 && H2->Sim.Timer > 25 * 60);
+	return true;
+}
+
 SLOP_TEST(FSlopRoundDoubleKO, "Rounds.DoubleKO")
 bool FSlopRoundDoubleKO::RunTest(const FString&)
 {

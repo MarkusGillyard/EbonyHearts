@@ -289,8 +289,9 @@ void SSlopHud::PaintBars(FSlateWindowElementList& Out, const FGeometry& G, int32
 	{
 		return;
 	}
-	const FText Timer = Sim.bTraining ? FText::FromString(TEXT("∞")) : FText::AsNumber(Sim.TimerSeconds());
-	PaintText(Out, G, Layer + 4, Timer, SlopUI::Display(64.f), FVector2D(960.f, 14.f), Sim.TimerSeconds() <= 10 && !Sim.bTraining ? SlopUI::Rust * 1.4f : SlopUI::Text, 1);
+	const bool bClock = !Sim.bTraining && Sim.RoundLength > 0;
+	const FText Timer = bClock ? FText::AsNumber(Sim.TimerSeconds()) : FText::FromString(TEXT("∞"));
+	PaintText(Out, G, Layer + 4, Timer, SlopUI::Display(64.f), FVector2D(960.f, 14.f), bClock && Sim.TimerSeconds() <= 10 ? SlopUI::Rust * 1.4f : SlopUI::Text, 1);
 }
 
 void SSlopHud::PaintBoxes(FSlateWindowElementList& Out, const FGeometry& AllottedGeometry, int32 Layer) const

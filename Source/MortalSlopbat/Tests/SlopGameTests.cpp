@@ -144,6 +144,8 @@ bool FSlopSettingsRoundTrip::RunTest(const FString&)
 	S.RebindKey(0, EGameAction::HP, EKeys::Y);
 	S.RebindPad(EGameAction::BL, EKeys::Gamepad_LeftThumbstick);
 	S.Assign[2] = 1;
+	S.VersusRounds = 4;
+	S.RoundSeconds = 0;
 	FSlopSettings R;
 	R.FromJson(S.ToJson());
 	TestEqual("volume", R.MasterVolume, 0.3);
@@ -153,8 +155,10 @@ bool FSlopSettingsRoundTrip::RunTest(const FString&)
 	TestEqual("key", R.Keys[0][(int32)EGameAction::HP], EKeys::Y);
 	TestEqual("pad", R.PadButtons[(int32)EGameAction::BL], EKeys::Gamepad_LeftThumbstick);
 	TestEqual("assign", R.Assign[2], 1);
+	TestEqual("rounds", R.VersusRounds, 4);
+	TestEqual("no clock", R.RoundSeconds, 0);
 	// Nonsense values keep their defaults.
-	TSharedPtr<FJsonObject> Bad = FContent::ParseJson(TEXT(R"({"master_volume": 7, "window_mode": 9, "res_x": 5, "gore": "lots", "frame_cap": 33, "glyphs": 4, "keys_left": {"hp": "NotAKey"}})"));
+	TSharedPtr<FJsonObject> Bad = FContent::ParseJson(TEXT(R"({"master_volume": 7, "window_mode": 9, "res_x": 5, "gore": "lots", "frame_cap": 33, "glyphs": 4, "versus_rounds": 12, "round_seconds": 45, "keys_left": {"hp": "NotAKey"}})"));
 	FSlopSettings B;
 	B.FromJson(Bad);
 	const FSlopSettings D;
@@ -163,6 +167,8 @@ bool FSlopSettingsRoundTrip::RunTest(const FString&)
 	TestEqual("resolution default", B.Resolution, D.Resolution);
 	TestEqual("gore default", B.Gore, D.Gore);
 	TestEqual("cap default", B.FrameCap, D.FrameCap);
+	TestEqual("rounds clamped", B.VersusRounds, 5);
+	TestEqual("an unoffered clock default", B.RoundSeconds, D.RoundSeconds);
 	// The old default cap in a version 1 file follows the display now; chosen in version 2, it stays.
 	FSlopSettings V1, V2;
 	V1.FromJson(FContent::ParseJson(TEXT(R"({"version": 1, "frame_cap": 60})")));

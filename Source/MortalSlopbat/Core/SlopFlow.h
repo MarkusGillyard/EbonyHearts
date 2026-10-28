@@ -16,6 +16,8 @@ namespace Slop
 		FName Stage = TEXT("rendering_yards");
 		int32 Difficulty = 1;
 		int32 RoundsToWin = 2;
+		// Seconds on the clock each round (0: no clock).
+		int32 RoundSeconds = 90;
 		// The Reflection: a slop-dark mirror match in the Master tower.
 		bool bMirrorDark = false;
 		// Health overrides: the Slopbat's by tower; survival's carried health (0 for full).

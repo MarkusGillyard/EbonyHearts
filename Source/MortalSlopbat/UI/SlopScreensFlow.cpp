@@ -304,6 +304,8 @@ namespace SlopScreensFlowImpl
 				F.EndSurvival();
 				F.Config = FMatchConfig();
 				F.Config.Mode = EMode::Versus;
+				F.Config.RoundsToWin = FMath::Clamp(GI->Settings.VersusRounds, 1, 5);
+				F.Config.RoundSeconds = GI->Settings.RoundSeconds;
 				F.Config.P1 = P1;
 				F.Config.P2 = Ids[Cursor[1]];
 				F.Config.bCostume[0] = bCostume[0];
@@ -337,7 +339,8 @@ namespace SlopScreensFlowImpl
 				F.Config.Difficulty = FMath::Clamp(GI->Settings.Difficulty, 0, 2);
 				F.Config.P1 = P1;
 				F.Config.bCostume[0] = bCostume[0];
-				F.Config.RoundsToWin = Mode == EMode::Cpu ? 2 : 1;
+				F.Config.RoundsToWin = Mode == EMode::Cpu ? FMath::Clamp(GI->Settings.VersusRounds, 1, 5) : 1;
+				F.Config.RoundSeconds = Mode == EMode::Cpu ? GI->Settings.RoundSeconds : 90;
 				bPickingDummy = true;
 				Cursor[1] = Cursor[0];
 				break;
@@ -649,6 +652,24 @@ namespace SlopScreensFlowImpl
 			{
 				Above = LOCTEXT("VersusCpuAbove", "Versus CPU");
 				AboveSmall = FGameFlow::DifficultyName(C.Difficulty);
+			}
+			if (C.Mode == EMode::Versus || C.Mode == EMode::Cpu)
+			{
+				// Rounds and clock, when they are not the usual first to two on 90 seconds.
+				FString Rule;
+				if (C.RoundsToWin != 2)
+				{
+					Rule = FText::Format(LOCTEXT("FirstTo", "First to {0}"), C.RoundsToWin).ToString();
+				}
+				if (C.RoundSeconds != 90)
+				{
+					const FString Clock = C.RoundSeconds > 0 ? FText::Format(LOCTEXT("ClockS", "{0} seconds a round"), C.RoundSeconds).ToString() : LOCTEXT("NoClockRule", "no clock").ToString();
+					Rule = Rule.IsEmpty() ? Clock : Rule + TEXT(", ") + Clock;
+				}
+				if (!Rule.IsEmpty())
+				{
+					AboveSmall = AboveSmall.IsEmpty() ? FText::FromString(Rule) : FText::FromString(AboveSmall.ToString() + TEXT("   ·   ") + Rule);
+				}
 			}
 			else if (GI->Flow.InSurvival())
 			{

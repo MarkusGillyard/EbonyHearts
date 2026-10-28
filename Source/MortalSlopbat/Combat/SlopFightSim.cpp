@@ -180,7 +180,7 @@ namespace Slop
 			F.SetState(EState::Intro);
 			F.SF = 0;
 		}
-		Timer = RoundTicks;
+		Timer = RoundLength > 0 ? RoundLength : RoundTicks;
 		RoundWinner = -1;
 		RoundHow = NAME_None;
 		FinishWinner = -1;
@@ -289,7 +289,7 @@ namespace Slop
 			}
 			break;
 		case EPhase::Fight:
-			if (!bTraining)
+			if (!bTraining && RoundLength > 0)
 			{
 				Timer = FMath::Max(0, Timer - 1);
 			}
@@ -1086,7 +1086,7 @@ namespace Slop
 					EndRound(Winner, TEXT("ko"));
 				}
 			}
-			else if (Timer <= 0)
+			else if (Timer <= 0 && RoundLength > 0)
 			{
 				const double H0 = double(Fighters[0].Health) / Fighters[0].MaxHealth();
 				const double H1 = double(Fighters[1].Health) / Fighters[1].MaxHealth();

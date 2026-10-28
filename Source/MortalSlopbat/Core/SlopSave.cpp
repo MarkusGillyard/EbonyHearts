@@ -207,6 +207,8 @@ namespace Slop
 		J->SetBoolField(TEXT("motion_smoothing"), bMotionSmoothing);
 		J->SetBoolField(TEXT("input_display"), bInputDisplay);
 		J->SetNumberField(TEXT("difficulty"), Difficulty);
+		J->SetNumberField(TEXT("versus_rounds"), VersusRounds);
+		J->SetNumberField(TEXT("round_seconds"), RoundSeconds);
 		J->SetNumberField(TEXT("dead_zone"), DeadZone);
 		J->SetBoolField(TEXT("vibration"), bVibration);
 		J->SetStringField(TEXT("glyphs"), Glyphs);
@@ -274,6 +276,9 @@ namespace Slop
 		bMotionSmoothing = Json::Bool(J, TEXT("motion_smoothing"), D.bMotionSmoothing);
 		bInputDisplay = Json::Bool(J, TEXT("input_display"), D.bInputDisplay);
 		Difficulty = FMath::Clamp(Json::Int(J, TEXT("difficulty"), D.Difficulty), 0, 2);
+		VersusRounds = FMath::Clamp(Json::Int(J, TEXT("versus_rounds"), D.VersusRounds), 1, 5);
+		const int32 Secs = Json::Int(J, TEXT("round_seconds"), D.RoundSeconds);
+		RoundSeconds = (Secs == 0 || Secs == 30 || Secs == 60 || Secs == 90) ? Secs : D.RoundSeconds;
 		DeadZone = FMath::Clamp(Json::Num(J, TEXT("dead_zone"), D.DeadZone), 0.05, 0.6);
 		bVibration = Json::Bool(J, TEXT("vibration"), D.bVibration);
 		const FString Gl = Json::Str(J, TEXT("glyphs"), D.Glyphs);

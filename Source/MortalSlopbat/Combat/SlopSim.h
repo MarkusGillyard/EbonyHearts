@@ -216,6 +216,8 @@ namespace Slop
 		EPhase Phase = EPhase::Intro;
 		int32 PhaseT = 0;
 		int32 Timer = RoundTicks;
+		// Ticks on the clock at the start of each round; 0 plays without a clock.
+		int32 RoundLength = RoundTicks;
 		int32 RoundNum = 1;
 		int32 RoundsToWin = 2;
 		int32 Wins[2] = {0, 0};

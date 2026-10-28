@@ -225,6 +225,11 @@ namespace SlopSettingsImpl
 				Rows.Add(Toggle(LOCTEXT("InputDisp", "Input display in fights"), &S.bInputDisplay));
 				Rows.Add(Choice(LOCTEXT("Diff", "CPU difficulty (Versus CPU, Training)"), {FGameFlow::DifficultyName(0), FGameFlow::DifficultyName(1), FGameFlow::DifficultyName(2)},
 					[&S]() { return S.Difficulty; }, [&S](int32 V) { S.Difficulty = V; }));
+				Rows.Add(Choice(LOCTEXT("VsRounds", "Rounds to win (Versus, Versus CPU)"), {FText::AsNumber(1), FText::AsNumber(2), FText::AsNumber(3), FText::AsNumber(4), FText::AsNumber(5)},
+					[&S]() { return FMath::Clamp(S.VersusRounds, 1, 5) - 1; }, [&S](int32 V) { S.VersusRounds = V + 1; }));
+				Rows.Add(Choice(LOCTEXT("RoundTime", "Round time (Versus, Versus CPU)"), {LOCTEXT("S30", "30 seconds"), LOCTEXT("S60", "60 seconds"), LOCTEXT("S90", "90 seconds"), LOCTEXT("NoClock", "No limit")},
+					[&S]() { return S.RoundSeconds == 30 ? 0 : (S.RoundSeconds == 60 ? 1 : (S.RoundSeconds == 0 ? 3 : 2)); },
+					[&S](int32 V) { S.RoundSeconds = V == 0 ? 30 : (V == 1 ? 60 : (V == 3 ? 0 : 90)); }));
 				break;
 			case 3:
 			default:

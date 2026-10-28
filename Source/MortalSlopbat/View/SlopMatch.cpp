@@ -39,6 +39,7 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 	const bool bPractice = M == EMode::Training || M == EMode::Tutorial || M == EMode::Stranger || M == EMode::Trials;
 	Sim.bTraining = bPractice;
 	Sim.RoundsToWin = FMath::Max(1, Config.RoundsToWin);
+	Sim.RoundLength = FMath::Max(0, Config.RoundSeconds) * 60;
 	Sim.bFinishersEnabled = M != EMode::Stranger;
 	if (D1->Move(TEXT("stage_vat")) && Config.Stage == TEXT("rendering_yards"))
 	{

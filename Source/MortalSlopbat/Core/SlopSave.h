@@ -60,6 +60,10 @@ namespace Slop
 		bool bMotionSmoothing = true;
 		bool bInputDisplay = false;
 		int32 Difficulty = 1;
+		// Versus and Versus CPU: rounds to win the match (1-5) and seconds a round (30, 60, 90;
+		// 0 for no clock).
+		int32 VersusRounds = 2;
+		int32 RoundSeconds = 90;
 		// Controllers.
 		double DeadZone = 0.3;
 		bool bVibration = true;
