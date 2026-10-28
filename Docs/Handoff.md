@@ -9,7 +9,7 @@ evidence behind every claim here.
 |---|---|
 | Source | `~/Documents/Unreal Projects/MortalSlopbat`, branch `ue5`; pushed to the private `MarkusGillyard/Slopbat` as branch `ue5` (its own history; `main` untouched). The Godot original at `~/Documents/Mortal Slopbat` is unchanged. |
 | Engine | Unreal Engine 5.8.4 at `/media/cinqic/Cinqic Storage/UnrealEngine/UE_5.8.4`; Vulkan SM6; Linux x86_64. |
-| Game | Complete: six fighters, the Slopbat and the stranger; four stages; Arcade, Survival, Versus, Training, Tutorial, Trials, Extras, Settings; saves and settings; controllers and keyboard. |
+| Game | Complete: six fighters, the Slopbat and the stranger; four stages; Arcade, Survival, Versus, Versus CPU, Training, Tutorial, Trials, Extras, Settings; saves and settings; controllers and keyboard. |
 | Art | All eight fighters built from CC0 MakeHuman bodies with scripted costumes (`Tools/blender`); four stage sets built in Blender (`Tools/blender/stages`); CC0 surfaces, props, skies and sounds. |
 | Tests | Automation tests (`run_tests`), scripted flows for every mode (`Tools/playtest`), unattended packaged sessions (`Tools/perf/soak.sh`). |
 | Combat feel | 2.2.0 applies the presentation changes ranked by the study in `Docs/Martial-arts.md` (strikes, hit-stop, reactions, styles, sound) and one rule change (counter-hit freeze on the victim); frame data otherwise unchanged. 2.3.0 to 2.5.0 bring in motion capture: strikes, footwork, the block, Daxion's evade, intros and wins. |
@@ -131,6 +131,20 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   `Tools/stage_pictures.py` has the recipe; Random tiles them). Since 2.6.5 the mouse selects what it moves over (menus, the fighter grid, settings rows), with
   the move sound. Left out on purpose: the original's "Loading" note, as a match here starts in
   under a tenth of a second (64-85 ms first frames in Markus's session), so it would only flash.
+- **From a comparison of the rules and the CPU with the original (2.6.6).** The alternate
+  colours were lost when the stranger interrupted an Arcade run and on Survival's Try Again;
+  they now last the run. The CPU difficulty setting changed nothing (Training's dummy fought at
+  Warrior whatever it said, and there was no fight against the CPU outside Arcade and Survival):
+  the dummy now follows it, and **Versus CPU** on the main menu is one fight against the CPU at
+  that difficulty (your fighter, theirs, the stage; the face-off and results name the difficulty).
+  Versus and Versus CPU also take rounds to win (1-5) and the round time (30, 60, 90 seconds or
+  no clock) from Settings; everything else stays first to two on 90 seconds.
+  The CPU almost never punished a blocked move: it answered a delayed sight of the recovery,
+  which mostly came too late. It now reads the blocked move as it lands (what is left of it after
+  the guard's stun, and how far the push leaves the two apart, in a corner too) and answers with
+  its heaviest blow that fits (`FCpuBrain::PunishRead`); a roundhouse at its own range is pushed
+  out of reach of everything, so it stays safe. Climbing a tower and turning an ending's page
+  have their sounds again.
 - **The camera on other screens (2.6.1).** The fight view is 30 degrees tall on every shape of
   screen now; before, Unreal held a 16:9 camera's vertical angle, so 4:3 cut the fighters off and
   Markus's 3440 x 1440 drew them a quarter smaller than the framing meant. On his display the
