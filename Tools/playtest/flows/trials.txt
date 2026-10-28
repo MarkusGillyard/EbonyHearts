@@ -1,4 +1,4 @@
 # Trials with the first fighter: each trial skipped in turn, then out through the pause menu.
-14:confirm,1.5:down,0.4:down,0.4:down,0.4:down,0.4:down,0.5:confirm,2:confirm,8:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:pause,1:down,0.4:down,0.4:down,0.4:down,0.4:down,0.4:down,0.5:confirm
+14:confirm,1.5:down,0.4:down,0.4:down,0.4:down,0.4:down,0.4:down,0.5:confirm,2:confirm,8:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:pause,1:down,0.4:down,0.4:down,0.4:down,0.4:down,0.4:down,0.5:confirm
 -SlopFrameStats
 80

@@ -1,4 +1,4 @@
 # Tutorial: every step skipped in turn (R1/Tab) to the end, then the results.
-14:confirm,1.5:down,0.4:down,0.4:down,0.4:down,0.5:confirm,8:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,4:confirm,3:confirm
+14:confirm,1.5:down,0.4:down,0.4:down,0.4:down,0.4:down,0.5:confirm,8:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,2.5:next,4:confirm,3:confirm
 -SlopFrameStats
 90

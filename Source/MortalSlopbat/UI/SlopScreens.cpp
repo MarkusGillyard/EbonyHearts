@@ -275,6 +275,7 @@ namespace SlopScreensImpl
 				{LOCTEXT("Arcade", "Arcade"), LOCTEXT("ArcadeD", "Climb a tower of the Slopbat's chosen to the roost itself. Your choice of tower sets the difficulty."), TEXT("arcade")},
 				{LOCTEXT("Survival", "Survival"), LOCTEXT("SurvivalD", "An endless ladder: one round a fight, your health carried on with a little given back after each win, and the Slopbat waiting every fifth wave. How far can you climb?"), TEXT("survival")},
 				{LOCTEXT("Versus", "Versus"), LOCTEXT("VersusD", "Two players on one machine. Any fighter, any stage, mirror matches welcome."), TEXT("versus")},
+				{LOCTEXT("VersusCpu", "Versus CPU"), LOCTEXT("VersusCpuD", "One fight against the CPU: your fighter, theirs, and the stage. It fights at the CPU difficulty in Settings."), TEXT("cpu")},
 				{LOCTEXT("Training", "Training"), LOCTEXT("TrainingD", "Practise against a dummy that stands, blocks, jumps or fights back. Move lists, frame data and hitboxes."), TEXT("training")},
 				{LOCTEXT("Tutorial", "Tutorial"), LOCTEXT("TutorialD", "Learn to move, block, strike, combo, throw and finish, one step at a time."), TEXT("tutorial")},
 				{LOCTEXT("Trials", "Trials"), LOCTEXT("TrialsD", "Every fighter's combos, one at a time, checked as you land them. Clear them all with every fighter."), TEXT("trials")},
@@ -334,6 +335,7 @@ namespace SlopScreensImpl
 			if (Id == TEXT("arcade")) GI->Goto(SlopScreens::Select(EMode::Arcade));
 			else if (Id == TEXT("survival")) GI->Goto(SlopScreens::Select(EMode::Survival));
 			else if (Id == TEXT("versus")) GI->Goto(SlopScreens::Devices());
+			else if (Id == TEXT("cpu")) GI->Goto(SlopScreens::Select(EMode::Cpu));
 			else if (Id == TEXT("training")) GI->Goto(SlopScreens::Select(EMode::Training));
 			else if (Id == TEXT("tutorial"))
 			{
@@ -475,7 +477,7 @@ namespace SlopScreensImpl
 		{
 			TSharedPtr<FListScreen> P = W.Pin();
 			const EMode M = P ? P->GI->Flow.Config.Mode : EMode::Arcade;
-			return M == EMode::Versus || M == EMode::Training || M == EMode::Trials;
+			return M == EMode::Versus || M == EMode::Training || M == EMode::Trials || M == EMode::Cpu;
 		});
 		const USlopGameInstance* QG = USlopGameInstance::Get();
 		const EMode QM = QG ? QG->Flow.Config.Mode : EMode::Versus;
@@ -741,6 +743,12 @@ namespace SlopScreensImpl
 			if (M == EMode::Versus && R.Winner >= 0)
 			{
 				S->Line(FText::Format(LOCTEXT("PlayerN", "Player {0}"), R.Winner + 1), 34.f, R.Winner == 0 ? SlopUI::Accent : SlopUI::Amber);
+			}
+			else if (M == EMode::Cpu)
+			{
+				// Who that was, for a mirror match, and at what difficulty.
+				S->Line(FText::Format(R.Winner == 0 ? LOCTEXT("YouBeatCpu", "You beat the CPU ({0})") : (R.Winner == 1 ? LOCTEXT("CpuBeatYou", "The CPU wins ({0})") : LOCTEXT("CpuDraw", "Against the CPU ({0})")),
+					FGameFlow::DifficultyName(F.Config.Difficulty)), 34.f, R.Winner == 1 ? SlopUI::Amber : SlopUI::Accent);
 			}
 			Flourish();
 			S->Item(LOCTEXT("Rematch", "Rematch"), [GI]() { GI->StartMatch(); });

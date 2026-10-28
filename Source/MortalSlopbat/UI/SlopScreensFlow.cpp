@@ -63,7 +63,7 @@ namespace SlopScreensFlowImpl
 		int32 Cursor[2] = {0, 1};
 		bool bLocked[2] = {false, false};
 		bool bCostume[2] = {false, false};
-		// Training: after the player's fighter, the dummy.
+		// Training and Versus CPU: after the player's fighter, the other side's.
 		bool bPickingDummy = false;
 		static constexpr int32 Cols = 3;
 
@@ -174,6 +174,7 @@ namespace SlopScreensFlowImpl
 							return Mode == EMode::Arcade ? LOCTEXT("Await", "The Slopbat's chosen await.")
 								: Mode == EMode::Survival ? LOCTEXT("Waves", "Wave after wave, until you fall.")
 								: Mode == EMode::Training ? LOCTEXT("Partner", "Then a sparring partner to practise on.")
+								: Mode == EMode::Cpu ? FText::Format(LOCTEXT("CpuSide", "Then the CPU's fighter ({0})."), FGameFlow::DifficultyName(FMath::Clamp(GI->Settings.Difficulty, 0, 2)))
 								: LOCTEXT("RivalTrials", "Your rival will stand for the trials.");
 						}
 						const FFighterDef* D = Def(Ids[Cursor[Side]]);
@@ -327,14 +328,16 @@ namespace SlopScreensFlowImpl
 				Finish([this]() { GI->StartMatch(); });
 				break;
 			case EMode::Training:
+			case EMode::Cpu:
 			default:
 				F.EndArcade();
 				F.EndSurvival();
 				F.Config = FMatchConfig();
-				F.Config.Mode = EMode::Training;
+				F.Config.Mode = Mode == EMode::Cpu ? EMode::Cpu : EMode::Training;
+				F.Config.Difficulty = FMath::Clamp(GI->Settings.Difficulty, 0, 2);
 				F.Config.P1 = P1;
 				F.Config.bCostume[0] = bCostume[0];
-				F.Config.RoundsToWin = 1;
+				F.Config.RoundsToWin = Mode == EMode::Cpu ? 2 : 1;
 				bPickingDummy = true;
 				Cursor[1] = Cursor[0];
 				break;
@@ -556,7 +559,8 @@ namespace SlopScreensFlowImpl
 		}
 		void Choose()
 		{
-			Sound(TEXT("ui_select"));
+			// The climb begins with the fighter's call, as in the original.
+			Sound(TEXT("select_fighter"));
 			const bool bCos = GI->Flow.Config.bCostume[0];
 			GI->Flow.SetNow(GI->Now());
 			GI->Flow.StartArcade(Fighter, Sel, Plan[Sel]);
@@ -640,6 +644,11 @@ namespace SlopScreensFlowImpl
 				{
 					Left = 5.2;
 				}
+			}
+			else if (C.Mode == EMode::Cpu)
+			{
+				Above = LOCTEXT("VersusCpuAbove", "Versus CPU");
+				AboveSmall = FGameFlow::DifficultyName(C.Difficulty);
 			}
 			else if (GI->Flow.InSurvival())
 			{
@@ -1260,6 +1269,7 @@ namespace SlopScreensFlowImpl
 		{
 			if (E.Action == EUi::Confirm)
 			{
+				Sound(TEXT("ui_select"));
 				if (++Page >= Pages.Num())
 				{
 					if (bFromArcade)
@@ -1328,7 +1338,7 @@ using namespace SlopScreensFlowImpl;
 
 namespace SlopScreens
 {
-	TSharedPtr<FSlopScreen> Select(EMode Mode) { return Named(MakeShared<FSelect>(Mode == EMode::Cpu ? EMode::Training : Mode), TEXT("Select")); }
+	TSharedPtr<FSlopScreen> Select(EMode Mode) { return Named(MakeShared<FSelect>(Mode), TEXT("Select")); }
 	TSharedPtr<FSlopScreen> Stage() { return Named(MakeShared<FStage>(), TEXT("Stage")); }
 	TSharedPtr<FSlopScreen> Tower(FName Fighter) { return Named(MakeShared<FTower>(Fighter), TEXT("Tower")); }
 	TSharedPtr<FSlopScreen> FaceOff() { return Named(MakeShared<FFaceOff>(), TEXT("FaceOff")); }
