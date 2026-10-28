@@ -720,6 +720,67 @@ bool FSlopAnimFrameRates::RunTest(const FString&)
 	return true;
 }
 
+// A stall (a long load, the system freezing a moment) gives the animator one long frame: its
+// springs must not diverge. Struck hard and then drawn at two frames a second, the body stays
+// together and near where it stands.
+SLOP_TEST(FSlopLongFrames, "Anim.LongFramesDoNotThrowTheBodyAbout")
+bool FSlopLongFrames::RunTest(const FString&)
+{
+	FFightSim Sim;
+	Sim.bIntro = false;
+	Sim.bTraining = true;
+	Sim.Setup(GetContent().Fighter(TEXT("ashka")), GetContent().Fighter(TEXT("bram")));
+	FAnimator A;
+	A.Setup(Sim.Fighters[0], GetContent().CommonPoses);
+	FPadState Pads[2];
+	for (int32 T = 0; T < 600 && (Sim.Phase != EPhase::Fight || T < 30); ++T)
+	{
+		Sim.Step(Pads);
+		A.SyncFromSim();
+		A.Update(1.0, 1.0 / 60.0);
+	}
+	A.Impact(1.0, 1.5, ELevel::High, false, FVector(1, 0.3, 0), true);
+	double Worst = 0.0;
+	for (int32 K = 0; K < 8; ++K)
+	{
+		for (int32 T = 0; T < 30; ++T)
+		{
+			Sim.Step(Pads);
+		}
+		A.SyncFromSim();
+		A.Update(1.0, 0.5);
+		const FVector Root = A.WorldPoint(A.Rig.J(EJoint::Hips).P);
+		for (int32 J = 0; J < (int32)EJoint::Count; ++J)
+		{
+			const FVector P = A.WorldPoint(A.Rig.Xf[J].P);
+			TestFalse(FString::Printf(TEXT("%s is a number"), JointName((EJoint)J)), P.ContainsNaN());
+			Worst = FMath::Max(Worst, (P - Root).Size());
+		}
+	}
+	TestTrue(FString::Printf(TEXT("every joint within reach of the hips (furthest %.2f m)"), Worst), Worst < 1.4);
+	// Back to ordinary frames, standing: what the blow set going has died away, so the body is
+	// nearly still from frame to frame (a diverged spring keeps it spinning).
+	FVector Last[(int32)EJoint::Count];
+	double Jump = 0.0;
+	for (int32 T = 0; T < 40; ++T)
+	{
+		Sim.Step(Pads);
+		A.SyncFromSim();
+		A.Update(1.0, 1.0 / 60.0);
+		for (int32 J = 0; J < (int32)EJoint::Count; ++J)
+		{
+			const FVector P = A.WorldPoint(A.Rig.Xf[J].P);
+			if (T > 0)
+			{
+				Jump = FMath::Max(Jump, (P - Last[J]).Size());
+			}
+			Last[J] = P;
+		}
+	}
+	TestTrue(FString::Printf(TEXT("settled afterwards (largest move of a joint in a frame %.3f m)"), Jump), Jump < 0.03);
+	return true;
+}
+
 // Walking and running play their step cycles by the distance covered, so a foot on the ground stays
 // where it was put: while a foot is planted it should hardly move across the floor (the captured
 // cycles; the sumo shuffle, the circle walk and the diver's plod are the fighters' own and logged).
