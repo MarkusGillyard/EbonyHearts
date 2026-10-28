@@ -118,6 +118,17 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   Slopbat without the loop.
   The arcade ending again shows the champion in the light beside their story (the original's
   layout; the port had shown the text alone); `-SlopEnding=<fighter>` (development) opens one.
+- **The menus against the original (2.6.3).** A line-by-line comparison of the original's UI
+  scripts with the port found 20 things a player would notice; restored: the tutorial's bars
+  and your own bar against the stranger, the title's premise lines, erasing progress, the
+  records' clears, best times, trials and unlocks, every ending listed with how to earn it, the
+  "???" clue, real-fights-only stats with Versus wins counted, Quit Arcade/Survival, the paused
+  move list switching fighter, the stage Sloptality, running and direction in the move list,
+  Confirm on the device screen, the locked sound on colours, trials done on select, tower
+  records with left and right, a Random ground, the states readout's health, meter and combo,
+  and wrapping volume. Not restored: stage pictures on the stage screen (the original's were of
+  its Godot sets; new ones would need renders of the rebuilt stages), mouse hover highlighting
+  (menus answer clicks only), and a "Loading" note before heavy screens.
 - **The camera on other screens (2.6.1).** The fight view is 30 degrees tall on every shape of
   screen now; before, Unreal held a 16:9 camera's vertical angle, so 4:3 cut the fighters off and
   Markus's 3440 x 1440 drew them a quarter smaller than the framing meant. On his display the
