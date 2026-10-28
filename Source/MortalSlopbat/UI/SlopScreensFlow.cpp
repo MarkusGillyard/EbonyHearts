@@ -162,7 +162,8 @@ namespace SlopScreensFlowImpl
 						{
 							return Mode == EMode::Arcade ? LOCTEXT("Await", "The Slopbat's chosen await.")
 								: Mode == EMode::Survival ? LOCTEXT("Waves", "Wave after wave, until you fall.")
-								: LOCTEXT("Rival", "Your rival will stand for the trials.");
+								: Mode == EMode::Training ? LOCTEXT("Partner", "Then a sparring partner to practise on.")
+								: LOCTEXT("RivalTrials", "Your rival will stand for the trials.");
 						}
 						const FFighterDef* D = Def(Ids[Cursor[Side]]);
 						FString S = D->Title + TEXT("   ·   ") + D->Style + TEXT("\n") + Json::Str(StoryOf(Ids[Cursor[Side]]), TEXT("bio"), D->Blurb);
@@ -466,7 +467,7 @@ namespace SlopScreensFlowImpl
 			if (R.Kind == TEXT("boss")) return LOCTEXT("Boss", "The Slopbat");
 			if (R.Kind == TEXT("mirror")) return LOCTEXT("Mirror", "The Reflection");
 			const FText N = FText::FromString(Def(R.Opponent)->Name);
-			return R.Kind == TEXT("rival") ? FText::Format(LOCTEXT("Rival", "{0} (rival)"), N) : N;
+			return R.Kind == TEXT("rival") ? FText::Format(LOCTEXT("RivalName", "{0} (rival)"), N) : N;
 		}
 		virtual TSharedRef<SWidget> Build() override
 		{
