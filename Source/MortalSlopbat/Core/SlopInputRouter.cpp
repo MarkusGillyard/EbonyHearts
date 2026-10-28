@@ -144,7 +144,21 @@ namespace Slop
 
 	EGlyphs FSlopInputRouter::Glyphs() const
 	{
-		if (LastUsed < (int32)EDevice::FirstPad)
+		// Before anything is pressed a connected pad decides, so the title asks for its button
+		// rather than Enter (Markus waited on "Press Enter" holding a PS4 pad).
+		int32 From = LastUsed;
+		if (!bAnyPressed)
+		{
+			for (int32 D = (int32)EDevice::FirstPad; D < NumDevices; ++D)
+			{
+				if (Devices[D].bConnected)
+				{
+					From = D;
+					break;
+				}
+			}
+		}
+		if (From < (int32)EDevice::FirstPad)
 		{
 			return EGlyphs::Keyboard;
 		}
@@ -156,7 +170,7 @@ namespace Slop
 		{
 			return EGlyphs::Xbox;
 		}
-		const FString N = Devices[LastUsed].Name;
+		const FString N = Devices[From].Name;
 		for (const TCHAR* S : {TEXT("Sony"), TEXT("PlayStation"), TEXT("PS3"), TEXT("PS4"), TEXT("PS5"), TEXT("DualSense"), TEXT("DualShock")})
 		{
 			if (N.Contains(S))
@@ -353,6 +367,7 @@ namespace Slop
 		if (Device >= 0)
 		{
 			LastUsed = Device;
+			bAnyPressed = true;
 		}
 		return HandleButton(Device, K, true, InKeyEvent.IsRepeat());
 	}
@@ -433,6 +448,7 @@ namespace Slop
 				if (Menu)
 				{
 					LastUsed = Device;
+					bAnyPressed = true;
 					PushUi(Menu == PadUp ? EUi::Up : Menu == PadDown ? EUi::Down : Menu == PadLeft ? EUi::Left : EUi::Right, Device, false);
 				}
 			}
@@ -453,6 +469,7 @@ namespace Slop
 			if (bNow && !bWas)
 			{
 				LastUsed = Device;
+				bAnyPressed = true;
 				S.TrigHeld |= Bit;
 				S.Pressed |= Bit;
 			}
@@ -469,6 +486,7 @@ namespace Slop
 	bool FSlopInputRouter::HandleMouseButtonDownEvent(FSlateApplication& SlateApp, const FPointerEvent& MouseEvent)
 	{
 		LastUsed = (int32)EDevice::KeyboardLeft;
+		bAnyPressed = true;
 		return false;
 	}
 

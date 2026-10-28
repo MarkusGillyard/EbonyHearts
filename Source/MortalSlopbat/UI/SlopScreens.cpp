@@ -213,7 +213,9 @@ namespace SlopScreensImpl
 							C.A = 0.55f + 0.45f * FMath::Sin(T * 3.0);
 							return FSlateColor(C);
 						})
-						.Text_Lambda([this]() { return FText::Format(LOCTEXT("Press", "Press {0}"), SlopUI::Confirm(GI->Router->Glyphs())); })
+						// Until something is pressed the game cannot know a pad connected before it started
+						// (it shares the keyboard's device until it sends input), so any button.
+						.Text_Lambda([this]() { return GI->Router->AnyPressed() ? FText::Format(LOCTEXT("Press", "Press {0}"), SlopUI::Confirm(GI->Router->Glyphs())) : LOCTEXT("PressAny", "Press any button"); })
 					]
 				]]]
 				+ SOverlay::Slot().VAlign(VAlign_Bottom).HAlign(HAlign_Right).Padding(40, 30)
@@ -225,14 +227,11 @@ namespace SlopScreensImpl
 		virtual void Tick(float Dt) override { T += Dt; }
 		virtual void OnUi(const FUiEvent& E) override
 		{
-			if (E.Action == EUi::Confirm || E.Action == EUi::Pause)
+			// Any button goes on: a back pressed here no longer quits (Quit is in the main menu).
+			if (E.Action == EUi::Confirm || E.Action == EUi::Pause || E.Action == EUi::Back || E.Action == EUi::Next || E.Action == EUi::Alt || E.Action == EUi::Reset)
 			{
 				Sound(TEXT("ui_select"));
 				GI->Goto(SlopScreens::MainMenu());
-			}
-			else if (E.Action == EUi::Back)
-			{
-				GI->Quit();
 			}
 		}
 	};

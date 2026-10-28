@@ -5,6 +5,7 @@
 
 #include "Core/SlopFlow.h"
 #include "Core/SlopSave.h"
+#include "Core/SlopInputRouter.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -435,6 +436,23 @@ bool FSlopFlowSurvival::RunTest(const FString&)
 	F.StartSurvival(TEXT("mirela"), 99);
 	F.SurvivalAdvance(100, true);
 	TestEqual("45% back after a flawless one", F.Config.P1Health, 100 + (int32)(Full * (FGameFlow::SurvivalRefill + FGameFlow::SurvivalFlawlessRefill)));
+	return true;
+}
+
+
+// Before anything is pressed, a connected pad decides the prompts: the title asks for the pad's
+// confirm button, not Enter (Markus waited on "Press Enter" holding a PS4 pad). With no pad, the
+// keyboard's.
+SLOP_TEST(FSlopGlyphsBeforeInput, "Input.ConnectedPadShowsItsButtonsFirst")
+bool FSlopGlyphsBeforeInput::RunTest(const FString&)
+{
+	FSlopSettings S;
+	TSharedRef<FSlopInputRouter> R = MakeShared<FSlopInputRouter>(S);
+	TestTrue("no pad: keyboard prompts", R->Glyphs() == EGlyphs::Keyboard);
+	R->OnConnectionChanged(FInputDeviceId::CreateFromInternalId(7), true);
+	TestTrue("a pad connected and nothing pressed: the pad's prompts", R->Glyphs() != EGlyphs::Keyboard);
+	R->OnConnectionChanged(FInputDeviceId::CreateFromInternalId(7), false);
+	TestTrue("the pad gone: keyboard prompts again", R->Glyphs() == EGlyphs::Keyboard);
 	return true;
 }
 

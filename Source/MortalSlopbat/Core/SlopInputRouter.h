@@ -73,6 +73,8 @@ namespace Slop
 		int32 ConnectedPadCount() const;
 		// The prompt style for what was used last (or what the setting forces).
 		EGlyphs Glyphs() const;
+		// Whether anything has been pressed yet (a pad connected before launch is unknown until then).
+		bool AnyPressed() const { return bAnyPressed; }
 		int32 LastDevice() const { return LastUsed; }
 		// Shakes the pads that play a side (in a one-player mode, the pad last used) for a moment,
 		// when vibration is on. Ticked by Tick.
@@ -118,6 +120,8 @@ namespace Slop
 		bool bCapturing = false;
 		TOptional<FCapture> Captured;
 		int32 LastUsed = 0;
+		// Nothing pressed yet: the prompts then show a connected pad's buttons, if there is one.
+		bool bAnyPressed = false;
 		void SetPadRumble(int32 Device, float Strength);
 		// Per device: when its rumble stops (0 when still).
 		double RumbleUntil[NumDevices] = {};
