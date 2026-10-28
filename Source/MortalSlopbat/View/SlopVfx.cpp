@@ -264,6 +264,12 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 		Burst(K, FVector(E.Point.X, E.Point.Y, 0.2), 10, K == EKind::Dust ? 1.4 : 3.0, 0.25, K == EKind::Dust ? 0.07 : 0.025);
 		break;
 	}
+	case EEvent::Parry:
+		// A caught blow: a quick pale ring and a flash where the guard met it.
+		Spawn(EKind::Ring, P, FVector::ZeroVector, 0.14, 0.12, 4.0, 0, 0);
+		Flash(P, FLinearColor(0.85f, 0.92f, 1.f), 5.f);
+		Burst(EKind::Pale, P, 6, 1.8, 0.22, 0.015);
+		break;
 	case EEvent::ThrowBreak:
 	{
 		// Two grips torn apart: a quick flash between them.

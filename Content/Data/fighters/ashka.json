@@ -736,6 +736,34 @@
 				]
 			}
 		},
+		"shin_check": {
+			"name": "Shin Check",
+			"kind": "special",
+			"startup": 2,
+			"active": 0,
+			"recovery": 0,
+			"total": 22,
+			"level": "none",
+			"effects": {
+				"parry": {
+					"frames": [2, 14],
+					"stun": 22,
+					"levels": ["low"],
+					"damage": 30
+				}
+			},
+			"anim": {
+				"keys": [
+					[3, "ashka_check", "snap"],
+					[15, "ashka_check", "linear"],
+					[22, "stance", "inout"]
+				]
+			},
+			"tags": ["counter"],
+			"sfx": {
+				"swing": "whoosh_light"
+			}
+		},
 		"ashka_teep": {
 			"name": "Teep",
 			"startup": 8,
@@ -894,6 +922,10 @@
 		[
 			"F+LK",
 			"ashka_teep"
+		],
+		[
+			"B,D+LK",
+			"shin_check"
 		]
 	],
 	"finisher": {
@@ -921,6 +953,9 @@
 		"anti_air": [
 			"rising_knee",
 			"uppercut"
+		],
+		"checks": [
+			"shin_check"
 		],
 		"combos": [
 			[

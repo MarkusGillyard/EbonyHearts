@@ -673,7 +673,7 @@ namespace Slop
 			Emit(E);
 			return;
 		}
-		if (!P && D.State == EState::Move && D.Move && D.Move->bParry && (Level == ELevel::High || Level == ELevel::Mid || Level == ELevel::Overhead))
+		if (!P && D.State == EState::Move && D.Move && D.Move->bParry && D.Move->Parries(Level))
 		{
 			if (D.MF >= D.Move->ParryFrames.X && D.MF <= D.Move->ParryFrames.Y)
 			{
@@ -689,6 +689,14 @@ namespace Slop
 				FSimEvent E = Ev(EEvent::Parry, D.Index, A.Index);
 				E.Move = M.Id;
 				E.Point = C.Point;
+				E.Level = Level;
+				const int32 Sting = FMath::Min(D.Move->ParryDamage, A.Health - 1);
+				if (Sting > 0)
+				{
+					A.Health -= Sting;
+					A.DamageTaken += Sting;
+					E.Damage = Sting;
+				}
 				Emit(E);
 				return;
 			}

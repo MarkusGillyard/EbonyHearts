@@ -215,6 +215,14 @@ namespace Slop
 		// --- Reactions to what has been seen ---
 		if (Seen.State == EState::Move && SM && SM->IsAttack() && Seen.MF <= SM->LastActive() && Dist < 2.4)
 		{
+			// A low coming with time to answer it, and a check that catches lows (the fighter's
+			// "checks", Ashka's shin check): sometimes take it instead of crouching to block.
+			const TArray<TSharedPtr<FJsonValue>>* Checks = AiArr(TEXT("checks"));
+			if (Checks && Checks->Num() > 0 && M.State != EState::Air && SM->Level == ELevel::Low && Seen.MF + 2 < SM->Startup && Rng.FRand() < L.Block * 0.35)
+			{
+				Intent.Command(Notation(FName(*(*Checks)[0]->AsString())));
+				return Intent.Next(M.Facing);
+			}
 			if (M.State != EState::Air && Rng.FRand() < L.Block)
 			{
 				BlockT = FMath::Max(8, SM->LastActive() - Seen.MF + 10);

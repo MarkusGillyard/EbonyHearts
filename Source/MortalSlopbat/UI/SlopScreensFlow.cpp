@@ -802,6 +802,25 @@ namespace SlopScreensFlowImpl
 			Rows.Reset();
 			auto Frames = [](const FMoveDef& M)
 			{
+				// A parry lists what it catches and when; anything else that strikes nothing (a
+				// buff, a step) only how long it takes.
+				if (M.bParry)
+				{
+					TArray<FString> Lv;
+					for (ELevel L : {ELevel::High, ELevel::Mid, ELevel::Low, ELevel::Overhead})
+					{
+						if (M.Parries(L))
+						{
+							Lv.Add(LevelName(L));
+						}
+					}
+					return FString::Printf(TEXT("parry   catches %s on frames %d-%d   total %d%s"), *FString::Join(Lv, TEXT(", ")), M.ParryFrames.X, M.ParryFrames.Y, M.Total,
+						M.ParryDamage > 0 ? *FString::Printf(TEXT("   stings %d"), M.ParryDamage) : TEXT(""));
+				}
+				if (!M.IsAttack() && !M.Projectile.bHas && !M.Throw.bHas)
+				{
+					return FString::Printf(TEXT("total %d frames"), M.Total);
+				}
 				const int32 Hit = M.HitAdvantage();
 				return FString::Printf(TEXT("%s   %d dmg   startup %d  active %d  recovery %d   on block %+d   on hit %s"),
 					LevelName(M.Level), M.Damage + (M.Throw.bHas ? M.Throw.Damage : 0) + (M.Projectile.bHas ? M.Projectile.Damage : 0), M.Startup, M.Active, M.Recovery,

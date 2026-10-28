@@ -443,6 +443,14 @@ namespace Slop
 				M.ParryFrames = FIntPoint((int32)Fr.X, (int32)Fr.Y);
 				M.ParryStun = Int(Pr, TEXT("stun"), 34);
 				M.ParryCounter = FName(*Str(Pr, TEXT("counter")));
+				M.ParryDamage = Int(Pr, TEXT("damage"), 0);
+				if (const TArray<TSharedPtr<FJsonValue>>* Lv = Arr(Pr, TEXT("levels")))
+				{
+					for (const TSharedPtr<FJsonValue>& V : *Lv)
+					{
+						M.ParryLevels.AddUnique(ParseLevel(V->AsString()));
+					}
+				}
 			}
 			M.bAirKnock = Bool(FX, TEXT("air_knock"), false);
 			M.StageInput = Str(FX, TEXT("input"), TEXT("D,D,D+LP"));

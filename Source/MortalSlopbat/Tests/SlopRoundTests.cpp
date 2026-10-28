@@ -178,6 +178,69 @@ bool FSlopRoundRestart::RunTest(const FString&)
 	return true;
 }
 
+// Ashka's shin check (back, down + low kick) catches a low: the kicker is stung and left open, and
+// she moves first. It does nothing against a high blow, which goes through it.
+SLOP_TEST(FSlopRoundShinCheck, "Rounds.ShinCheckCatchesLowsOnly")
+bool FSlopRoundShinCheck::RunTest(const FString&)
+{
+	const FFighterDef* Ashka = Real(TEXT("ashka"));
+	if (!TestNotNull("ashka", Ashka))
+	{
+		return false;
+	}
+	TSharedPtr<FFighterDef> A = FSimHarness::DummyDef(TEXT("a"));
+	const FMoveDef* Check = Ashka->Move(TEXT("shin_check"));
+	if (!TestNotNull("shin check", Check))
+	{
+		return false;
+	}
+	{
+		FSimHarness H(A.Get(), Ashka);
+		H.Place(2.5);
+		H.Motion(1, {R, D}, LK);
+		TestEqual("back, down + low kick starts the check", H.MoveId(1), FName(TEXT("shin_check")));
+	}
+	{
+		FSimHarness H(A.Get(), Ashka);
+		H.Place(0.85);
+		const FMoveDef* Sweep = H.F(0).Def->Move(TEXT("sweep"));
+		if (!TestNotNull("sweep", Sweep))
+		{
+			return false;
+		}
+		H.F(0).StartMove(*Sweep);
+		H.F(1).StartMove(*Check);
+		H.Idle(14);
+		TestEqual("the check catches a sweep", H.Count(EEvent::Parry), 1);
+		TestEqual("and is not hit by it", H.Count(EEvent::Hit), 0);
+		TestEqual("the kicker is stung", H.F(0).Health, H.F(0).Def->Health - 30);
+		int32 Free[2] = {-1, -1};
+		for (int32 T = 0; T < 90 && (Free[0] < 0 || Free[1] < 0); ++T)
+		{
+			H.Idle(1);
+			for (int32 I = 0; I < 2; ++I)
+			{
+				if (Free[I] < 0 && H.F(I).IsActionable())
+				{
+					Free[I] = T;
+				}
+			}
+		}
+		TestTrue(FString::Printf(TEXT("Ashka moves first (free at %d, the kicker at %d)"), Free[1], Free[0]), Free[1] >= 0 && Free[1] < Free[0]);
+	}
+	{
+		FSimHarness H(A.Get(), Ashka);
+		H.Place(0.85);
+		H.F(1).StartMove(*Check);
+		H.Idle(2);
+		H.Step(0, HP);
+		H.Idle(8);
+		TestEqual("a high punch is not caught", H.Count(EEvent::Parry), 0);
+		TestEqual("it lands", H.Count(EEvent::Hit), 1);
+	}
+	return true;
+}
+
 SLOP_TEST(FSlopRoundParryArmor, "Rounds.ParryCountersAndArmourAbsorbs")
 bool FSlopRoundParryArmor::RunTest(const FString&)
 {

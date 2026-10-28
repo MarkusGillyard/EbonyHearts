@@ -145,6 +145,11 @@ namespace Slop
 		FIntPoint ParryFrames = FIntPoint(3, 20);
 		int32 ParryStun = 34;
 		FName ParryCounter;
+		// The levels it catches (none listed: high, mid and overhead), and the damage a catch does
+		// the attacker (a shin check stings the kicking leg; it never ends a round).
+		TArray<ELevel> ParryLevels;
+		int32 ParryDamage = 0;
+		bool Parries(ELevel L) const { return ParryLevels.Num() > 0 ? ParryLevels.Contains(L) : (L == ELevel::High || L == ELevel::Mid || L == ELevel::Overhead); }
 		bool bAirKnock = false;
 		FString StageInput;
 		FName StageId;
