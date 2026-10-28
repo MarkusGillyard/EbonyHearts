@@ -292,6 +292,19 @@
 			]
 		},
 		{
+			"name": "Three Drives",
+			"steps": [
+				"F,F+HP",
+				"F,F+HP",
+				"F,F+HP"
+			],
+			"moves": [
+				"bram_drive",
+				"bram_drive",
+				"bram_drive"
+			]
+		},
+		{
 			"name": "Signal Flare",
 			"steps": [
 				"D,B+HP"

@@ -83,7 +83,7 @@ Yards also has a stage finisher (D,D,D+LP up close).
 Markus's playthrough of 2.6.1 found two infinites inherited from the original's data, both now
 closed, with tests that repeat every special inside its cancel window (`Combat.Combo.*`).
 
-- **Ashka's elbow loop (saved: Markus wants another fighter to have it).** Elbow Rush (forward,
+- **Ashka's elbow loop (now Bram's, bounded: see below).** Elbow Rush (forward,
   forward + low punch) has a cancel window on frames 11-20 once it lands, and a cancel may start
   any special, itself included. It starts in 9 frames, travels 1.5 m and leaves 24 frames of
   hitstun, so a second rush cancelled from the first lands well inside the first one's hitstun,
@@ -94,6 +94,13 @@ closed, with tests that repeat every special inside its cancel window (`Combat.C
   `"cancel": [11, 20]`, `"hitstun": 24`, `"startup": 9`, a forward `motion`) and
   `"self_cancels": N` for at most N + 1 rushes in a row; damage scaling (to 40 % from the
   third hit) and the run meter are the only other limits, so N decides how far it goes.
+  Since 2.6.7 it is **Bram's Prize Ring Drive** (forward, forward + high punch): a stepping
+  straight right with Elbow Rush's timing (9 frames to start, 1.3 m forward, 24 of hitstun, a
+  cancel window on frames 11-20 once it lands) and `"self_cancels": 2`, so three drives in a row
+  and no more, for about 160 damage; on block it is 7 frames short before the push. A boxer
+  driving his man back behind straight rights suits him better than the others: Gorm's charge
+  has armour (a loop on it could not be answered), Bull Rush knocks down, and Nix, Mirela and
+  Hollis have no rush. His CPU strings it, and his trials end with Three Drives.
 - **Mirela's Keen.** It dazes for 70 frames and she is free 31 frames after it lands, so it
   landed again inside its own daze. Now a fighter is dazed once per combo; another dazing hit
   in the same combo is an ordinary one (at most 20 frames of hitstun). Hollis's dazing bubble

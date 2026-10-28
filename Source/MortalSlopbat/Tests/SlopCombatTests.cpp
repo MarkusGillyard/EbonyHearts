@@ -803,6 +803,51 @@ bool FSlopNoCancelLoop::RunTest(const FString&)
 	return true;
 }
 
+// A special allowed to cancel into itself (Bram's Prize Ring Drive, the string that was Ashka's
+// loop) strings exactly its self_cancels + 1 in a row, never more, mid-stage and at the edge.
+SLOP_TEST(FSlopSelfCancelBound, "Combat.Combo.SelfCancelsAreBounded")
+bool FSlopSelfCancelBound::RunTest(const FString&)
+{
+	int32 Found = 0;
+	for (const FName& Id : FContent::Roster())
+	{
+		const FFighterDef* D = GetContent().Fighter(Id);
+		for (const FCommand& C : D->Commands)
+		{
+			const FMoveDef* M = D->Move(C.Move);
+			if (!M || M->SelfCancels <= 0)
+			{
+				continue;
+			}
+			++Found;
+			for (const bool bEdge : {false, true})
+			{
+				FSimHarness H(D, GetContent().Fighter(TEXT("gorm")));
+				H.Place(0.8, bEdge ? FFightSim::StageHalf - 0.6 : 0.0);
+				int32 Longest = 0;
+				FPadIntent Intent;
+				for (int32 T = 0; T < 60 * 15; ++T)
+				{
+					// As the loop tests: the command again every seven ticks, so some land inside
+					// the cancel window.
+					if (T % 7 == 0 && !Intent.Busy())
+					{
+						Intent.Command(C.Text);
+					}
+					const FPadState P = Intent.Busy() ? Intent.Next(H.F(0).Facing) : FPadState();
+					H.Step(P.Dirs, P.Pressed);
+					Longest = FMath::Max(Longest, H.F(1).ComboHits);
+					H.F(1).Health = H.F(1).MaxHealth();
+				}
+				UE_LOG(LogSlop, Display, TEXT("%s %s repeated%s: longest combo %d"), *Id.ToString(), *M->Id.ToString(), bEdge ? TEXT(" at the edge") : TEXT(""), Longest);
+				TestEqual(FString::Printf(TEXT("%s %s (%s)%s strings its %d repeats"), *Id.ToString(), *M->Id.ToString(), *C.Text, bEdge ? TEXT(" at the edge") : TEXT(""), M->SelfCancels), Longest, M->SelfCancels + 1);
+			}
+		}
+	}
+	TestTrue("some special cancels into itself", Found > 0);
+	return true;
+}
+
 }
 
 #undef SLOP_TEST

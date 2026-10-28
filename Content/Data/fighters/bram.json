@@ -642,6 +642,80 @@
 				"hit": "wood"
 			}
 		},
+		"bram_drive": {
+			"name": "Prize Ring Drive",
+			"kind": "special",
+			"startup": 9,
+			"active": 4,
+			"recovery": 17,
+			"level": "mid",
+			"damage": 55,
+			"hitstun": 24,
+			"blockstun": 13,
+			"chip": 8,
+			"push_hit": 0.45,
+			"push_block": 0.55,
+			"motion": [
+				[
+					2,
+					0.05
+				],
+				[
+					10,
+					1.2
+				],
+				[
+					14,
+					1.3
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.25,
+						1.2,
+						0.5,
+						0.32
+					]
+				}
+			],
+			"cancel": [
+				11,
+				20
+			],
+			"self_cancels": 2,
+			"tags": [
+				"rush"
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						3,
+						"hp2_load",
+						"out"
+					],
+					[
+						9,
+						"hp2_hit",
+						"snap"
+					],
+					[
+						13,
+						"hp2_hit",
+						"linear"
+					],
+					[
+						30,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "medium"
+			}
+		},
 		"bull_rush": {
 			"name": "Bull Rush",
 			"startup": 10,
@@ -869,6 +943,10 @@
 			"baton_trip"
 		],
 		[
+			"F,F+HP",
+			"bram_drive"
+		],
+		[
 			"F,F+HK",
 			"bull_rush"
 		],
@@ -903,6 +981,11 @@
 				"LP",
 				"LP",
 				"HK"
+			],
+			[
+				"F,F+HP",
+				"F,F+HP",
+				"F,F+HP"
 			]
 		],
 		"weights": {}
