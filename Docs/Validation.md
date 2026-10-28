@@ -172,6 +172,15 @@ to 1,488 MB), so these runs show no leak but cannot rule out a slow one: that ne
 repeated for longer. Records: `Saved/Perf/soak-2.5.6-20261028-001904/`,
 `Saved/Perf/soak-2.6.0-20261028-010056/`.
 
+That longer run, on 2.6.2: 30 minutes of one match over and over (`SOAK_MATCH=bram,mirela,stilt_market
+Tools/perf/soak.sh`, 14 matches, Bram against Mirela at the Stilt Market, CPU on both sides).
+Resident memory rose from 1,517 MB to 1,565 MB in the first seven and a half minutes (caches,
+shaders and sounds filling) and then held at 1,565-1,567 MB for the remaining 22 minutes, about
+2 MB an hour: no leak. GPU memory settled the same way, at 1,006 MB. Its frame times are not a
+record: screenshots were rendered in the editor on the same GPU during it (370 frames over
+25 ms, where the 2.6.0 session without that had none). Record:
+`Saved/Perf/soak-2.6.2-same-20261028-111359/`.
+
 ## Packaging
 
 `package_linux Shipping` cooks with 0 errors and 0 warnings. `Tools/make_release.sh Shipping`
