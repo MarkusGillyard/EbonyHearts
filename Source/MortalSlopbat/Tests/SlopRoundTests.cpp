@@ -161,12 +161,23 @@ SLOP_TEST(FSlopRoundNoLoop, "Rounds.MatchCannotLoopForever")
 bool FSlopRoundNoLoop::RunTest(const FString&)
 {
 	TUniquePtr<FSimHarness> H = MakeMatch();
-	H->Sim.RoundNum = FFightSim::MaxRounds;
+	H->Sim.RoundNum = H->Sim.MaxRounds();
 	H->Sim.Timer = 2;
 	H->Idle(4);
 	TestTrue("after the last round the match ends without a winner", H->Until([&] { return H->Sim.Phase == EPhase::MatchEnd; }, 900));
 	const FSimEvent* E = H->Find(EEvent::MatchEnd);
 	TestTrue("no winner", E && E->Winner == -1);
+	// First to five at 4-3 after a drawn round is not over at the ninth (a fixed cap of nine
+	// ended it drawn).
+	TUniquePtr<FSimHarness> H5 = MakeMatch();
+	H5->Sim.RoundsToWin = 5;
+	H5->Sim.RoundNum = 9;
+	H5->Sim.Wins[0] = 4;
+	H5->Sim.Wins[1] = 3;
+	H5->Sim.Timer = 2;
+	H5->Idle(4);
+	TestTrue("a longer match plays on", H5->Until([&] { return H5->Sim.RoundNum == 10; }, 900));
+	TestNull("not ended", H5->Find(EEvent::MatchEnd));
 	return true;
 }
 

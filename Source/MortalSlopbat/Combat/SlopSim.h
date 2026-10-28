@@ -203,7 +203,6 @@ namespace Slop
 		static constexpr int32 RoundTicks = 90 * 60;
 		static constexpr int32 RoundEndTicks = 170;
 		static constexpr int32 FinishTicks = 420;
-		static constexpr int32 MaxRounds = 9;
 		static constexpr int32 ThrowBreakWindow = 8;
 		// Push-back share from the second hit of a combo on, and for a dial-a-combo's opener.
 		static constexpr double ComboPush = 0.35;
@@ -220,6 +219,9 @@ namespace Slop
 		int32 RoundLength = RoundTicks;
 		int32 RoundNum = 1;
 		int32 RoundsToWin = 2;
+		// Rounds after which a match nobody has won yet ends drawn: the longest match and a few
+		// drawn rounds (9 for first to two).
+		int32 MaxRounds() const { return 2 * RoundsToWin + 5; }
 		int32 Wins[2] = {0, 0};
 		int32 RoundWinner = -1;
 		FName RoundHow;

@@ -1229,7 +1229,7 @@ namespace Slop
 			return;
 		}
 		const bool bDecided = Wins[0] >= RoundsToWin || Wins[1] >= RoundsToWin;
-		if (bDecided || RoundNum >= MaxRounds)
+		if (bDecided || RoundNum >= MaxRounds())
 		{
 			MatchWinner = -1;
 			if (Wins[0] >= RoundsToWin)
