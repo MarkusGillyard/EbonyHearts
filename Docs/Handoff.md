@@ -99,7 +99,8 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   (head, torso or legs, by the nearest joint of the struck pose): the skin flushes, then bruises in
   patches that spread and darken, and a beaten head (less the torso) opens a few cuts that run
   down (the gore setting scales the blood; Off shows none; since 2.6.2 cuts, not the rash of
-  specks 2.6.0 drew on pale skin). The marks last the match (`M_CharacterSkin`'s Damage,
+  specks 2.6.0 drew on pale skin; 2.6.2 and 2.6.3 drew a few cuts on untouched fighters too,
+  fixed in 2.6.4). The marks last the match (`M_CharacterSkin`'s Damage,
   `ASlopFighterActor::TakeBlow`). Legs beaten past a third limp: standing, the weight sits back off
   the lead leg; walking, the hips drop as it takes the weight. The limp is drawn only, with walk
   speed unchanged, as the study advised for leg damage. `-SlopMarks=0.8` (development) starts a
@@ -126,8 +127,8 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   move list switching fighter, the stage Sloptality, running and direction in the move list,
   Confirm on the device screen, the locked sound on colours, trials done on select, tower
   records with left and right, a Random ground, the states readout's health, meter and combo,
-  and wrapping volume. Not restored: stage pictures on the stage screen (the original's were of
-  its Godot sets; new ones would need renders of the rebuilt stages), mouse hover highlighting
+  and wrapping volume. Since 2.6.4 the stage screen shows each ground (renders of the rebuilt sets:
+  `Tools/stage_pictures.py` has the recipe; Random tiles them). Not restored: mouse hover highlighting
   (menus answer clicks only), and a "Loading" note before heavy screens.
 - **The camera on other screens (2.6.1).** The fight view is 30 degrees tall on every shape of
   screen now; before, Unreal held a 16:9 camera's vertical angle, so 4:3 cut the fighters off and
