@@ -198,14 +198,38 @@ namespace SlopScreensImpl
 		double T = 0;
 		virtual TSharedRef<SWidget> Build() override
 		{
+			// The premise, a line at a time, as the original told it (story.json "premise").
+			TSharedRef<SVerticalBox> Premise = SNew(SVerticalBox);
+			int32 N = 0;
+			if (const TArray<TSharedPtr<FJsonValue>>* Lines = Json::Arr(GetContent().Story, TEXT("premise")))
+			{
+				for (const TSharedPtr<FJsonValue>& V : *Lines)
+				{
+					const int32 I = N++;
+					Premise->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 4)
+					[
+						SNew(STextBlock).Font(SlopUI::Body(28.f)).Text(FText::FromString(V->AsString()))
+						.ColorAndOpacity_Lambda([this, I]()
+						{
+							FLinearColor C = SlopUI::Text;
+							C.A = (float)FMath::Clamp((T - 0.6 - I * 1.1) * 0.9, 0.0, 1.0);
+							return FSlateColor(C);
+						})
+					];
+				}
+			}
+			if (N == 0)
+			{
+				Premise->AddSlot().AutoHeight().HAlign(HAlign_Center)[SlopUI::Label(LOCTEXT("Tag", "Every river in the world ends in the Sump."), 34.f, SlopUI::Dim)];
+			}
 			return SNew(SOverlay)
 				+ SOverlay::Slot()[SlopUI::Backdrop()]
 				+ SOverlay::Slot()[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SBox).WidthOverride(1920).HeightOverride(1080)
 				[
 					SNew(SVerticalBox)
-					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 300, 0, 0)[SlopUI::Title(LOCTEXT("Name", "MORTAL SLOPBAT"), 150.f, SlopUI::Accent)]
-					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 10)[SlopUI::Label(LOCTEXT("Tag", "Every river in the world ends in the Sump."), 34.f, SlopUI::Dim)]
-					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 180, 0, 0)
+					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 230, 0, 0)[SlopUI::Title(LOCTEXT("Name", "MORTAL SLOPBAT"), 150.f, SlopUI::Accent)]
+					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 40, 0, 0)[Premise]
+					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 110, 0, 0)
 					[
 						SNew(STextBlock).Font(SlopUI::Body(40.f)).ColorAndOpacity_Lambda([this]()
 						{
@@ -453,7 +477,9 @@ namespace SlopScreensImpl
 			const EMode M = P ? P->GI->Flow.Config.Mode : EMode::Arcade;
 			return M == EMode::Versus || M == EMode::Training || M == EMode::Trials;
 		});
-		S->Item(LOCTEXT("QuitToMenu", "Main Menu"), [W]()
+		const USlopGameInstance* QG = USlopGameInstance::Get();
+		const EMode QM = QG ? QG->Flow.Config.Mode : EMode::Versus;
+		S->Item(QM == EMode::Arcade ? LOCTEXT("QuitArcade", "Quit Arcade") : (QM == EMode::Survival ? LOCTEXT("QuitSurvival", "Quit Survival") : LOCTEXT("QuitToMenu", "Main Menu")), [W]()
 		{
 			if (TSharedPtr<FListScreen> P = W.Pin())
 			{

@@ -283,18 +283,24 @@ void USlopGameInstance::OnMatchFinished(const FMatchResult& R)
 	Note(FString::Printf(TEXT("Result: %s %d-%d %s, winner %d%s%s, %d s left"), *R.P1.ToString(), R.Wins[0], R.Wins[1], *R.P2.ToString(), R.Winner,
 		R.bFlawless ? TEXT(", flawless") : TEXT(""), R.Finisher.IsNone() ? TEXT("") : *(TEXT(", ") + R.Finisher.ToString()), R.TimeLeft));
 	Router->bFightActive = false;
-	Progress.Count(TEXT("matches"));
-	if (R.Winner == 0 && Flow.Config.Mode != EMode::Versus)
+	// The records count real fights, as the original did: not the tutorial, the stranger or a
+	// watched CPU match; a Versus win is a win for whichever player took it.
+	const EMode Mode = Flow.Config.Mode;
+	if (Mode != EMode::Tutorial && Mode != EMode::Stranger && Mode != EMode::Watch)
 	{
-		Progress.Count(TEXT("wins"));
-	}
-	if (!R.Finisher.IsNone())
-	{
-		Progress.Count(TEXT("finishers"));
-	}
-	if (R.bFlawless)
-	{
-		Progress.Count(TEXT("flawless"));
+		Progress.Count(TEXT("matches"));
+		if (R.Winner == 0 || (Mode == EMode::Versus && R.Winner >= 0))
+		{
+			Progress.Count(TEXT("wins"));
+		}
+		if (!R.Finisher.IsNone())
+		{
+			Progress.Count(TEXT("finishers"));
+		}
+		if (R.bFlawless)
+		{
+			Progress.Count(TEXT("flawless"));
+		}
 	}
 	Progress.Save();
 	Goto(SlopScreens::Results(R));

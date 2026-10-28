@@ -246,8 +246,13 @@ void SSlopHud::PaintBars(FSlateWindowElementList& Out, const FGeometry& G, int32
 	const FFightSim& Sim = M->Sim;
 	const FSlateBrush* W = SlopUI::Box();
 	const float BarW = 640.f, BarH = 34.f, Top = 30.f;
+	const bool bStranger = M->Config.Mode == EMode::Stranger;
 	for (int32 I = 0; I < 2; ++I)
 	{
+		if (bStranger && I == 1)
+		{
+			continue;
+		}
 		const FFighter& F = Sim.Fighters[I];
 		const float X = I == 0 ? 48.f : 1920.f - 48.f - BarW;
 		const float H = (float)F.Health / FMath::Max(1, F.MaxHealth());
@@ -279,8 +284,12 @@ void SSlopHud::PaintBars(FSlateWindowElementList& Out, const FGeometry& G, int32
 			Rect(CX - 7, RY + 1, 14, 14, bWon ? SlopUI::Amber : FLinearColor(0.15f, 0.17f, 0.15f, 1.f), Layer + 2);
 		}
 	}
-	// The timer.
-	const FText Timer = Sim.bTraining || M->Config.Mode == EMode::Stranger ? FText::FromString(TEXT("∞")) : FText::AsNumber(Sim.TimerSeconds());
+	// The timer (none against the stranger).
+	if (bStranger)
+	{
+		return;
+	}
+	const FText Timer = Sim.bTraining ? FText::FromString(TEXT("∞")) : FText::AsNumber(Sim.TimerSeconds());
 	PaintText(Out, G, Layer + 4, Timer, SlopUI::Display(64.f), FVector2D(960.f, 14.f), Sim.TimerSeconds() <= 10 && !Sim.bTraining ? SlopUI::Rust * 1.4f : SlopUI::Text, 1);
 }
 
@@ -342,10 +351,9 @@ int32 SSlopHud::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometr
 	{
 		PaintBoxes(OutDrawElements, AllottedGeometry, LayerId);
 	}
-	if (!bStranger && M->Config.Mode != EMode::Tutorial)
-	{
-		PaintBars(OutDrawElements, G, LayerId);
-	}
+	// Every mode shows the bars (the tutorial's steps talk about the health and the run meter);
+	// against the stranger only his are hidden, as in the original.
+	PaintBars(OutDrawElements, G, LayerId);
 	const int32 L = LayerId + 10;
 	if (AnnounceLife > 0.f && AnnounceT < AnnounceLife)
 	{

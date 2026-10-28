@@ -38,6 +38,8 @@ namespace SlopSettingsImpl
 		bool bFromPause;
 		int32 Tab = 0;
 		int32 Sel = 0;
+		// Erasing progress takes a second press within a few seconds.
+		double EraseArmedAt = -100.0;
 		TArray<FRow> Rows;
 		// Rebinding: which half/pad and action is waiting for a key.
 		int32 CaptureHalf = -1;
@@ -80,6 +82,13 @@ namespace SlopSettingsImpl
 				Changed(false);
 				GI->Audio->Play(TEXT("ui_move"), -4.f, 1.f, ESlopBus::Effects);
 				return true;
+			};
+			// Confirm steps up and wraps from the top back to the bottom, as in the original, so a
+			// slider can be set with one button.
+			R.Activate = [this, V, Lo, Hi, StepV]()
+			{
+				*V = *V >= Hi - 1e-6 ? Lo : FMath::Clamp(FMath::RoundToDouble((*V + StepV) * 100.0) / 100.0, Lo, Hi);
+				Changed(false);
 			};
 			return R;
 		}
@@ -260,6 +269,22 @@ namespace SlopSettingsImpl
 					GI->ApplySettings(true);
 					GI->Settings.Save();
 					GI->Notice(LOCTEXT("AllReset", "All settings reset"));
+				}));
+				// As in the original: records, unlocks, endings and the stranger's memory, on a second press.
+				Rows.Add(Action(LOCTEXT("Erase", "Erase progress (records, unlocks, endings, the stranger's memory)"), [this]()
+				{
+					if (GI->Now() - EraseArmedAt <= 4.0)
+					{
+						GI->Progress.Reset();
+						GI->Progress.Save();
+						EraseArmedAt = -100.0;
+						GI->Notice(LOCTEXT("Erased", "Progress erased"));
+					}
+					else
+					{
+						EraseArmedAt = GI->Now();
+						GI->Notice(FText::Format(LOCTEXT("EraseAgain", "Press {0} again to erase all progress"), SlopUI::Confirm(GI->Router->Glyphs())));
+					}
 				}));
 			}
 			Sel = FMath::Clamp(Sel, 0, Rows.Num() - 1);

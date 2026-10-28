@@ -171,6 +171,13 @@ namespace SlopScreensFlowImpl
 						{
 							S += TEXT("\n") + LOCTEXT("Ready", "READY").ToString();
 						}
+						if (Mode == EMode::Trials && Side == 0)
+						{
+							// How far through this fighter's trials, as the original showed.
+							const TArray<TSharedPtr<FJsonValue>>* List = Json::Arr(GetContent().Trials, *Ids[Cursor[Side]].ToString());
+							S += TEXT("\n") + FText::Format(LOCTEXT("TrialsDone", "Trials cleared: {0} of {1}"),
+								GI->Progress.TrialsDone(Ids[Cursor[Side]]).Num(), List ? List->Num() : 0).ToString();
+						}
 						if (GI->Progress.IsUnlocked(TEXT("costume:") + Ids[Cursor[Side]].ToString()))
 						{
 							S += TEXT("\n") + FText::Format(LOCTEXT("Alt", "{0}: alternate colours ({1})"),
@@ -359,6 +366,11 @@ namespace SlopScreensFlowImpl
 				{
 					bCostume[Side] = !bCostume[Side];
 					Sound(TEXT("ui_move"));
+				}
+				else
+				{
+					// Not yet earned: say so, as the original did.
+					Sound(TEXT("ui_locked"));
 				}
 				break;
 			case EUi::Back:
@@ -733,7 +745,7 @@ namespace SlopScreensFlowImpl
 					SNew(STextBlock).Font(SlopUI::Body(26.f)).ColorAndOpacity(SlopUI::Amber)
 					.Text_Lambda([this]() { return Valid() ? FText::GetEmpty() : LOCTEXT("Need", "Each player needs at least one device. Connect a controller to have one each."); })
 				],
-				[this]() { return FText::Format(LOCTEXT("DevHint", "Up and down to choose a device   ·   left and right to give it to a player   ·   {0} to go back"), SlopUI::Back(GI->Router->Glyphs())); });
+				[this]() { return FText::Format(LOCTEXT("DevHint", "Up and down to choose a device   ·   left and right to give it to a player   ·   {0} to continue   ·   {1} to go back"), SlopUI::Confirm(GI->Router->Glyphs()), SlopUI::Back(GI->Router->Glyphs())); });
 		}
 		virtual void Tick(float Dt) override
 		{
@@ -764,8 +776,8 @@ namespace SlopScreensFlowImpl
 					Sound(TEXT("ui_move"));
 				}
 				break;
+			// Confirm on any row continues, as in the original (left and right assign the rows).
 			case EUi::Confirm:
-				if (Sel == Rows.Num())
 				{
 					if (Valid())
 					{
@@ -874,6 +886,11 @@ namespace SlopScreensFlowImpl
 				Section(LOCTEXT("Finisher", "SLOPTALITY (after the deciding knockout)"));
 				const FMoveDef* M = D->Move(D->FinisherCmd.Move);
 				Rows.Add(FString::Printf(TEXT("%s|%s|%s range"), M ? *M->Name : TEXT("?"), *FCommand::Pretty(D->FinisherCmd.Text), *D->FinisherRange.ToString()));
+				// The stage's own, where there is one.
+				if (const FMoveDef* Vat = D->Move(TEXT("stage_vat")))
+				{
+					Rows.Add(FString::Printf(TEXT("%s|%s|close, at the Rendering Yards"), *Vat->Name, *FCommand::Pretty(Vat->StageInput)));
+				}
 			}
 			Section(LOCTEXT("Basics", "BASICS"));
 			for (const FCommand& C : D->Commands)
@@ -892,7 +909,9 @@ namespace SlopScreensFlowImpl
 					Rows.Add(FString::Printf(TEXT("%s|Air %s|%s"), *M->Name, *FCommand::Pretty(C.Text), *Frames(*M)));
 				}
 			}
+			Rows.Add(LOCTEXT("RunRow", "Run|Hold Run + →|empties the blue meter; it refills when you stop").ToString());
 			Section(LOCTEXT("Rules", "RULES"));
+			Rows.Add(LOCTEXT("R0", "→ is toward the opponent, ← away, whichever side you are on.||").ToString());
 			Rows.Add(LOCTEXT("R1", "Block is a button: standing block stops high, mid and overhead attacks; crouching block stops lows and mids.||").ToString());
 			Rows.Add(LOCTEXT("R2", "Throw breaks: press a punch just after being grabbed.||").ToString());
 			Rows.Add(LOCTEXT("R3", "Damage scales from the third hit of a combo; juggles end at 7 juggle points.||").ToString());
@@ -954,11 +973,16 @@ namespace SlopScreensFlowImpl
 				{
 					const int32 I = FMath::Max(0, R.IndexOfByKey(Fighter));
 					Fighter = R[(I + (E.Action == EUi::Right ? 1 : R.Num() - 1)) % R.Num()];
-					Rows.Reset();
-					Scroll = 0;
-					Sound(TEXT("ui_move"));
-					GI->RebuildScreen();
 				}
+				else if (const ASlopMatch* Mt = GI->GetMatch())
+				{
+					// Paused, between the two in the fight: your moves or the opponent's.
+					Fighter = Fighter == Mt->Config.P1 ? Mt->Config.P2 : Mt->Config.P1;
+				}
+				Rows.Reset();
+				Scroll = 0;
+				Sound(TEXT("ui_move"));
+				GI->RebuildScreen();
 				break;
 			case EUi::Back:
 			case EUi::Pause:
@@ -997,10 +1021,6 @@ namespace SlopScreensFlowImpl
 				}
 			}
 			Sel = FMath::Clamp(GI->ExtrasChoice, 0, 5);
-			if (Sel == 3 && !StrangerMet())
-			{
-				Sel = 0;
-			}
 		}
 		bool StrangerMet() const { return GI->Progress.Stranger() > 0; }
 		TArray<FText> Labels() const
@@ -1010,23 +1030,38 @@ namespace SlopScreensFlowImpl
 		}
 		FText Records() const
 		{
-			FString S;
+			FString S = FString::Printf(TEXT("Matches %d   ·   wins %d   ·   Sloptalities %d   ·   flawless victories %d\n\n"),
+				GI->Progress.Stat(TEXT("matches")), GI->Progress.Stat(TEXT("wins")), GI->Progress.Stat(TEXT("finishers")), GI->Progress.Stat(TEXT("flawless")));
+			int32 TrialsDone = 0, TrialsAll = 0;
+			TArray<FString> Colours;
 			for (const FName& Id : FContent::Roster())
 			{
 				const FFighterDef* D = Def(Id);
 				FString Line = D->Name + TEXT(":  ");
+				// Each tower: times cleared, the best time and score.
 				for (int32 T = 0; T < 3; ++T)
 				{
 					const int32 Best = GI->Progress.BestScore(Id, T);
 					const double Secs = GI->Progress.BestTime(Id, T);
-					Line += FString::Printf(TEXT("%s %s   "), *FGameFlow::DifficultyName(T).ToString(),
-						Best > 0 ? *FString::Printf(TEXT("%s (%d:%02d)"), *FText::AsNumber(Best).ToString(), (int32)Secs / 60, (int32)Secs % 60) : TEXT("—"));
+					const int32 Clears = GI->Progress.Clears(Id, T);
+					Line += FString::Printf(TEXT("%s %s   "), *FGameFlow::DifficultyName(T).ToString(), Clears > 0
+						? *FString::Printf(TEXT("%dx, best %d:%02d, %s"), Clears, (int32)Secs / 60, (int32)Secs % 60, *FText::AsNumber(Best).ToString()) : TEXT("—"));
 				}
-				Line += FString::Printf(TEXT("   survival %d   trials %d"), GI->Progress.BestSurvival(Id), GI->Progress.TrialsDone(Id).Num());
+				const int32 Done = GI->Progress.TrialsDone(Id).Num();
+				const TArray<TSharedPtr<FJsonValue>>* List = Json::Arr(GetContent().Trials, *Id.ToString());
+				const int32 All = List ? List->Num() : 0;
+				TrialsDone += Done;
+				TrialsAll += All;
+				Line += FString::Printf(TEXT("   survival %d   trials %d/%d"), GI->Progress.BestSurvival(Id), Done, All);
 				S += Line + TEXT("\n");
+				if (GI->Progress.IsUnlocked(TEXT("costume:") + Id.ToString()))
+				{
+					Colours.Add(D->Name);
+				}
 			}
-			S += FString::Printf(TEXT("\nMatches %d   ·   wins %d   ·   Sloptalities %d   ·   flawless victories %d"),
-				GI->Progress.Stat(TEXT("matches")), GI->Progress.Stat(TEXT("wins")), GI->Progress.Stat(TEXT("finishers")), GI->Progress.Stat(TEXT("flawless")));
+			S += FString::Printf(TEXT("\nTrials cleared: %d of %d"), TrialsDone, TrialsAll);
+			S += FString::Printf(TEXT("\nAlternate colours unlocked: %s"), Colours.Num() > 0 ? *FString::Join(Colours, TEXT(", ")) : TEXT("none yet (clear arcade with a fighter)"));
+			S += FString::Printf(TEXT("\nThe Roost as a versus stage: %s"), GI->Progress.IsUnlocked(TEXT("arena:roost")) ? TEXT("unlocked") : TEXT("clear arcade once"));
 			return FText::FromString(S);
 		}
 		virtual TSharedRef<SWidget> Build() override
@@ -1037,7 +1072,7 @@ namespace SlopScreensFlowImpl
 			}
 			return Frame(SNew(SConstraintCanvas)
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(120, 60, 1200, 110))[SlopUI::Title(LOCTEXT("ExtrasT", "EXTRAS"), 84.f, SlopUI::Accent)]
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(140, 260, 460, 500))[SlopUI::Menu(Labels(), [this]() { return Sel; }, [this](int32 I) { return I != 3 || StrangerMet(); }, [this](int32 I) { Sel = I; Choose(); }, 460.f, 34.f)]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(140, 260, 460, 500))[SlopUI::Menu(Labels(), [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 460.f, 34.f)]
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(700, 260, 1100, 640))
 				[
 					SlopUI::PanelBox(SNew(STextBlock).Font(SlopUI::Body(26.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Text_Lambda([this]()
@@ -1046,11 +1081,20 @@ namespace SlopScreensFlowImpl
 						{
 						case 0:
 						{
-							if (Seen.Num() == 0) return LOCTEXT("NoEndings", "Clear an arcade tower to see a fighter's ending.");
-							FString S = LOCTEXT("EndingsSeen", "Endings seen (left and right to choose, confirm to watch):\n\n").ToString();
-							for (int32 I = 0; I < Seen.Num(); ++I)
+							// Every fighter: the endings seen to choose from, the rest saying how to earn them.
+							FString S = Seen.Num() > 0 ? LOCTEXT("EndingsSeen", "Endings (left and right to choose, confirm to watch):\n\n").ToString()
+								: LOCTEXT("NoEndings", "Clear an arcade tower to see a fighter's ending.\n\n").ToString();
+							for (const FName& Id : FContent::Roster())
 							{
-								S += (I == Page ? TEXT("▶ ") : TEXT("   ")) + Def(Seen[I])->Name + TEXT("\n");
+								const FFighterDef* D = Def(Id);
+								const int32 I = Seen.IndexOfByKey(Id);
+								FString First, Rest;
+								if (!D->Name.Split(TEXT(" "), &First, &Rest))
+								{
+									First = D->Name;
+								}
+								S += I != INDEX_NONE ? (I == Page ? TEXT("▶ ") : TEXT("   ")) + D->Name + TEXT("\n")
+									: FString::Printf(TEXT("   %s: clear any arcade tower with %s\n"), *D->Name, *First);
 							}
 							return FText::FromString(S);
 						}
@@ -1066,7 +1110,7 @@ namespace SlopScreensFlowImpl
 		}
 		void Choose()
 		{
-			Sound(TEXT("ui_select"));
+			Sound(Sel == 3 && !StrangerMet() ? TEXT("ui_locked") : TEXT("ui_select"));
 			GI->ExtrasChoice = Sel == 5 ? 0 : Sel;
 			switch (Sel)
 			{
@@ -1088,8 +1132,9 @@ namespace SlopScreensFlowImpl
 		{
 			switch (E.Action)
 			{
-			case EUi::Up: Sel = Step(Sel, 6, -1, [this](int32 I) { return I != 3 || StrangerMet(); }); Sound(TEXT("ui_move")); break;
-			case EUi::Down: Sel = Step(Sel, 6, 1, [this](int32 I) { return I != 3 || StrangerMet(); }); Sound(TEXT("ui_move")); break;
+			// "???" can be chosen before the stranger is met: it gives a clue, as in the original.
+			case EUi::Up: Sel = Step(Sel, 6, -1, [](int32) { return true; }); Sound(TEXT("ui_move")); break;
+			case EUi::Down: Sel = Step(Sel, 6, 1, [](int32) { return true; }); Sound(TEXT("ui_move")); break;
 			case EUi::Left: if (Sel == 0 && Seen.Num()) Page = (Page + Seen.Num() - 1) % Seen.Num(); break;
 			case EUi::Right: if (Sel == 0 && Seen.Num()) Page = (Page + 1) % Seen.Num(); break;
 			case EUi::Confirm: Choose(); break;
