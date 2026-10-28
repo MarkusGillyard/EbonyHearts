@@ -65,6 +65,9 @@ namespace Slop
 
 		// Devices: 0 and 1 are the keyboard halves, 2.. are pads in the order they were first seen.
 		int32 PadSlotFor(FInputDeviceId Id);
+		// Development: -SlopNoPads leaves physical controllers out entirely, so scripted menu
+		// flows (which expect the two keyboard halves alone) run the same whatever is plugged in.
+		static bool IgnoresPads();
 		bool IsPadConnected(int32 Device) const;
 		FString PadName(int32 Device) const;
 		int32 ConnectedPadCount() const;

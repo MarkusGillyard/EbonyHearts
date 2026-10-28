@@ -462,6 +462,10 @@ void USlopGameInstance::Quit()
 void USlopGameInstance::OnDeviceConnection(EInputDeviceConnectionState State, FPlatformUserId User, FInputDeviceId Device)
 {
 	const bool bConnected = State == EInputDeviceConnectionState::Connected;
+	if (Slop::FSlopInputRouter::IgnoresPads())
+	{
+		return;
+	}
 	// Only the pad that came or went loses what it held; everyone else's inputs carry on.
 	Router->OnConnectionChanged(Device, bConnected);
 	Notice(bConnected ? LOCTEXT("PadOn", "Controller connected") : LOCTEXT("PadOff", "Controller disconnected"));

@@ -15,7 +15,8 @@ EXTRA="$(grep -v '^#' "$FLOW" | sed -n 2p)"
 LIMIT="$(grep -v '^#' "$FLOW" | sed -n 3p)"
 SHOTS="$ROOT/Saved/Screenshots/LinuxEditor"
 rm -f "$SHOTS"/flow_"$1"_*.png
-args=(-SlopUi="$UI" -SlopShotEvery=2 -SlopShotPrefix="flow_$1" -SlopQuitAfter="$LIMIT" -profile=autotest $EXTRA)
+# Physical pads are left out (-SlopNoPads): the scripts count menu rows for the keyboards alone.
+args=(-SlopUi="$UI" -SlopShotEvery=2 -SlopShotPrefix="flow_$1" -SlopQuitAfter="$LIMIT" -profile=autotest -SlopNoPads $EXTRA)
 SAVE="$HOME/.local/share/MortalSlopbat/UE5"
 START="$(mktemp)"
 if [ $# -ge 2 ]; then

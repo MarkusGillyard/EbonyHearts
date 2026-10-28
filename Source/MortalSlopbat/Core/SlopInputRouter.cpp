@@ -5,6 +5,8 @@
 #include "Framework/Application/SlateApplication.h"
 #include "GenericPlatform/InputDeviceRegistry.h"
 #include "Core/SlopLog.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 
 namespace Slop
 {
@@ -49,8 +51,22 @@ namespace Slop
 		return bSolo ? 0 : Settings.Assign[Device];
 	}
 
+	bool FSlopInputRouter::IgnoresPads()
+	{
+#if UE_BUILD_SHIPPING
+		return false;
+#else
+		static const bool bNoPads = FParse::Param(FCommandLine::Get(), TEXT("SlopNoPads"));
+		return bNoPads;
+#endif
+	}
+
 	int32 FSlopInputRouter::PadSlotFor(FInputDeviceId Id)
 	{
+		if (IgnoresPads())
+		{
+			return -1;
+		}
 		for (int32 D = (int32)EDevice::FirstPad; D < NumDevices; ++D)
 		{
 			if (Devices[D].Id == Id && (Devices[D].bConnected || Devices[D].Id.IsValid()))
