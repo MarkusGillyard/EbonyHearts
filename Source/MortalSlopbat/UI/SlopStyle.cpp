@@ -82,7 +82,7 @@ namespace SlopUI
 	}
 
 	TSharedRef<SWidget> Menu(const TArray<FText>& Items, TFunction<int32()> Selected, TFunction<bool(int32)> Enabled,
-		TFunction<void(int32)> OnClick, float Width, float Size)
+		TFunction<void(int32)> OnClick, float Width, float Size, TFunction<void(int32)> OnHover)
 	{
 		TSharedRef<SVerticalBox> V = SNew(SVerticalBox);
 		for (int32 I = 0; I < Items.Num(); ++I)
@@ -104,6 +104,15 @@ namespace SlopUI
 							OnClick(I);
 						}
 						return FReply::Handled();
+					})
+					// The item under the mouse becomes the selection, as in the original.
+					.OnMouseMove_Lambda([OnHover, IsOn, IsSel, I](const FGeometry&, const FPointerEvent&)
+					{
+						if (OnHover && IsOn() && !IsSel())
+						{
+							OnHover(I);
+						}
+						return FReply::Unhandled();
 					})
 					[
 						SNew(SHorizontalBox)

@@ -128,8 +128,9 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   Confirm on the device screen, the locked sound on colours, trials done on select, tower
   records with left and right, a Random ground, the states readout's health, meter and combo,
   and wrapping volume. Since 2.6.4 the stage screen shows each ground (renders of the rebuilt sets:
-  `Tools/stage_pictures.py` has the recipe; Random tiles them). Not restored: mouse hover highlighting
-  (menus answer clicks only), and a "Loading" note before heavy screens.
+  `Tools/stage_pictures.py` has the recipe; Random tiles them). Since 2.6.5 the mouse selects what it moves over (menus, the fighter grid, settings rows), with
+  the move sound. Left out on purpose: the original's "Loading" note, as a match here starts in
+  under a tenth of a second (64-85 ms first frames in Markus's session), so it would only flash.
 - **The camera on other screens (2.6.1).** The fight view is 30 degrees tall on every shape of
   screen now; before, Unreal held a 16:9 camera's vertical angle, so 4:3 cut the fighters off and
   Markus's 3440 x 1440 drew them a quarter smaller than the framing meant. On his display the

@@ -129,7 +129,7 @@ namespace SlopScreensImpl
 			Col->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 36, 0, 0)
 			[
 				SlopUI::Menu(Labels, [this]() { return Sel; }, [this](int32 I) { return !Items[I].Enabled || Items[I].Enabled(); },
-					[this](int32 I) { Sel = I; Choose(); }, 520.f, 34.f)
+					[this](int32 I) { Sel = I; Choose(); }, 520.f, 34.f, [this](int32 I) { Sel = I; Sound(TEXT("ui_move")); })
 			];
 			TSharedRef<SOverlay> O = SNew(SOverlay);
 			if (bOverlay)
@@ -305,7 +305,7 @@ namespace SlopScreensImpl
 					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(120, 80, 1200, 150)).AutoSize(true)[SlopUI::Title(LOCTEXT("Name", "MORTAL SLOPBAT"), 96.f, SlopUI::Accent)]
 					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(140, 290, 470, 700)).AutoSize(true)
 					[
-						SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 460.f, 34.f)
+						SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 460.f, 34.f, [this](int32 I) { Sel = I; Sound(TEXT("ui_move")); })
 					]
 					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(760, 330, 900, 230))
 					[

@@ -400,6 +400,15 @@ namespace SlopSettingsImpl
 					SNew(SBorder).BorderImage(SlopUI::Rounded()).Padding(FMargin(18, 6))
 					.BorderBackgroundColor_Lambda([this, I]() { return Sel == I ? FLinearColor(0.04f, 0.07f, 0.02f, 0.95f) : FLinearColor(0.01f, 0.016f, 0.013f, 0.75f); })
 					.OnMouseButtonDown_Lambda([this, I](const FGeometry&, const FPointerEvent&) { Sel = I; Press(); return FReply::Handled(); })
+					.OnMouseMove_Lambda([this, I](const FGeometry&, const FPointerEvent&)
+					{
+						if (Sel != I)
+						{
+							Sel = I;
+							Sound(TEXT("ui_move"));
+						}
+						return FReply::Unhandled();
+					})
 					[
 						SNew(SHorizontalBox)
 						+ SHorizontalBox::Slot().FillWidth(1.f)[SNew(STextBlock).Font(SlopUI::Body(28.f)).Text(R.Label).ColorAndOpacity_Lambda([this, I]() { return Sel == I ? SlopUI::Accent : SlopUI::Text; })]

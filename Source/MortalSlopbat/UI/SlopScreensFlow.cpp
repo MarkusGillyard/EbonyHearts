@@ -135,6 +135,16 @@ namespace SlopScreensFlowImpl
 					return FMargin(bOn ? 6.f : 3.f);
 				})
 				.OnMouseButtonDown_Lambda([this, I](const FGeometry&, const FPointerEvent&) { Cursor[0] = I; Confirm(0); return FReply::Handled(); })
+				.OnMouseMove_Lambda([this, I](const FGeometry&, const FPointerEvent&)
+				{
+					if (Cursor[0] != I && !bLocked[0])
+					{
+						// The figure follows the cursor (Tick).
+						Cursor[0] = I;
+						Sound(TEXT("ui_move"));
+					}
+					return FReply::Unhandled();
+				})
 				[
 					SNew(SBorder).BorderImage(SlopUI::Box()).BorderBackgroundColor(FLinearColor(0.05f, 0.07f, 0.06f, 0.92f)).Padding(0)
 					[
@@ -432,7 +442,7 @@ namespace SlopScreensFlowImpl
 			}
 			return Frame(SNew(SConstraintCanvas)
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 60, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("ChooseStage", "CHOOSE THE GROUND"), 72.f, SlopUI::Text)]]
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 300, 560, 400))[SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 560.f, 36.f)]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 300, 560, 400))[SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 560.f, 36.f, [this](int32 I) { Sel = I; Sound(TEXT("ui_move")); })]
 				// The ground itself, as the original showed it (renders of the rebuilt sets), and its words below.
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(820, 220, 940, 529))
 				[
@@ -517,7 +527,7 @@ namespace SlopScreensFlowImpl
 			}
 			return Frame(SNew(SConstraintCanvas)
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 60, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("ChooseTower", "CHOOSE YOUR TOWER"), 72.f, SlopUI::Text)]]
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 300, 520, 300))[SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 520.f, 36.f)]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 300, 520, 300))[SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 520.f, 36.f, [this](int32 I) { Sel = I; Sound(TEXT("ui_move")); })]
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(780, 260, 980, 640))
 				[
 					SlopUI::PanelBox(SNew(STextBlock).Font(SlopUI::Body(30.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Text_Lambda([this]()
@@ -1112,7 +1122,7 @@ namespace SlopScreensFlowImpl
 			}
 			return Frame(SNew(SConstraintCanvas)
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(120, 60, 1200, 110))[SlopUI::Title(LOCTEXT("ExtrasT", "EXTRAS"), 84.f, SlopUI::Accent)]
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(140, 260, 460, 500))[SlopUI::Menu(Labels(), [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 460.f, 34.f)]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(140, 260, 460, 500))[SlopUI::Menu(Labels(), [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 460.f, 34.f, [this](int32 I) { Sel = I; Sound(TEXT("ui_move")); })]
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(700, 260, 1100, 640))
 				[
 					SlopUI::PanelBox(SNew(STextBlock).Font(SlopUI::Body(26.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Text_Lambda([this]()
