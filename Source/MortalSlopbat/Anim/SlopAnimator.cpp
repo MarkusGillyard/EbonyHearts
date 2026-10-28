@@ -790,14 +790,19 @@ namespace Slop::Anim
 		}
 		if (!bFrozen && Delta > 0.0)
 		{
-			const FVector Acc = (Target - Lean) * 160.0 - LeanV * 22.0;
-			LeanV += Acc * Delta;
-			Lean += LeanV * Delta;
-			for (FVector (&S)[2] : Spring)
+			// Stepped in short slices like the follow-through, so a long frame cannot make them diverge.
+			const double Dt = FMath::Min(Delta, 0.05);
+			const int32 Steps = FMath::Max(1, FMath::CeilToInt(Dt * 240.0));
+			const double H = Dt / Steps;
+			for (int32 I = 0; I < Steps; ++I)
 			{
-				const FVector A = -S[0] * 260.0 - S[1] * 16.0;
-				S[1] += A * Delta;
-				S[0] += S[1] * Delta;
+				LeanV += ((Target - Lean) * 160.0 - LeanV * 22.0) * H;
+				Lean += LeanV * H;
+				for (FVector (&S)[2] : Spring)
+				{
+					S[1] += (-S[0] * 260.0 - S[1] * 16.0) * H;
+					S[0] += S[1] * H;
+				}
 			}
 		}
 		const double Breath = In(F.State, {EState::Idle, EState::Intro, EState::Crouch, EState::Win, EState::Block}) ? FMath::Sin(Time * Tau * 0.3) * 0.02 : 0.0;
@@ -846,9 +851,13 @@ namespace Slop::Anim
 				{
 					Target = 80.0;
 				}
-				const double Acc = (Target - AirPitch) * 80.0 - AirPitchV * 11.0;
-				AirPitchV += Acc * Delta;
-				AirPitch += AirPitchV * Delta;
+				const double Dt = FMath::Min(Delta, 0.05);
+				const int32 Steps = FMath::Max(1, FMath::CeilToInt(Dt * 240.0));
+				for (int32 I = 0; I < Steps; ++I)
+				{
+					AirPitchV += ((Target - AirPitch) * 80.0 - AirPitchV * 11.0) * (Dt / Steps);
+					AirPitch += AirPitchV * (Dt / Steps);
+				}
 			}
 			Pivot = FVector(0, 0.35 * Rig.H, 0);
 		}
