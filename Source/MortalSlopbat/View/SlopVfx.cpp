@@ -589,11 +589,60 @@ void ASlopVfx::StormStep(double Delta)
 	StormLight->SetIntensity(0.f);
 }
 
+void ASlopVfx::WhipStep()
+{
+	ASlopMatch* M = Match.Get();
+	if (!M)
+	{
+		return;
+	}
+	for (int32 I = 0; I < 2; ++I)
+	{
+		const FFighter& F = M->Sim.Fighters[I];
+		const FMoveDef* Mv = F.State == EState::Move ? F.Move : nullptr;
+		const bool bShow = Mv && Mv->Whip != FIntPoint::ZeroValue && F.MF >= Mv->Whip.X && F.MF <= Mv->Whip.Y && Mv->Hitboxes.Num() > 0 && M->Views[I];
+		if (!bShow)
+		{
+			if (WhipChain[I]) WhipChain[I]->SetVisibility(false);
+			if (WhipTip[I]) WhipTip[I]->SetVisibility(false);
+			continue;
+		}
+		if (!WhipChain[I])
+		{
+			UMaterialInterface* Steel = SolidMaterial(FLinearColor(0.35f, 0.35f, 0.33f), 0.5, 0.8, false);
+			WhipChain[I] = ProjPart(TEXT("Cylinder"), Steel);
+			WhipTip[I] = ProjPart(TEXT("Cube"), SolidMaterial(FLinearColor(0.75f, 0.8f, 0.85f), 0.3, 0.9, false));
+		}
+		const FRect& Hb = Mv->Hitboxes[0].Rect;
+		const double U = FMath::Clamp(double(F.MF - Mv->Whip.X + 1) / 3.0, 0.0, 1.0);
+		const Slop::Anim::FAnimator& A = M->Views[I]->Anim;
+		const FVector Hand = A.WorldPoint(A.Rig.HandTip(1));
+		const FVector Tip(F.Pos.X + Hb.EndX() * U * F.Facing, F.Pos.Y + Hb.Y + Hb.H * 0.5, 0.0);
+		const FVector From = WorldToUE(Hand), To = WorldToUE(Tip);
+		const FVector Span = To - From;
+		if (Span.Size() < 5.0)
+		{
+			WhipChain[I]->SetVisibility(false);
+			WhipTip[I]->SetVisibility(false);
+			continue;
+		}
+		WhipChain[I]->SetVisibility(true);
+		WhipChain[I]->SetWorldLocation((From + To) * 0.5);
+		WhipChain[I]->SetWorldRotation(FRotationMatrix::MakeFromZ(Span.GetSafeNormal()).Rotator());
+		WhipChain[I]->SetWorldScale3D(FVector(0.016, 0.016, Span.Size() / 100.0));
+		WhipTip[I]->SetVisibility(true);
+		WhipTip[I]->SetWorldLocation(To);
+		WhipTip[I]->SetWorldRotation(FRotationMatrix::MakeFromX(Span.GetSafeNormal()).Rotator());
+		WhipTip[I]->SetWorldScale3D(FVector(0.09, 0.05, 0.05));
+	}
+}
+
 void ASlopVfx::Step(double Delta)
 {
 	SyncProjectiles(Delta);
 	SoundRings();
 	StormStep(Delta);
+	WhipStep();
 	for (int32 K = 0; K < (int32)EKind::Count; ++K)
 	{
 		TArray<FParticle>& A = Parts[K];

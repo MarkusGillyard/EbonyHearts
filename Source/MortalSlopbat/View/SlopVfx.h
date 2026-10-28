@@ -69,6 +69,13 @@ private:
 	// The Storm Shroud's telegraph: a green light swelling over the charge with slime bursting
 	// off the body, then thunder, a flash and lightning while it is live.
 	void StormStep(double Delta);
+	// A chain whipped out to a move's reach (moves with a "whip" range: Nix's Undertow), as the
+	// original drew it: from the hand to the far end of the hitbox, paid out over three frames.
+	void WhipStep();
+	UPROPERTY()
+	TObjectPtr<UStaticMeshComponent> WhipChain[2];
+	UPROPERTY()
+	TObjectPtr<UStaticMeshComponent> WhipTip[2];
 	UPROPERTY()
 	TObjectPtr<UPointLightComponent> StormLight;
 	int32 StormFired = -1;
