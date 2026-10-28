@@ -3,7 +3,7 @@
     source Tools/ue.sh && SLOP_IMPORT_ONLY=audio,materials editor_py "$PROJ_DIR/Tools/import_assets.py"
 
 SLOP_IMPORT_ONLY (comma list of steps: audio, materials, fighters, surfaces, props,
-stages, slots, portraits) limits the run; without it every step runs. `slots` gives the imported fighters and
+stages, slots, portraits, stagepics) limits the run; without it every step runs. `slots` gives the imported fighters and
 stages their material instances; run it in a second editor session after importing them (edits
 made in the session that imported a mesh do not stick).
 
@@ -271,7 +271,10 @@ def skin_damage(m, col, pre):
     t2 = sub(m, const(m, 0.78, x0 + 2400, y0 + 1100), bk, x0 + 2550, y0 + 1120)
     cut = sat(m, mul(m, sub(m, sites, t2, x0 + 2700, y0 + 1000), const(m, 10.0, x0 + 2700, y0 + 1060), x0 + 2850, y0 + 1000), x0 + 3000, y0 + 1000)
     drip = sat(m, mul(m, sub(m, drips, const(m, 0.4, x0 + 2700, y0 + 1180), x0 + 2850, y0 + 1120), const(m, 5.0, x0 + 2850, y0 + 1180), x0 + 3000, y0 + 1120), x0 + 3150, y0 + 1120)
-    blood = mul(m, cut, drip, x0 + 3150, y0 + 1040)
+    # Nothing at all until there is damage to bleed from: the sites' threshold alone sat under the
+    # noise's peaks, so 2.6.2 drew a few cuts on fighters never touched.
+    opened = sat(m, mul(m, bk, const(m, 25.0, x0 + 3000, y0 + 1240), x0 + 3150, y0 + 1240), x0 + 3300, y0 + 1240)
+    blood = mul(m, mul(m, cut, drip, x0 + 3150, y0 + 1040), opened, x0 + 3300, y0 + 1040)
     blood_col = expr(m, unreal.MaterialExpressionConstant3Vector, x0 + 2850, y0 + 1180)
     blood_col.set_editor_property("constant", unreal.LinearColor(0.16, 0.012, 0.01, 1.0))
     marked = lerp(m, bruised, blood_col, mul(m, blood, const(m, 0.9, x0 + 3000, y0 + 1180), x0 + 3150, y0 + 1160), x0 + 3300, y0 + 800)
@@ -1061,6 +1064,24 @@ def slots():
     fighters(import_meshes=False)
 
 
+def stagepics():
+    """SourceArt/StagePictures/<id>.png (Tools/stage_pictures.py) -> /Game/Slop/UI/T_stage_<id>,
+    the stage screen's pictures."""
+    root = os.path.join(SRC, "StagePictures")
+    n = 0
+    for f in sorted(os.listdir(root)) if os.path.isdir(root) else []:
+        if not f.endswith(".png"):
+            continue
+        tex = import_as(os.path.join(root, f), "/Game/Slop/UI", "T_stage_" + f[:-4])
+        if tex:
+            tex.set_editor_property("lod_group", unreal.TextureGroup.TEXTUREGROUP_UI)
+            tex.set_editor_property("mip_gen_settings", unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
+            tex.set_editor_property("never_stream", True)
+            EAL.save_loaded_asset(tex)
+            n += 1
+    log(f"stage pictures: {n}")
+
+
 def portraits():
     """SourceArt/Portraits/<id>.png (Tools/portraits.py) -> /Game/Slop/Portraits/T_portrait_<id>."""
     root = os.path.join(SRC, "Portraits")
@@ -1081,7 +1102,7 @@ def portraits():
 def main():
     only = args()
     steps = [("audio", audio), ("materials", materials), ("fighters", fighters),
-             ("surfaces", surfaces), ("props", props), ("stages", stages), ("slots", slots), ("portraits", portraits)]
+             ("surfaces", surfaces), ("props", props), ("stages", stages), ("slots", slots), ("portraits", portraits), ("stagepics", stagepics)]
     for name, fn in steps:
         if only is None or name in only:
             log("step " + name)
