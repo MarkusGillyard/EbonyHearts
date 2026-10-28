@@ -542,6 +542,57 @@ bool FSlopBossRanged::RunTest(const FString&)
 	return true;
 }
 
+// Swept again and again, the CPU Ashka learns to lift the shin check into the next sweep, and is
+// swept no more often for it than she would be guarding low alone.
+SLOP_TEST(FSlopAshkaChecks, "AI.SweptAshkaChecksWithoutLosingHerGuard")
+bool FSlopAshkaChecks::RunTest(const FString&)
+{
+	const FFighterDef* Ashka = GetContent().Fighter(TEXT("ashka"));
+	const FFighterDef* Bram = GetContent().Fighter(TEXT("bram"));
+	if (!TestNotNull("ashka", Ashka) || !TestNotNull("bram", Bram) || !TestTrue("ashka has ai", Ashka->AI.IsValid()))
+	{
+		return false;
+	}
+	FFighterDef NoChecks = *Ashka;
+	NoChecks.AI = MakeShared<FJsonObject>(*Ashka->AI);
+	NoChecks.AI->RemoveField(TEXT("checks"));
+	int32 Swept[2] = {0, 0}, Sweeps[2] = {0, 0}, Caught[2] = {0, 0};
+	for (int32 Pass = 0; Pass < 2; ++Pass)
+	{
+		for (int32 Seed = 0; Seed < 4; ++Seed)
+		{
+			FFightSim Sim;
+			Sim.bIntro = false;
+			Sim.bTraining = true;
+			Sim.Setup(Bram, Pass == 0 ? Ashka : &NoChecks);
+			FCpuBrain Cpu(Sim, 1, 2, 300 + Seed);
+			for (int32 T = 0; T < 60 * 60; ++T)
+			{
+				// Bram sweeps whenever he can from close in, and otherwise walks in.
+				const FFighter& B = Sim.Fighters[0];
+				const double Gap = FMath::Abs(Sim.Fighters[1].Pos.X - B.Pos.X);
+				FPadState Pads[2];
+				Pads[0] = B.IsActionable() ? (Gap < 1.2 ? FPadIntent::Pad(4, B.Facing, BtnLK, 0) : FPadIntent::Pad(6, B.Facing)) : FPadState();
+				Pads[1] = Cpu.Think();
+				Sim.Step(Pads);
+				for (const FSimEvent& E : Sim.Events)
+				{
+					Sweeps[Pass] += E.Type == EEvent::Move && E.Who == 0 && E.Move == TEXT("sweep");
+					Swept[Pass] += E.Type == EEvent::Hit && E.Who == 1 && E.Move == TEXT("sweep");
+					Caught[Pass] += E.Type == EEvent::Parry && E.Who == 1;
+				}
+			}
+		}
+	}
+	UE_LOG(LogSlop, Display, TEXT("Ashka swept %d of %d with the check, %d of %d without; %d caught"), Swept[0], Sweeps[0], Swept[1], Sweeps[1], Caught[0]);
+	TestTrue("she checks some sweeps", Caught[0] > 0);
+	TestEqual("never without a check to use", Caught[1], 0);
+	const double With = double(Swept[0]) / FMath::Max(1, Sweeps[0]);
+	const double Without = double(Swept[1]) / FMath::Max(1, Sweeps[1]);
+	TestTrue(FString::Printf(TEXT("swept no more often (%.2f of sweeps with the check, %.2f without)"), With, Without), With <= Without + 0.03);
+	return true;
+}
+
 SLOP_TEST(FSlopStranger, "AI.StrangerMemoryOnlyMovesForward")
 bool FSlopStranger::RunTest(const FString&)
 {

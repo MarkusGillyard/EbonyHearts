@@ -107,8 +107,10 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   it), Gorm's blocked thrusts push further, and Bram throws with a chancery and a cross-buttock.
   Since 2.6.0 Ashka has the shin check (back, down + low kick): a parry for lows only, frames 2-14
   of 22; it stings the kicker for 30 (never the last of a round) and leaves Ashka 2 to 14 frames
-  ahead, and a high or mid goes straight through it. The CPU Ashka sometimes checks a low she sees
-  coming. Parries now show and sound (a pale ring, a flash, the attacker thrown back off the
+  ahead, and a high or mid goes straight through it. The CPU Ashka uses it as a read, not a reaction
+  (through its delay a low is already out when seen): swept before, she lifts the shin as the
+  sweeper's low ends, into the next one. Against a fighter sweeping on every chance she is swept
+  26 % of the time with it, 32 % without (an AI test). Parries now show and sound (a pale ring, a flash, the attacker thrown back off the
   guard; until 2.6.0 Bram's Stand Down caught blows silently, as in the original), and the move
   list gives a parry's window and what it catches instead of meaningless frame data. Not played
   yet: the check's numbers are a first guess.

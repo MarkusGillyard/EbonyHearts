@@ -190,6 +190,21 @@ namespace Slop
 				return Intent.Next(M.Facing);
 			}
 		}
+		// A check that catches lows (the fighter's "checks", Ashka's shin check) is a read, not a
+		// reaction: through the CPU's delay a low is already out when it is seen. Swept before,
+		// the CPU lifts it as the sweeper's low ends (its last frames, allowing for the delay),
+		// into the next one.
+		if (const TArray<TSharedPtr<FJsonValue>>* Checks = AiArr(TEXT("checks")))
+		{
+			const FMoveDef* SL = Seen.Move;
+			const int32 Now = Seen.MF + L.React;
+			if (Checks->Num() > 0 && SL && Seen.State == EState::Move && SL->Level == ELevel::Low && Now >= SL->Total - 1 && Now <= SL->Total + 1
+				&& Dist < 1.6 && CountHitBy(TEXT("low")) >= 2 && Rng.FRand() < L.Block * 0.5)
+			{
+				Intent.Command(Notation(FName(*(*Checks)[0]->AsString())));
+				return Intent.Next(M.Facing);
+			}
+		}
 		// A stunned, dazed or reeled-in opponent (as seen) is an opening: take it.
 		if (Seen.State == EState::HitStun && (Seen.StunKind == EStun::Dazed || Seen.StunKind == EStun::Pulled || Seen.StunKind == EStun::Break)
 			&& Seen.Stun - L.React > 8 && Dist < 1.6)
@@ -215,14 +230,6 @@ namespace Slop
 		// --- Reactions to what has been seen ---
 		if (Seen.State == EState::Move && SM && SM->IsAttack() && Seen.MF <= SM->LastActive() && Dist < 2.4)
 		{
-			// A low coming with time to answer it, and a check that catches lows (the fighter's
-			// "checks", Ashka's shin check): sometimes take it instead of crouching to block.
-			const TArray<TSharedPtr<FJsonValue>>* Checks = AiArr(TEXT("checks"));
-			if (Checks && Checks->Num() > 0 && M.State != EState::Air && SM->Level == ELevel::Low && Seen.MF + 2 < SM->Startup && Rng.FRand() < L.Block * 0.35)
-			{
-				Intent.Command(Notation(FName(*(*Checks)[0]->AsString())));
-				return Intent.Next(M.Facing);
-			}
 			if (M.State != EState::Air && Rng.FRand() < L.Block)
 			{
 				BlockT = FMath::Max(8, SM->LastActive() - Seen.MF + 10);
