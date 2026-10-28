@@ -104,6 +104,18 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   the lead leg; walking, the hips drop as it takes the weight. The limp is drawn only, with walk
   speed unchanged, as the study advised for leg damage. `-SlopMarks=0.8` (development) starts a
   match with both fighters marked, to look at it.
+- **Markus's playthrough of 2.6.1 (2.6.2).** He cleared the Easy tower as Ashka in four
+  minutes, the Slopbat flawless in 24 s, on an Elbow Rush loop: it cancelled into itself inside
+  its own hitstun (29 hits for all of Nix's health). Closed, with Mirela's Keen dazing into
+  itself, and tested for every special (`Docs/Design.md`, "Loops closed"). He wants that string
+  on another fighter: `self_cancels` on a move gives it a bounded number of repeats; which
+  fighter is still his call. Also from the session: the counter-hit flash washed Hollis's dark
+  suit white (it now brightens the body's colours); the title asked for Enter while he held a pad
+  (a pad connected before launch is unknown until it sends input, so it now says "Press any
+  button"), and a back there quit the game. Two 29-30 ms frames mid-fight had the game, render
+  and GPU all at their usual times, so the stall was outside the game. The session's frame
+  record is `Saved/Perf/play-2.6.1-markus/`. Not yet played since: the Easy tower and the
+  Slopbat without the loop.
 - **The camera on other screens (2.6.1).** The fight view is 30 degrees tall on every shape of
   screen now; before, Unreal held a 16:9 camera's vertical angle, so 4:3 cut the fighters off and
   Markus's 3440 x 1440 drew them a quarter smaller than the framing meant. On his display the
