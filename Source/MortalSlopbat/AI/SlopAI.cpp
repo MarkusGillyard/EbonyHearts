@@ -257,12 +257,16 @@ namespace Slop
 				return Intent.Next(M.Facing);
 			}
 		}
-		// Punish a whiffed attack still recovering.
-		if (Seen.State == EState::Move && SM && Seen.MF > SM->LastActive() && SM->Total - Seen.MF - L.React > 14 && Dist < 1.5)
+		// Punish a whiffed attack still recovering, judged once a move, with a blow that reaches it
+		// in the time left after the delay. (The old check left a tick or two to act in, and then
+		// threw the launcher whatever the distance.)
+		if (Seen.State == EState::Move && SM && SM->IsAttack() && Seen.MF > SM->LastActive() && Seen.Tick - Seen.MF != WhiffJudged)
 		{
-			if (Rng.FRand() < L.Punish * 0.4)
+			WhiffJudged = Seen.Tick - Seen.MF;
+			const FName Best = PunisherFor(SM->Total - Seen.MF - L.React, Dist);
+			if (!Best.IsNone() && Rng.FRand() < L.Punish)
 			{
-				StartCombo(true);
+				Intent.Command(Notation(Best));
 				return Intent.Next(M.Facing);
 			}
 		}

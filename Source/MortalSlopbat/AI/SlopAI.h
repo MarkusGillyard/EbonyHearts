@@ -129,6 +129,8 @@ namespace Slop
 		// The blow last blocked (null once judged): the tick its attacker is free again, and how
 		// far apart the push leaves the two.
 		const FMoveDef* Blocked = nullptr;
+		// The start tick (as seen) of the last whiffed move judged for a punish.
+		int32 WhiffJudged = -1;
 		int32 BlockedFreeAt = 0;
 		double BlockedDist = 0.0;
 		TMap<FName, double> ReachCache;

@@ -716,6 +716,83 @@ bool FSlopPunishBlocked::RunTest(const FString&)
 	return true;
 }
 
+// Uppercuts whiffed from just out of their reach: the hard CPU punishes a fair share of them
+// (what it can reach in the time its delay leaves), with blows that reach. Before 2.6.7 it
+// punished 27 of 169, its check leaving a tick or two to act in.
+SLOP_TEST(FSlopPunishWhiffs, "AI.PunishesWhiffsWithBlowsThatReach")
+bool FSlopPunishWhiffs::RunTest(const FString&)
+{
+	const FFighterDef* Ashka = GetContent().Fighter(TEXT("ashka"));
+	const FFighterDef* Bram = GetContent().Fighter(TEXT("bram"));
+	if (!TestNotNull("ashka", Ashka) || !TestNotNull("bram", Bram))
+	{
+		return false;
+	}
+	const FString Cmd = Ashka->NotationOf(TEXT("uppercut"));
+	int32 Whiffs = 0, Punished = 0, Answers = 0, Landed = 0;
+	for (int32 Seed = 0; Seed < 4; ++Seed)
+	{
+		FFightSim Sim;
+		Sim.bIntro = false;
+		Sim.bTraining = true;
+		Sim.Setup(Ashka, Bram);
+		FCpuBrain Cpu(Sim, 1, 2, 900 + Seed);
+		FPadIntent Atk;
+		// The uppercut in play, and whether it touched anything; the CPU's answer to it.
+		bool bOut = false, bTouched = false, bAnswer = false;
+		for (int32 T = 0; T < 60 * 60; ++T)
+		{
+			// Ashka keeps 1.0-1.2 m away and throws an uppercut there, short of Bram.
+			const FFighter& A = Sim.Fighters[0];
+			const double Gap = FMath::Abs(Sim.Fighters[1].Pos.X - A.Pos.X);
+			if (!Atk.Busy() && A.IsActionable() && Gap >= 1.0 && Gap <= 1.2)
+			{
+				Atk.Command(Cmd);
+				bOut = true;
+				bTouched = false;
+			}
+			// Past its active frames, before this tick; and still long enough from its end for an
+			// answer (later ones are the CPU's own attacks, not punishes).
+			const bool bRecovering = bOut && !bTouched && A.State == EState::Move && A.Move && A.Move->Id == TEXT("uppercut") && A.MF > A.Move->LastActive();
+			const bool bTime = bRecovering && A.Move->Total - A.MF >= 10;
+			FPadState Pads[2];
+			Pads[0] = Atk.Busy() ? Atk.Next(A.Facing) : (A.IsActionable() ? FPadIntent::Pad(Gap < 1.0 ? 4 : 6, A.Facing) : FPadState());
+			Pads[1] = Cpu.Think();
+			Sim.Step(Pads);
+			for (const FSimEvent& E : Sim.Events)
+			{
+				if ((E.Type == EEvent::Hit || E.Type == EEvent::Block) && E.Who == 1 && E.Move == TEXT("uppercut"))
+				{
+					bTouched = true;
+				}
+				else if (E.Type == EEvent::Move && E.Who == 1 && bTime)
+				{
+					++Answers;
+					bAnswer = true;
+				}
+				else if (E.Type == EEvent::Hit && E.Who == 0 && (bRecovering || bAnswer))
+				{
+					++Punished;
+					Landed += bAnswer;
+					bAnswer = false;
+					bOut = false;
+				}
+			}
+			if (bOut && !(A.State == EState::Move && A.Move && A.Move->Id == TEXT("uppercut")))
+			{
+				Whiffs += !bTouched;
+				bOut = false;
+				bAnswer = false;
+			}
+		}
+	}
+	UE_LOG(LogSlop, Display, TEXT("Whiffed uppercuts: %d, punished %d; the CPU answered %d, %d of them landing"), Whiffs + Punished, Punished, Answers, Landed);
+	TestTrue("uppercuts whiffed", Whiffs + Punished >= 20);
+	TestTrue(FString::Printf(TEXT("a fair share punished (%d of %d)"), Punished, Whiffs + Punished), Punished * 4 >= Whiffs + Punished);
+	TestTrue(FString::Printf(TEXT("answers reach (%d of %d land)"), Landed, Answers), Landed * 10 >= Answers * 8);
+	return true;
+}
+
 SLOP_TEST(FSlopStranger, "AI.StrangerMemoryOnlyMovesForward")
 bool FSlopStranger::RunTest(const FString&)
 {

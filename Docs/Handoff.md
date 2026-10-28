@@ -143,7 +143,9 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   which mostly came too late. It now reads the blocked move as it lands (what is left of it after
   the guard's stun, and how far the push leaves the two apart, in a corner too) and answers with
   its heaviest blow that fits (`FCpuBrain::PunishRead`); a roundhouse at its own range is pushed
-  out of reach of everything, so it stays safe. Climbing a tower and turning an ending's page
+  out of reach of everything, so it stays safe. Since 2.6.7 a whiffed move is judged the same
+  way (once, with a blow that reaches in the time its delay leaves; the old check left it a tick
+  or two). Climbing a tower and turning an ending's page
   have their sounds again.
 - **The camera on other screens (2.6.1).** The fight view is 30 degrees tall on every shape of
   screen now; before, Unreal held a 16:9 camera's vertical angle, so 4:3 cut the fighters off and
