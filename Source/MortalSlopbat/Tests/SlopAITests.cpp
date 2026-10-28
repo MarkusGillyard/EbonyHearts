@@ -645,6 +645,77 @@ bool FSlopBramParries::RunTest(const FString&)
 	return true;
 }
 
+// A blocked uppercut thrown from close in leaves its attacker stuck in reach: the hard CPU
+// punishes that most of the time (with the heaviest blow that fits the gap and the pushback), the
+// easy one seldom. A roundhouse at its own range is pushed out of reach of everything, so it goes
+// unpunished. The CPU here guards whenever it is free, so every blow meets a guard.
+SLOP_TEST(FSlopPunishBlocked, "AI.PunishesWhatItBlocks")
+bool FSlopPunishBlocked::RunTest(const FString&)
+{
+	const FFighterDef* Ashka = GetContent().Fighter(TEXT("ashka"));
+	const FFighterDef* Bram = GetContent().Fighter(TEXT("bram"));
+	if (!TestNotNull("ashka", Ashka) || !TestNotNull("bram", Bram))
+	{
+		return false;
+	}
+	struct FCase { FName Move; double Range; int32 Level; int32 Blocked = 0; int32 Punished = 0; };
+	FCase Cases[] = {{TEXT("uppercut"), 0.7, 2}, {TEXT("uppercut"), 0.7, 0}, {TEXT("roundhouse"), 1.1, 2}};
+	for (FCase& C : Cases)
+	{
+		const FString Cmd = Ashka->NotationOf(C.Move);
+		for (int32 Seed = 0; Seed < 4; ++Seed)
+		{
+			FFightSim Sim;
+			Sim.bIntro = false;
+			Sim.bTraining = true;
+			Sim.Setup(Ashka, Bram);
+			Sim.Fighters[1].AutoBlock = TEXT("stand");
+			FCpuBrain Cpu(Sim, 1, C.Level, 700 + Seed);
+			FPadIntent Atk;
+			bool bOpen = false;
+			for (int32 T = 0; T < 60 * 60; ++T)
+			{
+				// Ashka throws the blow whenever she can from in range, and otherwise walks in.
+				const FFighter& A = Sim.Fighters[0];
+				const double Gap = FMath::Abs(Sim.Fighters[1].Pos.X - A.Pos.X);
+				if (!Atk.Busy() && A.IsActionable() && Gap < C.Range)
+				{
+					Atk.Command(Cmd);
+				}
+				FPadState Pads[2];
+				Pads[0] = Atk.Busy() ? Atk.Next(A.Facing) : (A.IsActionable() && Gap >= C.Range ? FPadIntent::Pad(6, A.Facing) : FPadState());
+				Pads[1] = Cpu.Think();
+				Sim.Step(Pads);
+				// A punish is a hit on Ashka before the blocked blow is over (the hit itself ends
+				// it, so the events come first).
+				for (const FSimEvent& E : Sim.Events)
+				{
+					if (E.Type == EEvent::Block && E.Who == 1 && E.Move == C.Move)
+					{
+						++C.Blocked;
+						bOpen = true;
+					}
+					else if (E.Type == EEvent::Hit && E.Who == 0 && bOpen)
+					{
+						++C.Punished;
+						bOpen = false;
+					}
+				}
+				if (!(A.State == EState::Move && A.Move && A.Move->Id == C.Move))
+				{
+					bOpen = false;
+				}
+			}
+		}
+		UE_LOG(LogSlop, Display, TEXT("Blocked %s punished by the level %d CPU: %d of %d"), *C.Move.ToString(), C.Level, C.Punished, C.Blocked);
+		TestTrue(FString::Printf(TEXT("%s blocked often enough to judge (%d)"), *C.Move.ToString(), C.Blocked), C.Blocked >= 20);
+	}
+	TestTrue(FString::Printf(TEXT("the hard CPU punishes most uppercuts (%d of %d)"), Cases[0].Punished, Cases[0].Blocked), Cases[0].Punished * 10 >= Cases[0].Blocked * 6);
+	TestTrue(FString::Printf(TEXT("the easy one seldom (%d of %d)"), Cases[1].Punished, Cases[1].Blocked), Cases[1].Punished * 10 <= Cases[1].Blocked * 4);
+	TestTrue(FString::Printf(TEXT("roundhouses go unpunished (%d of %d)"), Cases[2].Punished, Cases[2].Blocked), Cases[2].Punished * 10 <= Cases[2].Blocked);
+	return true;
+}
+
 SLOP_TEST(FSlopStranger, "AI.StrangerMemoryOnlyMovesForward")
 bool FSlopStranger::RunTest(const FString&)
 {

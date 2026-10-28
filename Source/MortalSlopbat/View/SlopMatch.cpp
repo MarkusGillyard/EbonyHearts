@@ -135,7 +135,7 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 	}
 	if (M == EMode::Training || M == EMode::Trials)
 	{
-		TUniquePtr<FTrainingDummy> D = MakeUnique<FTrainingDummy>(Sim, 1);
+		TUniquePtr<FTrainingDummy> D = MakeUnique<FTrainingDummy>(Sim, 1, Config.Difficulty);
 		Dummy = D.Get();
 		Brains[1] = MoveTemp(D);
 		Sim.bRefillHealth = M == EMode::Training;

@@ -95,6 +95,15 @@ namespace Slop
 		// A parry taken as a read into the attacker's next blow (see the definition); true when
 		// one was started.
 		bool ParryRead(const FFighter& M, const FSeen& Seen);
+		// A blocked blow noted as it lands, and the punish it leaves when the guard ends (see the
+		// definitions); PunishRead is true when one was started.
+		void NoteBlocked(const FFighter& M);
+		bool PunishRead(const FFighter& M);
+		// The heaviest blow that lands within Gap ticks and reaches Dist, of those this fighter can
+		// start now (none when nothing fits).
+		FName PunisherFor(int32 Gap, double Dist);
+		// Ticks from now until a move started now first hits: its inputs and a tick, then its startup.
+		int32 TicksToHit(FName MoveId) const;
 		void StartCombo(bool bPunish);
 		FPadState Finish();
 		double Reach(FName MoveId);
@@ -117,7 +126,11 @@ namespace Slop
 		int32 Walk = 5;
 		int32 WalkT = 0;
 		int32 RunT = 0;
-		bool bWasBlocking = false;
+		// The blow last blocked (null once judged): the tick its attacker is free again, and how
+		// far apart the push leaves the two.
+		const FMoveDef* Blocked = nullptr;
+		int32 BlockedFreeAt = 0;
+		double BlockedDist = 0.0;
 		TMap<FName, double> ReachCache;
 		TArray<FName> Recent;
 		// Tick at which to start an anti-air timed to meet a jump seen coming in (-1: none planned).
@@ -167,7 +180,8 @@ namespace Slop
 	{
 	public:
 		static const TArray<FString>& Modes();
-		FTrainingDummy(FFightSim& InSim, int32 InIndex);
+		// Level is the difficulty its CPU mode plays at.
+		FTrainingDummy(FFightSim& InSim, int32 InIndex, int32 InLevel = 1);
 		void NextMode() { SetMode((Mode + 1) % Modes().Num()); }
 		void SetMode(int32 M);
 		int32 GetMode() const { return Mode; }
@@ -183,6 +197,7 @@ namespace Slop
 	private:
 		FFightSim& Sim;
 		int32 Index;
+		int32 Level = 1;
 		int32 Mode = 0;
 		TUniquePtr<FCpuBrain> Cpu;
 		FRandomStream Rng;

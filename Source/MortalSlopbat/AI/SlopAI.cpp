@@ -160,12 +160,18 @@ namespace Slop
 		{
 			return Finish();
 		}
+		NoteBlocked(M);
 		if (Intent.Busy())
 		{
 			return Intent.Next(M.Facing);
 		}
 		// A blow ending as seen can be read before a held guard runs out.
 		if (ParryRead(M, Seen))
+		{
+			BlockT = 0;
+			return Intent.Next(M.Facing);
+		}
+		if (PunishRead(M))
 		{
 			BlockT = 0;
 			return Intent.Next(M.Facing);
@@ -178,7 +184,6 @@ namespace Slop
 		NoteHit(M);
 		if (!M.IsActionable() && M.State != EState::Air)
 		{
-			bWasBlocking = M.State == EState::BlockStun;
 			return FPadIntent::Pad(5, M.Facing);
 		}
 		FFighter& O = Opp();
@@ -206,18 +211,7 @@ namespace Slop
 				return Intent.Next(M.Facing);
 			}
 		}
-		// Just blocked something that is still recovering: punish it.
 		const FMoveDef* SM = Seen.Move;
-		if (bWasBlocking && Seen.State == EState::Move && SM && Seen.MF > SM->LastActive() && SM->Total - Seen.MF - L.React > 8 && Dist < 1.5)
-		{
-			bWasBlocking = false;
-			if (Rng.FRand() < L.Punish)
-			{
-				StartCombo(true);
-				return Intent.Next(M.Facing);
-			}
-		}
-		bWasBlocking = false;
 		// --- Reactions to what has been seen ---
 		if (Seen.State == EState::Move && SM && SM->IsAttack() && Seen.MF <= SM->LastActive() && Dist < 2.4)
 		{
@@ -550,6 +544,85 @@ namespace Slop
 			return false;
 		}
 		return false;
+	}
+
+	// A blocked blow is felt the moment it lands, not a reaction later, and a fighter who knows
+	// the move knows how long it leaves its attacker stuck. (The punish answered a delayed sight
+	// of the recovery before, which mostly came too late, so the CPU almost never took one.) A
+	// cancel into something else after the block makes the read wrong, as it would a player's.
+	void FCpuBrain::NoteBlocked(const FFighter& M)
+	{
+		const FFighter& O = Opp();
+		// Hit, thrown or knocked down since: the read no longer stands.
+		if (M.State != EState::BlockStun && !M.IsActionable())
+		{
+			Blocked = nullptr;
+		}
+		for (const FSimEvent& E : Sim.Events)
+		{
+			if (E.Type == EEvent::Block && E.Who == Index && E.By == 1 - Index && !E.bProj && O.State == EState::Move && O.Move && O.Move->Id == E.Move)
+			{
+				// The attacker is free once the hit-stop and the rest of the move are over. The push
+				// felt on the guard opens the distance by its whole travel (in a corner the
+				// attacker is the one pushed back).
+				Blocked = O.Move;
+				BlockedFreeAt = Sim.TickCount + O.Hitstop + (O.Move->Total - O.MF);
+				BlockedDist = FMath::Abs(O.Pos.X - M.Pos.X);
+				for (double V = FMath::Abs(M.PushV); V > 0.0; V = FMath::Max(0.0, V - M.PushDec))
+				{
+					BlockedDist += V * DT;
+				}
+			}
+		}
+	}
+
+	bool FCpuBrain::PunishRead(const FFighter& M)
+	{
+		if (!Blocked || !M.IsActionable())
+		{
+			return false;
+		}
+		Blocked = nullptr;
+		if (Rng.FRand() >= L.Punish)
+		{
+			return false;
+		}
+		// A gap too short for any blow, or pushed out of reach of all of them, is left alone.
+		const FName Best = PunisherFor(BlockedFreeAt - Sim.TickCount, BlockedDist);
+		if (Best.IsNone())
+		{
+			return false;
+		}
+		Intent.Command(Notation(Best));
+		return true;
+	}
+
+	FName FCpuBrain::PunisherFor(int32 Gap, double Dist)
+	{
+		const FFighter& M = Me();
+		FName Best;
+		int32 BestDamage = 0;
+		for (const TPair<FName, TSharedRef<FMoveDef>>& P : M.Def->Moves)
+		{
+			const FMoveDef& Mv = *P.Value;
+			if (!Mv.IsAttack() || Mv.bAir || Mv.IsThrowKind() || Mv.bParry || Mv.Projectile.bHas || Mv.Kind == EMoveKind::Chain || Mv.Kind == EMoveKind::Finisher
+				|| M.Def->NotationOf(P.Key).IsEmpty() || !M.CanUse(Mv))
+			{
+				continue;
+			}
+			if (Mv.Damage > BestDamage && TicksToHit(P.Key) <= Gap && Reach(P.Key) > Dist)
+			{
+				Best = P.Key;
+				BestDamage = Mv.Damage;
+			}
+		}
+		return Best;
+	}
+
+	int32 FCpuBrain::TicksToHit(FName MoveId) const
+	{
+		const FMoveDef* Mv = Me().Def->Move(MoveId);
+		return Mv ? FCommand::Parse(Notation(MoveId)).Steps.Num() + 1 + Mv->Startup : 999;
 	}
 
 	void FCpuBrain::NoteHit(FFighter& M)
@@ -916,7 +989,7 @@ namespace Slop
 		return Player;
 	}
 
-	FTrainingDummy::FTrainingDummy(FFightSim& InSim, int32 InIndex) : Sim(InSim), Index(InIndex)
+	FTrainingDummy::FTrainingDummy(FFightSim& InSim, int32 InIndex, int32 InLevel) : Sim(InSim), Index(InIndex), Level(FMath::Clamp(InLevel, 0, 2))
 	{
 		Rng.Initialize(77);
 	}
@@ -932,7 +1005,7 @@ namespace Slop
 		}
 		if (Modes()[Mode] == TEXT("CPU"))
 		{
-			Cpu = MakeUnique<FCpuBrain>(Sim, Index, 1);
+			Cpu = MakeUnique<FCpuBrain>(Sim, Index, Level);
 		}
 	}
 
