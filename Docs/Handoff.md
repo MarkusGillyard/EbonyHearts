@@ -116,6 +116,8 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   and GPU all at their usual times, so the stall was outside the game. The session's frame
   record is `Saved/Perf/play-2.6.1-markus/`. Not yet played since: the Easy tower and the
   Slopbat without the loop.
+  The arcade ending again shows the champion in the light beside their story (the original's
+  layout; the port had shown the text alone); `-SlopEnding=<fighter>` (development) opens one.
 - **The camera on other screens (2.6.1).** The fight view is 30 degrees tall on every shape of
   screen now; before, Unreal held a 16:9 camera's vertical angle, so 4:3 cut the fighters off and
   Markus's 3440 x 1440 drew them a quarter smaller than the framing meant. On his display the

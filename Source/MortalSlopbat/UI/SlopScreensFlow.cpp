@@ -1121,17 +1121,45 @@ namespace SlopScreensFlowImpl
 			{
 				Pages.Add(Def(Fighter)->Name);
 			}
+			// The champion in the light on the left, celebrating, and the story beside them, as
+			// the original had it (the port had shown the text alone).
+			if (ASlopShowroom* Room = GI->OpenShowroom())
+			{
+				Room->SetLayout(430, 2600, 930, 700);
+				Room->SetMood(FLinearColor(0.09f, 0.06f, 0.02f));
+				Room->SetReflection(1, false);
+				Room->Show(0, Fighter, false);
+				Room->Show(1, NAME_None, false);
+				Room->Celebrate(0);
+			}
 		}
+		virtual void Leave() override { GI->CloseShowroom(); }
+		virtual void Tick(float Dt) override { T += Dt; }
+		double T = 0.0;
+		double PageAt = 0.0;
 		virtual TSharedRef<SWidget> Build() override
 		{
-			return Frame(SNew(SConstraintCanvas)
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 120, 1920, 120))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(FText::FromString(Def(Fighter)->Name.ToUpper()), 84.f, SlopUI::Amber)]]
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(300, 380, 1320, 400))
+			// Each page joins the ones before it, fading in.
+			TSharedRef<SVerticalBox> Lines = SNew(SVerticalBox);
+			for (int32 I = 0; I <= FMath::Min(Page, Pages.Num() - 1); ++I)
+			{
+				const bool bNew = I == Page;
+				Lines->AddSlot().AutoHeight().Padding(0, 0, 0, 34)
 				[
-					SNew(STextBlock).Font(SlopUI::Body(38.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Justification(ETextJustify::Center)
-					.Text_Lambda([this]() { return Pages.IsValidIndex(Page) ? FText::FromString(Pages[Page]) : FText::GetEmpty(); })
-				],
-				[this]() { return FText::Format(LOCTEXT("EndHint", "{0} to go on"), SlopUI::Confirm(GI->Router->Glyphs())); });
+					SNew(STextBlock).Font(SlopUI::Body(34.f)).AutoWrapText(true).Text(FText::FromString(Pages[I]))
+					.ColorAndOpacity_Lambda([this, bNew]()
+					{
+						FLinearColor C = SlopUI::Text;
+						C.A = bNew ? (float)FMath::Clamp((T - PageAt) / 0.8, 0.0, 1.0) : 1.f;
+						return FSlateColor(C);
+					})
+				];
+			}
+			return Frame(SNew(SConstraintCanvas)
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(880, 0, 1040, 1080))[SNew(SImage).Image(SlopUI::Box()).ColorAndOpacity(FLinearColor(0.f, 0.f, 0.f, 0.55f))]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(940, 130, 920, 110))[SlopUI::Title(FText::FromString(Def(Fighter)->Name.ToUpper()), 76.f, SlopUI::Amber)]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(940, 290, 880, 700))[Lines],
+				[this]() { return FText::Format(LOCTEXT("EndHint", "{0} to go on"), SlopUI::Confirm(GI->Router->Glyphs())); }, false);
 		}
 		virtual void OnUi(const FUiEvent& E) override
 		{
@@ -1148,6 +1176,11 @@ namespace SlopScreensFlowImpl
 					{
 						GI->Goto(SlopScreens::Extras());
 					}
+				}
+				else
+				{
+					PageAt = T;
+					GI->RebuildScreen();
 				}
 			}
 			else if (E.Action == EUi::Back && !bFromArcade)

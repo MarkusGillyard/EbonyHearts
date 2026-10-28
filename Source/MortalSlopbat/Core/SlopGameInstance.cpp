@@ -906,6 +906,13 @@ void USlopGameInstance::DevCommandLine()
 		}
 		PoseCycleAt = Now() + 3.0;
 	}
+	// Development: -SlopEnding=<fighter> opens that fighter's arcade ending (from Extras, so it
+	// returns there), to look at endings without clearing a tower.
+	FString EndingArg;
+	if (FParse::Value(Cmd, TEXT("SlopEnding="), EndingArg) && GetContent().Fighter(FName(*EndingArg)))
+	{
+		Goto(SlopScreens::Ending(FName(*EndingArg), false));
+	}
 	FString Exec;
 	if (FParse::Value(Cmd, TEXT("SlopExec="), Exec, false))
 	{
