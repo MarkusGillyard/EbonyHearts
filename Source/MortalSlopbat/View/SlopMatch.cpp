@@ -266,6 +266,17 @@ void ASlopMatch::Tick(float DeltaSeconds)
 		V->UpdateVisual(Frac, D);
 	}
 	Camera->Step(bPaused ? 0.0 : DeltaSeconds);
+#if !UE_BUILD_SHIPPING
+	// Development: -SlopTraceCam logs both fighters and the camera every 6 ticks.
+	static const bool bTraceCam = FParse::Param(FCommandLine::Get(), TEXT("SlopTraceCam"));
+	if (bTraceCam && Sim.TickCount % 6 == 0)
+	{
+		const FVector C = Camera->GetActorLocation();
+		UE_LOG(LogSlop, Display, TEXT("Trace: t%d p0 (%.2f %.2f) %s p1 (%.2f %.2f) %s cam (%.0f %.0f %.0f) rot %s"), Sim.TickCount,
+			Sim.Fighters[0].Pos.X, Sim.Fighters[0].Pos.Y, StateName(Sim.Fighters[0].State), Sim.Fighters[1].Pos.X, Sim.Fighters[1].Pos.Y, StateName(Sim.Fighters[1].State),
+			C.X, C.Y, C.Z, *Camera->GetActorRotation().ToString());
+	}
+#endif
 	Director.Step(D);
 	Vfx->Step(D);
 	Arena->Step(D, Camera->GetActorLocation());

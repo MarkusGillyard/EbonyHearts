@@ -102,20 +102,23 @@ void ASlopFightCamera::Step(double Delta)
 		PosT = FMath::Lerp(PosT, OverridePos, K);
 		LookT = FMath::Lerp(LookT, OverrideLook, K);
 	}
-	const double W = 7.0;
-	const FVector A = (PosT - Pos) * W * W - PosV * 2.0 * W;
-	PosV += A * Delta;
-	Pos += PosV * Delta;
-	const double WL = 9.0;
-	const FVector AL = (LookT - LookAt) * WL * WL - LookV * 2.0 * WL;
-	LookV += AL * Delta;
-	LookAt += LookV * Delta;
+	// The springs are stepped in short slices: one long frame (a stall, a screenshot being saved)
+	// stepped whole made them diverge, and the camera swung about wildly until it settled.
+	const double Total = FMath::Min(Delta, 0.25);
+	const int32 N = FMath::Clamp(FMath::CeilToInt(Total * 240.0), 1, 60);
+	const double H = Total / N;
+	const double W = 7.0, WL = 9.0, WK = 22.0;
+	for (int32 I = 0; I < N; ++I)
+	{
+		PosV += ((PosT - Pos) * W * W - PosV * 2.0 * W) * H;
+		Pos += PosV * H;
+		LookV += ((LookT - LookAt) * WL * WL - LookV * 2.0 * WL) * H;
+		LookAt += LookV * H;
+		KickV += (-KickOff * WK * WK - KickV * 2.0 * WK) * H;
+		KickOff += KickV * H;
+	}
 	ShakeT += Delta;
 	Shake = FMath::Max(0.0, Shake - Delta * 0.14);
-	const double WK = 22.0;
-	const FVector AK = -KickOff * WK * WK - KickV * 2.0 * WK;
-	KickV += AK * Delta;
-	KickOff += KickV * Delta;
 	Apply();
 }
 
