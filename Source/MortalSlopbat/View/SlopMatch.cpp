@@ -629,7 +629,11 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 			A->Play(TEXT("kenney:impactSoft_heavy"), -6.f, R);
 		}
 		break;
-	case EEvent::Projectile: A->Play(TEXT("cast_") + E.Kind.ToString(), -4.f); break;
+	case EEvent::Projectile:
+		// Two kinds have no cast of their own (silent in the original too): Gorm's quake gets the
+		// ground crumbling as the wave runs out from the slap, the Slopbat's gust a far rush of air.
+		A->Play(E.Kind == TEXT("quake") ? FString(TEXT("crumble")) : E.Kind == TEXT("gust") ? FString(TEXT("far_whoosh")) : TEXT("cast_") + E.Kind.ToString(), -4.f);
+		break;
 	case EEvent::Clash: A->Play(TEXT("burst"), -2.f); break;
 	case EEvent::Jump: A->Play(Arena->Footstep, -12.f + Arena->FootstepDb, 1.1f); break;
 	case EEvent::KO: A->Play(TEXT("ko_hit"), 0.f); break;
