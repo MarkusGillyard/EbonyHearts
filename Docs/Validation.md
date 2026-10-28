@@ -58,6 +58,12 @@ whether it is felt on a real pad is unverified.
 
 ### On Markus's monitor (2.2.0)
 
+2.5.6 (commit `fb6c57c`) offscreen, unpacked fresh (checksums matched): 85 s of an arcade fight
+at 60 fps, every frame within 1 ms, no hitches, GPU 14.93 ms at a 76 % render scale, peak memory
+1,447 MB (`Saved/Perf/offscreen-2.5.6`). A four-hour watch (27 October, 17:50-21:50) of a game
+started windowed while the monitor was in standby, to see whether it resumes when the display
+returns, was inconclusive: the monitor never came back in that time.
+
 2.5.5 (commit `68340cc`) offscreen, unpacked fresh (checksums matched): 85 s of an arcade fight
 at 60 fps, every frame within 1 ms, no hitches, GPU 14.83 ms at a 75 % render scale, peak memory
 1,459 MB (`Saved/Perf/offscreen-2.5.5`).

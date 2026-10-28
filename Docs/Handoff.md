@@ -13,7 +13,7 @@ evidence behind every claim here.
 | Art | All eight fighters built from CC0 MakeHuman bodies with scripted costumes (`Tools/blender`); four stage sets built in Blender (`Tools/blender/stages`); CC0 surfaces, props, skies and sounds. |
 | Tests | Automation tests (`run_tests`), scripted flows for every mode (`Tools/playtest`), unattended packaged sessions (`Tools/perf/soak.sh`). |
 | Combat feel | 2.2.0 applies the presentation changes ranked by the study in `Docs/Martial-arts.md` (strikes, hit-stop, reactions, styles, sound) and one rule change (counter-hit freeze on the victim); frame data otherwise unchanged. 2.3.0 to 2.5.0 bring in motion capture: strikes, footwork, the block, Daxion's evade, intros and wins. |
-| Package | `MortalSlopbat-2.5.5-linux-x86_64.tar.gz` (498 MB, SHA-256 `2e3bb37ec6720957eedf5f8a6037041670f85eb8e6b8afc3bed8529d3eab0463`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `68340cc` (2.5.4 with the original's projectile looks, Storm Shroud telegraph, Nix's whip and lost effects restored, and a random pick); unpack and run `./MortalSlopbat.sh`. Earlier archives (2.0.0 to 2.5.4) are kept beside it. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
+| Package | `MortalSlopbat-2.5.6-linux-x86_64.tar.gz` (498 MB, SHA-256 `5d81ee4e54fc07287f5383ead04088982a11a9826a0d48abb44cb9843699e69f`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of commit `fb6c57c` (2.5.5 with the camera steady through stalls, cloth that swings with the body, and the animator's springs safe on long frames); unpack and run `./MortalSlopbat.sh`. Earlier archives (2.0.0 to 2.5.5) are kept beside it. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
 | Saves | Markus's own settings and progress from playing 2.1.0 are in `~/.local/share/MortalSlopbat/UE5/` (settings version 1: its default cap of 60 becomes Match the display when 2.2.0 loads it). Test runs used separate profiles, cleared afterwards. The Godot game's own files in `~/.local/share/MortalSlopbat/` are untouched. |
 
 ## Picking it up
@@ -56,6 +56,12 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   apart (the chancery had the victim's head inside Bram, the back throws clipped heads); fighters
   pushed together stay 31 cm clear. Bram's cross-buttock is the closest, at 11 cm, as it rolls the
   victim over his back.
+- **Steadiness and cloth (2.5.6).** The fight camera swung wildly after any long frame (its
+  springs were stepped whole); they now step at 240 Hz, as do the animator's lean, recoil and
+  tumble springs (a test held after a stall shows joints jumping 1.5 m a frame with the old ones).
+  Coats, gowns, the stranger's robe and Gorm's apron sway with the hips' motion through the
+  material (no cloth bones), up to 10 cm at the hem. The Storm Shroud stays unblockable, now with
+  its telegraph back.
 - **Restored from the original (2.5.5).** Comparing the port's presentation with the Godot
   scripts found features lost in the port: projectiles were all glowing spheres (now the sickle's
   blade on its chain, the harpoon on its line, the anchor, the tar glob, the faint bubble, dust for
@@ -87,8 +93,8 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   (grooms), cloth simulation and new props are not done.
 - **The Slopbat after Markus's play (2.5.1).** He found it spammy, with too many unblockables: tar
   and wind now wait between uses, and the bite can be broken, comes slower and less often. The Storm
-  Shroud is still unblockable (telegraphed, broken by a blow); making it blockable with heavy chip
-  is the next step if it still feels unfair. Not yet played since the change.
+  Shroud is still unblockable (telegraphed again since 2.5.5, broken by a blow); if it still feels
+  unfair in play, the change is to make it blockable with heavy chip. Not yet played since.
 - **The study's other rule changes.** Ashka's teep is in (forward + low kick; a combat test holds
   it), Gorm's blocked thrusts push further, and Bram throws with a chancery and a cross-buttock.
   Not done: a shin check for Ashka, optional leg damage. Each touches balance, so each needs a playtest.
