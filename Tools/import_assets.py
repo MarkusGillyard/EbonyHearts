@@ -184,7 +184,11 @@ def character_material(path="/Game/Slop/Materials/M_Character", skin=False):
     HairRoughness / HairSpecDrop (a matte floor and less specular on the hair half of a hair
     atlas, which otherwise reads as a glossy shell).
     `skin` builds M_CharacterSkin: the same graph with subsurface scattering (light through skin,
-    the engine's default profile) and Sweat, which wets the skin (smoother, a little more specular)."""
+    the engine's default profile) and Sweat, which wets the skin (smoother, a little more specular).
+    Sway (0 off; cloth slots) moves loose fabric with the body's motion: the fighter sets SwayVec
+    (world cm, from a spring on how the body moves) and SwayTop/SwaySpan (cm), and each vertex is
+    offset by SwayVec x Sway x the square of how far below SwayTop it hangs in the rest pose, so a
+    coat's tails and a gown's hem swing while the waist stays put."""
     m = fresh_material(path)
     if skin:
         m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_SUBSURFACE_PROFILE)
@@ -317,6 +321,28 @@ def character_material(path="/Game/Slop/Materials/M_Character", skin=False):
     e2 = mul(m, e1, scalar(m, "EdgeGlow", 8.0, -650, 1880), -300, 1800)
     em2 = add(m, em, e2, -100, 1200)
     output(em2, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    if not skin:
+        # Loose fabric swings with the body (see the docstring); the rest-pose height is used
+        # directly, as world position offset runs in the vertex shader.
+        z = expr(m, unreal.MaterialExpressionComponentMask, -2300, -1000)
+        for ch, on in (("r", False), ("g", False), ("b", True), ("a", False)):
+            z.set_editor_property(ch, on)
+        link(pre_v, "", z, "")
+        below_top = expr(m, unreal.MaterialExpressionSubtract, -2100, -1000)
+        link(scalar(m, "SwayTop", 95.0, -2300, -900), "", below_top, "A")
+        link(z, "", below_top, "B")
+        hang = expr(m, unreal.MaterialExpressionDivide, -1900, -1000)
+        link(below_top, "", hang, "A")
+        link(scalar(m, "SwaySpan", 70.0, -2100, -880), "", hang, "B")
+        hang01 = expr(m, unreal.MaterialExpressionSaturate, -1750, -1000)
+        link(hang, "", hang01, "")
+        w = mul(m, mul(m, hang01, hang01, -1600, -1000), scalar(m, "Sway", 0.0, -1750, -880), -1450, -980)
+        sway = vector(m, "SwayVec", (0, 0, 0, 0), -1600, -1120)
+        sway3 = expr(m, unreal.MaterialExpressionComponentMask, -1450, -1120)
+        for ch, on in (("r", True), ("g", True), ("b", True), ("a", False)):
+            sway3.set_editor_property(ch, on)
+        link(sway, "", sway3, "")
+        output(mul(m, sway3, w, -1250, -1050), "", unreal.MaterialProperty.MP_WORLD_POSITION_OFFSET)
     MEL.recompile_material(m)
     EAL.save_loaded_asset(m)
     log(path.rsplit("/", 1)[1] + " built")
@@ -618,14 +644,15 @@ SLOT_EXTRA = {
     "hairface": {"HairRoughness": 0.72, "HairSpecDrop": 0.2},
     "suit": {"ClothDetail": 1.0},
     "canvas": {"ClothDetail": 0.8},
-    "coat": {"ClothDetail": 0.6},
-    "cloth": {"ClothDetail": 0.6},
-    "gown": {"ClothDetail": 0.5},
+    "coat": {"ClothDetail": 0.6, "Sway": 1.0},
+    "cloth": {"ClothDetail": 0.6, "Sway": 0.5},
+    "gown": {"ClothDetail": 0.5, "Sway": 1.0},
     "leather": {"ClothDetail": 0.3},
-    "ashka_cloth": {"ClothDetail": 0.35},
-    # The stranger in white stays clean.
-    "daxion_cloth": {"ClothDetail": 0.15},
-    "mirela_gown": {"ClothDetail": 0.25},
+    "ashka_cloth": {"ClothDetail": 0.35, "Sway": 0.2},
+    # The stranger in white stays clean; the robe hangs long.
+    "daxion_cloth": {"ClothDetail": 0.15, "Sway": 1.0},
+    "mirela_gown": {"ClothDetail": 0.25, "Sway": 1.0},
+    "gorm_canvas": {"ClothDetail": 0.8, "Sway": 0.6},
 }
 
 

@@ -50,4 +50,11 @@ private:
 	float LastFlash = -1.f;
 	double Exertion = 0.0;
 	float LastSweat = -1.f;
+	// Loose fabric's swing (the cloth slots' Sway): a spring on the hips' motion, in metres.
+	void StepSway(double Delta);
+	FVector SwayX = FVector::ZeroVector;
+	FVector SwayV = FVector::ZeroVector;
+	FVector SwayLastP = FVector::ZeroVector;
+	FVector SwayLastV = FVector::ZeroVector;
+	bool bSwayValid = false;
 };

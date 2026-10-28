@@ -55,6 +55,9 @@ bool ASlopFighterActor::Setup(const FFighter& Fighter, const FString& MeshPath)
 	// The original's rim strengths were set for its brighter exposure and a stylised look; here, for
 	// realistic bodies, they read at three tenths.
 	SetAccent(FLinearColor(FColor::FromHex(Glow)), 0.3f * (float)Json::Num(Fighter.Def->Look, TEXT("accent"), 0.24));
+	// Cloth below the hips (in the rest pose, in centimetres) swings, more toward the hem.
+	SetScalar(TEXT("SwayTop"), float(0.53 * Anim.Rig.H * 100.0));
+	SetScalar(TEXT("SwaySpan"), float(0.45 * Anim.Rig.H * 100.0));
 	UpdateVisual(1.0, 0.0);
 	return true;
 }
@@ -81,6 +84,7 @@ void ASlopFighterActor::UpdateVisual(double Frac, double Delta)
 		LastFlash = Flash;
 	}
 	SetScalar(TEXT("Glow"), (float)Anim.Glow * 3.f);
+	StepSway(Delta);
 	if (bSweats && Anim.Fighter)
 	{
 		// About two minutes of fighting, or the health taken, brings it on fully.
@@ -93,6 +97,49 @@ void ASlopFighterActor::UpdateVisual(double Frac, double Delta)
 			LastSweat = Sweat;
 		}
 	}
+}
+
+// A coat's tails and a gown's hem lag the body: a lightly damped spring (about 1.6 Hz) driven by
+// the hips' acceleration, so walking off, stopping, a kick or a blow sets the fabric swinging.
+// Up and down counts half (cloth floats a little in a jump); the swing is held to 10 cm at the hem.
+void ASlopFighterActor::StepSway(double Delta)
+{
+	if (Delta <= 0.0)
+	{
+		return;
+	}
+	const FVector P = Anim.WorldPoint(Anim.Rig.J(Slop::Anim::EJoint::Hips).P);
+	if (!bSwayValid || (P - SwayLastP).Size() > 1.0)
+	{
+		// First frame, or a jump in place (a new round): start at rest.
+		SwayX = SwayV = SwayLastV = FVector::ZeroVector;
+		SwayLastP = P;
+		bSwayValid = true;
+		return;
+	}
+	const FVector V = (P - SwayLastP) / Delta;
+	FVector A = (V - SwayLastV) / Delta;
+	A.Y *= 0.5;
+	// A throw or a launch flings the body far harder than cloth follows: cap what drives it.
+	A = A.GetClampedToMaxSize(25.0);
+	SwayLastP = P;
+	SwayLastV = V;
+	const double W = UE_DOUBLE_TWO_PI * 1.6, Z = 0.35;
+	const int32 N = FMath::Clamp(FMath::CeilToInt(Delta * 240.0), 1, 16);
+	const double H = Delta / N;
+	for (int32 I = 0; I < N; ++I)
+	{
+		SwayV += (-W * W * SwayX - 2.0 * Z * W * SwayV - A) * H;
+		SwayX += SwayV * H;
+	}
+	const double Most = 0.1 * Anim.Rig.H / 1.8;
+	if (SwayX.Size() > Most)
+	{
+		SwayX = SwayX.GetSafeNormal() * Most;
+		SwayV *= 0.5;
+	}
+	const FVector Ue = Slop::Anim::WorldToUE(SwayX) - Slop::Anim::WorldToUE(FVector::ZeroVector);
+	SetVector(TEXT("SwayVec"), FLinearColor(Ue.X, Ue.Y, Ue.Z, 0.f));
 }
 
 void ASlopFighterActor::SetScalar(FName Param, float Value)
