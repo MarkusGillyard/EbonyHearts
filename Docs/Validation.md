@@ -58,6 +58,10 @@ whether it is felt on a real pad is unverified.
 
 ### On Markus's monitor (2.2.0)
 
+2.5.5 (commit `68340cc`) offscreen, unpacked fresh (checksums matched): 85 s of an arcade fight
+at 60 fps, every frame within 1 ms, no hitches, GPU 14.83 ms at a 75 % render scale, peak memory
+1,459 MB (`Saved/Perf/offscreen-2.5.5`).
+
 2.5.4 (commit `927ed04`) offscreen, unpacked fresh (checksums matched): 85 s of an arcade fight
 at 60 fps, every frame within 1 ms, no hitches, GPU 15.17 ms at a 76 % render scale
 (`Saved/Perf/offscreen-2.5.4`). The first run peaked at 1,739 MB; a second with the same
