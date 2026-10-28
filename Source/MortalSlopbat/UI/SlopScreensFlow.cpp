@@ -1275,10 +1275,10 @@ namespace SlopScreensFlowImpl
 				"Unreal® Engine, Copyright 1998 – 2026, Epic Games, Inc. All rights reserved.\n"
 				"Full licence texts ship with the game in the Licenses folder.");
 			return Frame(SNew(SConstraintCanvas)
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 90, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("CreditsT", "CREDITS"), 84.f, SlopUI::Accent)]]
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(240, 260, 1440, 700))
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 60, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("CreditsT", "CREDITS"), 84.f, SlopUI::Accent)]]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(200, 200, 1520, 780))
 				[
-					SNew(STextBlock).Font(SlopUI::Body(28.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Justification(ETextJustify::Center).Text(Body)
+					SNew(STextBlock).Font(SlopUI::Body(26.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true).Justification(ETextJustify::Center).Text(Body)
 				],
 				[this]() { return FText::Format(LOCTEXT("CreditsHint", "{0} to go back"), SlopUI::Back(GI->Router->Glyphs())); });
 		}
