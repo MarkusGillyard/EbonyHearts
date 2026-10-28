@@ -299,6 +299,11 @@ UStaticMeshComponent* ASlopVfx::ProjPart(const TCHAR* Shape, UMaterialInterface*
 
 UMaterialInterface* ASlopVfx::SolidMaterial(const FLinearColor& Color, double Roughness, double Metallic, bool bTar)
 {
+	const FString Key = FString::Printf(TEXT("solid:%d:%.3f,%.3f,%.3f:%.2f:%.2f"), bTar ? 1 : 0, Color.R, Color.G, Color.B, Roughness, Metallic);
+	if (const TObjectPtr<UMaterialInstanceDynamic>* Had = MatCache.Find(Key))
+	{
+		return *Had;
+	}
 	UMaterialInstanceDynamic* M = UMaterialInstanceDynamic::Create(LoadObject<UMaterialInterface>(nullptr,
 		bTar ? TEXT("/Game/Slop/Materials/M_Water.M_Water") : TEXT("/Game/Slop/Materials/M_Surface.M_Surface")), this);
 	M->SetVectorParameterValue(bTar ? TEXT("Color") : TEXT("Tint"), Color);
@@ -307,7 +312,21 @@ UMaterialInterface* ASlopVfx::SolidMaterial(const FLinearColor& Color, double Ro
 	{
 		M->SetScalarParameterValue(TEXT("Metallic"), Metallic);
 	}
-	Mats.Add(M);
+	MatCache.Add(Key, M);
+	return M;
+}
+
+UMaterialInterface* ASlopVfx::GlowMaterial(const FLinearColor& Color, float Intensity)
+{
+	const FString Key = FString::Printf(TEXT("glow:%.3f,%.3f,%.3f:%.2f"), Color.R, Color.G, Color.B, Intensity);
+	if (const TObjectPtr<UMaterialInstanceDynamic>* Had = MatCache.Find(Key))
+	{
+		return *Had;
+	}
+	UMaterialInstanceDynamic* M = UMaterialInstanceDynamic::Create(LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Slop/Materials/M_GlowAdd.M_GlowAdd")), this);
+	M->SetVectorParameterValue(TEXT("Color"), Color);
+	M->SetScalarParameterValue(TEXT("Intensity"), Intensity);
+	MatCache.Add(Key, M);
 	return M;
 }
 
@@ -331,11 +350,7 @@ void ASlopVfx::SyncProjectiles(double Delta)
 			N.Kind = P.Kind;
 			if (L.Glow > 0.f)
 			{
-				UMaterialInstanceDynamic* Mat = UMaterialInstanceDynamic::Create(LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Slop/Materials/M_GlowAdd.M_GlowAdd")), this);
-				Mat->SetVectorParameterValue(TEXT("Color"), L.Core);
-				Mat->SetScalarParameterValue(TEXT("Intensity"), L.Glow);
-				Mats.Add(Mat);
-				N.Mesh = ProjPart(TEXT("Sphere"), Mat);
+				N.Mesh = ProjPart(TEXT("Sphere"), GlowMaterial(L.Core, L.Glow));
 			}
 			UMaterialInterface* Steel = nullptr;
 			switch (L.Solid)

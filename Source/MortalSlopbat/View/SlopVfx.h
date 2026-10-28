@@ -40,6 +40,10 @@ private:
 	void SyncProjectiles(double Delta);
 	UStaticMeshComponent* ProjPart(const TCHAR* Shape, class UMaterialInterface* Material);
 	class UMaterialInterface* SolidMaterial(const FLinearColor& Color, double Roughness, double Metallic, bool bTar);
+	class UMaterialInterface* GlowMaterial(const FLinearColor& Color, float Intensity);
+	// Made once per look and shared, so a long session's projectiles do not pile up materials.
+	UPROPERTY()
+	TMap<FString, TObjectPtr<UMaterialInstanceDynamic>> MatCache;
 	TWeakObjectPtr<ASlopMatch> Match;
 	TArray<FParticle> Parts[(int32)EKind::Count];
 	UPROPERTY()
