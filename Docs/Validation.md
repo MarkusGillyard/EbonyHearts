@@ -161,6 +161,17 @@ An earlier 30-minute session on the Development package (uncapped, while builds 
 ran at a 6.7 ms median frame (about 150 FPS) with three frames over 25 ms; its memory figures led
 to the frame-cap fix below.
 
+### Unattended sessions since (2.5.6, 2.6.0)
+
+Twenty minutes each of the Shipping package (`Tools/perf/soak.sh`, fighters at random), High, 1920
+x 1080 offscreen, frame cap 60. Both held 60 FPS in every match with no frame over 25 ms (worst
+17.8 ms) and a GPU median of 9.7-10.9 ms by match. Resident memory 1,415 MB in the first tenth
+and 1,440 MB in the last for 2.5.6, 1,435 and 1,475 MB for 2.6.0; GPU memory about 1.0 to 1.06 GB
+in both. The rise follows which fighters and stages a run happens to load (per-match peaks 1,432
+to 1,488 MB), so these runs show no leak but cannot rule out a slow one: that needs one matchup
+repeated for longer. Records: `Saved/Perf/soak-2.5.6-20261028-001904/`,
+`Saved/Perf/soak-2.6.0-20261028-010056/`.
+
 ## Packaging
 
 `package_linux Shipping` cooks with 0 errors and 0 warnings. `Tools/make_release.sh Shipping`
@@ -180,6 +191,13 @@ were checked.
 
 ## Found and fixed during validation
 
+- The fight camera's view was 30 degrees tall only at 16:9: Unreal keeps the vertical angle a
+  horizontal field of view gives at the camera's own aspect (16:9 by default). At 4:3 both
+  fighters were cut off at the edges; at Markus's 3440 x 1440 they were drawn a quarter smaller
+  than the framing meant. Found rendering 4:3 for 2.6.1; the camera now carries the screen's
+  aspect, and 16:9 is unchanged.
+- The skin's new marks leaked red specks onto unhurt fighters before 2.6.0 shipped: noise with
+  two octaves runs past its 0-1 range, so a mask thresholded at 1 still showed. Clamped.
 - Every canvas-placed menu was shifted (the engine centres canvas slots by default).
 - Two material connections had silently failed (the noise in the stage glows, a vertex colour).
 - Stage meshes lost their materials (changes made in the editor session that imported them do
@@ -210,6 +228,9 @@ were checked.
 - DualSense, USB connection, rumble and reconnection on a real pad, two physical pads (above).
 - Windowed presentation timings with VSync (above).
 - Audio by ear: levels, mix and the layering were checked in code and logs only.
-- Other aspect ratios on a real display. At 1920 x 1200 (offscreen) the menus letterbox, the
+- Other aspect ratios on a real display. Offscreen: at 1920 x 1200 the menus letterbox, the
   fight camera frames both fighters and the HUD fits with a margin above and below (fixed: it
-  had run off both sides); ultrawide is Markus's own display (3440 x 1440), where every check since 2.2.0 ran; 4:3 follows the same rules but was not rendered.
+  had run off both sides); at 1440 x 1080 (4:3, since 2.6.1) the title, device and fighter-select
+  screens fit and the fight frames both fighters whole (fixed: see above); at 3440 x 1440 the
+  fighters fill the height as the framing means, with the stage around them. Markus's display
+  is 3440 x 1440; 2.6.1 is the first build drawing it that way, and nobody has looked on it yet.

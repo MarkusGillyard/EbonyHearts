@@ -103,6 +103,12 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   the lead leg; walking, the hips drop as it takes the weight. The limp is drawn only, with walk
   speed unchanged, as the study advised for leg damage. `-SlopMarks=0.8` (development) starts a
   match with both fighters marked, to look at it.
+- **The camera on other screens (2.6.1).** The fight view is 30 degrees tall on every shape of
+  screen now; before, Unreal held a 16:9 camera's vertical angle, so 4:3 cut the fighters off and
+  Markus's 3440 x 1440 drew them a quarter smaller than the framing meant. On his display the
+  fighters are therefore bigger in 2.6.1 than in any build he has played, with the stage still
+  wider around them than at 16:9. If that reads too close, the lever is `ASlopFightCamera::VFov`
+  for wide screens only.
 - **The study's other rule changes.** Ashka's teep is in (forward + low kick; a combat test holds
   it), Gorm's blocked thrusts push further, and Bram throws with a chancery and a cross-buttock.
   Since 2.6.0 Ashka has the shin check (back, down + low kick): a parry for lows only, frames 2-14
