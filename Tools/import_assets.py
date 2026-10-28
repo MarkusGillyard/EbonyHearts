@@ -176,6 +176,101 @@ def const(m, v, x, y):
     return e
 
 
+def mask(m, src, chans, x, y, so=""):
+    e = expr(m, unreal.MaterialExpressionComponentMask, x, y)
+    for ch in "rgba":
+        e.set_editor_property(ch, ch in chans)
+    link(src, so, e, "")
+    return e
+
+
+def sat(m, a, x, y):
+    e = expr(m, unreal.MaterialExpressionSaturate, x, y)
+    link(a, "", e, "")
+    return e
+
+
+def sub(m, a, b, x, y):
+    e = expr(m, unreal.MaterialExpressionSubtract, x, y)
+    link(a, "", e, "A")
+    link(b, "", e, "B")
+    return e
+
+
+def noise(m, src, scale, levels, x, y):
+    """Noise from 0 to 1. Its octaves can sum past the range, so it is clamped: a mask thresholded
+    at 1 must show nothing."""
+    e = expr(m, unreal.MaterialExpressionNoise, x, y)
+    e.set_editor_property("scale", scale)
+    e.set_editor_property("quality", 1)
+    e.set_editor_property("levels", levels)
+    e.set_editor_property("output_min", 0.0)
+    e.set_editor_property("output_max", 1.0)
+    link(src, "", e, "")
+    return sat(m, e, x + 120, y)
+
+
+def skin_damage(m, col, pre):
+    """The marks a fight leaves on skin, region by region. The fighter sets Damage (R head, G body,
+    B legs: 0 fresh to 1 beaten; A how much blood shows, from the gore setting) and NeckZ, WaistZ,
+    HeadRadius and BodyRadius (rest-pose centimetres) to split the body; the arms, out past
+    BodyRadius in the rest pose, take none. Damage first flushes the skin red, then raises soft
+    bruises in patches (noise in rest-pose space, so they ride with the body and ignore UV seams)
+    that spread to about a quarter of a region; a beaten head and torso bleed in thin streaks that
+    run downward. Returns the marked colour and the blood mask (for roughness)."""
+    x0, y0 = -3400, -1700
+    z = mask(m, pre, "b", x0, y0)
+    xy = mask(m, pre, "rg", x0, y0 + 80)
+    d2 = expr(m, unreal.MaterialExpressionDotProduct, x0 + 150, y0 + 80)
+    link(xy, "", d2, "A")
+    link(xy, "", d2, "B")
+    r = expr(m, unreal.MaterialExpressionSquareRoot, x0 + 300, y0 + 80)
+    link(d2, "", r, "")
+    neck = scalar(m, "NeckZ", 150.0, x0, y0 + 180)
+    waist = scalar(m, "WaistZ", 95.0, x0, y0 + 260)
+    head_r = scalar(m, "HeadRadius", 13.0, x0, y0 + 340)
+    body_r = scalar(m, "BodyRadius", 27.0, x0, y0 + 400)
+    # Soft edges of about three centimetres at the neck and around the head, ten at the waist.
+    above = sat(m, mul(m, sub(m, z, neck, x0 + 300, y0 + 180), const(m, 0.33, x0 + 300, y0 + 240), x0 + 450, y0 + 180), x0 + 600, y0 + 180)
+    inside = sat(m, mul(m, sub(m, head_r, r, x0 + 450, y0 + 80), const(m, 0.33, x0 + 450, y0 + 140), x0 + 600, y0 + 80), x0 + 750, y0 + 80)
+    head = mul(m, above, inside, x0 + 900, y0 + 120)
+    legs = sat(m, mul(m, sub(m, waist, z, x0 + 300, y0 + 300), const(m, 0.1, x0 + 300, y0 + 360), x0 + 450, y0 + 300), x0 + 600, y0 + 300)
+    body = sat(m, sub(m, sub(m, const(m, 1.0, x0 + 750, y0 + 200), head, x0 + 900, y0 + 220), legs, x0 + 1050, y0 + 240), x0 + 1200, y0 + 240)
+    # The torso and legs fade out over five centimetres past BodyRadius (the arms).
+    trunk = sat(m, mul(m, sub(m, body_r, r, x0 + 450, y0 + 420), const(m, 0.2, x0 + 450, y0 + 480), x0 + 600, y0 + 420), x0 + 750, y0 + 420)
+    body = mul(m, body, trunk, x0 + 1300, y0 + 300)
+    legs = mul(m, legs, trunk, x0 + 750, y0 + 340)
+    dmg = vector(m, "Damage", (0, 0, 0, 0), x0, y0 + 460)
+    k = add(m, add(m, mul(m, head, dmg, x0 + 1050, y0 + 400, "", "R"), mul(m, body, dmg, x0 + 1050, y0 + 480, "", "G"), x0 + 1200, y0 + 440),
+            mul(m, legs, dmg, x0 + 1050, y0 + 560, "", "B"), x0 + 1350, y0 + 480)
+    # A flush of red over the struck region, up to a third of the way.
+    flush_col = expr(m, unreal.MaterialExpressionConstant3Vector, x0 + 1350, y0 + 600)
+    flush_col.set_editor_property("constant", unreal.LinearColor(1.0, 0.8, 0.78, 1.0))
+    flushed = mul(m, col, lerp(m, const(m, 1.0, x0 + 1500, y0 + 560), flush_col, mul(m, k, const(m, 0.35, x0 + 1500, y0 + 700), x0 + 1650, y0 + 680), x0 + 1800, y0 + 600), x0 + 1950, y0 + 520)
+    # Bruises: soft patches of about fifteen centimetres over a threshold that falls as damage
+    # grows, to about a quarter of the region when it is fully beaten.
+    n1 = noise(m, pre, 0.065, 2, x0 + 1350, y0 + 760)
+    t1 = sub(m, const(m, 1.0, x0 + 1500, y0 + 820), mul(m, k, const(m, 0.42, x0 + 1500, y0 + 880), x0 + 1650, y0 + 860), x0 + 1800, y0 + 840)
+    bruise = sat(m, mul(m, sub(m, n1, t1, x0 + 1950, y0 + 780), const(m, 2.5, x0 + 1950, y0 + 860), x0 + 2100, y0 + 800), x0 + 2250, y0 + 800)
+    bruise_col = expr(m, unreal.MaterialExpressionConstant3Vector, x0 + 2100, y0 + 900)
+    bruise_col.set_editor_property("constant", unreal.LinearColor(0.62, 0.42, 0.48, 1.0))
+    bruised = mul(m, flushed, lerp(m, const(m, 1.0, x0 + 2250, y0 + 900), bruise_col, mul(m, bruise, const(m, 0.6, x0 + 2250, y0 + 980), x0 + 2400, y0 + 960), x0 + 2550, y0 + 900), x0 + 2700, y0 + 700)
+    # Blood: thin vertical streaks (noise squashed upright) on a beaten head, half as much on the
+    # torso, none on the legs; it starts once a region is about a third of the way gone.
+    stretch = expr(m, unreal.MaterialExpressionConstant3Vector, x0 + 1350, y0 + 1060)
+    stretch.set_editor_property("constant", unreal.LinearColor(1.0, 1.0, 0.25, 1.0))
+    n2 = noise(m, mul(m, pre, stretch, x0 + 1500, y0 + 1040), 0.3, 2, x0 + 1650, y0 + 1040)
+    where = add(m, head, mul(m, body, const(m, 0.5, x0 + 1500, y0 + 1180), x0 + 1650, y0 + 1160), x0 + 1800, y0 + 1140)
+    grown = sat(m, sub(m, mul(m, k, const(m, 1.4, x0 + 1500, y0 + 1260), x0 + 1650, y0 + 1240), const(m, 0.45, x0 + 1650, y0 + 1300), x0 + 1800, y0 + 1240), x0 + 1950, y0 + 1240)
+    bk = mul(m, mul(m, mul(m, where, grown, x0 + 2100, y0 + 1180), dmg, x0 + 2250, y0 + 1200, "", "A"), const(m, 0.4, x0 + 2250, y0 + 1280), x0 + 2400, y0 + 1220)
+    t2 = sub(m, const(m, 1.0, x0 + 2400, y0 + 1100), bk, x0 + 2550, y0 + 1120)
+    blood = sat(m, mul(m, sub(m, n2, t2, x0 + 2700, y0 + 1060), const(m, 8.0, x0 + 2700, y0 + 1140), x0 + 2850, y0 + 1080), x0 + 3000, y0 + 1080)
+    blood_col = expr(m, unreal.MaterialExpressionConstant3Vector, x0 + 2850, y0 + 1180)
+    blood_col.set_editor_property("constant", unreal.LinearColor(0.16, 0.012, 0.01, 1.0))
+    marked = lerp(m, bruised, blood_col, mul(m, blood, const(m, 0.9, x0 + 3000, y0 + 1180), x0 + 3150, y0 + 1160), x0 + 3300, y0 + 800)
+    return marked, blood
+
+
 def character_material(path="/Game/Slop/Materials/M_Character", skin=False):
     """M_Character: base colour x tint, normal, ORM; the fighter's accent rim; a hit flash; a tint
     toward a colour (the Reflection, ash, salt); a dissolve with a glowing edge (finishers).
@@ -184,7 +279,8 @@ def character_material(path="/Game/Slop/Materials/M_Character", skin=False):
     HairRoughness / HairSpecDrop (a matte floor and less specular on the hair half of a hair
     atlas, which otherwise reads as a glossy shell).
     `skin` builds M_CharacterSkin: the same graph with subsurface scattering (light through skin,
-    the engine's default profile) and Sweat, which wets the skin (smoother, a little more specular).
+    the engine's default profile) and Sweat, which wets the skin (smoother, a little more specular),
+    and the damage a fight leaves (see skin_damage).
     Sway (0 off; cloth slots) moves loose fabric with the body's motion: the fighter sets SwayVec
     (world cm, from a spring on how the body moves) and SwayTop/SwaySpan (cm), and each vertex is
     offset by SwayVec x Sway x the square of how far below SwayTop it hangs in the rest pose, so a
@@ -199,11 +295,14 @@ def character_material(path="/Game/Slop/Materials/M_Character", skin=False):
     col = mul(m, base, tint, -1100, -300, "RGB", "")
     towards = vector(m, "TintColor", (0.05, 0.08, 0.05, 1), -1100, -100)
     amount = scalar(m, "TintAmount", 0.0, -1100, 0)
-    col2 = lerp(m, col, towards, amount, -850, -200)
     # The rest-pose position exists only in the vertex shader; an interpolator carries it over.
     pre_v = expr(m, unreal.MaterialExpressionPreSkinnedPosition, -2500, -700)
     pre = expr(m, unreal.MaterialExpressionVertexInterpolator, -2300, -700)
     link(pre_v, "", pre, "")
+    blood = None
+    if skin:
+        col, blood = skin_damage(m, col, pre)
+    col2 = lerp(m, col, towards, amount, -850, -200)
     cloth_k = scalar(m, "ClothDetail", 0.0, -2300, -560)
     wear = expr(m, unreal.MaterialExpressionNoise, -2050, -700)
     wear.set_editor_property("scale", 0.025)
@@ -264,6 +363,9 @@ def character_material(path="/Game/Slop/Materials/M_Character", skin=False):
         link(mul(m, sweat, const(m, 0.5, -500, 1060), -400, 1000), "", dry, "")
         rough4 = mul(m, rough4, dry, -100, 460)
         spec = add(m, spec, mul(m, sweat, const(m, 0.15, -350, 1100), -250, 1060), -100, 600)
+        # Blood is wet: smooth and a little brighter in the highlight.
+        rough4 = lerp(m, rough4, const(m, 0.18, -100, 380), blood, 0, 460)
+        spec = add(m, spec, mul(m, blood, const(m, 0.12, -250, 1160), -100, 1140), 0, 600)
     output(rough4, "", unreal.MaterialProperty.MP_ROUGHNESS)
     output(spec, "", unreal.MaterialProperty.MP_SPECULAR)
     metal = mul(m, orm, metal_k, -850, 520, "B", "")

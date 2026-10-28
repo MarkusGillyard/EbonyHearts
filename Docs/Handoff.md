@@ -95,12 +95,26 @@ second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, 
   and wind now wait between uses, and the bite can be broken, comes slower and less often. The Storm
   Shroud is still unblockable (telegraphed again since 2.5.5, broken by a blow); if it still feels
   unfair in play, the change is to make it blockable with heavy chip. Not yet played since.
+- **The fight shows on the bodies (2.6.0).** Each blow marks the part of the body it lands on
+  (head, torso or legs, by the nearest joint of the struck pose): the skin flushes, then bruises in
+  patches that spread and darken, and a beaten head and torso bleed in thin streaks (the gore
+  setting scales the blood; Off shows none). The marks last the match (`M_CharacterSkin`'s Damage,
+  `ASlopFighterActor::TakeBlow`). Legs beaten past a third limp: standing, the weight sits back off
+  the lead leg; walking, the hips drop as it takes the weight. The limp is drawn only, with walk
+  speed unchanged, as the study advised for leg damage. `-SlopMarks=0.8` (development) starts a
+  match with both fighters marked, to look at it.
 - **The study's other rule changes.** Ashka's teep is in (forward + low kick; a combat test holds
   it), Gorm's blocked thrusts push further, and Bram throws with a chancery and a cross-buttock.
-  Not done: a shin check for Ashka, optional leg damage. Each touches balance, so each needs a playtest.
-- **Costume secondary motion** (coat tails, veil, ponytail, chain) and damage that builds up on the
-  body: need rig bones and material work. The original simulated cloth and hair as sheets driven
-  from `look.cloth`; a port would need those sheets as skinned meshes with bones of their own.
+  Since 2.6.0 Ashka has the shin check (back, down + low kick): a parry for lows only, frames 2-14
+  of 22; it stings the kicker for 30 (never the last of a round) and leaves Ashka 2 to 14 frames
+  ahead, and a high or mid goes straight through it. The CPU Ashka sometimes checks a low she sees
+  coming. Parries now show and sound (a pale ring, a flash, the attacker thrown back off the
+  guard; until 2.6.0 Bram's Stand Down caught blows silently, as in the original), and the move
+  list gives a parry's window and what it catches instead of meaningless frame data. Not played
+  yet: the check's numbers are a first guess.
+- **Costume secondary motion** (coat tails, veil, ponytail, chain): needs rig bones. The original
+  simulated cloth and hair as sheets driven from `look.cloth`; a port would need those sheets as
+  skinned meshes with bones of their own. Cloth sways through the material since 2.5.6.
 - **Physical controllers.** Markus played menus and fights on his DualShock 4 over Bluetooth with
   2.1.0. Rumble on it, reconnecting mid-fight, DualSense, USB and two physical pads are
   unconfirmed (`Docs/Validation.md`).

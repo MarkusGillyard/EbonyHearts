@@ -481,6 +481,22 @@ namespace Slop::Anim
 				HandOff[S] += FVector(0.0, -FMath::Abs(FMath::Sin(Ph - 0.7)) * 0.012 * H, 0.0) * WalkW;
 			}
 		}
+		if (Limp > 0.0)
+		{
+			// The lead foot is the one further forward (-z in the rig; the display pose is mirrored
+			// facing left, so it may be either).
+			const int32 Lead = Pose.P(EPos::FootL).Z <= Pose.P(EPos::FootR).Z ? 0 : 1;
+			const FFoot& Ld = Feet[Lead];
+			const FFoot& Rr = Feet[1 - Lead];
+			const bool bLeadAlone = (Ld.bLocked || Ld.Step < 0.0) && (Rr.Step >= 0.0 || (bCycleFeet && !Rr.bLocked));
+			if (Delta > 0.0 && !bFrozen)
+			{
+				LimpDip = MoveToward(LimpDip, bWalk && bLeadAlone ? 1.0 : 0.0, Delta * 10.0);
+			}
+			const double K = FMath::Clamp(Limp, 0.0, 1.0);
+			Pose.P(EPos::Hips).Z += 0.022 * H * K * IdleW;
+			Pose.P(EPos::Hips).Y -= (0.008 * IdleW + 0.028 * LimpDip) * H * K;
+		}
 	}
 
 	// The hands and elbows are placed in the fighter's root space, so a body that sinks, twists or
@@ -1129,5 +1145,39 @@ namespace Slop::Anim
 		if (W == TEXT("knee_l")) return Root * Rig.J(EJoint::ShinL).P;
 		if (W == TEXT("knee_r")) return Root * Rig.J(EJoint::ShinR).P;
 		return Root.P;
+	}
+
+	int32 FAnimator::RegionAt(const FVector2D& Point, ELevel Level) const
+	{
+		// On its feet, a body takes a high in the face and a low in the legs (the boxes put a high
+		// at the chin, nearer the neck than the head's middle); anything else, or a body in the air
+		// or on the floor, by the nearest of the head, the torso and the legs.
+		const bool bUpright = Fighter && Fighter->Pos.Y <= 1e-3 && Fighter->State != EState::Down && Fighter->State != EState::Fall && Fighter->State != EState::Juggle;
+		if (bUpright && Level == ELevel::High)
+		{
+			return 0;
+		}
+		if (bUpright && Level == ELevel::Low)
+		{
+			return 2;
+		}
+		auto Dist = [&](const FVector& RigP)
+		{
+			const FVector W = Root * RigP;
+			return FVector2D(W.X - Point.X, W.Y - Point.Y).SizeSquared();
+		};
+		auto At = [&](EJoint J) { return Dist(Rig.J(J).P); };
+		// The head joint sits at the top of the neck; its middle is about a twentieth of the height above.
+		const double Head = FMath::Min(At(EJoint::Head), Dist(Rig.J(EJoint::Head) * FVector(0.0, 0.055 * Rig.H, 0.0)));
+		const double Body = FMath::Min(FMath::Min(At(EJoint::Neck), At(EJoint::Chest)), FMath::Min(At(EJoint::Spine), At(EJoint::Hips)));
+		// The thighs count from their middle down, so a blow at the belt is the body's.
+		double Legs = 1e18;
+		for (EJoint Thigh : {EJoint::ThighL, EJoint::ThighR})
+		{
+			const EJoint Shin = Thigh == EJoint::ThighL ? EJoint::ShinL : EJoint::ShinR;
+			const EJoint Foot = Thigh == EJoint::ThighL ? EJoint::FootL : EJoint::FootR;
+			Legs = FMath::Min(Legs, FMath::Min(Dist((Rig.J(Thigh).P + Rig.J(Shin).P) * 0.5), FMath::Min(At(Shin), At(Foot))));
+		}
+		return Head <= Body && Head <= Legs ? 0 : (Body <= Legs ? 1 : 2);
 	}
 }

@@ -58,6 +58,12 @@ bool ASlopFighterActor::Setup(const FFighter& Fighter, const FString& MeshPath)
 	// Cloth below the hips (in the rest pose, in centimetres) swings, more toward the hem.
 	SetScalar(TEXT("SwayTop"), float(0.53 * Anim.Rig.H * 100.0));
 	SetScalar(TEXT("SwaySpan"), float(0.45 * Anim.Rig.H * 100.0));
+	// The skin's regions for its marks: the head above the jaw within a head's breadth of the
+	// body's axis, the legs below the hips, and nothing out past the trunk (the arms).
+	SetScalar(TEXT("NeckZ"), float(0.85 * Anim.Rig.H * 100.0));
+	SetScalar(TEXT("WaistZ"), float(0.5 * Anim.Rig.H * 100.0));
+	SetScalar(TEXT("HeadRadius"), float(0.075 * Anim.Rig.H * 100.0));
+	SetScalar(TEXT("BodyRadius"), float(0.15 * Anim.Rig.H * 100.0));
 	UpdateVisual(1.0, 0.0);
 	return true;
 }
@@ -140,6 +146,29 @@ void ASlopFighterActor::StepSway(double Delta)
 	}
 	const FVector Ue = Slop::Anim::WorldToUE(SwayX) - Slop::Anim::WorldToUE(FVector::ZeroVector);
 	SetVector(TEXT("SwayVec"), FLinearColor(Ue.X, Ue.Y, Ue.Z, 0.f));
+}
+
+void ASlopFighterActor::TakeBlow(int32 Region, int32 Damage)
+{
+	if (!Anim.Fighter || Damage <= 0 || Region < 0 || Region > 2)
+	{
+		return;
+	}
+	Marks[Region] = FMath::Min(1.0, Marks[Region] + Damage / (0.33 * FMath::Max(1, Anim.Fighter->Def->Health)));
+	ShowMarks();
+}
+
+void ASlopFighterActor::SetBlood(float Amount)
+{
+	Blood = FMath::Clamp(Amount, 0.f, 1.f);
+	ShowMarks();
+}
+
+void ASlopFighterActor::ShowMarks()
+{
+	SetVector(TEXT("Damage"), FLinearColor((float)Marks[0], (float)Marks[1], (float)Marks[2], Blood));
+	// Legs beaten past a third start to favour the lead one; badly beaten, a clear limp.
+	Anim.Limp = FMath::Clamp((Marks[2] - 0.3) / 0.5, 0.0, 1.0);
 }
 
 void ASlopFighterActor::SetScalar(FName Param, float Value)

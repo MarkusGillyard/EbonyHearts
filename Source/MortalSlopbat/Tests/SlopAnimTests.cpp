@@ -919,6 +919,107 @@ bool FSlopTurnIsContinuous::RunTest(const FString&)
 	return true;
 }
 
+
+// A blow marks the part of the body it lands on (the skin's bruises): a high punch the head, a
+// low punch the torso, a sweep the legs, for every fighter taking them standing.
+SLOP_TEST(FSlopBlowRegions, "Anim.BlowsMarkWhereTheyLand")
+bool FSlopBlowRegions::RunTest(const FString&)
+{
+	const FFighterDef* Attacker = GetContent().Fighter(TEXT("bram"));
+	for (const FName& Id : FContent::Roster())
+	{
+		for (const TPair<const TCHAR*, int32>& Blow : {TPair<const TCHAR*, int32>(TEXT("hp"), 0), TPair<const TCHAR*, int32>(TEXT("lp"), 1), TPair<const TCHAR*, int32>(TEXT("sweep"), 2)})
+		{
+			FFightSim Sim;
+			Sim.bIntro = false;
+			Sim.bTraining = true;
+			Sim.Setup(Attacker, GetContent().Fighter(Id));
+			FAnimator A;
+			A.Setup(Sim.Fighters[1], GetContent().CommonPoses);
+			FPadState Pads[2];
+			for (int32 T = 0; T < 600 && (Sim.Phase != EPhase::Fight || T < 30); ++T)
+			{
+				Sim.Step(Pads);
+				A.SyncFromSim();
+				A.Update(1.0, 1.0 / 60.0);
+			}
+			Sim.Fighters[0].Pos = FVector2D(-0.45, 0.0);
+			Sim.Fighters[1].Pos = FVector2D(0.45, 0.0);
+			Sim.Fighters[0].StartMove(*Attacker->Move(Blow.Key));
+			Sim.Fighters[0].SetState(EState::Move);
+			int32 Region = -1;
+			for (int32 T = 0; T < 60 && Region < 0; ++T)
+			{
+				Sim.Step(Pads);
+				for (const FSimEvent& E : Sim.Events)
+				{
+					if (E.Type == EEvent::Hit && E.Who == 1)
+					{
+						// The view hears of the blow before the frame that shows it.
+						Region = A.RegionAt(E.Point, E.Level);
+					}
+				}
+				A.SyncFromSim();
+				A.Update(1.0, 1.0 / 60.0);
+			}
+			TestEqual(FString::Printf(TEXT("%s struck by a %s"), *Id.ToString(), Blow.Key), Region, Blow.Value);
+		}
+	}
+	return true;
+}
+
+// A leg beaten hard limps: standing, the hips sit back off the lead leg; walking, they drop
+// further each time the lead leg takes the weight. The feet stay on the floor.
+SLOP_TEST(FSlopLimp, "Anim.BeatenLegsLimp")
+bool FSlopLimp::RunTest(const FString&)
+{
+	for (const FName& Id : FContent::Roster())
+	{
+		double HipsBack[2] = {0, 0};
+		double LowestHips[2] = {1e9, 1e9};
+		double LowestFoot = 1e9;
+		for (int32 Pass = 0; Pass < 2; ++Pass)
+		{
+			FFightSim Sim;
+			Sim.bIntro = false;
+			Sim.bTraining = true;
+			Sim.Setup(GetContent().Fighter(Id), GetContent().Fighter(TEXT("gorm")));
+			FAnimator A;
+			A.Setup(Sim.Fighters[0], GetContent().CommonPoses);
+			A.Limp = Pass;
+			FPadState Pads[2];
+			for (int32 T = 0; T < 600 && (Sim.Phase != EPhase::Fight || T < 90); ++T)
+			{
+				Sim.Fighters[0].Pos.X = -1.5;
+				Sim.Step(Pads);
+				A.SyncFromSim();
+				A.Update(1.0, 1.0 / 60.0);
+			}
+			HipsBack[Pass] = A.WorldPoint(A.Rig.J(EJoint::Hips).P).X - Sim.Fighters[0].Pos.X;
+			Pads[0].Dirs = PadRight;
+			for (int32 T = 0; T < 90; ++T)
+			{
+				Sim.Step(Pads);
+				A.SyncFromSim();
+				A.Update(1.0, 1.0 / 60.0);
+				if (T > 20)
+				{
+					LowestHips[Pass] = FMath::Min(LowestHips[Pass], A.WorldPoint(A.Rig.J(EJoint::Hips).P).Y);
+					for (EJoint Foot : {EJoint::FootL, EJoint::FootR})
+					{
+						LowestFoot = FMath::Min(LowestFoot, A.WorldPoint(A.Rig.J(Foot).P).Y);
+					}
+				}
+			}
+		}
+		const double H = GetContent().Fighter(Id)->Height;
+		TestTrue(FString::Printf(TEXT("%s standing: hips back %.3f m"), *Id.ToString(), HipsBack[0] - HipsBack[1]), HipsBack[0] - HipsBack[1] > 0.012 * H);
+		TestTrue(FString::Printf(TEXT("%s walking: hips drop %.3f m lower"), *Id.ToString(), LowestHips[0] - LowestHips[1]), LowestHips[0] - LowestHips[1] > 0.012 * H);
+		TestTrue(FString::Printf(TEXT("%s: ankles stay up (lowest %.3f m)"), *Id.ToString(), LowestFoot), LowestFoot > 0.0);
+	}
+	return true;
+}
+
 }
 
 #undef SLOP_TEST

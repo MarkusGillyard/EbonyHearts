@@ -103,6 +103,21 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 	Vfx->Setup(this);
 	Director.Setup(this);
 	ApplySettings();
+#if !UE_BUILD_SHIPPING
+	// Development: -SlopMarks=<0..1> starts both fighters as beaten as that on head, body and legs
+	// (to look at the skin's marks without fighting for them).
+	float StartMarks = 0.f;
+	if (FParse::Value(FCommandLine::Get(), TEXT("SlopMarks="), StartMarks))
+	{
+		for (ASlopFighterActor* V : Views)
+		{
+			for (int32 R = 0; R < 3; ++R)
+			{
+				V->TakeBlow(R, (int32)(StartMarks * 0.33f * V->Anim.Fighter->Def->Health + 0.5f));
+			}
+		}
+	}
+#endif
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
 	{
 		PC->SetViewTarget(Camera);
@@ -176,6 +191,7 @@ void ASlopMatch::ApplySettings()
 		{
 			V->Anim.bSmoothing = S.bMotionSmoothing;
 			V->bFlashes = S.bFlashes;
+			V->SetBlood(S.Gore == TEXT("off") ? 0.f : (S.Gore == TEXT("low") ? 0.4f : 1.f));
 		}
 	}
 	if (Vfx)
@@ -395,6 +411,8 @@ void ASlopMatch::HandleEvent(const FSimEvent& E)
 		{
 			Views[E.By]->Anim.Recoil(Strength);
 		}
+		// A throw is taken on the back and shoulders.
+		Views[E.Who]->TakeBlow(E.bThrow ? 1 : Views[E.Who]->Anim.RegionAt(E.Point, E.Level), E.Damage);
 		// The struck player's pad feels it: in weight with the blow, longest for a knockout.
 		GI()->Router->Rumble(E.Who, E.bKO ? 1.f : (float)FMath::Clamp(0.2 + Strength * 0.5, 0.2, 0.8), E.bKO ? 0.45f : (bHeavy ? 0.22f : 0.12f));
 		// Light and medium blows leave the camera still (a realistic side-on view reads best steady);
@@ -414,6 +432,18 @@ void ASlopMatch::HandleEvent(const FSimEvent& E)
 		Views[E.Who]->Anim.Impact(FMath::Sign(Sim.Fighters[E.Who].Pos.X - Sim.Fighters[E.By].Pos.X), 0.35, ELevel::Mid, true);
 		Views[E.By]->Anim.Recoil(0.5);
 		break;
+	case EEvent::Parry:
+	{
+		// A caught blow: the guard takes it and the attacker is thrown back off it, open. A shin
+		// check bruises the kicking leg.
+		const double Dir = FMath::Sign(Sim.Fighters[E.By].Pos.X - Sim.Fighters[E.Who].Pos.X);
+		Views[E.Who]->Anim.Impact(-Dir, 0.3, ELevel::Mid, true);
+		Views[E.By]->Anim.Impact(Dir, 0.6, E.Level == ELevel::Low ? ELevel::Low : ELevel::Mid, false);
+		Views[E.By]->Anim.Recoil(1.0);
+		Views[E.By]->TakeBlow(E.Level == ELevel::Low ? 2 : 1, E.Damage);
+		Camera->Kick(FVector(Dir, 0.0, 0.0), 0.03);
+		break;
+	}
 	case EEvent::Armor:
 		Camera->AddShake(0.012);
 		break;
@@ -564,6 +594,11 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 		break;
 	}
 	case EEvent::Armor: A->Play(TEXT("armor"), -2.f); break;
+	case EEvent::Parry:
+		// The guard's slap with a hard knock over it; a shin check is bone on bone, duller and lower.
+		A->Play(TEXT("block"), -2.f, 0.9f);
+		A->Play(E.Level == ELevel::Low ? TEXT("kenney:impactPunch_heavy") : TEXT("kenney:impactWood_medium"), -4.f, E.Level == ELevel::Low ? 0.8f : 1.1f);
+		break;
 	case EEvent::Throw: A->Play(TEXT("grab"), -2.f); break;
 	case EEvent::ThrowBreak: A->Play(TEXT("throw_break"), 0.f); break;
 	case EEvent::Land:

@@ -51,6 +51,10 @@ namespace Slop::Anim
 		FVector LiftExtra = FVector::ZeroVector;
 		double SpinExtra = 0.0;
 		FName PoseOverride;
+		// A leg kicked hard favours itself, 0 to 1 (the view sets it from the marks on the legs):
+		// standing, the weight sits back off the lead leg; walking, the hips drop each time that leg
+		// takes the weight alone. Presentation only.
+		double Limp = 0.0;
 
 		// The pose last given to the rig (rig space, after mirroring and the procedural layers).
 		const FPose& Shown() const { return Display; }
@@ -58,6 +62,9 @@ namespace Slop::Anim
 		const FPose& Authored() const { return Out; }
 		FVector WorldPoint(const FVector& RigPoint) const { return Root * RigPoint; }
 		FVector StrikePoint(FName Which) const;
+		// Which part of the body a blow of `Level` landing at `Point` (simulation metres) struck:
+		// 0 the head, 1 the torso, 2 the legs (see the definition).
+		int32 RegionAt(const FVector2D& Point, ELevel Level = ELevel::None) const;
 
 	private:
 		bool SetSource(const FString& Key, double BlendTicks);
@@ -110,6 +117,7 @@ namespace Slop::Anim
 		// The stance and walk layers, eased in and out with the state, and their rhythm.
 		double IdleW = 0.0;
 		double WalkW = 0.0;
+		double LimpDip = 0.0;
 		double IdlePhase = 0.0;
 		double Pace = 1.0;
 		FVector HandOff[2];

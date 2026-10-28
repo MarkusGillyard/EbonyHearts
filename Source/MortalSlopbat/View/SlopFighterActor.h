@@ -33,6 +33,12 @@ public:
 	// A fighter in a match works up a sweat over the round and as it takes damage (the skin
 	// material's Sweat); the menu figures stay dry.
 	bool bSweats = false;
+	// The marks a fight leaves on the skin (the skin material's Damage): a blow bruises the region
+	// it lands on (0 head, 1 torso, 2 legs; see FAnimator::RegionAt), fully once a third of the
+	// fighter's health has been taken there. They last the match. `Blood` (0 to 1, from the gore
+	// setting) is how much of it bleeds.
+	void TakeBlow(int32 Region, int32 Damage);
+	void SetBlood(float Amount);
 
 	Slop::Anim::FAnimator Anim;
 
@@ -50,6 +56,9 @@ private:
 	float LastFlash = -1.f;
 	double Exertion = 0.0;
 	float LastSweat = -1.f;
+	double Marks[3] = {0.0, 0.0, 0.0};
+	float Blood = 1.f;
+	void ShowMarks();
 	// Loose fabric's swing (the cloth slots' Sway): a spring on the hips' motion, in metres.
 	void StepSway(double Delta);
 	FVector SwayX = FVector::ZeroVector;
