@@ -7,6 +7,7 @@
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SUniformGridPanel.h"
 #include "Widgets/Layout/SConstraintCanvas.h"
 #include "Widgets/Layout/SScaleBox.h"
 #include "Widgets/SBoxPanel.h"
@@ -423,14 +424,28 @@ namespace SlopScreensFlowImpl
 			}
 			// Random, after the grounds, as the original had it.
 			Labels.Add(LOCTEXT("RandomStage", "Random"));
+			// Random's picture is all of theirs, two by two.
+			TSharedRef<SUniformGridPanel> All = SNew(SUniformGridPanel).SlotPadding(FMargin(4.f));
+			for (int32 I = 0; I < Ids.Num(); ++I)
+			{
+				All->AddSlot(I % 2, I / 2)[SNew(SImage).Image(SlopUI::StagePicture(Ids[I]))];
+			}
 			return Frame(SNew(SConstraintCanvas)
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(0, 60, 1920, 110))[SNew(SBox).HAlign(HAlign_Center)[SlopUI::Title(LOCTEXT("ChooseStage", "CHOOSE THE GROUND"), 72.f, SlopUI::Text)]]
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 300, 560, 400))[SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 560.f, 36.f)]
 				// The ground itself, as the original showed it (renders of the rebuilt sets), and its words below.
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(820, 220, 940, 529))
 				[
-					SNew(SImage).Image_Lambda([this]() { return Ids.IsValidIndex(Sel) ? SlopUI::StagePicture(Ids[Sel]) : nullptr; })
-					.Visibility_Lambda([this]() { return Ids.IsValidIndex(Sel) && SlopUI::StagePicture(Ids[Sel]) ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
+					SNew(SOverlay)
+					+ SOverlay::Slot()
+					[
+						SNew(SImage).Image_Lambda([this]() { return Ids.IsValidIndex(Sel) ? SlopUI::StagePicture(Ids[Sel]) : nullptr; })
+						.Visibility_Lambda([this]() { return Ids.IsValidIndex(Sel) && SlopUI::StagePicture(Ids[Sel]) ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
+					]
+					+ SOverlay::Slot()
+					[
+						SNew(SBox).Visibility_Lambda([this]() { return Ids.IsValidIndex(Sel) ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })[All]
+					]
 				]
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(820, 770, 940, 200))
 				[
