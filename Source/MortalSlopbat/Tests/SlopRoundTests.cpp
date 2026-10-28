@@ -210,7 +210,12 @@ bool FSlopRoundShinCheck::RunTest(const FString&)
 		}
 		H.F(0).StartMove(*Sweep);
 		H.F(1).StartMove(*Check);
-		H.Idle(14);
+		FAdvantageMeter Meter;
+		for (int32 T = 0; T < 14; ++T)
+		{
+			H.Idle(1);
+			Meter.Update(H.Sim);
+		}
 		TestEqual("the check catches a sweep", H.Count(EEvent::Parry), 1);
 		TestEqual("and is not hit by it", H.Count(EEvent::Hit), 0);
 		TestEqual("the kicker is stung", H.F(0).Health, H.F(0).Def->Health - 30);
@@ -218,6 +223,7 @@ bool FSlopRoundShinCheck::RunTest(const FString&)
 		for (int32 T = 0; T < 90 && (Free[0] < 0 || Free[1] < 0); ++T)
 		{
 			H.Idle(1);
+			Meter.Update(H.Sim);
 			for (int32 I = 0; I < 2; ++I)
 			{
 				if (Free[I] < 0 && H.F(I).IsActionable())
@@ -227,6 +233,8 @@ bool FSlopRoundShinCheck::RunTest(const FString&)
 			}
 		}
 		TestTrue(FString::Printf(TEXT("Ashka moves first (free at %d, the kicker at %d)"), Free[1], Free[0]), Free[1] >= 0 && Free[1] < Free[0]);
+		TestTrue("the frame view measures the parry", Meter.bHas && Meter.bParried && Meter.By == 1);
+		TestEqual("as Ashka's lead", Meter.Value, Free[0] - Free[1]);
 	}
 	{
 		FSimHarness H(A.Get(), Ashka);

@@ -75,6 +75,16 @@ namespace Slop
 				Attacker = E.By;
 				FreeAt[0] = FreeAt[1] = -1;
 				bWatchBlocked = E.Type == EEvent::Block;
+				bWatchParried = false;
+				bWatchDown = false;
+			}
+			else if (E.Type == EEvent::Parry && E.Who >= 0 && E.Who <= 1 && E.By != E.Who)
+			{
+				// Measured from the parrier's side: how far ahead the catch leaves them.
+				Attacker = E.Who;
+				FreeAt[0] = FreeAt[1] = -1;
+				bWatchBlocked = false;
+				bWatchParried = true;
 				bWatchDown = false;
 			}
 		}
@@ -97,6 +107,7 @@ namespace Slop
 			By = Attacker;
 			Value = FreeAt[1 - Attacker] - FreeAt[Attacker];
 			bBlocked = bWatchBlocked;
+			bParried = bWatchParried;
 			bKnockdown = bWatchDown;
 			Attacker = -1;
 		}

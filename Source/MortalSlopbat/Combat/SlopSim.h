@@ -299,6 +299,8 @@ namespace Slop
 		int32 Value = 0;
 		bool bBlocked = false;
 		bool bKnockdown = false;
+		// A parry: `By` caught the other's blow.
+		bool bParried = false;
 
 		// Call after each step of the simulation.
 		void Update(const FFightSim& Sim);
@@ -308,6 +310,7 @@ namespace Slop
 		int32 Attacker = -1;
 		int32 FreeAt[2] = {-1, -1};
 		bool bWatchBlocked = false;
+		bool bWatchParried = false;
 		bool bWatchDown = false;
 	};
 

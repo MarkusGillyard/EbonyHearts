@@ -439,7 +439,8 @@ int32 SSlopHud::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometr
 			const FText Who = FText::FromString(M->Sim.Fighters[A.By].Def->Name);
 			const FText Line = A.bKnockdown
 				? FText::Format(LOCTEXT("AdvKD", "Last exchange: {0}, knockdown"), Who)
-				: FText::Format(A.bBlocked ? LOCTEXT("AdvBlock", "Last exchange: {0} {1} on block") : LOCTEXT("AdvHit", "Last exchange: {0} {1} on hit"),
+				: FText::Format(A.bParried ? LOCTEXT("AdvParry", "Last exchange: {0} {1} from a parry")
+					: (A.bBlocked ? LOCTEXT("AdvBlock", "Last exchange: {0} {1} on block") : LOCTEXT("AdvHit", "Last exchange: {0} {1} on hit")),
 					Who, FText::FromString(FString::Printf(TEXT("%+d"), A.Value)));
 			PaintText(OutDrawElements, G, L, Line, SlopUI::Body(26.f), FVector2D(960.f, 150.f), A.Value >= 0 || A.bKnockdown ? SlopUI::Accent : SlopUI::Amber, 1);
 		}

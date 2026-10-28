@@ -91,6 +91,16 @@ void ASlopFighterActor::UpdateVisual(double Frac, double Delta)
 	}
 	SetScalar(TEXT("Glow"), (float)Anim.Glow * 3.f);
 	StepSway(Delta);
+	if (Anim.Fighter && Anim.Fighter->Sim && Anim.Fighter->Sim->bRefillHealth)
+	{
+		const int32 Hp = Anim.Fighter->Health;
+		if (Hp == Anim.Fighter->MaxHealth() && LastHealth >= 0 && LastHealth < Hp && (Marks[0] > 0.0 || Marks[1] > 0.0 || Marks[2] > 0.0))
+		{
+			Marks[0] = Marks[1] = Marks[2] = 0.0;
+			ShowMarks();
+		}
+		LastHealth = Hp;
+	}
 	if (bSweats && Anim.Fighter)
 	{
 		// About two minutes of fighting, or the health taken, brings it on fully.
@@ -154,7 +164,7 @@ void ASlopFighterActor::TakeBlow(int32 Region, int32 Damage)
 	{
 		return;
 	}
-	Marks[Region] = FMath::Min(1.0, Marks[Region] + Damage / (0.33 * FMath::Max(1, Anim.Fighter->Def->Health)));
+	Marks[Region] = FMath::Min(1.0, Marks[Region] + Damage / (0.33 * FMath::Max(1, Anim.Fighter->MaxHealth())));
 	ShowMarks();
 }
 
