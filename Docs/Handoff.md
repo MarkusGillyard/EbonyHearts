@@ -101,6 +101,14 @@ the archive.
 
 ## Open
 
+- **Markus's play of 2.7.0 (29 Oct 2026): the next priority.** He played Wren and the Grandmaster
+  on his PS4 pad: combat "pretty decent", everything else as intended. What he wants next is polish
+  of the character models and animation so combat flows: the moves are improving but still feel
+  robotic rather than cleanly flowing together. Likely levers: blending between moves and into and
+  out of recovery (each move now snaps from key pose to key pose); more captured or hand-keyed
+  transitions; follow-through and settle on every strike; footwork that carries weight between
+  steps; model polish (deformation at shoulders, hips and knees, hands, cloth). Measure before and
+  after, as the 2.2.0 feel study did (`Docs/Martial-arts.md`).
 - **More motion capture.** From ACCAD's Male 2 takes (CC BY 3.0): the shared strikes, Ashka's
   teep, walking and running (step cycles played by distance, so the feet keep pace), the standing
   block's guard, the Grandmaster's step aside (Daxion's evade, carried over), weave and boxing
