@@ -22,6 +22,7 @@ import fighter_core as core      # noqa: E402
 import fighter_geo as geo        # noqa: E402
 import fighter_outfits as outfits  # noqa: E402
 import fighter_outfits2  # noqa: E402,F401  (registers the rest of the roster)
+import fighter_outfits3  # noqa: E402,F401  (Wren and the Grandmaster)
 import fighter_tex as tex        # noqa: E402
 import fighter_render as fr      # noqa: E402
 

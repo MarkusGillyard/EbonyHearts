@@ -1,10 +1,10 @@
 {
 	"id": "grandmaster",
-	"name": "Kazan Still",
-	"title": "The Grandmaster",
+	"name": "The Grandmaster",
+	"title": "He gives no other name",
 	"pronoun": "him",
 	"style": "Qhi and a lifetime of martial arts",
-	"blurb": "An old grandmaster whose body has failed him and whose Qhi has not. He can wear the face of whoever stands against him, better than they wear it themselves.",
+	"blurb": "A grandmaster of the old schools whose body has failed him and whose Qhi has not. He can wear the face of whoever stands against him, better than they wear it themselves.",
 	"resource": "qhi",
 	"spent_form": "grandmaster_spent",
 	"copyable": false,

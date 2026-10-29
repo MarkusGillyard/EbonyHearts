@@ -13,12 +13,12 @@ downloads themselves are not in Git; the ledger is enough to fetch the same file
 
 | What | From | Licence | Used for |
 |---|---|---|---|
-| Base meshes, skins, eyes, eyebrows, eyelashes, hair | MakeHuman system assets (makehumancommunity.org), shaped with MPFB 2.0.18 for Blender | CC0 1.0 | All eight fighters' bodies |
+| Base meshes, skins, eyes, eyebrows, eyelashes, hair | MakeHuman system assets (makehumancommunity.org), shaped with MPFB 2.0.18 for Blender | CC0 1.0 | All ten fighters' bodies |
 | Surface textures (26 sets) | ambientCG (ambientcg.com), Poly Haven (polyhaven.com) | CC0 1.0 | Stage surfaces; leather, cloth and metal on costumes |
 | Props (barrels, crates, bucket, lantern, lamp) | Poly Haven | CC0 1.0 | Stage dressing |
 | Night skies (lakeside_night, kloppenheim_07) | Poly Haven | CC0 1.0 | Ambient light and reflections; the Market's and Yards' skies |
 | Impact, interface and RPG sounds | Kenney (kenney.nl) | CC0 1.0 | Hits, blocks, footsteps and UI, layered with the original's own sounds |
-| Motion capture: ACCAD mocap Data, Male 2 (BVH) | Open Motion Project by ACCAD / The Ohio State University (accad.osu.edu) | CC BY 3.0 Unported (`Docs/Licenses/CC-BY-3.0.txt`); attribution in the credits | The shared jab, body jab, cross, body cross, low and high kicks and roundhouse, Ashka's teep, the walking and running step cycles, the standing block's guard, Daxion's evade, and the human fighters' intros and wins, converted to key poses and retimed to the moves' frames (`Tools/mocap`) |
+| Motion capture: ACCAD mocap Data, Male 2 (BVH) | Open Motion Project by ACCAD / The Ohio State University (accad.osu.edu) | CC BY 3.0 Unported (`Docs/Licenses/CC-BY-3.0.txt`); attribution in the credits | The shared jab, body jab, cross, body cross, low and high kicks and roundhouse, Ashka's teep, Wren's head kick, backfist, spinning back kick (Turning Light) and reverse spinning crescent (Lifting Light), the Grandmaster's weave, the walking and running step cycles, the standing block's guard, Daxion's evade, and the human fighters' intros and wins, converted to key poses and retimed to the moves' frames (`Tools/mocap`) |
 | New Rocker | Pablo Impallari, Brenda Gallo, Rodrigo Fuenzalida | SIL OFL 1.1 (`Docs/Licenses/NewRocker-OFL.txt`) | Titles |
 | Oswald | The Oswald Project Authors | SIL OFL 1.1 (`Docs/Licenses/Oswald-OFL.txt`) | Body text |
 | Droid Sans Fallback | The Android Open Source Project, via the engine's Slate fonts | Apache 2.0 (`Docs/Licenses/DroidSansFallback-Apache-2.0.txt`) | Arrows, ticks and symbols the two typefaces lack |
@@ -49,4 +49,19 @@ Engine, Copyright 1998 – 2026, Epic Games, Inc. All rights reserved."
   redistributing the assets themselves, so they are not used at all), and anything from Markus's
   other projects (Kivanagh, Wyseforge Fighters, Slopperfall) merely because they share an owner.
 
-No rights question is open.
+## Likeness: two fighters drawn from real people's looks
+
+The owner asked that two of the new fighters be inspired by real people: the Grandmaster's face
+and presence by the actor Cary-Hiroyuki Tagawa's older, more intimidating roles, and Wren
+Sallow's build, presence and fighting style by the mixed martial artists Valentina Shevchenko
+(chiefly) and Ronda Rousey. Both were built from the CC0 MakeHuman base by general traits only (an
+old man's heavy brow, high cheekbones and hollow cheeks, a shaved head and grey goatee; a young
+athlete's conditioned build, braids and composed face), with no photographs, scans, film or
+broadcast material, and nothing implying their involvement or endorsement. Neither is a
+likeness, and neither name, biography nor costume is theirs; the Grandmaster's robe is an
+original design (ink blue, bone grey and pale gold) and not any film character's outfit.
+
+**Before any commercial release:** the right of publicity protects a recognisable likeness in
+many jurisdictions whether or not it is a copy. If either character is judged, by people who know
+those faces, to read as that person, clear it with them (or their representatives) or move the
+design further from them. This is the one open rights question.

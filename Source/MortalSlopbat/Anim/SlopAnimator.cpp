@@ -65,6 +65,10 @@ namespace Slop::Anim
 	void FAnimator::Setup(const FFighter& InFighter, const TSharedPtr<FJsonObject>& CommonPoses)
 	{
 		Fighter = &InFighter;
+		// Set up again for another shape: whatever was playing pointed into the old library.
+		Key.Empty();
+		Keys.Reset();
+		OwnedKeys.Reset();
 		Lib.Build(*InFighter.Def, CommonPoses);
 		Rig.Build(*InFighter.Def);
 		for (FVector (&S)[2] : Spring)

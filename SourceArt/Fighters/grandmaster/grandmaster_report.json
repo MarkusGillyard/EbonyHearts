@@ -1,0 +1,646 @@
+{
+ "slots": {
+  "skin": {
+   "material": "M_grandmaster_skin",
+   "size": 2048,
+   "files": {
+    "basecolor": "grandmaster_skin_basecolor.png",
+    "normal": "grandmaster_skin_normal.png",
+    "orm": "grandmaster_skin_orm.png"
+   },
+   "objects": [
+    "grandmaster_body"
+   ]
+  },
+  "hairface": {
+   "material": "M_grandmaster_hairface",
+   "size": 2048,
+   "files": {
+    "basecolor": "grandmaster_hairface_basecolor.png",
+    "normal": "grandmaster_hairface_normal.png",
+    "orm": "grandmaster_hairface_orm.png",
+    "emissive": "grandmaster_hairface_emissive.png"
+   },
+   "objects": [
+    "grandmaster_eyes",
+    "grandmaster_brows",
+    "grandmaster_lashes",
+    "grandmaster_beard",
+    "grandmaster_beard_outer"
+   ]
+  },
+  "robe": {
+   "material": "M_grandmaster_robe",
+   "size": 2048,
+   "files": {
+    "basecolor": "grandmaster_robe_basecolor.png",
+    "normal": "grandmaster_robe_normal.png",
+    "orm": "grandmaster_robe_orm.png"
+   },
+   "objects": [
+    "grandmaster_inner_robe",
+    "grandmaster_inner_collar",
+    "grandmaster_robe",
+    "grandmaster_cuff_l",
+    "grandmaster_cuff_r",
+    "grandmaster_robe_skirt_under",
+    "grandmaster_robe_skirt_back",
+    "grandmaster_robe_skirt_outer",
+    "grandmaster_collar",
+    "grandmaster_sash",
+    "grandmaster_sash_knot",
+    "grandmaster_sash_tail0",
+    "grandmaster_sash_tail1"
+   ]
+  },
+  "garb": {
+   "material": "M_grandmaster_garb",
+   "size": 1024,
+   "files": {
+    "basecolor": "grandmaster_garb_basecolor.png",
+    "normal": "grandmaster_garb_normal.png",
+    "orm": "grandmaster_garb_orm.png"
+   },
+   "objects": [
+    "grandmaster_trousers",
+    "grandmaster_shoe_l",
+    "grandmaster_sole_l",
+    "grandmaster_shoe_r",
+    "grandmaster_sole_r"
+   ]
+  },
+  "props": {
+   "material": "M_grandmaster_props",
+   "size": 512,
+   "files": {
+    "basecolor": "grandmaster_props_basecolor.png",
+    "normal": "grandmaster_props_normal.png",
+    "orm": "grandmaster_props_orm.png"
+   },
+   "objects": [
+    "grandmaster_jade_cord",
+    "grandmaster_jade_bead",
+    "grandmaster_jade"
+   ]
+  }
+ },
+ "texture_notes": {
+  "skin": [
+   "tinted old_lightskinned_male_diffuse2.png -> #ad8766 (per-channel gain [1.039, 1.729, 1.966])",
+   "painted scalp hair replaced by forehead skin tone",
+   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #ad8766"
+  ],
+  "hairface": [
+   "eyes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyes/materials/brown_eye.png -> tile (0.0, 0.0, 0.5, 0.5)",
+   "brows: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyebrows/eyebrow008/eyebrow008.png -> tile (0.5, 0.0, 0.5, 0.5)",
+   "lashes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyelashes/eyelashes01/eyelashes01.png -> tile (0.0, 0.5, 0.5, 0.5)",
+   "beard: generated fur strands #c8c2b6, alpha edges -> tile (0.5, 0.5, 0.25, 0.5)",
+   "beard_outer: generated fur strands #c8c2b6, alpha edges -> tile (0.75, 0.5, 0.25, 0.5)"
+  ],
+  "robe": [
+   "grandmaster_inner_robe: Fabric001 tinted #c7c1b2, 14 cm tiles, roughness 0.85, metallic 0",
+   "grandmaster_inner_collar: Fabric001 tinted #c7c1b2, 14 cm tiles, roughness 0.85, metallic 0",
+   "grandmaster_robe: cloud embroidery in #d6c38e on 0 texels",
+   "grandmaster_robe: Fabric040 tinted #1b2333, 5 cm tiles, roughness 0.58, metallic 0",
+   "grandmaster_cuff_l: cloud embroidery in #d6c38e on 5808 texels",
+   "grandmaster_cuff_l: Fabric040 tinted #10141d, 5 cm tiles, roughness 0.55, metallic 0",
+   "grandmaster_cuff_r: cloud embroidery in #d6c38e on 5951 texels",
+   "grandmaster_cuff_r: Fabric040 tinted #10141d, 5 cm tiles, roughness 0.55, metallic 0",
+   "grandmaster_robe_skirt_under: cloud embroidery in #d6c38e on 26130 texels",
+   "grandmaster_robe_skirt_under: Fabric040 tinted #1b2333, 5 cm tiles, roughness 0.58, metallic 0",
+   "grandmaster_robe_skirt_back: cloud embroidery in #d6c38e on 39100 texels",
+   "grandmaster_robe_skirt_back: Fabric040 tinted #1b2333, 5 cm tiles, roughness 0.58, metallic 0",
+   "grandmaster_robe_skirt_outer: cloud embroidery in #d6c38e on 85422 texels",
+   "grandmaster_robe_skirt_outer: Fabric040 tinted #1b2333, 5 cm tiles, roughness 0.58, metallic 0",
+   "grandmaster_collar: cloud embroidery in #d6c38e on 94327 texels",
+   "grandmaster_collar: Fabric040 tinted #10141d, 5 cm tiles, roughness 0.55, metallic 0",
+   "grandmaster_sash: Fabric040 tinted #0e0e11, 5 cm tiles, roughness 0.45, metallic 0",
+   "grandmaster_sash_knot: Fabric040 tinted #0e0e11, 5 cm tiles, roughness 0.45, metallic 0",
+   "grandmaster_sash_tail0: Fabric040 tinted #0e0e11, 5 cm tiles, roughness 0.45, metallic 0",
+   "grandmaster_sash_tail1: Fabric040 tinted #0e0e11, 5 cm tiles, roughness 0.45, metallic 0"
+  ],
+  "garb": [
+   "grandmaster_trousers: Fabric034 tinted #17181c, 20 cm tiles, roughness 0.90, metallic 0",
+   "grandmaster_shoe_l: Fabric066 tinted #131315, 6 cm tiles, roughness 0.90, metallic 0",
+   "grandmaster_sole_l: Fabric001 tinted #d3ccbc, 5 cm tiles, roughness 0.90, metallic 0",
+   "grandmaster_shoe_r: Fabric066 tinted #131315, 6 cm tiles, roughness 0.90, metallic 0",
+   "grandmaster_sole_r: Fabric001 tinted #d3ccbc, 5 cm tiles, roughness 0.90, metallic 0"
+  ],
+  "props": [
+   "grandmaster_jade_cord: Leather021 tinted #111113, 5 cm tiles, roughness 0.70, metallic 0",
+   "grandmaster_jade_bead: Metal042A tinted #8c6a3c, 6 cm tiles, roughness 0.42, metallic 1",
+   "grandmaster_jade: flat #3f7b60"
+  ]
+ },
+ "parts": {
+  "grandmaster_body": {
+   "vertices": 8262,
+   "faces": 8112,
+   "triangles": 16224,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_skin",
+   "surface": "body",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "clavicle_l",
+    "clavicle_r",
+    "foot_l",
+    "foot_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "index_01_l",
+    "index_01_r",
+    "index_02_l",
+    "index_02_r",
+    "index_03_l",
+    "index_03_r",
+    "lowerarm_l",
+    "lowerarm_r",
+    "middle_01_l",
+    "middle_01_r",
+    "middle_02_l",
+    "middle_02_r",
+    "middle_03_l",
+    "middle_03_r",
+    "neck_01",
+    "pelvis",
+    "pinky_01_l",
+    "pinky_01_r",
+    "pinky_02_l",
+    "pinky_02_r",
+    "pinky_03_l",
+    "pinky_03_r",
+    "ring_01_l",
+    "ring_01_r",
+    "ring_02_l",
+    "ring_02_r",
+    "ring_03_l",
+    "ring_03_r",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "thumb_01_l",
+    "thumb_01_r",
+    "thumb_02_l",
+    "thumb_02_r",
+    "thumb_03_l",
+    "thumb_03_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "grandmaster_eyes": {
+   "vertices": 1064,
+   "faces": 1020,
+   "triangles": 2040,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_hairface",
+   "surface": "eyes",
+   "bones": [
+    "head"
+   ]
+  },
+  "grandmaster_brows": {
+   "vertices": 124,
+   "faces": 96,
+   "triangles": 192,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_hairface",
+   "surface": "brows",
+   "bones": [
+    "head"
+   ]
+  },
+  "grandmaster_lashes": {
+   "vertices": 250,
+   "faces": 184,
+   "triangles": 368,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_hairface",
+   "surface": "lashes",
+   "bones": [
+    "head"
+   ]
+  },
+  "grandmaster_trousers": {
+   "vertices": 2744,
+   "faces": 2760,
+   "triangles": 5492,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_garb",
+   "surface": "trousers",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "foot_l",
+    "foot_r",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "grandmaster_shoe_l": {
+   "vertices": 1120,
+   "faces": 1144,
+   "triangles": 2236,
+   "max_influences": 3,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_garb",
+   "surface": "shoes",
+   "bones": [
+    "ball_l",
+    "calf_l",
+    "foot_l"
+   ]
+  },
+  "grandmaster_sole_l": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_garb",
+   "surface": "sole",
+   "bones": [
+    "ball_l",
+    "foot_l"
+   ]
+  },
+  "grandmaster_shoe_r": {
+   "vertices": 1120,
+   "faces": 1144,
+   "triangles": 2236,
+   "max_influences": 3,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_garb",
+   "surface": "shoes",
+   "bones": [
+    "ball_r",
+    "calf_r",
+    "foot_r"
+   ]
+  },
+  "grandmaster_sole_r": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_garb",
+   "surface": "sole",
+   "bones": [
+    "ball_r",
+    "foot_r"
+   ]
+  },
+  "grandmaster_inner_robe": {
+   "vertices": 2602,
+   "faces": 2794,
+   "triangles": 5204,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_robe",
+   "surface": "inner",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "lowerarm_l",
+    "lowerarm_r",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "grandmaster_inner_collar": {
+   "vertices": 112,
+   "faces": 110,
+   "triangles": 220,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_robe",
+   "surface": "inner",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_02",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "grandmaster_robe": {
+   "vertices": 5040,
+   "faces": 5166,
+   "triangles": 10088,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_robe",
+   "surface": "robe",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "lowerarm_l",
+    "lowerarm_r",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "grandmaster_cuff_l": {
+   "vertices": 192,
+   "faces": 192,
+   "triangles": 384,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_robe",
+   "surface": "robe_band",
+   "bones": [
+    "hand_l",
+    "lowerarm_l"
+   ]
+  },
+  "grandmaster_cuff_r": {
+   "vertices": 192,
+   "faces": 192,
+   "triangles": 384,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_robe",
+   "surface": "robe_band",
+   "bones": [
+    "hand_r",
+    "lowerarm_r"
+   ]
+  },
+  "grandmaster_robe_skirt_under": {
+   "vertices": 1922,
+   "faces": 1920,
+   "triangles": 3840,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_robe",
+   "surface": "robe",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "grandmaster_robe_skirt_back": {
+   "vertices": 1922,
+   "faces": 1920,
+   "triangles": 3840,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_robe",
+   "surface": "robe",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "grandmaster_robe_skirt_outer": {
+   "vertices": 1922,
+   "faces": 1920,
+   "triangles": 3840,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_robe",
+   "surface": "robe",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "grandmaster_collar": {
+   "vertices": 180,
+   "faces": 178,
+   "triangles": 356,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_robe",
+   "surface": "robe_band",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "grandmaster_sash": {
+   "vertices": 616,
+   "faces": 648,
+   "triangles": 1232,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_robe",
+   "surface": "sash",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "grandmaster_sash_knot": {
+   "vertices": 74,
+   "faces": 84,
+   "triangles": 144,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_robe",
+   "surface": "sash",
+   "bones": [
+    "pelvis"
+   ]
+  },
+  "grandmaster_sash_tail0": {
+   "vertices": 48,
+   "faces": 46,
+   "triangles": 92,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_robe",
+   "surface": "sash",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l"
+   ]
+  },
+  "grandmaster_sash_tail1": {
+   "vertices": 48,
+   "faces": 46,
+   "triangles": 92,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_robe",
+   "surface": "sash",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l"
+   ]
+  },
+  "grandmaster_jade_cord": {
+   "vertices": 15,
+   "faces": 10,
+   "triangles": 20,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_props",
+   "surface": "cord",
+   "bones": [
+    "pelvis"
+   ]
+  },
+  "grandmaster_jade_bead": {
+   "vertices": 52,
+   "faces": 60,
+   "triangles": 100,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_props",
+   "surface": "bronze",
+   "bones": [
+    "pelvis"
+   ]
+  },
+  "grandmaster_jade": {
+   "vertices": 250,
+   "faces": 240,
+   "triangles": 480,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_props",
+   "surface": "jade",
+   "bones": [
+    "pelvis"
+   ]
+  },
+  "grandmaster_beard": {
+   "vertices": 314,
+   "faces": 284,
+   "triangles": 466,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_hairface",
+   "surface": "beard",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_03"
+   ]
+  },
+  "grandmaster_beard_outer": {
+   "vertices": 174,
+   "faces": 146,
+   "triangles": 238,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_hairface",
+   "surface": "beard",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_03"
+   ]
+  }
+ },
+ "triangles_total": 60024,
+ "top_of_everything_cm": 170.0,
+ "standing_height_cm": 170.0,
+ "lowest_point_cm": 0.0,
+ "bones": 53,
+ "root_bone": [
+  "root"
+ ],
+ "id": "grandmaster",
+ "name": "The Grandmaster",
+ "height": {
+  "macro_range_m": [
+   1.2529,
+   2.2996
+  ],
+  "height_macro": 0.56958,
+  "height_before_scale_m": 1.67999,
+  "uniform_scale": 1.000004,
+  "body_height_m": 1.68,
+  "targets_applied": 48
+ },
+ "timings_s": {
+  "enable_mpfb": 0.32,
+  "mpfb_body": 1.57,
+  "bake_body": 0.03,
+  "outfit": 5.76,
+  "textures": 27.11,
+  "finalize": 0.02,
+  "save_blend": 0.02,
+  "export_fbx": 0.49
+ },
+ "script_wall_s": 35.4,
+ "peak_rss_mb": 1761.3
+}

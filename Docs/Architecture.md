@@ -16,6 +16,17 @@ types beyond containers and maths, so they run headless in tests exactly as they
 | `UI/` | Slate screens and the HUD, drawn on a 1920 x 1080 canvas scaled to the window. Menus are driven by the input router, never by Slate focus. |
 | `Tests/` | Automation tests (`run_tests`), grouped as combat, rounds, AI, animation and game flow. |
 
+**Shapes.** A fighter fights with a definition (`FFighter::Def`) and is someone
+(`FFighter::BaseDef`). For everyone but the Grandmaster the two are the same. His own body, his
+spent body (`grandmaster_spent`, a definition of its own wearing his body) and a borrowed shape
+(`MakeBorrowedShape`: the opponent's definition with Qhi laid in and his reversal added, made once
+per match and kept by `FFightSim::Shapes`) are all plain `FFighterDef`s, so moves, commands,
+hurtboxes, throws and the CPU's notes all follow the shape with no special cases; health, Qhi
+and the fighter's identity stay with `BaseDef`. Shapes change only between moves (on a
+shapeshift's form frame, or when the body is free), and the view rebinds a fighter's body
+whenever its definition changes (`ASlopMatch::RebindView`). Damage passes through each side's
+power and defences, weighed by the blow's magical share (`Dealt` in `SlopFightSim.cpp`).
+
 **Timing.** `FFixedClock` turns rendered frames of any length into whole 60 Hz ticks (at most four
 a frame; a longer stall drops time rather than spiralling). Drawing interpolates between the last
 two ticks. Hit-stop freezes the simulation's clock, not the renderer.

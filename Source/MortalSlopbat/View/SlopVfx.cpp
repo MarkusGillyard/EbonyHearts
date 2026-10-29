@@ -396,7 +396,7 @@ void ASlopVfx::QhiStep(double Delta)
 		}
 		QhiT[I] += Delta;
 		// A borrowed shape smoulders gold, thinning as its Qhi runs down; a glide trails it underfoot.
-		const double Every = (bReduced ? 2.0 : 1.0) * (bBorrowed ? FMath::Lerp(0.16, 0.05, FMath::Clamp(F.Qhi / 50.0, 0.0, 1.0)) : 0.04);
+		const double Every = (bReduced ? 2.0 : 1.0) * (bBorrowed ? FMath::Lerp(0.12, 0.035, FMath::Clamp(F.Qhi / 50.0, 0.0, 1.0)) : 0.04);
 		while (QhiT[I] >= Every)
 		{
 			QhiT[I] -= Every;
@@ -404,7 +404,7 @@ void ASlopVfx::QhiStep(double Delta)
 			const FVector At = bBorrowed
 				? FVector(F.Pos.X + FMath::FRandRange(-0.22, 0.22), F.Pos.Y + FMath::FRandRange(0.15, 0.95) * H, FMath::FRandRange(-0.1, 0.2))
 				: FVector(F.Pos.X - F.Facing * FMath::FRandRange(0.0, 0.3), F.Pos.Y + FMath::FRandRange(0.0, 0.12), FMath::FRandRange(-0.1, 0.2));
-			Spawn(EKind::Qhi, At, FVector(FMath::FRandRange(-0.15, 0.15), bBorrowed ? FMath::FRandRange(0.5, 1.1) : 0.15, 0), 0.55, 0.022, 0, 1.5, bBorrowed ? -0.4 : 0.0);
+			Spawn(EKind::Qhi, At, FVector(FMath::FRandRange(-0.15, 0.15), bBorrowed ? FMath::FRandRange(0.5, 1.1) : 0.15, 0), 0.6, 0.03, 0, 1.5, bBorrowed ? -0.4 : 0.0);
 		}
 	}
 }

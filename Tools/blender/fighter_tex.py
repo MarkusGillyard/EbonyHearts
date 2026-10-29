@@ -405,7 +405,23 @@ def clean_scalp(built, body, lin, size):
     L = luminance(lin)
     detail = (L - blur(L, 4)) / (blur(L, 4) + 1e-4)
     fill = tone * (1 + 0.25 * np.clip(detail, -0.3, 0.3))[..., None]
+    mot = cfg_skin_mottle(built)
+    if mot:
+        # old skin: soft blotches and a scatter of small age spots (opt-in, 'scalp_mottle' in the skin spec)
+        size = lin.shape[0]
+        rng = np.random.default_rng(31)
+        n1 = blur(rng.random((size, size)), max(2, size // 90))
+        n1 = (n1 - n1.mean()) / (n1.std() + 1e-9)
+        spots = np.clip(blur((rng.random((size, size)) > 0.99985).astype(float), max(1, size // 500)) * 25, 0, 1)
+        brown = np.array([0.62, 0.5, 0.38])
+        fill = fill * (1 + mot * 0.3 * np.clip(n1, -2, 2))[..., None]
+        k = np.clip(spots * mot, 0, 0.6)[..., None]
+        fill = fill * (1 - k) + tone * brown * k
     return lin * (1 - m) + fill * m
+
+
+def cfg_skin_mottle(built):
+    return float(built["ctx"].cfg["skin"].get("scalp_mottle", 0.0))
 
 
 # ----------------------------------------------------------------------------- face / hair atlas
@@ -456,7 +472,7 @@ def face_atlas(fid, cfg, built, out_dir, slot, size):
             lin, iris = tint_iris(lin, cfg["eyes"])
             rough = 0.12
             if cfg["eyes"].get("emission"):
-                e = srgb_to_lin(hex_srgb(cfg["eyes"]["iris"])) * cfg["eyes"]["emission"]
+                e = srgb_to_lin(hex_srgb(cfg["eyes"].get("glow", cfg["eyes"]["iris"]))) * cfg["eyes"]["emission"]
                 emis[int(y0 * size):int(y0 * size) + ph, int(x0 * size):int(x0 * size) + pw] = \
                     lin_to_srgb(e * iris[..., None])
         else:
@@ -470,8 +486,10 @@ def face_atlas(fid, cfg, built, out_dir, slot, size):
         orm[Y:Y + ph, X:X + pw, 1] = rough
         notes.append("%s: %s -> tile %s" % (key, os.path.relpath(srcs[key], core.PROJECT), (x0, y0, w, h)))
         remap_uv(objs[key], x0, y0, w, h)
-    if has_hair and cfg.get("beard"):
-        for key, tile, dense in (("beard", (0.5, 0.0, 0.25, 0.25), True), ("beard_outer", (0.75, 0.0, 0.25, 0.25), False)):
+    if cfg.get("beard"):
+        # with hair the beard shares the lower right quarter; a bald head has the whole upper right quarter
+        bt = ((0.5, 0.0, 0.25, 0.25), (0.75, 0.0, 0.25, 0.25)) if has_hair else ((0.5, 0.5, 0.25, 0.5), (0.75, 0.5, 0.25, 0.5))
+        for key, tile, dense in (("beard", bt[0], True), ("beard_outer", bt[1], False)):
             if key not in objs:
                 continue
             x0, y0, w, h = tile
@@ -484,9 +502,58 @@ def face_atlas(fid, cfg, built, out_dir, slot, size):
             base[Y:Y + ph, X:X + pw, 3] = alpha
             orm[Y:Y + ph, X:X + pw, 1] = cfg["beard"].get("roughness", 0.85)
             notes.append("%s: generated fur strands %s, alpha edges -> tile %s" % (key, cfg["beard"]["color"], tile))
+    if cfg.get("braids"):
+        # procedural tight hair (no MakeHuman hair): a cap pulled back over the scalp and braid lobes,
+        # in the free upper right quarter of a hairless atlas
+        for key, tile, lobes in (("hair_cap", (0.5, 0.5, 0.25, 0.5), False), ("braids", (0.75, 0.5, 0.25, 0.5), True)):
+            if key not in objs:
+                continue
+            x0, y0, w, h = tile
+            remap_uv(objs[key], x0, y0, w, h)
+            X, Y, pw, ph = int(x0 * size), int(y0 * size), int(w * size), int(h * size)
+            cov = (raster(uv_tris(objs[key]), size) >= 0)[Y:Y + ph, X:X + pw]
+            mu, mv = (np.asarray(objs[key]["uv_span_m"], float) / [pw, ph])
+            rgb, alpha = hair_tile(cfg["braids"], cov, mu, mv, lobes, seed=21 if lobes else 17)
+            base[Y:Y + ph, X:X + pw, :3] = lin_to_srgb(rgb)
+            base[Y:Y + ph, X:X + pw, 3] = alpha
+            orm[Y:Y + ph, X:X + pw, 1] = cfg["braids"].get("roughness", 0.55)
+            notes.append("%s: generated hair strands %s -> tile %s" % (key, cfg["braids"]["color"], tile))
     normal = np.zeros((size, size, 3)) + [0.5, 0.5, 1.0]
     files = write_set(fid, slot, out_dir, base, normal, orm, emis if emis.any() else None, alpha=True)
     return files, notes
+
+
+def hair_tile(spec, cov, mu, mv, lobes, seed):
+    """Tight hair: strands along v (the cap's front-to-back direction, or a braid lobe's length),
+    lighter and darker strands, a soft ragged hairline (cap) or ragged lobe tips (braids). Lobes
+    share one UV rectangle, so only their v ends fade."""
+    ph, pw = cov.shape
+    rng = np.random.default_rng(seed)
+    col = srgb_to_lin(hex_srgb(spec["color"]))
+    lite = srgb_to_lin(hex_srgb(spec.get("highlight", spec["color"])))
+    L = 2 * max(4, int(0.015 / mv))                     # (strand_noise needs an even length)
+    n1 = strand_noise((ph, pw), rng, along=0, length=L)
+    n2 = strand_noise((ph, pw), rng, along=0, length=2 * max(2, L // 6))
+    k = np.clip(0.5 + 0.22 * n1 + 0.12 * n2, 0, 1)[..., None]
+    rgb = col * (0.62 + 0.55 * k) * (1 - 0.35 * k) + lite * 0.35 * k * k
+    if lobes:
+        vv = (np.arange(ph)[:, None] + 0.5) / ph * np.ones((1, pw))
+        tip = np.minimum(vv, 1 - vv) * ph * mv                       # metres from the lobe tips
+        edge = np.clip(tip / 0.004, 0, 1)
+        shade = 0.72 + 0.28 * np.sin(np.pi * np.clip(vv, 0, 1)) ** 0.6   # darker where lobes tuck under
+        rgb = rgb * shade[..., None]
+        strands = np.clip(0.5 + 0.5 * n2, 0, 1)
+        alpha = np.maximum(edge ** 2, strands * (tip > 0.0007) * (edge > 0.2))
+        alpha = np.where(edge >= 1, 1.0, alpha)
+    else:
+        cov = cov.copy()
+        cov[:, :3] |= cov[:, 3:4]          # u = 0 is the parting line between mirrored halves, not an edge
+        d = edge_distance(cov, mu, mv, max_m=0.01)
+        edge = np.clip(d / 0.006, 0, 1)
+        strands = np.clip(0.55 + 0.6 * n2, 0, 1)
+        alpha = np.where(edge >= 1, 1.0, np.maximum(edge ** 3, strands * edge * (d > 0.0005)))
+        alpha = np.where(cov, alpha, 0.0)
+    return np.clip(rgb, 0, 1), np.clip(alpha, 0, 1)
 
 
 def edge_distance(cov, mu, mv, max_m=0.012):
@@ -516,7 +583,7 @@ def fur_tile(spec, cov, mu, mv, dense, seed):
     col = srgb_to_lin(hex_srgb(spec["color"]))
     grey = srgb_to_lin(hex_srgb("#857e75"))
     area = cov.sum() * mu * mv
-    n = int(area / (0.0009 * 0.010) * (1.6 if dense else 0.9))
+    n = int(area / (0.0009 * 0.010) * (1.6 if dense else 0.9) * spec.get("density", 1.0))
     x0 = rng.random(n) * pw
     y0 = rng.random(n) * ph
     L = np.maximum((rng.uniform(0.006, 0.014, n) / mv).astype(int), 2)
@@ -539,7 +606,7 @@ def fur_tile(spec, cov, mu, mv, dense, seed):
     g_map = np.zeros((ph, pw))
     v_map[ys, xi] = val[idx] * fade
     g_map[ys, xi] = gr[idx]
-    edge = np.clip(d / (0.006 if dense else 0.004), 0, 1)
+    edge = np.clip(d / ((spec.get("core_edge", 0.006) if dense else 0.004)), 0, 1)
     edge = edge * edge * (3 - 2 * edge)
     strand_col = (col[None, None, :] * v_map[..., None] * (1 - g_map[..., None] * 0.8)
                   + grey[None, None, :] * g_map[..., None] * 0.8)
@@ -722,6 +789,9 @@ def tiled_slot(fid, cfg, built, out_dir, slot, objs, size):
         orm[m] = np.stack([0.35 + 0.65 * ao, r, np.full(m.sum(), sp["metallic"])], 1)
         if sp.get("emission"):
             emis[m] = lin_to_srgb(target * sp["emission"])
+        if sp.get("pattern"):
+            n_emb = embroider(objs[i], sp["pattern"], size, m, base, orm, (np.maximum(L, 1e-4) / mp["lum_mean"]) ** g)
+            notes.append("%s: %s embroidery in %s on %d texels" % (objs[i].name, sp["pattern"]["kind"], sp["pattern"]["thread"], n_emb))
         notes.append("%s: %s tinted %s, %.0f cm tiles, roughness %.2f, metallic %.0f" % (
             objs[i].name, sp["set"], sp["color"], sp["tile_m"] * 100, sp["roughness"], sp["metallic"]))
     if any_alpha:
@@ -729,6 +799,141 @@ def tiled_slot(fid, cfg, built, out_dir, slot, objs, size):
     files = write_set(fid, slot, out_dir, base, normal, orm, emis if emis.any() else None,
                       alpha=True if any_alpha else None)
     return files, notes, any_alpha
+
+
+# ----------------------------------------------------------------------------- embroidery
+
+def raster_attrs(ob, names, size, period=None):
+    """Per-vertex float attributes interpolated over the object's UV triangles into (size, size, k)
+    maps (NaN where the object has no texels). `period` unwraps the first attribute across a seam
+    (an along-the-band coordinate that runs round a closed ring)."""
+    me = ob.data
+    uv = np.empty(len(me.loops) * 2)
+    me.uv_layers.active.data.foreach_get("uv", uv)
+    uv = uv.reshape(-1, 2) * size
+    lv = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", lv)
+    vals = np.stack([attribute_values(ob, n) for n in names], 1).astype(float)
+    out = np.full((size, size, len(names)), np.nan)
+    for p in me.polygons:
+        ls = list(p.loop_indices)
+        pv = vals[lv[ls]].copy()
+        if (pv[:, 1] < -0.3).all() or (pv[:, 1] > 1.3).all():
+            continue                      # nowhere near the band
+        if period:
+            pv[:, 0] = pv[0, 0] + np.mod(pv[:, 0] - pv[0, 0] + period / 2, period) - period / 2
+        for k in range(1, len(ls) - 1):
+            t = uv[[ls[0], ls[k], ls[k + 1]]]
+            tv = pv[[0, k, k + 1]]
+            x0, y0 = np.maximum(np.floor(t.min(0)).astype(int), 0)
+            x1, y1 = np.minimum(np.ceil(t.max(0)).astype(int), size - 1)
+            if x1 < x0 or y1 < y0:
+                continue
+            xs, ys = np.meshgrid(np.arange(x0, x1 + 1) + 0.5, np.arange(y0, y1 + 1) + 0.5)
+            (ax, ay), (bx, by), (cx, cy) = t
+            d = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy)
+            if abs(d) < 1e-12:
+                continue
+            w0 = ((by - cy) * (xs - cx) + (cx - bx) * (ys - cy)) / d
+            w1 = ((cy - ay) * (xs - cx) + (ax - cx) * (ys - cy)) / d
+            w2 = 1 - w0 - w1
+            m = (w0 >= -1e-3) & (w1 >= -1e-3) & (w2 >= -1e-3)
+            sub = out[y0:y1 + 1, x0:x1 + 1]
+            sub[m] = (w0[..., None] * tv[0] + w1[..., None] * tv[1] + w2[..., None] * tv[2])[m]
+    return out
+
+
+def cloud_band(u, v):
+    """Pale-gold embroidery for a robe's edge band: a double border and a running scroll of ruyi
+    clouds (a big curl rolling in, an inner turn, two small side curls on a flat base), every
+    other one upside down, joined by a wave through the band's centre line. u runs along the
+    band in band widths, v across it (0..1). Returns stroke coverage and a dark halo round the
+    strokes (the shadow of raised thread)."""
+    u = np.asarray(u, float)
+    v = np.asarray(v, float)
+    P = 1.7
+    k = np.floor(u / P)
+    x = u - (k + 0.5) * P
+    y = (v - 0.5) * np.where(np.mod(k, 2) == 0, 1.0, -1.0)
+    d = np.minimum(np.abs(v - 0.09), np.abs(v - 0.91))
+    d = np.minimum(d, np.minimum(np.abs(v - 0.155), np.abs(v - 0.845)) + 0.012)
+
+    def arc(cx, cy, r, a0, a1):
+        ang = np.arctan2(y - cy, x - cx)
+        t = np.mod(ang - a0, 2 * math.pi)
+        e0 = np.hypot(x - cx - r * math.cos(a0), y - cy - r * math.sin(a0))
+        e1 = np.hypot(x - cx - r * math.cos(a1), y - cy - r * math.sin(a1))
+        return np.where(t <= (a1 - a0) % (2 * math.pi), np.abs(np.hypot(x - cx, y - cy) - r), np.minimum(e0, e1))
+
+    c = arc(0.0, 0.03, 0.17, -0.2, 3.4)
+    c = np.minimum(c, arc(0.035, 0.05, 0.085, 0.6, 4.6))
+    c = np.minimum(c, arc(-0.27, -0.08, 0.09, -0.4, 3.0))
+    c = np.minimum(c, arc(-0.27, -0.08, 0.04, 0.8, 4.2))
+    c = np.minimum(c, arc(0.27, -0.08, 0.09, 0.15, 3.55))
+    c = np.minimum(c, arc(0.27, -0.08, 0.04, -1.1, 2.3))
+    c = np.minimum(c, np.where(np.abs(x) <= 0.36, np.abs(y + 0.17), 9.0))
+    xx = np.abs(x)
+    tw = np.clip((xx - 0.36) / (P / 2 - 0.36), 0, 1)
+    wave = -0.17 * (1 + np.cos(math.pi * tw)) / 2
+    c = np.minimum(c, np.where(xx > 0.36, np.abs(y - wave) * 0.9, 9.0))
+    d = np.minimum(d, c)
+    w, aa = 0.022, 0.01
+    a = np.clip((w - d) / aa + 0.5, 0, 1)
+    halo = np.clip(np.clip((w + 0.03 - d) / 0.02, 0, 1) - a, 0, 1)
+    return a, halo
+
+
+def stitch_band(u, v):
+    """Rows of machine stitching along a belt: five parallel lines pressed into the cloth."""
+    v = np.asarray(v, float)
+    d = np.min([np.abs(v - r) for r in (0.13, 0.32, 0.5, 0.68, 0.87)], axis=0)
+    a = np.clip((0.022 - d) / 0.014 + 0.5, 0, 1)
+    halo = np.clip(np.clip((0.05 - d) / 0.02, 0, 1) - a, 0, 1)
+    return a * 0.8, halo
+
+
+def panel_band(u, v):
+    """A reinforcement panel (the part's band colour fills v < 1) with a dashed stitched seam
+    just inside its edge."""
+    v = np.asarray(v, float)
+    d = np.abs(v - 0.86)
+    on = np.mod(np.asarray(u, float) * 2.0, 1.0) < 0.62
+    a = np.clip((0.028 - d) / 0.016 + 0.5, 0, 1) * on
+    halo = np.clip(np.clip((0.06 - d) / 0.025, 0, 1) - a, 0, 1)
+    return a * 0.9, halo
+
+
+PATTERNS = {"cloud": cloud_band, "stitch": stitch_band, "panel": panel_band}
+
+
+def embroider(ob, pat, size, m, base, orm, lum):
+    """Edge band with embroidery on the texels `m` of one part: the part carries per-vertex
+    'emb_u' (along the band, in band widths) and 'emb_v' (across it, 0..1; outside that range the
+    part keeps its own cloth). pat: kind, thread colour, optional band colour (else the part's)."""
+    if "emb_u" not in ob.data.attributes:
+        return 0
+    A = raster_attrs(ob, ("emb_u", "emb_v"), size, ob.get("emb_period"))
+    eu, ev = A[..., 0][m], A[..., 1][m]
+    inb = np.isfinite(ev) & (ev >= 0) & (ev <= 1)
+    if not inb.any():
+        return 0
+    cur = srgb_to_lin(base[m])
+    if pat.get("band"):
+        cur[inb] = np.asarray(srgb_to_lin(hex_srgb(pat["band"])))[None, :] * lum[inb, None]
+    a, halo = PATTERNS[pat["kind"]](eu[inb], ev[inb])
+    tc = np.asarray(srgb_to_lin(hex_srgb(pat["thread"])))
+    stitch = 0.82 + 0.18 * np.sin(eu[inb] * 95.0 + ev[inb] * 30.0) ** 2       # satin-stitch sheen
+    c = cur[inb] * (1 - 0.4 * halo)[:, None]
+    cur[inb] = c * (1 - a[:, None]) + tc[None, :] * (stitch * (0.9 + 0.1 * lum[inb]))[:, None] * a[:, None]
+    base[m] = lin_to_srgb(cur)
+    o = orm[m]
+    if pat.get("band_roughness") is not None:
+        o[inb, 1] = pat["band_roughness"] * (0.85 + 0.3 * (lum[inb] - lum[inb].mean()))
+    o[inb, 0] = o[inb, 0] * (1 - 0.3 * halo)
+    o[inb, 1] = o[inb, 1] * (1 - a) + pat.get("thread_roughness", 0.36) * a
+    o[inb, 2] = o[inb, 2] * (1 - a) + pat.get("thread_metallic", 0.3) * a
+    orm[m] = o
+    return int(inb.sum())
 
 
 def lace_alpha(u, v):
@@ -847,7 +1052,7 @@ def texture_and_materials(fid, cfg, built, out_dir):
         surf = built["surface"][ob.name]
         if surf == "body" or cfg.get("surfaces", {}).get(surf, {}).get("slot") == "skin":
             groups["skin"].append(ob)
-        elif surf in ("eyes", "brows", "lashes", "hair", "beard"):
+        elif surf in ("eyes", "brows", "lashes", "hair", "beard", "hair_cap", "braids"):
             groups[face_slot].append(ob)
         else:
             groups[cfg["surfaces"][surf]["slot"]].append(ob)

@@ -26,6 +26,9 @@ namespace Slop
 		bool bCostume[2] = {false, false};
 		bool bFromArcade = false;
 		int32 TrialIndex = 0;
+		// A CPU tier beyond the difficulty for the CPU's fighter (the Grandmaster's challenge: 3,
+		// FCpuBrain::Level); -1 plays at the difficulty.
+		int32 CpuTier = -1;
 	};
 
 	// The result a match reports when it ends.
@@ -93,6 +96,9 @@ namespace Slop
 		static FName SecretFighter() { return TEXT("grandmaster"); }
 		bool SecretEarned() const;
 		void AddSecretRung();
+		// Development: a run already at the Slopbat, beaten without a continue (to reach the secret
+		// challenge without climbing a tower).
+		void SkipToBossCleared(FName Fighter, int32 TowerIndex);
 		bool OnSecretRung() const { const FRung* R = CurrentRung(); return R && R->Kind == TEXT("secret"); }
 		void ArcadeRetry();
 		// Back to the current rung after a detour (the stranger), without counting a continue.

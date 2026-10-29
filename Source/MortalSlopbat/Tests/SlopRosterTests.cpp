@@ -9,7 +9,7 @@
 #include "Serialization/JsonSerializer.h"
 
 // The two fighters added after the six: Wren Sallow, the seventh of the starting roster, and the
-// Grandmaster, Kazan Still, who is unlocked. His rules are checked here as the owner set them: a Qhi
+// Grandmaster, who is unlocked. His rules are checked here as the owner set them: a Qhi
 // meter in place of the run meter, a shapeshift into the opponent facing him for exactly half the
 // meter, a copy stronger than its original, a run meter only while he wears one, and a spent,
 // drunken body when the Qhi is gone.
@@ -366,6 +366,35 @@ bool FSlopGmRoundReset::RunTest(const FString&)
 	return true;
 }
 
+SLOP_TEST(FSlopGmWinsInOwnShape, "Fighters.Grandmaster.ADecidedFightLetsTheShapeGo")
+bool FSlopGmWinsInOwnShape::RunTest(const FString&)
+{
+	// Borrowed, he lands the deciding blow: the shape is let go once the fight is decided (no
+	// refund), so his own finisher, not the opponent's, is his to enter; and a throw or a blow in
+	// the shapeshift's startup leaves him in his own shape.
+	FGmMatch H(TEXT("nix"));
+	H.Sim.RoundsToWin = 1;
+	TestTrue("borrowed", H.Borrow());
+	H.Idle(12);
+	H.F(1).Health = 1;
+	H.Place(0.7);
+	const double Before = H.Gm().Qhi;
+	H.Step(0, HP);
+	H.Until([&H]() { return H.Sim.Phase != EPhase::Fight && H.Gm().Form == EForm::Own; }, 240);
+	TestEqual("own shape once the fight is decided", H.Gm().Form, EForm::Own);
+	TestTrue("with no Qhi back", H.Gm().Qhi <= Before);
+	TestTrue("his own finisher", H.Gm().Def->bHasFinisher && H.Gm().Def->FinisherCmd.Move == FName(TEXT("still_water")));
+
+	FGmMatch T(TEXT("bram"));
+	T.Place(0.7);
+	T.Shapeshift();
+	T.Step(0, 0, R, LP);
+	T.Idle(80);
+	TestNull("thrown in the startup: no shape", T.FormEvent(TEXT("borrowed")));
+	TestNotNull("the shapeshift is broken", T.FormEvent(TEXT("failed")));
+	return true;
+}
+
 SLOP_TEST(FSlopGmNoLoops, "Fighters.Grandmaster.NoCancelIntoAChangeOfShapeAndNoFarming")
 bool FSlopGmNoLoops::RunTest(const FString&)
 {
@@ -521,6 +550,7 @@ bool FSlopSecretChallenge::RunTest(const FString&)
 	F.AddSecretRung();
 	TestTrue("the old master is one more rung", F.OnSecretRung() && F.Config.P2 == FName(TEXT("grandmaster")));
 	TestEqual("at Master, whatever the tower", F.Config.Difficulty, 2);
+	TestEqual("with the CPU's tier beyond it", F.Config.CpuTier, 3);
 	TestFalse("and the run ends after him", F.ArcadeAdvance(false, 0.0));
 
 	FGameFlow C;
@@ -616,7 +646,7 @@ bool FSlopNewMatchups::RunTest(const FString&)
 {
 	for (const TCHAR* Who : {TEXT("wren"), TEXT("grandmaster")})
 	{
-		for (int32 Level = 0; Level < 3; ++Level)
+		for (int32 Level = 0; Level < (FName(Who) == FName(TEXT("grandmaster")) ? 4 : 3); ++Level)
 		{
 			int32 Won = 0, Played = 0;
 			FString Line;
@@ -633,8 +663,10 @@ bool FSlopNewMatchups::RunTest(const FString&)
 					FFightSim Sim;
 					Sim.bIntro = false;
 					Sim.Setup(Side == 0 ? Fighter(Who) : GetContent().Fighter(Opp), Side == 0 ? GetContent().Fighter(Opp) : Fighter(Who));
-					FCpuBrain C0(Sim, 0, Level, 1000 + Seed * 13 + Level);
-					FCpuBrain C1(Sim, 1, Level, 2000 + Seed * 17 + Level);
+					// Level 3 is the secret challenge: the Grandmaster's tier against Master opponents.
+					const int32 OppLevel = FMath::Min(Level, 2);
+					FCpuBrain C0(Sim, 0, Side == 0 ? Level : OppLevel, 1000 + Seed * 13 + Level);
+					FCpuBrain C1(Sim, 1, Side == 0 ? OppLevel : Level, 2000 + Seed * 17 + Level);
 					for (int32 T = 0; T < 60 * 60 * 6 && Sim.Phase != EPhase::MatchEnd; ++T)
 					{
 						FPadState Pads[2] = {C0.Think(), C1.Think()};
@@ -659,6 +691,10 @@ bool FSlopNewMatchups::RunTest(const FString&)
 			else if (Level == 2)
 			{
 				TestTrue(FString::Printf(TEXT("the Master CPU Grandmaster holds his own (%.0f%%)"), Rate * 100), Rate >= 0.3);
+			}
+			else if (Level == 3)
+			{
+				TestTrue(FString::Printf(TEXT("the challenge's Grandmaster beats Master CPUs more often than not (%.0f%%)"), Rate * 100), Rate > 0.5);
 			}
 		}
 	}

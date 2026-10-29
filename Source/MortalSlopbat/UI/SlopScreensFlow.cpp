@@ -1261,7 +1261,7 @@ namespace SlopScreensFlowImpl
 								const FFighterDef* D = Def(Id);
 								const int32 I = Seen.IndexOfByKey(Id);
 								FString First, Rest;
-								if (!D->Name.Split(TEXT(" "), &First, &Rest))
+								if (D->Name.StartsWith(TEXT("The ")) || !D->Name.Split(TEXT(" "), &First, &Rest))
 								{
 									First = D->Name;
 								}

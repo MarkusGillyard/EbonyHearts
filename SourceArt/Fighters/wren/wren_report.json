@@ -1,0 +1,690 @@
+{
+ "slots": {
+  "skin": {
+   "material": "M_wren_skin",
+   "size": 2048,
+   "files": {
+    "basecolor": "wren_skin_basecolor.png",
+    "normal": "wren_skin_normal.png",
+    "orm": "wren_skin_orm.png"
+   },
+   "objects": [
+    "wren_body"
+   ]
+  },
+  "hairface": {
+   "material": "M_wren_hairface",
+   "size": 2048,
+   "files": {
+    "basecolor": "wren_hairface_basecolor.png",
+    "normal": "wren_hairface_normal.png",
+    "orm": "wren_hairface_orm.png",
+    "emissive": "wren_hairface_emissive.png"
+   },
+   "objects": [
+    "wren_eyes",
+    "wren_brows",
+    "wren_lashes",
+    "wren_hair_cap",
+    "wren_braids"
+   ]
+  },
+  "jacket": {
+   "material": "M_wren_jacket",
+   "size": 2048,
+   "files": {
+    "basecolor": "wren_jacket_basecolor.png",
+    "normal": "wren_jacket_normal.png",
+    "orm": "wren_jacket_orm.png"
+   },
+   "objects": [
+    "wren_jacket",
+    "wren_cuff_l",
+    "wren_cuff_r",
+    "wren_jacket_skirt0",
+    "wren_jacket_skirt1",
+    "wren_lapel"
+   ]
+  },
+  "cloth": {
+   "material": "M_wren_cloth",
+   "size": 2048,
+   "files": {
+    "basecolor": "wren_cloth_basecolor.png",
+    "normal": "wren_cloth_normal.png",
+    "orm": "wren_cloth_orm.png"
+   },
+   "objects": [
+    "wren_trousers",
+    "wren_rashguard"
+   ]
+  },
+  "belt": {
+   "material": "M_wren_belt",
+   "size": 512,
+   "files": {
+    "basecolor": "wren_belt_basecolor.png",
+    "normal": "wren_belt_normal.png",
+    "orm": "wren_belt_orm.png",
+    "emissive": "wren_belt_emissive.png"
+   },
+   "objects": [
+    "wren_belt",
+    "wren_belt_knot",
+    "wren_belt_tail0",
+    "wren_belt_tail1",
+    "wren_bead"
+   ]
+  },
+  "leather": {
+   "material": "M_wren_leather",
+   "size": 1024,
+   "files": {
+    "basecolor": "wren_leather_basecolor.png",
+    "normal": "wren_leather_normal.png",
+    "orm": "wren_leather_orm.png"
+   },
+   "objects": [
+    "wren_shoe_l",
+    "wren_sole_l",
+    "wren_shoe_r",
+    "wren_sole_r",
+    "wren_laces_l",
+    "wren_laces_r",
+    "wren_glove_l",
+    "wren_glovestrap_l",
+    "wren_glove_r",
+    "wren_glovestrap_r"
+   ]
+  }
+ },
+ "texture_notes": {
+  "skin": [
+   "tinted young_lightskinned_female_diffuse.png -> #cf9f83 (per-channel gain [0.931, 0.944, 0.895])",
+   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #cf9f83"
+  ],
+  "hairface": [
+   "eyes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyes/materials/green_eye.png -> tile (0.0, 0.0, 0.5, 0.5)",
+   "brows: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyebrows/eyebrow006/eyebrow006.png -> tile (0.5, 0.0, 0.5, 0.5)",
+   "lashes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyelashes/eyelashes02/eyelashes02.png -> tile (0.0, 0.5, 0.5, 0.5)",
+   "hair_cap: generated hair strands #5f4c3a -> tile (0.5, 0.5, 0.25, 0.5)",
+   "braids: generated hair strands #5f4c3a -> tile (0.75, 0.5, 0.25, 0.5)"
+  ],
+  "jacket": [
+   "wren_jacket: Fabric066 tinted #33373a, 5 cm tiles, roughness 0.90, metallic 0",
+   "wren_cuff_l: Fabric066 tinted #2a2d30, 4 cm tiles, roughness 0.88, metallic 0",
+   "wren_cuff_r: Fabric066 tinted #2a2d30, 4 cm tiles, roughness 0.88, metallic 0",
+   "wren_jacket_skirt0: Fabric066 tinted #33373a, 5 cm tiles, roughness 0.90, metallic 0",
+   "wren_jacket_skirt1: Fabric066 tinted #33373a, 5 cm tiles, roughness 0.90, metallic 0",
+   "wren_lapel: Fabric066 tinted #2a2d30, 4 cm tiles, roughness 0.88, metallic 0"
+  ],
+  "cloth": [
+   "wren_trousers: panel embroidery in #45484d on 22787 texels",
+   "wren_trousers: Fabric034 tinted #202226, 15 cm tiles, roughness 0.70, metallic 0",
+   "wren_rashguard: Fabric034 tinted #1d2023, 12 cm tiles, roughness 0.60, metallic 0"
+  ],
+  "belt": [
+   "wren_belt: stitch embroidery in #4c1918 on 26394 texels",
+   "wren_belt: Fabric001 tinted #6f2826, 7 cm tiles, roughness 0.92, metallic 0",
+   "wren_belt_knot: stitch embroidery in #4c1918 on 0 texels",
+   "wren_belt_knot: Fabric001 tinted #6f2826, 7 cm tiles, roughness 0.92, metallic 0",
+   "wren_belt_tail0: stitch embroidery in #4c1918 on 9473 texels",
+   "wren_belt_tail0: Fabric001 tinted #6f2826, 7 cm tiles, roughness 0.92, metallic 0",
+   "wren_belt_tail1: stitch embroidery in #4c1918 on 8157 texels",
+   "wren_belt_tail1: Fabric001 tinted #6f2826, 7 cm tiles, roughness 0.92, metallic 0",
+   "wren_bead: flat #5ef2d6"
+  ],
+  "leather": [
+   "wren_shoe_l: Leather021 tinted #26272b, 18 cm tiles, roughness 0.55, metallic 0",
+   "wren_sole_l: Leather026 tinted #121214, 15 cm tiles, roughness 0.70, metallic 0",
+   "wren_shoe_r: Leather021 tinted #26272b, 18 cm tiles, roughness 0.55, metallic 0",
+   "wren_sole_r: Leather026 tinted #121214, 15 cm tiles, roughness 0.70, metallic 0",
+   "wren_laces_l: Leather021 tinted #857d72, 6 cm tiles, roughness 0.80, metallic 0",
+   "wren_laces_r: Leather021 tinted #857d72, 6 cm tiles, roughness 0.80, metallic 0",
+   "wren_glove_l: Leather026 tinted #17171a, 12 cm tiles, roughness 0.50, metallic 0",
+   "wren_glovestrap_l: Leather021 tinted #3a1d1c, 10 cm tiles, roughness 0.50, metallic 0",
+   "wren_glove_r: Leather026 tinted #17171a, 12 cm tiles, roughness 0.50, metallic 0",
+   "wren_glovestrap_r: Leather021 tinted #3a1d1c, 10 cm tiles, roughness 0.50, metallic 0"
+  ]
+ },
+ "parts": {
+  "wren_body": {
+   "vertices": 7535,
+   "faces": 7327,
+   "triangles": 14654,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_wren_skin",
+   "surface": "body",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "clavicle_l",
+    "clavicle_r",
+    "foot_l",
+    "foot_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "index_01_l",
+    "index_01_r",
+    "index_02_l",
+    "index_02_r",
+    "index_03_l",
+    "index_03_r",
+    "lowerarm_l",
+    "lowerarm_r",
+    "middle_01_l",
+    "middle_01_r",
+    "middle_02_l",
+    "middle_02_r",
+    "middle_03_l",
+    "middle_03_r",
+    "neck_01",
+    "pinky_01_l",
+    "pinky_01_r",
+    "pinky_02_l",
+    "pinky_02_r",
+    "pinky_03_l",
+    "pinky_03_r",
+    "ring_01_l",
+    "ring_01_r",
+    "ring_02_l",
+    "ring_02_r",
+    "ring_03_l",
+    "ring_03_r",
+    "spine_03",
+    "thumb_01_l",
+    "thumb_01_r",
+    "thumb_02_l",
+    "thumb_02_r",
+    "thumb_03_l",
+    "thumb_03_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "wren_eyes": {
+   "vertices": 1064,
+   "faces": 1020,
+   "triangles": 2040,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_wren_hairface",
+   "surface": "eyes",
+   "bones": [
+    "head"
+   ]
+  },
+  "wren_brows": {
+   "vertices": 124,
+   "faces": 96,
+   "triangles": 192,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_wren_hairface",
+   "surface": "brows",
+   "bones": [
+    "head"
+   ]
+  },
+  "wren_lashes": {
+   "vertices": 250,
+   "faces": 184,
+   "triangles": 368,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_wren_hairface",
+   "surface": "lashes",
+   "bones": [
+    "head"
+   ]
+  },
+  "wren_trousers": {
+   "vertices": 2884,
+   "faces": 2910,
+   "triangles": 5772,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_wren_cloth",
+   "surface": "trousers",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "foot_l",
+    "foot_r",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "wren_shoe_l": {
+   "vertices": 1120,
+   "faces": 1144,
+   "triangles": 2236,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_leather",
+   "surface": "shoes",
+   "bones": [
+    "ball_l",
+    "calf_l",
+    "foot_l"
+   ]
+  },
+  "wren_sole_l": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_leather",
+   "surface": "sole",
+   "bones": [
+    "ball_l",
+    "foot_l"
+   ]
+  },
+  "wren_shoe_r": {
+   "vertices": 1120,
+   "faces": 1144,
+   "triangles": 2236,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_leather",
+   "surface": "shoes",
+   "bones": [
+    "ball_r",
+    "calf_r",
+    "foot_r"
+   ]
+  },
+  "wren_sole_r": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_leather",
+   "surface": "sole",
+   "bones": [
+    "ball_r",
+    "foot_r"
+   ]
+  },
+  "wren_laces_l": {
+   "vertices": 170,
+   "faces": 110,
+   "triangles": 220,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_leather",
+   "surface": "laces",
+   "bones": [
+    "calf_l",
+    "foot_l"
+   ]
+  },
+  "wren_laces_r": {
+   "vertices": 170,
+   "faces": 110,
+   "triangles": 220,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_leather",
+   "surface": "laces",
+   "bones": [
+    "calf_r",
+    "foot_r"
+   ]
+  },
+  "wren_rashguard": {
+   "vertices": 4694,
+   "faces": 4722,
+   "triangles": 9396,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_wren_cloth",
+   "surface": "rashguard",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "lowerarm_l",
+    "lowerarm_r",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "wren_jacket": {
+   "vertices": 4460,
+   "faces": 4532,
+   "triangles": 8928,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_wren_jacket",
+   "surface": "jacket",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "lowerarm_l",
+    "lowerarm_r",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "wren_cuff_l": {
+   "vertices": 160,
+   "faces": 160,
+   "triangles": 320,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_wren_jacket",
+   "surface": "lapel",
+   "bones": [
+    "lowerarm_l"
+   ]
+  },
+  "wren_cuff_r": {
+   "vertices": 160,
+   "faces": 160,
+   "triangles": 320,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_jacket",
+   "surface": "lapel",
+   "bones": [
+    "lowerarm_r",
+    "upperarm_r"
+   ]
+  },
+  "wren_jacket_skirt0": {
+   "vertices": 682,
+   "faces": 680,
+   "triangles": 1360,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_wren_jacket",
+   "surface": "jacket",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "wren_jacket_skirt1": {
+   "vertices": 682,
+   "faces": 680,
+   "triangles": 1360,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_wren_jacket",
+   "surface": "jacket",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "wren_lapel": {
+   "vertices": 156,
+   "faces": 154,
+   "triangles": 308,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_wren_jacket",
+   "surface": "lapel",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "wren_belt": {
+   "vertices": 352,
+   "faces": 422,
+   "triangles": 704,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_wren_belt",
+   "surface": "belt",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "wren_belt_knot": {
+   "vertices": 62,
+   "faces": 70,
+   "triangles": 120,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_wren_belt",
+   "surface": "belt",
+   "bones": [
+    "pelvis"
+   ]
+  },
+  "wren_belt_tail0": {
+   "vertices": 48,
+   "faces": 46,
+   "triangles": 92,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_wren_belt",
+   "surface": "belt",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_r"
+   ]
+  },
+  "wren_belt_tail1": {
+   "vertices": 48,
+   "faces": 46,
+   "triangles": 92,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_wren_belt",
+   "surface": "belt",
+   "bones": [
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l"
+   ]
+  },
+  "wren_bead": {
+   "vertices": 82,
+   "faces": 90,
+   "triangles": 160,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_belt",
+   "surface": "bead",
+   "bones": [
+    "pelvis",
+    "thigh_l"
+   ]
+  },
+  "wren_glove_l": {
+   "vertices": 1260,
+   "faces": 1352,
+   "triangles": 2536,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_wren_leather",
+   "surface": "gloves",
+   "bones": [
+    "hand_l",
+    "index_01_l",
+    "index_02_l",
+    "lowerarm_l",
+    "middle_01_l",
+    "middle_02_l",
+    "pinky_01_l",
+    "pinky_02_l",
+    "pinky_03_l",
+    "ring_01_l",
+    "ring_02_l",
+    "thumb_01_l",
+    "thumb_02_l"
+   ]
+  },
+  "wren_glovestrap_l": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 3,
+   "unweighted_vertices": 0,
+   "material": "M_wren_leather",
+   "surface": "strap",
+   "bones": [
+    "hand_l",
+    "lowerarm_l",
+    "thumb_01_l"
+   ]
+  },
+  "wren_glove_r": {
+   "vertices": 1260,
+   "faces": 1352,
+   "triangles": 2536,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_wren_leather",
+   "surface": "gloves",
+   "bones": [
+    "hand_r",
+    "index_01_r",
+    "index_02_r",
+    "lowerarm_r",
+    "middle_01_r",
+    "middle_02_r",
+    "pinky_01_r",
+    "pinky_02_r",
+    "pinky_03_r",
+    "ring_01_r",
+    "ring_02_r",
+    "thumb_01_r",
+    "thumb_02_r"
+   ]
+  },
+  "wren_glovestrap_r": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 3,
+   "unweighted_vertices": 0,
+   "material": "M_wren_leather",
+   "surface": "strap",
+   "bones": [
+    "hand_r",
+    "lowerarm_r",
+    "thumb_01_r"
+   ]
+  },
+  "wren_hair_cap": {
+   "vertices": 419,
+   "faces": 380,
+   "triangles": 714,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_hairface",
+   "surface": "hair_cap",
+   "bones": [
+    "head",
+    "neck_01"
+   ]
+  },
+  "wren_braids": {
+   "vertices": 5760,
+   "faces": 4200,
+   "triangles": 8400,
+   "max_influences": 5,
+   "unweighted_vertices": 0,
+   "material": "M_wren_hairface",
+   "surface": "braids",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  }
+ },
+ "triangles_total": 65980,
+ "top_of_everything_cm": 169.3,
+ "standing_height_cm": 168.0,
+ "lowest_point_cm": -0.0,
+ "bones": 53,
+ "root_bone": [
+  "root"
+ ],
+ "id": "wren",
+ "name": "Wren Sallow",
+ "height": {
+  "macro_range_m": [
+   1.1783,
+   2.2041
+  ],
+  "height_macro": 0.614746,
+  "height_before_scale_m": 1.66798,
+  "uniform_scale": 1.000015,
+  "body_height_m": 1.668,
+  "targets_applied": 43
+ },
+ "timings_s": {
+  "enable_mpfb": 0.27,
+  "mpfb_body": 1.74,
+  "bake_body": 0.02,
+  "outfit": 3.46,
+  "textures": 31.8,
+  "finalize": 0.02,
+  "save_blend": 0.04,
+  "export_fbx": 0.5
+ },
+ "script_wall_s": 37.9,
+ "peak_rss_mb": 2084.6
+}

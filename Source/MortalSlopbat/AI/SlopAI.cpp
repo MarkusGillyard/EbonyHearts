@@ -90,12 +90,15 @@ namespace Slop
 			{24, 0.25, 0.2, 0.25, 0.35, 0.45, 0.1, 16, 0.25, 0.35},
 			{16, 0.45, 0.5, 0.55, 0.7, 0.6, 0.35, 10, 0.1, 0.7},
 			{11, 0.62, 0.75, 0.85, 0.92, 0.7, 0.6, 7, 0.03, 0.95},
+			// Beyond Master, for one fight only (the Grandmaster's challenge): the same rules and
+			// meters, a human expert's reactions (150 ms) and sharper reads.
+			{9, 0.7, 0.85, 0.92, 0.95, 0.72, 0.7, 6, 0.02, 1.0},
 		};
-		return Levels[FMath::Clamp(Difficulty, 0, 2)];
+		return Levels[FMath::Clamp(Difficulty, 0, 3)];
 	}
 
 	FCpuBrain::FCpuBrain(FFightSim& InSim, int32 InIndex, int32 Difficulty, int32 Seed)
-		: Sim(InSim), Index(InIndex), Diff(FMath::Clamp(Difficulty, 0, 2)), L(Level(Difficulty))
+		: Sim(InSim), Index(InIndex), Diff(FMath::Clamp(Difficulty, 0, 3)), L(Level(Difficulty))
 	{
 		Rng.Initialize(Seed != 0 ? Seed : 9001 + InIndex * 31 + Difficulty * 7);
 		Ai = Me().Def->AI;

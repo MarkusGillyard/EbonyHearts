@@ -7,7 +7,7 @@ for sessions, `Saved/Logs/tests.log` for the last test run.
 
 ## Automated tests
 
-`run_tests` (Unreal automation, headless): **101 tests, all passing** on the source of 2.6.7.
+`run_tests` (Unreal automation, headless): **122 tests, all passing** on the source of 2.7.0 (101 on 2.6.7).
 
 | Area | What the tests hold |
 |---|---|
@@ -19,6 +19,36 @@ for sessions, `Saved/Logs/tests.log` for the last test run.
 | Content | Every fighter has a body that maps onto the rig, the character material on every slot and a portrait; every stage piece the data places exists with its materials and surface textures. |
 | Saves | Settings round trip and bad values; rebinding never binds twice; reserved keys and pad buttons refused (directions, menu keys, F-keys); progress records, a damaged file set aside, the original game's file read once and never written; an interrupted write recovered; a damaged settings file set aside; a later version's progress copied aside. |
 | Flow | Arcade ladders, scoring and the end; Survival waves, carried health and the boss; alternate colours kept through the stranger's fight mid-Arcade and Survival's Try Again. |
+
+## The two new fighters (2.7.0)
+
+Checked on the editor build, windowed at 1920 x 1080 on the real display, with screenshots
+(`Saved/Screenshots/LinuxEditor/`: `nf_*`, `tour_*`, `ev_*`, `spent_*`, `gmst_*`) and the log.
+
+| What | How | Result |
+|---|---|---|
+| Roster | `Fighters.RosterOfSevenAndTheSecretGrandmaster`; the select screen in a fresh profile and with `-SlopUnlock=grandmaster` | Seven to start (the six and Wren), the eighth tile sealed ("?", "???", the clue) until unlocked; unlocked, his portrait, name and story; no data errors |
+| Qhi and no run meter | `OwnBodyHasQhiAndNoRunMeter`; the HUD in a match | Gold Qhi bar with the half mark, no run bar; Run + forward glides on Qhi |
+| Borrowed Face | `BorrowsEveryStandardOpponentForHalfTheQhi` (all seven), `CopyOutfightsTheOriginal` (all seven), `ShapeshiftNeedsHalfTheMeter`, `BrokenShapeshiftCostsLittle`, `RevertingRefundsNothing`, `ADecidedFightLetsTheShapeGo`, `BossesAndMirrorsCannotBeBorrowed`, `NoCancelIntoAChangeOfShapeAndNoFarming`; his tour (borrowing Gorm) and CPU matches (borrowing Wren and Bram) | Exactly 50 paid on the frame it takes, refused below it (aloud), 8 for a broken startup, nothing back on reverting, the opponent's whole moveset with Qhi's edge, a full run meter, the opponent's body and materials with a gold rim and motes, "BORROWED FACE: <name>" and "QHI · AS <name>" on the HUD |
+| Spent | `EmptyMeterBreaksTheShapeIntoTheSpentBody`, `SpentBodyIsWeakDrunkenBoxing`, `EveryRoundStartsInHisOwnShape`; `-SlopQhi=0` in a match | Drunken boxing for about nine seconds, weaker on both counts, no Qhi move or glide, "QHI SPENT" and the rust bar refilling to its mark; recentres short of another shapeshift |
+| Defences | `WorstPhysicalBestMagicalDefence` | Ashka's jab hurts him more than Bram, her Ember Shot half as much, Wick Knee by its share |
+| Wren | `FeintCancelsIntoAnythingButItself`, `BarTheDoorCatchesIntoAnArmlock`, `FlickerStepPassesThroughProjectiles`; her tour with boxes; the data-wide tests (reach, throws, loops, hands, feet, floor) | All hold; the armlock cannot be broken by mashing, a low beats the parry |
+| Unlock | `UnlockedByAnArcadeWithoutAContinue`; `-SlopSecret=wren -SlopAutoPlay=2` in a fresh profile | The still-water face-off, a Master fight in the Drowned Chapel, the result, Wren's ending, and `fighter:grandmaster` saved in the profile's progress |
+| CPU | `GrandmasterKeepsTheQhiRules`, `NewFightersMatchups`, every pairing | Below |
+
+CPU against CPU (`AI.NewFightersMatchups`, eight matches per pairing, both sides of the screen;
+the numbers swing a good deal with the seeds): Wren wins 40%, 21% and 50% at Novice, Warrior and
+Master (in another run 29%, 42%, 62%); the Grandmaster 20%, 16% and 36% (a novice CPU misuses his
+meter, as a novice player would), and in his challenge's tier (the same rules and meters, 150 ms
+reactions and sharper reads) 71% against Master CPUs, Bram's rushdown still beating him 7 times in
+8. Across all 192 pairings (three levels, both sides): Ashka 33, Gorm 27, Nix 29, Mirela 13,
+Bram 36, Hollis 17, Wren 20, the Grandmaster 17 match wins.
+
+Found and fixed while checking: the CPU pairing test kept six win counters (a seventh fighter wrote
+past them); a body put on over another kept the old body's materials (the borrowed Gorm wore the
+Grandmaster's robe textures); the pose library rebuilt for a new form kept its old poses (the spent
+body stood in the Qhi stance); a gold rim at four times a fighter's own washed a borrowed shape out;
+a move without a swing sound asked for a sound called "None".
 
 ## Playing the modes
 

@@ -9,7 +9,7 @@ evidence behind every claim here.
 |---|---|
 | Source | `~/Documents/Unreal Projects/MortalSlopbat`, branch `ue5`; pushed to the private `MarkusGillyard/Slopbat` as branch `ue5` (its own history; `main` untouched). The Godot original at `~/Documents/Mortal Slopbat` is unchanged. |
 | Engine | Unreal Engine 5.8.4 at `/media/cinqic/Cinqic Storage/UnrealEngine/UE_5.8.4`; Vulkan SM6; Linux x86_64. |
-| Game | Complete: six fighters, the Slopbat and the stranger; four stages; Arcade, Survival, Versus, Versus CPU, Training, Tutorial, Trials, Extras, Settings; saves and settings; controllers and keyboard. |
+| Game | Complete: eight fighters (seven to start, the Grandmaster unlocked by a secret challenge), the Slopbat and the stranger; four stages; Arcade, Survival, Versus, Versus CPU, Training, Tutorial, Trials, Extras, Settings; saves and settings; controllers and keyboard. |
 | Art | All eight fighters built from CC0 MakeHuman bodies with scripted costumes (`Tools/blender`); four stage sets built in Blender (`Tools/blender/stages`); CC0 surfaces, props, skies and sounds. |
 | Tests | Automation tests (`run_tests`), scripted flows for every mode (`Tools/playtest`), unattended packaged sessions (`Tools/perf/soak.sh`). |
 | Combat feel | 2.2.0 applies the presentation changes ranked by the study in `Docs/Martial-arts.md` (strikes, hit-stop, reactions, styles, sound) and one rule change (counter-hit freeze on the victim); frame data otherwise unchanged. 2.3.0 to 2.5.0 bring in motion capture: strikes, footwork, the block, Daxion's evade, intros and wins. |
@@ -34,6 +34,29 @@ build_<stage>.py` (stages), `Tools/prep_surfaces.py` (surfaces, from the downloa
 then `editor_py Tools/import_assets.py` with `SLOP_IMPORT_ONLY=fighters` or `stages`, followed by a
 second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, then
 `Tools/portraits.py`, then the `portraits` import step.
+
+## The two new fighters (2.7.0)
+
+Wren Sallow (the Fen Light, the seventh of the starting roster) and the Grandmaster (unlocked;
+his name is his title, at the owner's wish, and nothing in the game undercuts it) were added from the owner's directive of 29 October
+(`~/Documents/Mortal_Slopbat_Grandmaster_All_Rounder_Claude_Engineering_Directive_2026-10-29.md`)
+and his two visual directions (the Grandmaster inspired by Cary-Hiroyuki Tagawa; Wren by Valentina
+Shevchenko and Ronda Rousey). `Docs/Design.md` has the rules and the roster sheet;
+`Docs/Architecture.md` how shapes work in code; `Docs/Assets.md` the likeness question.
+
+- **Data.** `Content/Data/fighters/wren.json`, `grandmaster.json`, `grandmaster_spent.json` (the
+  spent body is a definition of its own wearing his body), their poses (authored for a 1.8 m body,
+  scaled) and looks; motion capture for Wren's head kick, backfist, spinning back kick and crescent
+  and his weave, Wren's intro and win (`Tools/mocap`); story, rival lines, endings, trials.
+- **Bodies.** `Tools/blender/fighters.json` and `fighter_outfits3.py`, built like the others; import
+  just these with `SLOP_FIGHTERS=wren,grandmaster` (the importer now takes it for the fighters,
+  slots and portraits steps).
+- **Testing him.** `-SlopUnlock=grandmaster` (development builds) makes him selectable for the
+  session without saving it; `-SlopSecret=<fighter>` starts at his challenge as if that fighter had
+  just cleared a tower without a continue; `-SlopMatch=grandmaster,ashka,training` as before.
+- **Tuning.** Every number is data: `qhi` in `grandmaster.json` (the 50% price is fixed in code,
+  `FQhiRules::ShapeshiftShare`, as the owner set it), `stats` for defences and power.
+  `AI.NewFightersMatchups` logs CPU win rates by difficulty for both.
 
 ## Open
 

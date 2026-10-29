@@ -118,6 +118,8 @@ private:
 	// A fighter that changed shape gets its new body, and the looks this match gives it.
 	void RebindView(int32 I);
 	void DressView(int32 I);
+	// A body that has just changed comes together out of gold over a quarter of a second (1 to 0).
+	float FormFade[2] = {0.f, 0.f};
 	void HandleEvent(const Slop::FSimEvent& E);
 	void PlayEventSound(const Slop::FSimEvent& E);
 public:

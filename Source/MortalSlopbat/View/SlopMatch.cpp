@@ -100,6 +100,19 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 		Sim.Fighters[1].Pos.X = 2.6;
 		Camera->Snap();
 	}
+	// Development: -SlopQhi=<n> starts a Qhi fighter's meter at n (0 shows the spent body).
+	double StartQhi = 0.0;
+	if (FParse::Value(FCommandLine::Get(), TEXT("SlopQhi="), StartQhi))
+	{
+		for (FFighter& F : Sim.Fighters)
+		{
+			if (F.UsesQhi())
+			{
+				F.Qhi = FMath::Clamp(StartQhi, 0.0, F.QhiRules().Max);
+				F.QhiIdle = 0;
+			}
+		}
+	}
 	// Development: -SlopMarks=<0..1> starts both fighters as beaten as that on head, body and legs
 	// (to look at the skin's marks without fighting for them).
 	float StartMarks = 0.f;
@@ -148,7 +161,7 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 				}
 				else
 				{
-					Brains[I] = MakeUnique<FCpuBrain>(Sim, I, Diff, (int32)(FPlatformTime::Cycles() & 0x7fff) + I * 101);
+					Brains[I] = MakeUnique<FCpuBrain>(Sim, I, Config.CpuTier >= 0 ? Config.CpuTier : Diff, (int32)(FPlatformTime::Cycles() & 0x7fff) + I * 101);
 				}
 			}
 		}
@@ -289,6 +302,14 @@ void ASlopMatch::Tick(float DeltaSeconds)
 	{
 		V->UpdateVisual(Frac, D);
 	}
+	for (int32 I = 0; I < 2; ++I)
+	{
+		if (FormFade[I] > 0.f)
+		{
+			FormFade[I] = FMath::Max(0.f, FormFade[I] - (float)D * 4.f);
+			Views[I]->SetDissolve(FormFade[I], FLinearColor(1.f, 0.78f, 0.3f));
+		}
+	}
 	Camera->Step(bPaused ? 0.0 : DeltaSeconds);
 #if !UE_BUILD_SHIPPING
 	// Development: -SlopTraceCam logs both fighters and the camera every 6 ticks.
@@ -404,7 +425,7 @@ void ASlopMatch::DressView(int32 I)
 	{
 		// A borrowed shape is lit from inside by the Grandmaster's Qhi: a strong gold rim over the
 		// other fighter's own colours, so who is who never needs guessing.
-		V->SetAccent(FLinearColor(FColor::FromHex(Json::Str(F.BaseDef->Look, TEXT("glow"), TEXT("#ffcf5a")))), 0.32f);
+		V->SetAccent(FLinearColor(FColor::FromHex(Json::Str(F.BaseDef->Look, TEXT("glow"), TEXT("#ffcf5a")))), 0.14f);
 		return;
 	}
 	if (F.Form == EForm::Spent)
@@ -425,6 +446,7 @@ void ASlopMatch::DressView(int32 I)
 
 void ASlopMatch::RebindView(int32 I)
 {
+	const FName WasBody = Views[I]->BoundBody;
 	if (!Views[I]->Rebind(Sim.Fighters[I]))
 	{
 		UE_LOG(LogSlop, Error, TEXT("No body for %s's shape %s"), *Sim.Fighters[I].BaseDef->Id.ToString(), *Sim.Fighters[I].Def->Id.ToString());
@@ -433,6 +455,10 @@ void ASlopMatch::RebindView(int32 I)
 	Views[I]->bSweats = true;
 	ApplySettings();
 	DressView(I);
+	if (Views[I]->BoundBody != WasBody)
+	{
+		FormFade[I] = 1.f;
+	}
 }
 
 void ASlopMatch::FinishFromGuide(int32 Winner)
@@ -595,7 +621,7 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 	case EEvent::Move:
 		if (const FMoveDef* M = Sim.Fighters[E.Who].Def->Move(E.Move))
 		{
-			const FString Sw = M->Swing.ToString();
+			const FString Sw = M->Swing.IsNone() ? FString() : M->Swing.ToString();
 			if (Sw == TEXT("light")) A->Play(TEXT("whoosh_light"), -9.f, FMath::FRandRange(0.94f, 1.08f));
 			else if (Sw == TEXT("medium")) A->Play(TEXT("whoosh_medium"), -8.f, FMath::FRandRange(0.94f, 1.06f));
 			else if (Sw == TEXT("heavy")) A->Play(TEXT("whoosh_heavy"), -7.f, FMath::FRandRange(0.94f, 1.04f));

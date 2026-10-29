@@ -724,6 +724,241 @@
         "ring": {"slot": "metal", "set": "Metal042A", "color": "#c46a3a", "roughness": 0.3, "metallic": 1.0, "tile_m": 0.05, "normal": 0.3}
       },
       "glow": "#b48cff"
+    },
+    "wren": {
+      "name": "Wren Sallow",
+      "status": "build",
+      "height_m": 1.68,
+      "sole_m": 0.012,
+      "macros": {
+        "gender": 0.0,
+        "age": 0.43,
+        "muscle": 0.86,
+        "weight": 0.42,
+        "proportions": 0.85,
+        "cupsize": 0.25,
+        "firmness": 0.7,
+        "race": {
+          "african": 0.03,
+          "asian": 0.07,
+          "caucasian": 0.9
+        }
+      },
+      "targets": {
+        "torso/torso-muscle-dorsi-decr-incr": 0.4,
+        "torso/torso-vshape-decr-incr": 0.2,
+        "torso/measure-shoulder-dist-decr-incr": 0.1,
+        "torso/measure-waist-circ-decr-incr": -0.25,
+        "stomach/stomach-pregnant-decr-incr": -0.7,
+        "stomach/stomach-tone-decr-incr": 0.6,
+        "arms/upperarm-muscle-decr-incr": 0.35,
+        "arms/upperarm-shoulder-muscle-decr-incr": 0.45,
+        "arms/lowerarm-muscle-decr-incr": 0.5,
+        "arms/upperarm-fat-decr-incr": -0.5,
+        "arms/lowerarm-fat-decr-incr": -0.4,
+        "legs/upperleg-muscle-decr-incr": 0.55,
+        "legs/lowerleg-muscle-decr-incr": 0.5,
+        "legs/upperleg-fat-decr-incr": -0.3,
+        "buttocks/buttocks-volume-decr-incr": 0.25,
+        "neck/neck-scale-horiz-decr-incr": 0.2,
+        "cheek/cheek-bones-decr-incr": 0.6,
+        "cheek/cheek-volume-decr-incr": -0.45,
+        "chin/chin-bones-decr-incr": 0.5,
+        "chin/chin-width-decr-incr": 0.1,
+        "chin/chin-prominent-decr-incr": 0.2,
+        "eyes/eye-height2-decr-incr": -0.25,
+        "eyes/eye-corner2-down-up": 0.1,
+        "eyebrows/eyebrows-angle-down-up": -0.2,
+        "eyebrows/eyebrows-trans-down-up": -0.2,
+        "mouth/mouth-angles-down-up": -0.1,
+        "mouth/mouth-upperlip-volume-decr-incr": -0.15,
+        "nose/nose-scale-horiz-decr-incr": -0.1,
+        "breast/nipple-point-decr-incr": -1.0,
+        "breast/nipple-size-decr-incr": -0.5,
+        "breast/breast-point-decr-incr": -0.8
+      },
+      "skin": {
+        "mhmat": "young_caucasian_female",
+        "color": "#cf9f83",
+        "clean_scalp": false
+      },
+      "eyes": {
+        "mesh": "high-poly",
+        "mhmat": "green",
+        "iris": "#5a5f45",
+        "glow": "#5ef2d6",
+        "emission": 0.06
+      },
+      "brows": {
+        "asset": "eyebrow006",
+        "color": "#3a2c21"
+      },
+      "lashes": {
+        "asset": "eyelashes02",
+        "color": "#2e241b"
+      },
+      "hair": null,
+      "braids": {
+        "color": "#5f4c3a",
+        "highlight": "#8f7a62",
+        "roughness": 0.55
+      },
+      "outfit": "wren",
+      "slots": {
+        "skin": {
+          "size": 2048
+        },
+        "hairface": {
+          "size": 2048
+        },
+        "jacket": {
+          "size": 2048
+        },
+        "cloth": {
+          "size": 2048
+        },
+        "belt": {
+          "size": 512
+        },
+        "leather": {
+          "size": 1024
+        }
+      },
+      "surfaces": {
+        "jacket": {"slot": "jacket", "set": "Fabric066", "color": "#33373a", "roughness": 0.9, "metallic": 0.0, "tile_m": 0.05, "normal": 1.0, "contrast": 0.6},
+        "lapel": {"slot": "jacket", "set": "Fabric066", "color": "#2a2d30", "roughness": 0.88, "metallic": 0.0, "tile_m": 0.035, "normal": 1.0, "contrast": 0.6},
+        "rashguard": {"slot": "cloth", "set": "Fabric034", "color": "#1d2023", "roughness": 0.6, "metallic": 0.0, "tile_m": 0.12, "normal": 0.4, "contrast": 0.4},
+        "trousers": {"slot": "cloth", "set": "Fabric034", "color": "#202226", "roughness": 0.7, "metallic": 0.0, "tile_m": 0.15, "normal": 0.5, "contrast": 0.45,
+                     "pattern": {"kind": "panel", "band": "#121316", "band_roughness": 0.45, "thread": "#45484d", "thread_roughness": 0.8, "thread_metallic": 0.0}},
+        "belt": {"slot": "belt", "set": "Fabric001", "color": "#6f2826", "roughness": 0.92, "metallic": 0.0, "tile_m": 0.07, "normal": 0.9, "contrast": 0.45,
+                 "pattern": {"kind": "stitch", "thread": "#4c1918", "thread_roughness": 0.95, "thread_metallic": 0.0}},
+        "bead": {"slot": "belt", "set": "flat", "color": "#5ef2d6", "roughness": 0.08, "metallic": 0.0, "tile_m": 0.1, "normal": 0.0, "emission": 0.7},
+        "gloves": {"slot": "leather", "set": "Leather026", "color": "#17171a", "roughness": 0.5, "metallic": 0.0, "tile_m": 0.12, "normal": 0.6},
+        "strap": {"slot": "leather", "set": "Leather021", "color": "#3a1d1c", "roughness": 0.5, "metallic": 0.0, "tile_m": 0.1, "normal": 0.7},
+        "shoes": {"slot": "leather", "set": "Leather021", "color": "#26272b", "roughness": 0.55, "metallic": 0.0, "tile_m": 0.18, "normal": 0.8},
+        "sole": {"slot": "leather", "set": "Leather026", "color": "#121214", "roughness": 0.7, "metallic": 0.0, "tile_m": 0.15, "normal": 0.5},
+        "laces": {"slot": "leather", "set": "Leather021", "color": "#857d72", "roughness": 0.8, "metallic": 0.0, "tile_m": 0.06, "normal": 0.4}
+      },
+      "glow": "#5ef2d6"
+    },
+    "grandmaster": {
+      "name": "The Grandmaster",
+      "status": "build",
+      "height_m": 1.70,
+      "sole_m": 0.02,
+      "macros": {
+        "gender": 1.0,
+        "age": 0.93,
+        "muscle": 0.62,
+        "weight": 0.12,
+        "proportions": 0.6,
+        "race": {
+          "african": 0.0,
+          "asian": 0.95,
+          "caucasian": 0.05
+        }
+      },
+      "targets": {
+        "torso/measure-shoulder-dist-decr-incr": -0.25,
+        "torso/torso-scale-horiz-decr-incr": -0.15,
+        "stomach/stomach-pregnant-decr-incr": -0.6,
+        "arms/upperarm-fat-decr-incr": -0.7,
+        "arms/lowerarm-fat-decr-incr": -0.6,
+        "arms/lowerarm-muscle-decr-incr": 0.45,
+        "neck/neck-scale-horiz-decr-incr": -0.15,
+        "head/head-age-decr-incr": 0.9,
+        "head/head-square": 0.25,
+        "head/head-round": 0.45,
+        "head/head-scale-vert-decr-incr": -0.35,
+        "head/head-fat-decr-incr": -0.5,
+        "forehead/forehead-nubian-decr-incr": 0.45,
+        "eyebrows/eyebrows-trans-backward-forward": 0.6,
+        "eyebrows/eyebrows-trans-down-up": -0.35,
+        "eyebrows/eyebrows-angle-down-up": -0.4,
+        "eyes/eye-height2-decr-incr": -0.45,
+        "eyes/eye-push1-in-out": -0.4,
+        "eyes/eye-push2-in-out": -0.4,
+        "eyes/eye-bag-decr-incr": 0.35,
+        "eyes/eye-eyefold-down-up": -0.4,
+        "cheek/cheek-bones-decr-incr": 0.85,
+        "cheek/cheek-trans-down-up": 0.3,
+        "cheek/cheek-volume-decr-incr": -0.9,
+        "cheek/cheek-inner-decr-incr": -0.5,
+        "chin/chin-bones-decr-incr": 0.7,
+        "chin/chin-width-decr-incr": 0.2,
+        "chin/chin-prominent-decr-incr": 0.25,
+        "mouth/mouth-angles-down-up": -0.8,
+        "mouth/mouth-upperlip-volume-decr-incr": -0.4,
+        "mouth/mouth-lowerlip-volume-decr-incr": -0.25,
+        "mouth/mouth-laugh-lines-in-out": 0.5,
+        "nose/nose-scale-vert-decr-incr": 0.1,
+        "ears/ear-scale-decr-incr": 0.2,
+        "forehead/forehead-scale-vert-decr-incr": -0.3
+      },
+      "skin": {
+        "mhmat": "old_asian_male",
+        "color": "#ad8766",
+        "clean_scalp": true,
+        "scalp_mottle": 0.4,
+        "detail": 1.8,
+        "roughness": 0.6
+      },
+      "eyes": {
+        "mesh": "high-poly",
+        "mhmat": "brown",
+        "iris": "#2e1d12",
+        "glow": "#ffcf5a",
+        "emission": 0.2
+      },
+      "brows": {
+        "asset": "eyebrow008",
+        "color": "#b3aea5"
+      },
+      "lashes": {
+        "asset": "eyelashes01",
+        "color": "#5c5650"
+      },
+      "hair": null,
+      "beard": {
+        "color": "#c8c2b6",
+        "roughness": 0.8,
+        "kind": "fur",
+        "core_edge": 0.0022,
+        "density": 1.5
+      },
+      "outfit": "grandmaster",
+      "slots": {
+        "skin": {
+          "size": 2048
+        },
+        "hairface": {
+          "size": 2048
+        },
+        "robe": {
+          "size": 2048
+        },
+        "garb": {
+          "size": 1024
+        },
+        "props": {
+          "size": 512
+        }
+      },
+      "surfaces": {
+        "robe": {"slot": "robe", "set": "Fabric040", "color": "#1b2333", "roughness": 0.58, "metallic": 0.0, "tile_m": 0.05, "normal": 0.1, "contrast": 0.15,
+                 "pattern": {"kind": "cloud", "band": "#10141d", "thread": "#d6c38e"}},
+        "robe_band": {"slot": "robe", "set": "Fabric040", "color": "#10141d", "roughness": 0.55, "metallic": 0.0, "tile_m": 0.05, "normal": 0.1, "contrast": 0.15,
+                      "pattern": {"kind": "cloud", "thread": "#d6c38e"}},
+        "inner": {"slot": "robe", "set": "Fabric001", "color": "#c7c1b2", "roughness": 0.85, "metallic": 0.0, "tile_m": 0.14, "normal": 0.6, "contrast": 0.45},
+        "sash": {"slot": "robe", "set": "Fabric040", "color": "#0e0e11", "roughness": 0.45, "metallic": 0.0, "tile_m": 0.05, "normal": 0.12, "contrast": 0.15},
+        "trousers": {"slot": "garb", "set": "Fabric034", "color": "#17181c", "roughness": 0.9, "metallic": 0.0, "tile_m": 0.2, "normal": 0.6, "contrast": 0.5},
+        "shoes": {"slot": "garb", "set": "Fabric066", "color": "#131315", "roughness": 0.9, "metallic": 0.0, "tile_m": 0.06, "normal": 0.8, "contrast": 0.5},
+        "sole": {"slot": "garb", "set": "Fabric001", "color": "#d3ccbc", "roughness": 0.9, "metallic": 0.0, "tile_m": 0.05, "normal": 0.8, "contrast": 0.6},
+        "bronze": {"slot": "props", "set": "Metal042A", "color": "#8c6a3c", "roughness": 0.42, "metallic": 1.0, "tile_m": 0.06, "normal": 0.5},
+        "jade": {"slot": "props", "set": "flat", "color": "#3f7b60", "roughness": 0.18, "metallic": 0.0, "tile_m": 0.1, "normal": 0.0},
+        "cord": {"slot": "props", "set": "Leather021", "color": "#111113", "roughness": 0.7, "metallic": 0.0, "tile_m": 0.05, "normal": 0.4}
+      },
+      "glow": "#ffcf5a"
     }
   }
 }

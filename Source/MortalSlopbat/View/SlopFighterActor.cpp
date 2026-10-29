@@ -36,6 +36,8 @@ bool ASlopFighterActor::Setup(const FFighter& Fighter, const FString& MeshPath)
 		return false;
 	}
 	Body->SetSkinnedAssetAndUpdate(Mesh);
+	// A body put on over another (a change of shape) must not keep the last body's materials.
+	Body->EmptyOverrideMaterials();
 	BoundDef = Fighter.Def;
 	BoundBody = Fighter.Def->Body;
 	Marks[0] = Marks[1] = Marks[2] = 0.0;

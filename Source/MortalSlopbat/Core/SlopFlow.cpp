@@ -132,6 +132,7 @@ namespace Slop
 		Config.Mode = EMode::Arcade;
 		// The old master fights at his best whatever the tower: the demonstration is the point.
 		Config.Difficulty = R.Kind == TEXT("secret") ? 2 : Arcade.Tower;
+		Config.CpuTier = R.Kind == TEXT("secret") ? 3 : -1;
 	}
 
 	int32 FGameFlow::FightScore(const FMatchResult& R)
@@ -189,6 +190,14 @@ namespace Slop
 		Arcade.Rungs.Add({SecretFighter(), TEXT("drowned_chapel"), TEXT("secret")});
 		Arcade.Rung = Arcade.Rungs.Num() - 1;
 		bStrangerPending = false;
+		ConfigureRung();
+	}
+
+	void FGameFlow::SkipToBossCleared(FName Fighter, int32 TowerIndex)
+	{
+		StartArcade(Fighter, TowerIndex, PlanArcade(Fighter, TowerIndex, 1));
+		Arcade.Rung = Arcade.Rungs.Num() - 1;
+		Arcade.Seconds = 0;
 		ConfigureRung();
 	}
 

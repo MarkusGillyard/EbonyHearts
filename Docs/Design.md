@@ -17,10 +17,12 @@ commentary and no AI-themed material.
 
 - **Silhouette first.** Every fighter is recognisable as a black shape: a lean kickboxer, a
   giant, a hooded assassin trailing a chain, a tall veiled mourner, a long-coated constable in a
-  peaked cap, a round-helmeted diving suit, and the winged boss.
+  peaked cap, a round-helmeted diving suit, a braided fighter in a short belted jacket, a bald old
+  master in a long robe, and the winged boss.
 - **Palette.** Stages in deep teal-black, moss and wet stone, lit by lantern amber and furnace
   orange; supernatural power in sickly slop-green (the Sump), ember orange (Ashka), pale
-  dirge-blue (Mirela), brass (Hollis), violet (the stranger). Each fighter has one dominant
+  dirge-blue (Mirela), brass (Hollis), fen-light teal (Wren), Qhi gold (the Grandmaster), violet
+  (the stranger). Each fighter has one dominant
   colour that reads against every stage.
 - **Materials.** Stylised realism: sculpted bodies with skin, cloth, leather and metal
   read from material, not texture. No photorealism; animation and readability come first.
@@ -110,16 +112,20 @@ closed, with tests that repeat every special inside its cancel window (`Combat.C
 
 | Fighter | Look | Style and role | Specials (planned) | Sloptality |
 |---|---|---|---|---|
-| **Ashka Rook** (she), the Last Lamplighter, 1.74 m | Lean, athletic, brown skin, black ponytail, amber eyes; dark leather sleeveless vest, rust-red silk fight shorts with gold trim and waistband, bone-white hand and shin wraps, gold arm band, a small brass lamp charm | Muay Thai and lamp-fire. All-rounder | Ember Shot (fireball), Wick Knee (flying knee), Elbow Rush, Rising Knee (anti-air); the Teep (forward + low kick), a push kick that keeps distance | Last Light: burns the opponent to ash |
+| **Ashka Rook** (she), the Last Lamplighter, 1.74 m | Lean, athletic, brown skin, black ponytail, amber eyes; dark leather sleeveless vest, rust-red silk fight shorts with gold trim and waistband, bone-white hand and shin wraps, gold arm band, a small brass lamp charm | Muay Thai and lamp-fire. Aggressive striker | Ember Shot (fireball), Wick Knee (flying knee), Elbow Rush, Rising Knee (anti-air); the Teep (forward + low kick), a push kick that keeps distance | Last Light: burns the opponent to ash |
 | **Gorm Tallow** (he), the Renderer, 2.12 m | Huge, bald, pale ruddy skin, heavy jaw; bare barrel chest under a thick rubberised leather apron, rolled canvas trousers, heavy boots, iron vambraces | Sumo and catch wrestling. Grappler: slow, armoured, devastating up close | Vat Press (command grab), Tallow Hide (armour), Rendering Charge (armoured shoulder), Ground Slap (low shockwave) | Rendered Down: lifts and slams, then stamps them flat |
 | **Nix Hollow** (he), Hand of the Drowned, 1.78 m | Slim; charcoal and black wrapped garments, deep hood, a cloth mask over nose and mouth, slop-green sash, glowing green eyes; a kusarigama (sickle and chain) | Ninjutsu. Mix-up and teleports | Sickle Throw (returns), Sinkstep (sink through the floor and rise behind), Undertow (chain trips the legs), Drowned Drop (air dive) | Undertow: drags them down into a slop pool |
 | **Mirela Sorrow** (she), the Keening Widow, 1.82 m | Tall, slender, pale; very long black hair; an ivory mourning gown with a long skirt open at the front over ivory leggings, a black lace veil over hair and shoulders, black gloves | Baguazhang palms and a voice that unmakes. Zoner | Lament (slow, large wave), Keen (scream that dazes and passes through projectiles), Grave Float (hover), Veil Step (backward fade) | The Last Note: turns them to salt that crumbles |
 | **Bram Ketch** (he), Captain of the Lantern Watch, 1.86 m | Broad, weathered, short grey-brown hair and mutton-chop beard; a long navy watch coat with brass buttons and coat tails, a peaked watch cap, leather boots; a hardwood baton and a lantern at his belt | Bare-knuckle boxing and the baton. Rushdown | Signal Flare (high arc / low roll), Baton Trip, Bull Rush, Stand Down (counter) | Lights Out: a baton swing that sends them over the horizon |
 | **Hollis Fathom** (he), the Diving Bell, 1.95 m | An olive canvas diving suit, a round brass helmet with three portholes and a faint green glow inside, a brass breastplate, lead-soled boots, rubber gloves, a harpoon gun | Deep-sea pressure. Heavy zoner and trapper | Harpoon (pulls them in), Anchor Drop (overhead from above), Bubble (slow trap), Vent (steam burst reversal) | Crush Depth: reels them in and the helmet swallows them |
+| **Wren Sallow** (she), the Fen Light, 1.68 m | Young, lean and strong; light skin, dark-blonde hair in tight braids; a short, heavy-weave charcoal jacket with cross-collar lapels and forearm sleeves, belted with a faded red belt, over a dark rash-guard top; ankle-length grappling trousers with reinforced knees, laced wrestling shoes, open-finger gloves; a little teal glass at the belt | Mixed martial arts (kickboxing, taekwondo kicks, boxing, judo, an armlock) and marsh-light. All-rounder | Turning Light (spinning back kick), Flying Cross (lunging cross), Lifting Light (spinning crescent anti-air), Bar the Door (catches a high or mid blow into an armlock), Flicker Step (a short blink, forward or back, through projectiles), Wisp Feint (a lit feint that cancels into anything); judo throws | Led Astray: the marsh-lights lead them off into the fog |
+| **The Grandmaster** (he), no other name given, 1.70 m | Elderly, East Asian, thin and wiry; a shaved head, heavy brow, high cheekbones over hollow cheeks, deep-set eyes, a grey-white goatee; a long ink-blue cross-collar robe over a bone-grey inner robe, pale-gold cloud embroidery at hem, cuffs and collar, a broad black sash with a jade pendant, black cloth shoes | Qhi and a lifetime of martial arts; drunken boxing when the Qhi is spent. Secret, for experts | Still Palm (Qhi bolt), Sinking Palm (Qhi along the floor), Rising Palm (anti-air), Drift (floats over and behind), Weave, Yield (parry and returning palm), Ward (breaks projectiles), Borrowed Face (becomes the opponent, stronger) | Still Water: two fingers to the brow, and they still to standing water and fall |
 
 Rivals (the second-to-last arcade fight): Ashka and Nix (the Drowned Hand put out Ninefathom's
 beacon), Gorm and Bram (Bram once arrested him for a vat fire he did not start), Mirela and
-Hollis (she sang at the funeral of the diver who never came back up).
+Hollis (she sang at the funeral of the diver who never came back up), Wren and Mirela (one leads
+the lost out of the water, the other sings them down into it), the Grandmaster and Wren (he
+watched her on the causeway the night the lights followed her; she knew).
 
 ### Roster sheet: how each one plays
 
@@ -134,13 +140,62 @@ forward/back in m/s; frame data are startup frames at 60 Hz.
 | Mirela | Zoner; tall palm stance on bent knees, the torso twisted to the opponent, a circling walk, walk 2.4/2.0, 1040 health | Slow large wave, a scream that passes through projectiles and dazes, hover, a backward fade | Slow startups (13-14 frames), weak up close | Lament, Keen, Grave Float, Veil Step | Close the distance under the wave, punish Keen's recovery, catch the hover landing |
 | Bram | Rushdown; upright Prize Ring guard (lead fist out, rear forearm across the body), walk 2.6/2.0, run 5.6 | Fast hooks, a long-reaching Bull Rush (9 active frames), high and low flares, a 3-frame counter stance | Flares are slow (13), the counter loses to throws and lows | Signal Flare high/low, Baton Trip, Bull Rush, Stand Down | Throw the counter stance, block the rush and punish, low-block the trip |
 | Hollis | Heavy zoner and trapper; planted suit (wide flat feet, the helmet turning only with the chest), walk 2.0/1.7, 1080 health | The pull (Harpoon) from range, an overhead from above, a slow trapping bubble, a steam reversal | Slowest normals (9-10 frames), slow projectiles, poor mobility | Harpoon, Anchor Drop, Bubble, Vent | Jump the harpoon, dash in behind the bubble, bait Vent and punish its 30 recovery frames |
+| Wren | All-rounder; bladed MMA guard (hands high, lead hand out), a light bounce, walk 2.6/2.15, run 5.6 | Reliable fundamentals at every range: a 1-2 into a head kick, a lunging cross, a crescent anti-air, judo throws that leave her close (6-frame recovery), a parry for highs and mids that becomes an armlock, a blink through projectiles, a feint that cancels into anything | The shortest reach, no projectile, average damage; Turning Light (-12) and Flying Cross (-9) are punishable on block; Bar the Door loses to lows, throws and projectiles; Flicker Step has no strike invulnerability | Turning Light, Flying Cross, Lifting Light, Bar the Door, Flicker Step, Wisp Feint | Low-block her strings' kicks, punish the spinning kick and the cross on block, throw or sweep the parry, hit her out of the flicker |
+| Grandmaster (own body) | Expert; with Qhi in him he stands upright and unafraid, chest open, chin level, both hands calmly behind his back (a hand comes forward only to strike); walk 2.1/1.9, no run (a Qhi glide, hands still behind him), lower jump | The best magical defence (magic does half), Qhi zoning high and low, a 6-frame invulnerable anti-air, a cross-up float, a free weave and parry, a ward against projectiles, economical normals (two or three frames less recovery), and Borrowed Face | The worst physical defence (blows do 20% more), weaker blows (95%), everything supernatural costs Qhi, and an empty meter leaves him spent | Still Palm, Sinking Palm, Rising Palm, Drift, Weave, Yield, Ward, Borrowed Face | Rush him with physical blows, low-hit the weave, throw the parry, hit the 30-frame shapeshift startup, make him spend |
+| Grandmaster (borrowed) | The opponent's own moves and run meter, stronger by Qhi: 120% damage, 85% taken, 108% speed | Everything the copied fighter does, better | The shape burns Qhi (3.6 a second) and every blow it takes (0.05 a point of damage); it breaks into the spent body at zero | The copied fighter's | Hit it: each blow shortens it; make it break |
+| Grandmaster (spent) | Drunken boxing, reeling and wobbling: the body he hides with Qhi shows, hunched, head lolling, hands cupped; walk 1.6/1.45, no run, a weak hop | A reeling weave for highs, a spilled-cup parry, a lurching elbow, a backward tumble to get away | Blows do 50% more, his own do 60%; no Qhi, no specials of Qhi, no shapeshift, until 25 Qhi has crept back (about nine seconds) | Lurching Elbow, Tumble, Reel, Spilled Cup | Press him: this is the moment |
 
-All six share the original's procedural animation vocabulary, driven from the same pose data:
+All eight share the original's procedural animation vocabulary, driven from the same pose data:
 idle with breathing, walk forward and back, run, crouch, jump (neutral, forward, back, with
 somersaults), every normal and special, block high and low, hit reactions by height, juggle,
 fall, knockdown, get-up, throw and being thrown, dizzy, KO, intro, win pose and finisher. Stance,
 lean, sway and step lengths differ per fighter (their pose files); the bodies are new
 (`SourceArt/Fighters`).
+
+## The Grandmaster: Qhi, borrowed faces and the spent body
+
+The Grandmaster has no other name in the game: he was the greatest martial artist of his age and
+has outlived it; his body is failing, his Qhi is not. Nothing undercuts him: he is exactly what his
+title says. He is the expert's fighter, with a higher ceiling than anyone and a meter that
+punishes carelessness. The rules, as the owner set them and as the data has them
+(`Content/Data/fighters/grandmaster.json`, `grandmaster_spent.json`; `FQhiRules` in code):
+
+- **Qhi, not a run meter.** His own body has a Qhi meter (100) and no run meter. Run + forward is a
+  glide on Qhi (15 a second); a dial-a-combo link costs 35% of its run cost in Qhi; Still Palm 12,
+  Sinking Palm 10, Rising Palm 10, Drift 12, Ward 10, the returning palm after a Yield 6 (it does
+  not follow if the meter cannot pay). Walking, jumping, normals, Weave and Yield are free.
+  Recovery is slow: 3.6 a second once nothing has been spent for a second; a parry or weave that
+  catches a blow gives 5, at most once every two seconds. A new round starts full.
+- **Damage types.** Every blow has a magical share (0 physical, 1 magical, between them mixed:
+  Ember Shot, Lament, Keen, the Storm Shroud and his palms are magical; Wick Knee, the flares,
+  Bubble, Vent, Sinkstep and Tar Spit are mixed). His own body takes 120% from physical blows (the
+  worst in the roster) and 50% from magical ones (the best); a mixed blow is weighed by its share.
+- **Borrowed Face** (down, back, forward + Block) takes the shape of the opponent facing him, on
+  frame 30 of a startup he can be hit out of. It costs exactly half the meter, paid the frame it
+  takes; with less than half it is refused aloud; broken in its startup it costs 8. The shape is
+  the opponent's whole fighting definition (moves, specials, chains, body, run meter, full) with
+  Qhi laid in: 120% damage, 85% taken, 108% speed. It has no finisher. While he wears it the Qhi
+  burns (3.6 a second, and 0.05 a point of damage taken) and nothing refills it; the same input
+  gives his own face back on frame 14 of 20 (nothing refunded). At zero the shape breaks into the
+  spent body. A fighter in a borrowed shape is copied from its source, never the copy; the Slopbat
+  (its shape cannot be held), the stranger and a Grandmaster in his own shape (a mirror shows only
+  itself) are refused, aloud and for free. When a fight is decided the shape is let go.
+- **Spent.** An empty meter drops him into drunken boxing (`grandmaster_spent`): 150% from
+  blows, 90% from magic, 60% damage, slow feet, no glide, no Qhi move, no shapeshift; only a
+  reeling weave for highs, a narrower parry, a lurching elbow and a backward tumble. The meter
+  creeps back at 2.7 a second and he stays spent until it reaches 25 (about nine seconds), then
+  recentres with what he has: well short of another shapeshift.
+- **Readable.** Every change of shape has its sound, light and callout under his bar; a borrowed
+  shape wears the opponent's body with a gold rim and rising motes, thinning as the Qhi runs down;
+  the HUD shows his Qhi with a mark at the shapeshift's half, the borrowed shape's run meter with
+  the Qhi beneath it, and a pulsing spent bar refilling to its mark.
+
+**The secret challenge.** He is not on the select screen at first: a sealed tile and a clue in
+Extras ("An old master is said to watch the champions who never need a second chance"). Clear an
+arcade tower, any tower, without a continue: after the Slopbat sinks, an old man stands on the
+still water of the Drowned Chapel. Face him (Master CPU, his full kit) or walk on to the ending.
+Beat him and he is unlocked for good (saved with the progress); lose and the run ends as it would
+have, with nothing lost, and he waits for the next clean run.
 
 ## The Slopbat (final boss), 2.65 m
 
@@ -199,7 +254,8 @@ Training (dummy modes, move lists, reset, frame data, hitboxes, input history), 
 records, the stranger once met), Settings.
 
 Unlocks are cosmetic or narrative: each fighter's alternate colours (finish arcade with them),
-the Roost as a versus stage (finish arcade once), the endings gallery, and the stranger.
+the Roost as a versus stage (finish arcade once), the endings gallery, and the stranger. The one
+fighter to unlock is the Grandmaster (below).
 
 ## Audio
 

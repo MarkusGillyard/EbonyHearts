@@ -16,7 +16,7 @@ folder holds:
 | `<id>_report.json` | Triangle, vertex and weight stats per part, material slots, height fit, timings. |
 | `renders/` | Review renders, re-imported from the FBX: front, side and three-quarter views, `<id>_portrait.png` (head and shoulders from the front right, the select-screen framing) and five poses. |
 
-Status: all eight are built: ashka, gorm, nix, mirela, bram, hollis, slopbat, daxion.
+Status: all ten are built: ashka, gorm, nix, mirela, bram, hollis, slopbat, daxion, wren, grandmaster.
 
 | Fighter | Height | Triangles | Material slots (atlas size) |
 |---|---|---|---|
@@ -28,13 +28,15 @@ Status: all eight are built: ashka, gorm, nix, mirela, bram, hollis, slopbat, da
 | hollis | 195 cm | 43,600 | skin 1024, face 512, suit 2048, metal 2048, leather 1024 |
 | slopbat | 265 cm | 36,852 | skin 2048 (+ emissive veins), face 512, membrane 2048, horn 1024 |
 | daxion | 195 cm | 47,280 | skin 2048, hairface 2048, cloth 2048, metal 512 |
+| wren | 168 cm | 65,980 | skin 2048, hairface 2048 (incl. procedural braids), jacket 2048, cloth 2048, belt 512, leather 1024 |
+| grandmaster | 170 cm | 60,024 | skin 2048, hairface 2048 (incl. goatee fur), robe 2048, garb 1024, props 512 |
 
 The height is floor to the top of the skull; helmets, caps, horns and hair go above it (`top_of_everything_cm` in each report).
 
 ## Rebuild
 
 ```bash
-Tools/blender/build_fighters.sh ashka gorm nix mirela bram hollis slopbat daxion
+Tools/blender/build_fighters.sh ashka gorm nix mirela bram hollis slopbat daxion wren grandmaster
 Tools/blender/build_fighters.sh gorm         # one fighter (no ids: ashka + gorm)
 # or the two steps by hand:
 Tools/blender/run_blender.sh Tools/blender/build_fighter.py -- gorm
@@ -50,7 +52,8 @@ Tools/blender/run_blender.sh Tools/blender/render_fighter.py -- gorm
 - The scripts:
   - `fighter_core.py`: MPFB body, shape targets, height fit, rig.
   - `fighter_outfits.py`: Ashka's and Gorm's garments.
-- `fighter_outfits2.py` and `fighter_wardrobe.py`: the other six and the shared garment library.
+- `fighter_outfits2.py` and `fighter_wardrobe.py`: the next six and the shared garment library.
+  - `fighter_outfits3.py`: Wren and the Grandmaster (crossed collars, procedural braids, the goatee).
   - `fighter_geo.py`: the mesh tools.
   - `fighter_tex.py`: the textures.
   - `fighter_render.py` and `render_fighter.py`: the review renders and poses.
@@ -209,6 +212,36 @@ Garments are meshes authored by the script on that body. Most are **shells**: co
 | Hair | MakeHuman `long01` | MPFB |
 | Reddish-gold ring on the right middle finger | Section ring | Rigid `middle_01_r` |
 
+**Wren Sallow**
+
+| Part | Made from | Weights |
+|---|---|---|
+| Spats (`Fabric034`, `#202226`) | Leg shell, close fit. Reinforced knees: an oval panel over each kneecap painted into the spats' texture (darker, smoother, a dashed stitched seam) and padded out 3.5 mm | Body |
+| Dark rash guard (`Fabric034`) | Torso and arm shell to a crew neck, sleeves ending under the jacket's | Body |
+| Judo-style jacket (`Fabric066` heavy weave, `#33373a`) | Torso and sleeve shell with a crossed V (left panel over right), wide sleeves cut at mid-forearm, rolled cuffs (section rings); below the belt two wrap-over panels to the hip | Body; the panels' thigh share starts at the belt, so the hem rides the thighs in kicks |
+| Thick lapel (`Fabric066`, darker) | One band along the crossing and round the back of the neck, lifted where the outer lapel crosses the under one | Transferred from the body |
+| Faded red belt, knot and two front tails (`Fabric001`, `#6f2826`) | Band shell over the jacket and its panels, flattened lathe knot, ribbons; five rows of stitching painted in | Band: body; knot rigid `pelvis`; tails `pelvis` to 85% of that side's thigh |
+| Teal glass bead (`#5ef2d6`, emissive) | Lathe sphere near the end of the left tail | Transferred from the tail |
+| Open-finger grappling gloves (`Leather026`) and wrist straps (`Leather021`, oxblood) | Hand shell cut across the first finger segments and the thumb, padded knuckle bar; section rings | Body |
+| Laced wrestling shoes (`Leather021`), thin soles | Close loft of the foot and ankle; crossed lace tubes up the instep | Transferred from the body; soles `foot`→`ball` |
+| Tight braided hair (`#5f4c3a`) | Procedural, no MakeHuman hair: a cap of pulled-back strands over the scalp (feathered hairline, the ears cut out) and two Dutch braids of overlapping lobes from the front hairline over the head, hanging to the shoulder blades; strands drawn into the hairface atlas | Cap: body (head); braids rigid `head` on the scalp, blending to the neck and upper back below the nape |
+| Face and eyes | Young MakeHuman female, firmer jaw and cheekbones; `green` eyes tinted hazel with a faint fen-light teal emission | Body |
+
+**The Grandmaster** (bald)
+
+| Part | Made from | Weights |
+|---|---|---|
+| Ink-blue jiaoling robe (`Fabric040`, `#1b2333`) | Torso and sleeve shell with a deep crossed V (left panel over right, the edge running to the right of the waist); sleeves widening below the shoulder and tapering to the cuffs, a little extra hang under the forearm; the front hangs from the chest as loose cloth (the body's chest is flattened under it) | Body; the sleeve shaping only round the arm itself |
+| Bone-grey inner robe (`Fabric001`) and its collar | Torso shell with a higher, narrower crossing showing at the neck; band along it | Body; band transferred |
+| Robe skirt | Three panels from the waist to 8.5% of the height: front-under, back, and the front-outer flap whose edge continues the collar line. Side slits from the hip down: the front panels share 70–80% with the thighs, the back 20–30%, so the slits open in kicks and wide stances | `pelvis`/thigh blend; below the knee the hem rides the shins (stays above the floor in a crouch) |
+| Edge bands with pale-gold embroidery (`#d6c38e` on `#10141d`) | Collar band (crossing and round the neck), cuffs (section rings) and the skirt's hem and front edge. The embroidery is painted procedurally: a double border and a running scroll of ruyi clouds | Collar transferred from the body; cuffs transferred; skirt as above |
+| Broad black sash (`Fabric040`, `#0e0e11`), knot at the left front, two flaring ends | Band shell over the robe and skirt panels; lathe knot; ribbons | Body; knot rigid `pelvis`; ends `pelvis` to 70% `thigh_l` |
+| Jade bi disc on a cord under a bronze bead, right hip | Flattened torus, tube, lathe | Rigid `pelvis` |
+| Wide dark trousers gathered at the ankle (`Fabric034`) | Leg shell | Body |
+| Black cloth shoes on pale layered soles (`Fabric066`, `Fabric001`) | Close loft of the foot; sole slab | Transferred from the body; soles `foot`→`ball` |
+| Goatee and thin moustache (`#c8c2b6`) | Two fur shells as Bram's mutton chops, outline set from the face's own profile (nose, lips, chin): a thin moustache over the upper lip drooping past the mouth corners, a goatee from under the lower lip over the chin, and a fur cone for its point (about 6 cm) | Body (head); the point rigid `head` |
+| Face and skin | About 77: MakeHuman age 0.93 with heavy brow, high cheekbones over hollow cheeks, narrow deep-set eyes, a downturned mouth and a strong jaw, a lowered, rounded crown (targets in `fighters.json`); `old_asian_male` skin, scalp repainted with forehead tone plus faint age mottling; `eyebrow008` in grey; dark brown eyes with a faint gold emission | Body |
+
 ## Rights of every input
 
 Everything that ships is either CC0 or first-party. Nothing in the FBX/PNGs comes from GPL code.
@@ -217,9 +250,9 @@ Everything that ships is either CC0 or first-party. Nothing in the FBX/PNGs come
 |---|---|---|
 | MPFB 2.0.18 add-on code | GPL-3.0-or-later. A **development tool only**, not shipped. MPFB's `LICENSE.md` §D: the MakeHuman team claims nothing over its output (exports, renders, scripted geometry). | `SourceArt/ThirdParty/MakeHuman/downloads/mpfb2_repo_license_files_v2.0.18/LICENSE.md`; `PROVENANCE.json` |
 | MPFB bundled assets: base mesh, targets, `game_engine` rig and weights | CC0 1.0 | `LICENSE.md` §C (same folder); `data/3dobjs/base.obj` header; `weights.game_engine.json` `"license": "CC0"` |
-| MakeHuman system assets used: skins `young_african_female`, `young_caucasian_male`, `young_caucasian_female`, `young_asian_male`, `middleage_caucasian_male`, `middleage_african_male`, `old_caucasian_male`; eyes `high-poly`/`low-poly` with `brownlight`, `grey`, `green`, `lightblue`, `deepblue` textures; eyebrows `001`, `002`, `003`, `005`, `006`; eyelashes `01`–`03`; hair `ponytail01`, `long01`, `short02` | CC0 1.0 | `packs/makehuman_system_assets.json` (all 94 assets CC0) and the CC0 header in every asset file; SHA-256 and URLs in `SourceArt/ThirdParty/MakeHuman/PROVENANCE.json` |
+| MakeHuman system assets used: skins `young_african_female`, `young_caucasian_male`, `young_caucasian_female`, `young_asian_male`, `middleage_caucasian_male`, `middleage_african_male`, `old_caucasian_male`, `old_asian_male`; eyes `high-poly`/`low-poly` with `brownlight`, `brown`, `grey`, `green`, `lightblue`, `deepblue` textures; eyebrows `001`, `002`, `003`, `005`, `006`, `008`; eyelashes `01`–`03`; hair `ponytail01`, `long01`, `short02` | CC0 1.0 | `packs/makehuman_system_assets.json` (all 94 assets CC0) and the CC0 header in every asset file; SHA-256 and URLs in `SourceArt/ThirdParty/MakeHuman/PROVENANCE.json` |
 | ambientCG `Leather021`, `Leather026`, `Fabric040`, `Fabric001`, `Fabric066`, `Fabric034`, `Metal042A`, `Metal055A`, and `Wood051` (an existing stage entry, reused for the baton and sickle handle) (1K JPG) | CC0 1.0 | Ledger entries `ambientcg/<id>` in `SourceArt/ThirdParty/ledger.json`, with saved asset pages, SHA-256 and the four rights conclusions |
-| Garment geometry, recoloured and atlased textures, procedural lace, veins and beard fur, build scripts | First-party (Mortal Slopbat) | Generated by `Tools/blender/` |
+| Garment geometry, recoloured and atlased textures, procedural lace, veins, beard fur, braided hair, cloud embroidery and stitching, build scripts | First-party (Mortal Slopbat) | Generated by `Tools/blender/` |
 
 Notes:
 
@@ -240,3 +273,5 @@ Notes:
 - **The fist poses** in the review renders are rough: the pose library is a deformation check, not animation.
 - **Rebuilds are not all bit-identical.** Ashka, Gorm and Nix come out slightly different from run to run: Blender's nearest-surface queries break ties differently, which moves a few vertices of some shells (vest, waistband, belt, hood, mask) by up to about 2 cm and changes the UV packing. Mirela, Hollis, the Slopbat and Daxion rebuilt identically in checks.
 - **Vest straps** come to small peaks where they meet the neck, and the waistband's lower edge ripples slightly.
+- **Wren**: the braids are rigid on the scalp and skinned, not simulated, below the nape; seen edge-on the braid lobes read slightly beaded. The jacket's skirt panels are short, so a raised thigh still passes partly through the front panel in the review kick.
+- **The Grandmaster**: in the deep crouch the knees press through the front skirt panels (as with the other long skirts); with both arms high the sleeves bunch round the elbow. The robe and sash ends sway through the material only.

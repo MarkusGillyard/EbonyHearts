@@ -1,10 +1,10 @@
 {
 	"id": "grandmaster_spent",
-	"name": "Kazan Still",
-	"title": "The Grandmaster, spent",
+	"name": "The Grandmaster",
+	"title": "Spent",
 	"pronoun": "him",
 	"style": "Drunken boxing, out of Qhi",
-	"blurb": "With his Qhi gone the old man's body is all he has left: a reeling, wobbling drunken boxing that survives on perception and very little else.",
+	"blurb": "With his Qhi gone the old master's body is all he has left: a reeling, wobbling drunken boxing that survives on perception and very little else.",
 	"body": "grandmaster",
 	"resource": "none",
 	"copyable": false,

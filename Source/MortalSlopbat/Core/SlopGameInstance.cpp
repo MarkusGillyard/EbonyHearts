@@ -848,6 +848,19 @@ void USlopGameInstance::DevCommandLine()
 {
 #if !UE_BUILD_SHIPPING
 	const TCHAR* Cmd = FCommandLine::Get();
+	// Development: -SlopSecret=<fighter> starts at the Grandmaster's challenge, as if <fighter> had
+	// just beaten the Slopbat without a continue (the face-off, the fight, the results and, won,
+	// the unlock, saved to the profile in use).
+	FString SecretArg;
+	if (FParse::Value(Cmd, TEXT("SlopSecret="), SecretArg) && GetContent().Fighter(FName(*SecretArg)))
+	{
+		Flow.SkipToBossCleared(FName(*SecretArg), 1);
+		if (Flow.SecretEarned())
+		{
+			Flow.AddSecretRung();
+			Goto(SlopScreens::FaceOff());
+		}
+	}
 	FString UnlockArg;
 	if (FParse::Value(Cmd, TEXT("SlopUnlock="), UnlockArg, false))
 	{

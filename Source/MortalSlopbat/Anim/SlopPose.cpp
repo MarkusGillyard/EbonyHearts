@@ -174,6 +174,13 @@ namespace Slop::Anim
 
 	void FPoseLibrary::Build(const FFighterDef& Def, const TSharedPtr<FJsonObject>& InCommon, bool bStyle)
 	{
+		// Built again for another definition (a change of shape), nothing of the last one stays.
+		Poses.Reset();
+		CommonCache.Reset();
+		Src.Reset();
+		SrcScale.Reset();
+		MoveKeyMap.Reset();
+		MissingNames.Reset();
 		Common = InCommon;
 		CommonScale = Def.Height / 1.8;
 		const TSharedPtr<FJsonObject> Patch = Json::Obj(Def.Raw, TEXT("pose_patch"));

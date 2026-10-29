@@ -3,7 +3,8 @@
     source Tools/ue.sh && SLOP_IMPORT_ONLY=audio,materials editor_py "$PROJ_DIR/Tools/import_assets.py"
 
 SLOP_IMPORT_ONLY (comma list of steps: audio, materials, fighters, surfaces, props,
-stages, slots, portraits, stagepics) limits the run; without it every step runs. `slots` gives the imported fighters and
+stages, slots, portraits, stagepics) limits the run; without it every step runs. SLOP_FIGHTERS
+(comma list of ids) limits the fighters, slots and portraits steps to those fighters. `slots` gives the imported fighters and
 stages their material instances; run it in a second editor session after importing them (edits
 made in the session that imported a mesh do not stick).
 
@@ -767,6 +768,14 @@ SLOT_EXTRA = {
     "daxion_cloth": {"ClothDetail": 0.15, "Sway": 1.0},
     "mirela_gown": {"ClothDetail": 0.25, "Sway": 1.0},
     "gorm_canvas": {"ClothDetail": 0.8, "Sway": 0.6},
+    # Wren: the judo jacket's skirt and the belt tails swing; the spats and rash guard (her "cloth"
+    # slot) stay on the body.
+    "wren_jacket": {"ClothDetail": 0.6, "Sway": 0.4},
+    "wren_belt": {"ClothDetail": 0.3, "Sway": 1.0},
+    "wren_cloth": {"ClothDetail": 0.3, "Sway": 0.0},
+    # The Grandmaster: the long robe and its sash ends sway; trousers and shoes ("garb") do not.
+    "grandmaster_robe": {"ClothDetail": 0.25, "Sway": 1.0},
+    "grandmaster_garb": {"ClothDetail": 0.4},
 }
 
 
@@ -833,9 +842,10 @@ def fighters(import_meshes=True):
     if not os.path.isdir(root):
         log("no SourceArt/Fighters yet")
         return
+    wanted = {f.strip() for f in os.environ.get("SLOP_FIGHTERS", "").split(",") if f.strip()}
     for fid in sorted(os.listdir(root)):
         fbx = os.path.join(root, fid, fid + ".fbx")
-        if os.path.exists(fbx):
+        if os.path.exists(fbx) and (not wanted or fid in wanted):
             fighter(fid, fbx, import_meshes)
 
 
@@ -1060,7 +1070,9 @@ def stages(import_meshes=True):
 
 
 def slots():
-    stages(import_meshes=False)
+    # Only the named fighters' slots when SLOP_FIGHTERS limits the run; the stages are left alone.
+    if not os.environ.get("SLOP_FIGHTERS", "").strip():
+        stages(import_meshes=False)
     fighters(import_meshes=False)
 
 
@@ -1086,8 +1098,9 @@ def portraits():
     """SourceArt/Portraits/<id>.png (Tools/portraits.py) -> /Game/Slop/Portraits/T_portrait_<id>."""
     root = os.path.join(SRC, "Portraits")
     n = 0
+    wanted = {f.strip() for f in os.environ.get("SLOP_FIGHTERS", "").split(",") if f.strip()}
     for f in sorted(os.listdir(root)) if os.path.isdir(root) else []:
-        if not f.endswith(".png"):
+        if not f.endswith(".png") or (wanted and f[:-4] not in wanted):
             continue
         tex = import_as(os.path.join(root, f), "/Game/Slop/Portraits", "T_portrait_" + f[:-4])
         if tex:
