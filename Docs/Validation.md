@@ -239,6 +239,18 @@ record: screenshots were rendered in the editor on the same GPU during it (370 f
 wraps it with the readme, licences, version and checksums; the archive was unpacked into a fresh
 folder and run from there with the editor closed (below).
 
+**2.7.0** (`EbonyHearts-2.7.0-linux-x86_64.tar.gz`, commit `1ae0433`): built in 3 minutes, the
+cook with 0 errors and 0 warnings; the archive's checksum and every file's in `SHA256SUMS` verified
+after unpacking into a fresh folder; `VERSION.txt` names the commit; the launcher is
+`EbonyHearts.sh`. With the editor closed, `Tools/perf/soak.sh` ran the unpacked game for a minute
+on the Grandmaster against Wren at Master (CPU against CPU, the Drowned Chapel), offscreen because
+X reported no monitor (the display had gone to sleep in the night): 60.0 fps throughout the
+settled play (median, p95 and p99 frames 16.67 ms, every frame within 1 ms of the median), GPU 10.3
+ms, 1.52 GB resident (flat from first to last tenth), 943 MB of video memory, quit by itself at the
+set time (`Saved/Perf/pkg-2.7.0-20261029-043419/`). Launched without `-RenderOffscreen` while X
+had no monitor, the window waited forever to present, as described under "Display" below; that is
+the display, not the build. Not yet checked with the monitor on: the package's menus, sound and pads.
+
 ## Display and what offscreen means
 
 For the 2.0.0 session above FLOWBOX's monitor was switched off (X reported no monitors), and a
