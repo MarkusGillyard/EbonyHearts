@@ -1,4 +1,8 @@
-# Mortal Slopbat — design
+# Ebony Hearts — design
+
+The game was called Mortal Slopbat until 2.7.0, when Markus renamed it Ebony Hearts; the
+project, its module and the save folder keep the old name inside, and the Slopbat remains the
+boss at the top of every tower.
 
 ## Premise
 
@@ -9,7 +13,7 @@ world to fight. The fighters it summons battle until one remains; that champion 
 its roost. Win, and the Slopbat sleeps another generation and grants the victor one thing from
 its drowned hoard. Lose, and the flood rises and a town goes under.
 
-The game takes these stakes seriously. The title is the joke, along with a few chosen moments
+The game takes these stakes seriously. The Slopbat's name is the joke, along with a few chosen moments
 (the finishers' name, the Reflection, the stranger's dry humour). There is no fourth-wall
 commentary and no AI-themed material.
 

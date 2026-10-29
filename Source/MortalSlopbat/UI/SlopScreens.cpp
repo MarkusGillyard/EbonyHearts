@@ -227,7 +227,7 @@ namespace SlopScreensImpl
 				+ SOverlay::Slot()[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SBox).WidthOverride(1920).HeightOverride(1080)
 				[
 					SNew(SVerticalBox)
-					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 230, 0, 0)[SlopUI::Title(LOCTEXT("Name", "MORTAL SLOPBAT"), 150.f, SlopUI::Accent)]
+					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 230, 0, 0)[SlopUI::Title(LOCTEXT("Name", "EBONY HEARTS"), 150.f, SlopUI::Accent)]
 					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 40, 0, 0)[Premise]
 					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 110, 0, 0)
 					[
@@ -303,7 +303,7 @@ namespace SlopScreensImpl
 				+ SOverlay::Slot()[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SBox).WidthOverride(1920).HeightOverride(1080)
 				[
 					SNew(SConstraintCanvas)
-					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(120, 80, 1200, 150)).AutoSize(true)[SlopUI::Title(LOCTEXT("Name", "MORTAL SLOPBAT"), 96.f, SlopUI::Accent)]
+					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(120, 80, 1200, 150)).AutoSize(true)[SlopUI::Title(LOCTEXT("Name", "EBONY HEARTS"), 96.f, SlopUI::Accent)]
 					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(140, 290, 470, 700)).AutoSize(true)
 					[
 						SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 460.f, 34.f, [this](int32 I) { Sel = I; Sound(TEXT("ui_move")); })
@@ -316,7 +316,7 @@ namespace SlopScreensImpl
 					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(780, 590, 900, 50))
 					[
 						SNew(STextBlock).Font(SlopUI::Body(26.f)).ColorAndOpacity(SlopUI::Amber)
-						.Text_Lambda([this]() { return GI->Progress.TutorialDone() ? FText::GetEmpty() : LOCTEXT("TutTip", "New to Mortal Slopbat? The tutorial takes about five minutes."); })
+						.Text_Lambda([this]() { return GI->Progress.TutorialDone() ? FText::GetEmpty() : LOCTEXT("TutTip", "New to Ebony Hearts? The tutorial takes about five minutes."); })
 					]
 				]]]
 				+ SOverlay::Slot()[SlopUI::Hint([this]()

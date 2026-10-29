@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"EngineAssociation": "5.8",
 	"Category": "",
-	"Description": "Mortal Slopbat: an arcade fighting game (Markus Gillyard, proprietary)",
+	"Description": "Ebony Hearts (formerly Mortal Slopbat): an arcade fighting game (Markus Gillyard, proprietary)",
 	"Modules": [
 		{
 			"Name": "MortalSlopbat",

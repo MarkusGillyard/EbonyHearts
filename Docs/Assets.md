@@ -1,6 +1,6 @@
 # Assets, rights and notices
 
-Mortal Slopbat is Markus Gillyard's game. Its design, characters, story, data, code, synthesised
+Ebony Hearts (formerly Mortal Slopbat) is Markus Gillyard's game. Its design, characters, story, data, code, synthesised
 sound and the stage and fighter builds made for this rebuild are his (© 2026 Markus Gillyard).
 Everything else the game uses is listed here, with where it came from and under what terms.
 
@@ -28,7 +28,7 @@ CC0 asks for nothing, but the credits screen names every source anyway. CC BY as
 the credits read "Motion capture: Open Motion Project by ACCAD / The Ohio State University, CC BY
 3.0 (creativecommons.org/licenses/by/3.0); retargeted and retimed for this game", and the licence
 text ships in the Licenses folder. The credits also carry the
-engine's notices: "Mortal Slopbat uses the Unreal® Engine. Unreal® is a trademark or registered
+engine's notices: "Ebony Hearts uses the Unreal® Engine. Unreal® is a trademark or registered
 trademark of Epic Games, Inc. in the United States of America and elsewhere." and "Unreal®
 Engine, Copyright 1998 – 2026, Epic Games, Inc. All rights reserved."
 

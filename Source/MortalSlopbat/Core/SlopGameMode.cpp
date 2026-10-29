@@ -9,5 +9,5 @@ ASlopGameMode::ASlopGameMode()
 void ASlopGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	UE_LOG(LogSlop, Log, TEXT("Mortal Slopbat game mode started"));
+	UE_LOG(LogSlop, Log, TEXT("Ebony Hearts game mode started"));
 }

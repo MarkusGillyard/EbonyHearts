@@ -5,7 +5,8 @@
 #
 #   Tools/make_release.sh [Shipping|Development]
 #
-# Output: $BUILDS/release/MortalSlopbat-<version>-linux-x86_64[-Development].tar.gz (+ .sha256)
+# Output: $BUILDS/release/EbonyHearts-<version>-linux-x86_64[-Development].tar.gz (+ .sha256). The game
+# is Ebony Hearts; the packaged project inside keeps its internal name, MortalSlopbat.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=ue.sh
@@ -17,7 +18,7 @@ if [ -n "$(git -C "$ROOT" status --porcelain -- Source Config Content)" ]; then
 	echo "warning: Source, Config or Content differ from commit $REV" >&2
 fi
 SRC="$BUILDS/$CFG/Linux"
-NAME="MortalSlopbat-$VER-linux-x86_64"
+NAME="EbonyHearts-$VER-linux-x86_64"
 [ "$CFG" = Shipping ] || NAME="$NAME-$CFG"
 OUT="$BUILDS/release/$NAME"
 [ -x "$SRC/MortalSlopbat.sh" ] || { echo "no package at $SRC (run package_linux $CFG first)" >&2; exit 1; }
@@ -29,8 +30,10 @@ rm -f "$OUT"/Manifest_*.txt
 cp "$ROOT/Docs/Player-README.txt" "$OUT/README.txt"
 cp "$ROOT/LICENSE" "$OUT/LICENSE.txt"
 cp "$ROOT"/Docs/Licenses/* "$OUT/Licenses/"
-printf 'Mortal Slopbat %s (%s build of source commit %s, %s)\n' "$VER" "$CFG" "$REV" "$(date -u +%Y-%m-%d)" > "$OUT/VERSION.txt"
-chmod +x "$OUT/MortalSlopbat.sh"
+printf 'Ebony Hearts %s (%s build of source commit %s, %s)\n' "$VER" "$CFG" "$REV" "$(date -u +%Y-%m-%d)" > "$OUT/VERSION.txt"
+# The launcher carries the game's name (it finds the binary by its own folder, whatever it is called).
+mv "$OUT/MortalSlopbat.sh" "$OUT/EbonyHearts.sh"
+chmod +x "$OUT/EbonyHearts.sh"
 (cd "$OUT" && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)
 tar -C "$BUILDS/release" -czf "$OUT.tar.gz" "$NAME"
 (cd "$BUILDS/release" && sha256sum "$NAME.tar.gz" > "$NAME.tar.gz.sha256")

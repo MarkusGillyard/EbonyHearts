@@ -1425,7 +1425,7 @@ namespace SlopScreensFlowImpl
 				"Motion capture: Open Motion Project by ACCAD / The Ohio State University, CC BY 3.0 (creativecommons.org/licenses/by/3.0); retargeted and retimed for this game.\n"
 				"Typefaces: New Rocker by Pablo Impallari, Brenda Gallo and Rodrigo Fuenzalida; Oswald by The Oswald Project Authors; SIL Open Font License 1.1. "
 				"Symbols: Droid Sans Fallback, The Android Open Source Project, Apache License 2.0.\n\n"
-				"Mortal Slopbat uses the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc. in the United States of America and elsewhere.\n"
+				"Ebony Hearts uses the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc. in the United States of America and elsewhere.\n"
 				"Unreal® Engine, Copyright 1998 – 2026, Epic Games, Inc. All rights reserved.\n"
 				"Full licence texts ship with the game in the Licenses folder.");
 			return Frame(SNew(SConstraintCanvas)

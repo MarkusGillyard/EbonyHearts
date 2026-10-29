@@ -83,7 +83,7 @@ void USlopGameInstance::Init()
 	bDebugKeys = FParse::Param(FCommandLine::Get(), TEXT("debugkeys"));
 #endif
 	TickHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &USlopGameInstance::Tick));
-	UE_LOG(LogSlop, Log, TEXT("Mortal Slopbat started: %d fighters, settings %s, progress %s"), C.Fighters.Num(), *FSlopSettings::Path(), *FSlopProgress::Path());
+	UE_LOG(LogSlop, Log, TEXT("Ebony Hearts started: %d fighters, settings %s, progress %s"), C.Fighters.Num(), *FSlopSettings::Path(), *FSlopProgress::Path());
 }
 
 void USlopGameInstance::Shutdown()

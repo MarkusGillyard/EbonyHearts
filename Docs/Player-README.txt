@@ -1,14 +1,15 @@
-MORTAL SLOPBAT
+EBONY HEARTS
 A fighting game by Markus Gillyard. Every river in the world ends in the Sump.
 
 RUNNING IT
   Linux x86_64 with a Vulkan graphics driver (tested on an NVIDIA GeForce RTX 2060).
-  Unpack the archive anywhere and run:   ./MortalSlopbat.sh
+  Unpack the archive anywhere and run:   ./EbonyHearts.sh
   Nothing is installed; delete the folder to remove the game.
 
 SAVES AND SETTINGS
   ~/.local/share/MortalSlopbat/UE5/settings.json and progress.json
-  (under $XDG_DATA_HOME instead, when that is set).
+  (under $XDG_DATA_HOME instead, when that is set; the folder keeps the game's earlier name,
+  Mortal Slopbat, so saves made before the rename carry on).
   If you played the earlier Godot version, its progress is read once on first launch and
   carried over; its own files are never changed.
 
@@ -34,6 +35,6 @@ MODES
 
 CREDITS AND LICENCES
   See the Credits screen in Extras, and the Licenses folder beside this file.
-  Mortal Slopbat uses the Unreal(R) Engine. Unreal(R) is a trademark or registered trademark of
+  Ebony Hearts uses the Unreal(R) Engine. Unreal(R) is a trademark or registered trademark of
   Epic Games, Inc. in the United States of America and elsewhere.
   Unreal(R) Engine, Copyright 1998 - 2026, Epic Games, Inc. All rights reserved.

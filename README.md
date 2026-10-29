@@ -1,7 +1,8 @@
-# Mortal Slopbat
+# Ebony Hearts
 
-A bog-gothic arcade fighting game by Markus Gillyard, in the line of Mortal Kombat 3: six
-fighters, the Slopbat waiting at the top of every tower, a stranger in white who is not part of
+A bog-gothic arcade fighting game by Markus Gillyard, in the line of Mortal Kombat 3 (called
+Mortal Slopbat until 2.7.0; the project, module and save folder keep that name inside): seven
+fighters and a secret eighth, the Slopbat waiting at the top of every tower, a stranger in white who is not part of
 the tournament, four stages in the Sump, finishers, combo trials and a full arcade ladder.
 
 This is the Unreal Engine 5 rebuild of the Godot 4.7.2 game (version 1.1.0, at
