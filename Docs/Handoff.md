@@ -114,6 +114,12 @@ the archive.
   foot orientation and toe bend through a kick's chamber, extension and retraction (IK solve and
   the kick poses' foot and knee targets), feet sliding or sinking, and Gorm's heavy legs and boots
   specifically. Fix alongside the animation-flow work above.
+- **Gorm needs more moves and a much better model** (Markus played him, 29 Oct 2026: "cool", but
+  thin). He has 4 specials (Ground Slap, Rendering Charge, Tallow Hide, Vat Press) against 6-9 for
+  the newer fighters: give the sumo and catch-wrestling grappler more of his own (slaps and pushes,
+  a second command grab or a throw string, an anti-air, a way in against zoners), in data like the
+  others. Rebuild or heavily refine his body (`Tools/blender`, `fighters.json` entry `gorm`): mass,
+  apron and legs read poorly, worst in kicks (see above).
 - **More motion capture.** From ACCAD's Male 2 takes (CC BY 3.0): the shared strikes, Ashka's
   teep, walking and running (step cycles played by distance, so the feet keep pace), the standing
   block's guard, the Grandmaster's step aside (Daxion's evade, carried over), weave and boxing
