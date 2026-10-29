@@ -845,6 +845,9 @@ def fighters(import_meshes=True):
     wanted = {f.strip() for f in os.environ.get("SLOP_FIGHTERS", "").split(",") if f.strip()}
     for fid in sorted(os.listdir(root)):
         fbx = os.path.join(root, fid, fid + ".fbx")
+        # A body the game no longer wears (Daxion's, archived for Slopperfall) has no look.
+        if not os.path.exists(os.path.join(PROJECT, "Content", "Data", "looks", fid + ".json")):
+            continue
         if os.path.exists(fbx) and (not wanted or fid in wanted):
             fighter(fid, fbx, import_meshes)
 

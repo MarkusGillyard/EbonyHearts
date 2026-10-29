@@ -176,10 +176,27 @@ namespace Slop
 		// counter (a grab with a throw sequence) plays on them, unbreakable (parry "catch").
 		bool bParryCatch = false;
 		// The Grandmaster's shapeshift (effects "shapeshift": the frame it takes) and its reversal
-		// (effects "revert"). The move ends on that frame, in the new shape.
+		// (effects "revert"). The move ends on that frame, in the new shape. A shapeshift takes the
+		// shape of FormTarget (none: the opponent facing him) for FormCost Qhi (below zero: half the
+		// meter, the owner's price for copying the opponent), Qhi-enhanced or not, its upkeep scaled.
 		bool bShapeshift = false;
 		bool bRevert = false;
 		int32 FormFrame = 0;
+		FName FormTarget;
+		double FormCost = -1.0;
+		bool bFormEnhanced = true;
+		double FormUpkeep = 1.0;
+		// One of the Grandmaster's instant kills (effects "kill"): when it lands (or its hold's damage
+		// frame comes) the victim's health is gone, whatever it was. KillRequires gates it: "standing"
+		// (only begun against an opponent free on the ground) or "combo" (only inside a combo of at
+		// least KillCombo hits that used at least two of his shapes; data "combo").
+		bool bKill = false;
+		FName KillRequires;
+		int32 KillCombo = 6;
+		// Spends all the Qhi there is, at least QhiCost (data "qhi_all").
+		bool bQhiAll = false;
+		// A technique of the Grandmaster's own that every shape he takes keeps (data "any_shape").
+		bool bAnyShape = false;
 		// Presentation-only effect ranges ("sink", "whip").
 		FIntPoint Sink = FIntPoint::ZeroValue;
 		FIntPoint Whip = FIntPoint::ZeroValue;
@@ -250,8 +267,12 @@ namespace Slop
 	// The Grandmaster's Qhi (fighter JSON "qhi"). Per tick unless named otherwise.
 	struct FQhiRules
 	{
-		// Fixed by the owner: a shapeshift that takes costs half of the meter's capacity.
+		// Fixed by the owner: copying the opponent facing him costs half of the meter's capacity.
 		static constexpr double ShapeshiftShare = 0.5;
+		// Inside a combo a change of shape takes on this frame instead of its own, at most MaxShifts
+		// times a combo.
+		int32 ShiftFrame = 3;
+		int32 MaxShifts = 2;
 		double Max = 100.0;
 		// Passive recovery once nothing has been spent for RegenDelay ticks.
 		double Regen = 0.05;
@@ -313,9 +334,12 @@ namespace Slop
 		double Arcana = 1.0;
 		EResource Resource = EResource::Run;
 		FQhiRules Qhi;
-		// Whether the Grandmaster can borrow this fighter's shape (data "copyable"; bosses and the
-		// fighters that are not in the roster cannot be).
+		// Whether the Grandmaster can borrow this fighter's shape (data "copyable"; fighters that are
+		// not in the roster cannot be unless they say so, as the Ebony Heart Fragment does).
 		bool bCopyable = true;
+		// How hard this fighter's shape is to hold: the Qhi upkeep of wearing it is multiplied by
+		// this however the shape was taken (data "shape_upkeep"; the Fragment's is 2).
+		double ShapeUpkeep = 1.0;
 		// The mesh and look worn (data "body"; the fighter's own id by default). A form of another
 		// fighter wears that fighter's body.
 		FName Body;
@@ -325,6 +349,8 @@ namespace Slop
 		const FFighterDef* SpentForm = nullptr;
 		// A borrowed shape: the fighter it was copied from (null for everyone's own definition).
 		const FFighterDef* CopyOf = nullptr;
+		// For a Qhi fighter: the fighters whose shapes his form commands take, by id (linked at load).
+		TMap<FName, const FFighterDef*> FormSources;
 		FMotionStyle Motion;
 		// "walk_f", "walk_b", "run": the captured cycles this fighter uses (by its Motion).
 		TMap<FName, FCycleDef> Cycles;
@@ -404,7 +430,7 @@ namespace Slop
 	// The shape the Grandmaster takes on borrowing `Target`'s: the target's whole fighting
 	// definition (moves, commands, body, AI), strengthened by Qhi (`Copier`'s rules: power, guard,
 	// speed), with a run meter, no finisher of its own, and the copier's reversal added.
-	TSharedRef<FFighterDef> MakeBorrowedShape(const FFighterDef& Target, const FFighterDef& Copier);
+	TSharedRef<FFighterDef> MakeBorrowedShape(const FFighterDef& Target, const FFighterDef& Copier, bool bEnhanced = true);
 
 	// The game's data, loaded from the project's Content/Data on first use.
 	FContent& GetContent();

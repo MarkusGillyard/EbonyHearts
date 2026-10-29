@@ -4,7 +4,7 @@
 
 namespace Slop
 {
-	enum class EMode : uint8 { Arcade, Versus, Cpu, Training, Tutorial, Stranger, Watch, Survival, Trials };
+	enum class EMode : uint8 { Arcade, Versus, Cpu, Training, Tutorial, Watch, Survival, Trials };
 	const TCHAR* ModeName(EMode M);
 
 	// Everything a match needs to start.
@@ -40,7 +40,6 @@ namespace Slop
 		FName Finisher;
 		bool bFlawless = false;
 		EMode Mode = EMode::Cpu;
-		FString StrangerLine;
 		int32 Health[2] = {0, 0};
 		int32 TimeLeft = 0;
 	};
@@ -69,7 +68,6 @@ namespace Slop
 		static FText DifficultyName(int32 I);
 
 		FMatchConfig Config;
-		bool bStrangerPending = false;
 
 		bool IsCpu(int32 Side) const;
 		bool TwoPlayers() const { return Config.Mode == EMode::Versus; }
@@ -101,11 +99,12 @@ namespace Slop
 		void SkipToBossCleared(FName Fighter, int32 TowerIndex);
 		bool OnSecretRung() const { const FRung* R = CurrentRung(); return R && R->Kind == TEXT("secret"); }
 		void ArcadeRetry();
-		// Back to the current rung after a detour (the stranger), without counting a continue.
-		void ResumeArcade() { if (InArcade()) ConfigureRung(); }
 		void EndArcade() { Arcade = FArcade(); }
 
 		void StartTrials(FName Fighter);
+		// Who a fighter's trials are performed against: its rival, else the partner trials.json
+		// names for it, else Gorm (Bram for Gorm).
+		static FName TrialPartner(FName Fighter);
 		void StartSurvival(FName Fighter, int32 Seed);
 		static bool SurvivalBossWave(int32 Wave) { return (Wave + 1) % SurvivalBossEvery == 0; }
 		static int32 SurvivalDifficulty(int32 Wave) { return FMath::Clamp(Wave / SurvivalWavesPerLevel, 0, 2); }
@@ -114,7 +113,6 @@ namespace Slop
 		int32 SurvivalWaves() const { return Survival.Wave; }
 		FName SurvivalFighter() const { return Survival.Fighter; }
 		void EndSurvival() { Survival = FSurvival(); }
-		void StartStranger(bool bFromArcade);
 
 	private:
 		void ConfigureRung();

@@ -69,17 +69,17 @@ namespace Slop
 				BossT = 0;
 			}
 			break;
-		case EEvent::StrangerCrack:
-			CrackT = 0;
-			break;
 		case EEvent::Hit:
-			if (E.By >= 0 && M->Sim.Fighters[E.By].Def->Id == TEXT("daxion"))
+			if (E.bKill)
 			{
-				// The one blow lands in slow motion.
+				// An instant kill lands in slow motion, close: the touch, the moment and the blow.
 				M->KoSlowExternal(45);
 				M->Camera->AddShake(0.06);
-				M->Vfx->FlashAt(FVector(E.Point.X, E.Point.Y, 0.2), FLinearColor(0.85f, 0.75f, 1.f), 30.f);
+				M->Vfx->FlashAt(FVector(E.Point.X, E.Point.Y, 0.2), FLinearColor(1.f, 0.82f, 0.45f), 30.f);
 				M->GetGI()->Audio->Play(TEXT("palm_strike"), 2.f);
+				M->GetGI()->Audio->Play(TEXT("bell"), -3.f, 0.6f);
+				KillBy = E.By;
+				KillT = 0;
 			}
 			break;
 		default:
@@ -91,7 +91,7 @@ namespace Slop
 	{
 		bActive = false;
 		BossT = -1;
-		CrackT = -1;
+		KillT = -1;
 		if (Pool.IsValid())
 		{
 			Pool->SetVisibility(false);
@@ -129,7 +129,7 @@ namespace Slop
 	void FFinisherDirector::Step(double Delta)
 	{
 		BossStep(Delta);
-		CrackStep(Delta);
+		KillStep(Delta);
 		if (!bActive || M->Sim.FinisherWho < 0)
 		{
 			return;
@@ -512,25 +512,25 @@ namespace Slop
 		}
 	}
 
-	// The stranger's Find the Crack: a slow close-up of the touch, the moment and the blow.
-	void FFinisherDirector::CrackStep(double Delta)
+	// An instant kill: a slow close-up of the blow, then the fight camera again.
+	void FFinisherDirector::KillStep(double Delta)
 	{
-		if (CrackT < 0)
+		if (KillT < 0 || KillBy < 0 || KillBy > 1)
 		{
 			return;
 		}
-		CrackT += Delta;
-		const FFighter& D = M->Sim.Fighters[1];
-		const FFighter& P = M->Sim.Fighters[0];
+		KillT += Delta;
+		const FFighter& D = M->Sim.Fighters[KillBy];
+		const FFighter& P = M->Sim.Fighters[1 - KillBy];
 		const FVector Mid((D.Pos.X + P.Pos.X) * 0.5, 1.25, 0.0);
-		if (CrackT < 1.9)
+		if (KillT < 1.6)
 		{
 			M->Camera->SetOverride(Mid + FVector(-(double)D.Facing * 1.4, 0.25, 2.6), Mid + FVector(0, 0.05, 0), 1.0);
 		}
-		else if (CrackT > 3.2)
+		else if (KillT > 2.4)
 		{
 			M->Camera->ClearOverride();
-			CrackT = -1;
+			KillT = -1;
 		}
 	}
 }

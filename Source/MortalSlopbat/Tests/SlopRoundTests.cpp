@@ -479,11 +479,6 @@ bool FSlopContentValid::RunTest(const FString&)
 	TestEqual("roster fighters loaded", C.Fighters.Num(), FContent::Roster().Num() + FContent::Secret().Num() + FContent::Special().Num() + FContent::Forms().Num());
 	for (const auto& KV : C.Fighters)
 	{
-		// The stranger in white is not a fighter: he has no ordinary moves by design.
-		if (KV.Key == TEXT("daxion"))
-		{
-			continue;
-		}
 		TestTrue(KV.Key.ToString() + " has moves", KV.Value->Moves.Num() > 5);
 		TestTrue(KV.Key.ToString() + " has commands", KV.Value->Commands.Num() > 0);
 	}

@@ -66,24 +66,9 @@ void SSlopHud::OnEvent(const FSimEvent& E)
 	{
 		return;
 	}
-	const bool bStranger = M->Config.Mode == EMode::Stranger;
-	if (bStranger && (E.Type == EEvent::RoundStart || E.Type == EEvent::Fight || E.Type == EEvent::WinPose || E.Type == EEvent::RoundEnd || E.Type == EEvent::Timeout))
-	{
-		return;
-	}
 	const FFightSim& Sim = M->Sim;
 	switch (E.Type)
 	{
-	case EEvent::Line:
-		if (E.bHint)
-		{
-			PromptText = FText::FromString(E.Text);
-		}
-		else
-		{
-			Subtitle(FText::Format(LOCTEXT("Quote", "“{0}”"), FText::FromString(E.Text)), 3.4f);
-		}
-		break;
 	case EEvent::RoundStart:
 	{
 		const bool bLast = Sim.Wins[0] == Sim.RoundsToWin - 1 && Sim.Wins[1] == Sim.RoundsToWin - 1 && E.Round > 1;
@@ -138,6 +123,11 @@ void SSlopHud::OnEvent(const FSimEvent& E)
 	case EEvent::Hit:
 	{
 		const int32 By = FMath::Clamp(E.By, 0, 1);
+		if (E.bKill)
+		{
+			const FMoveDef* Mv = Sim.Fighters[By].Def->Move(E.Move);
+			Announce(FText::FromString(Mv ? Mv->Name.ToUpper() : FString()), LOCTEXT("InstantKill", "INSTANT KILL"), 2.2f, SlopUI::Amber, 110.f);
+		}
 		if (E.Combo >= 2 || E.bCounter)
 		{
 			const FFighter& V = Sim.Fighters[FMath::Clamp(E.Who, 0, 1)];
@@ -166,6 +156,19 @@ void SSlopHud::OnEvent(const FSimEvent& E)
 		}
 		break;
 	}
+	case EEvent::Move:
+		if (E.Who >= 0 && E.Who <= 1)
+		{
+			// An instant kill begun is said aloud under his bar: its startup is the opponent's chance.
+			const FMoveDef* Mv = Sim.Fighters[E.Who].Def->Move(E.Move);
+			if (Mv && Mv->bKill)
+			{
+				FormText[E.Who] = FText::FromString(Mv->Name.ToUpper());
+				FormColor[E.Who] = SlopUI::Rust * 1.5f;
+				FormT[E.Who] = 1.6f;
+			}
+		}
+		break;
 	case EEvent::FinisherRange:
 		NoticeLine = FText::Format(LOCTEXT("Range", "Wrong distance: {0} range"), FText::FromName(E.Want));
 		NoticeT = 2.0f;
@@ -177,7 +180,9 @@ void SSlopHud::OnEvent(const FSimEvent& E)
 		const FName K = E.Kind;
 		if (K == TEXT("borrowed"))
 		{
-			FormText[W] = FText::Format(LOCTEXT("Borrowed", "BORROWED FACE: {0}"), FText::FromString(Copied ? Copied->Name.ToUpper() : FString()));
+			// The opponent's face (Qhi-enhanced) or a shape from his memory.
+			const bool bFace = E.How == TEXT("copied");
+			FormText[W] = FText::Format(bFace ? LOCTEXT("Borrowed", "BORROWED FACE: {0}") : LOCTEXT("Remembered", "SHAPE: {0}"), FText::FromString(Copied ? Copied->Name.ToUpper() : FString()));
 			FormColor[W] = SlopUI::Amber * 1.15f;
 		}
 		else if (K == TEXT("own"))
@@ -202,9 +207,9 @@ void SSlopHud::OnEvent(const FSimEvent& E)
 		}
 		else if (K == TEXT("refused"))
 		{
-			FormText[W] = E.How == TEXT("qhi") ? LOCTEXT("NeedQhi", "NOT ENOUGH QHI (HALF NEEDED)")
-				: E.How == TEXT("boss") ? LOCTEXT("NoBoss", "ITS SHAPE CANNOT BE HELD")
+			FormText[W] = E.How == TEXT("qhi") ? LOCTEXT("NeedQhi", "NOT ENOUGH QHI")
 				: E.How == TEXT("mirror") ? LOCTEXT("NoMirror", "A MIRROR SHOWS ONLY ITSELF")
+				: E.How == TEXT("same") ? LOCTEXT("SameShape", "ALREADY IN THAT SHAPE")
 				: LOCTEXT("NoShape", "NO SHAPE TO BORROW");
 			FormColor[W] = SlopUI::Dim;
 		}
@@ -294,13 +299,8 @@ void SSlopHud::PaintBars(FSlateWindowElementList& Out, const FGeometry& G, int32
 	const FFightSim& Sim = M->Sim;
 	const FSlateBrush* W = SlopUI::Box();
 	const float BarW = 640.f, BarH = 34.f, Top = 30.f;
-	const bool bStranger = M->Config.Mode == EMode::Stranger;
 	for (int32 I = 0; I < 2; ++I)
 	{
-		if (bStranger && I == 1)
-		{
-			continue;
-		}
 		const FFighter& F = Sim.Fighters[I];
 		const float X = I == 0 ? 48.f : 1920.f - 48.f - BarW;
 		const float H = (float)F.Health / FMath::Max(1, F.MaxHealth());
@@ -357,7 +357,8 @@ void SSlopHud::PaintBars(FSlateWindowElementList& Out, const FGeometry& G, int32
 			const double Mark = bSpent ? F.QhiRules().RecoverAt / F.QhiRules().Max : FQhiRules::ShapeshiftShare;
 			const float MX = I == 0 ? X + 360.f * (float)Mark : X + BarW - 360.f * (float)Mark;
 			Rect(MX - 1.f, RY - 3.f, 2.f, 15.f, FLinearColor(1.f, 1.f, 1.f, 0.8f), Layer + 4);
-			PaintText(Out, G, Layer + 4, bSpent ? LOCTEXT("QhiSpentLabel", "QHI SPENT") : LOCTEXT("Qhi", "QHI"), SlopUI::Body(18.f), LabelAt,
+			PaintText(Out, G, Layer + 4, bSpent ? LOCTEXT("QhiSpentLabel", "QHI SPENT")
+				: (F.Form == EForm::Borrowed ? FText::Format(LOCTEXT("QhiHoldsNoRun", "QHI  ·  AS {0}"), FText::FromString(F.Def->Name.ToUpper())) : LOCTEXT("Qhi", "QHI")), SlopUI::Body(18.f), LabelAt,
 				bSpent ? SlopUI::Rust * 1.4f : FLinearColor(1.f, 0.82f, 0.45f), I == 0 ? 0 : 2);
 		}
 		// Round wins.
@@ -369,11 +370,7 @@ void SSlopHud::PaintBars(FSlateWindowElementList& Out, const FGeometry& G, int32
 			Rect(CX - 7, RY + 1, 14, 14, bWon ? SlopUI::Amber : FLinearColor(0.15f, 0.17f, 0.15f, 1.f), Layer + 2);
 		}
 	}
-	// The timer (none against the stranger).
-	if (bStranger)
-	{
-		return;
-	}
+	// The timer.
 	const bool bClock = !Sim.bTraining && Sim.RoundLength > 0;
 	const FText Timer = bClock ? FText::AsNumber(Sim.TimerSeconds()) : FText::FromString(TEXT("∞"));
 	PaintText(Out, G, Layer + 4, Timer, SlopUI::Display(64.f), FVector2D(960.f, 14.f), bClock && Sim.TimerSeconds() <= 10 ? SlopUI::Rust * 1.4f : SlopUI::Text, 1);
@@ -432,13 +429,11 @@ int32 SSlopHud::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometr
 	const float Scale = FMath::Min(Local.Y / 1080.f, Local.X / 1920.f);
 	const FVector2D Off((Local.X - 1920.f * Scale) * 0.5f, (Local.Y - 1080.f * Scale) * 0.5f);
 	const FGeometry G = AllottedGeometry.MakeChild(FVector2D(1920.f, 1080.f), FSlateLayoutTransform(Scale, Off));
-	const bool bStranger = M->Config.Mode == EMode::Stranger;
 	if (M->bShowBoxes)
 	{
 		PaintBoxes(OutDrawElements, AllottedGeometry, LayerId);
 	}
-	// Every mode shows the bars (the tutorial's steps talk about the health and the run meter);
-	// against the stranger only his are hidden, as in the original.
+	// Every mode shows the bars (the tutorial's steps talk about the health and the run meter).
 	PaintBars(OutDrawElements, G, LayerId);
 	const int32 L = LayerId + 10;
 	if (AnnounceLife > 0.f && AnnounceT < AnnounceLife)

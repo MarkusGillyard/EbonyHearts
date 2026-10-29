@@ -117,6 +117,8 @@ namespace Slop
 		Recent.Reset();
 		Intent.Clear();
 		AaAt = -1;
+		// Changed inside a combo: the new shape's blows follow at once.
+		bFollowUp = Opp().State == EState::HitStun || Opp().State == EState::Juggle;
 	}
 
 	double FCpuBrain::QhiSetting(const TCHAR* Key, double Default) const
@@ -132,7 +134,354 @@ namespace Slop
 	bool FCpuBrain::Affordable(const FMoveDef& Mv) const
 	{
 		const FFighter& M = Me();
-		return Mv.QhiCost <= 0.0 || (M.UsesQhi() && M.Qhi - Mv.QhiCost >= QhiSetting(TEXT("keep"), 0.0));
+		return Mv.QhiCost <= 0.0 || (M.UsesQhi() && M.Qhi - Mv.QhiCost >= Reserve());
+	}
+
+	double FCpuBrain::Reserve() const
+	{
+		const FFighter& M = Me();
+		const FFighter& O = Opp();
+		double Keep = QhiSetting(TEXT("keep"), 0.0);
+		if (double(M.Health) / M.MaxHealth() < 0.35)
+		{
+			// In danger: something kept back for a ward or a change of shape out of trouble.
+			Keep += 10.0;
+		}
+		if (double(O.Health) / O.MaxHealth() < 0.25)
+		{
+			// Closing the round out: spend.
+			Keep = FMath::Max(0.0, Keep - 10.0);
+		}
+		return Keep;
+	}
+
+	FName FCpuBrain::PickForm(const FFighter& M, bool bInCombo) const
+	{
+		if (!M.UsesQhi() || M.Form == EForm::Spent)
+		{
+			return NAME_None;
+		}
+		const TSharedPtr<FJsonObject> Q = Json::Obj(M.BaseDef->AI, TEXT("qhi"));
+		const double Spare = M.Qhi - Reserve();
+		auto Usable = [&M, Spare](FName Id)
+		{
+			const FMoveDef* Mv = M.Def->Move(Id);
+			return Mv && M.CanUse(*Mv) && Spare >= M.ShapeCost(*Mv);
+		};
+		const FFighter& O = Opp();
+		const FFighterDef* Facing = O.Def->CopyOf ? O.Def->CopyOf : O.BaseDef;
+		// The Fragment's shape with a full meter, at the best levels (facing the Fragment itself,
+		// its copy below is the cheaper way in).
+		const FName Fragment = TEXT("shape_slopbat");
+		if (!bInCombo && Facing->Id != TEXT("slopbat") && M.Qhi >= QhiSetting(TEXT("fragment_from"), 101.0) && Usable(Fragment)
+			&& Rng.GetFraction() < QhiSetting(TEXT("fragment_chance"), 0.0))
+		{
+			return Fragment;
+		}
+		// With the meter high, the opponent's own shape, enhanced (from his own body only).
+		const FName Copy = TEXT("borrowed_face");
+		if (M.Form == EForm::Own && M.Qhi >= QhiSetting(TEXT("shapeshift_from"), 90.0) && Usable(Copy) && (!bInCombo || Diff >= 3))
+		{
+			return Copy;
+		}
+		// A remembered shape (30, not enhanced) is the quick way to a second shape inside a combo;
+		// from a standstill it is worth less than the copy, so only taken where the copy is refused
+		// (a mirror match), with the meter as high as the copy would need.
+		const bool bCopyRefused = M.Form == EForm::Own && !M.BorrowRefusal().IsNone();
+		if (bInCombo ? M.Qhi < QhiSetting(TEXT("combo_form_from"), 101.0) : !(bCopyRefused && M.Qhi >= QhiSetting(TEXT("shapeshift_from"), 90.0)))
+		{
+			return NAME_None;
+		}
+		// A remembered shape for the matchup: against a fighter who keeps away, one that rushes in;
+		// against one who rushes in, one that keeps away (each fighter's own AI notes say which it is).
+		// A data override ("forms_vs": opponent -> form) wins.
+		const FName Named(*Json::Str(Json::Obj(Q, TEXT("forms_vs")), *Facing->Id.ToString()));
+		if (!Named.IsNone() && Usable(FName(*(TEXT("shape_") + Named.ToString()))))
+		{
+			return FName(*(TEXT("shape_") + Named.ToString()));
+		}
+		const double Zo = Json::Num(Facing->AI, TEXT("zoning"), 0.2);
+		FName Best;
+		double BestScore = -1.0;
+		for (const TPair<FName, const FFighterDef*>& KV : M.BaseDef->FormSources)
+		{
+			const FName Id(*(TEXT("shape_") + KV.Key.ToString()));
+			if (KV.Key == TEXT("slopbat") || !Usable(Id))
+			{
+				continue;
+			}
+			// Inside a combo a shape with a long string of its own carries it further.
+			int32 Longest = 0;
+			if (const TArray<TSharedPtr<FJsonValue>>* C = Json::Arr(KV.Value->AI, TEXT("combos")))
+			{
+				for (const TSharedPtr<FJsonValue>& V : *C)
+				{
+					Longest = FMath::Max(Longest, V->AsArray().Num());
+				}
+			}
+			const double Score = Zo * Json::Num(KV.Value->AI, TEXT("aggression"), 0.5) + (1.0 - Zo) * Json::Num(KV.Value->AI, TEXT("zoning"), 0.2)
+				+ (bInCombo ? 0.1 * FMath::Max(0, Longest - 2) : 0.0) + 0.15 * Rng.GetFraction();
+			if (Score > BestScore)
+			{
+				BestScore = Score;
+				Best = Id;
+			}
+		}
+		return Best;
+	}
+
+	bool FCpuBrain::ComboShift(FFighter& M)
+	{
+		if (!M.UsesQhi() || M.Form == EForm::Spent || M.State != EState::Move || !M.Move || M.MoveContact != TEXT("hit")
+			|| M.MF <= M.Move->Startup || M.FormShifts >= M.QhiRules().MaxShifts)
+		{
+			return false;
+		}
+		const FFighter& O = Opp();
+		if (O.State != EState::HitStun && O.State != EState::Juggle)
+		{
+			return false;
+		}
+		// The better levels open with two blows of his own first, so the combo can run long.
+		if (M.Form == EForm::Own && Diff >= 2 && O.ComboHits < 2)
+		{
+			return false;
+		}
+		// One try a blow, pressed as its hitstop ends (a motion begun inside it).
+		const int32 Started = Sim.TickCount - M.MF;
+		if (Started == ShiftTriedAt || M.Hitstop > 3)
+		{
+			return false;
+		}
+		ShiftTriedAt = Started;
+		if (Rng.FRand() >= QhiSetting(TEXT("combo_shift"), 0.0))
+		{
+			return false;
+		}
+		FName To;
+		if (M.Form == EForm::Borrowed)
+		{
+			// A shape is worth holding: it is given back inside a combo to save the Qhi it costs, or,
+			// at the better levels, to carry a long combo on in his own body toward Heart Stop (free,
+			// and his own body is the combo's next shape).
+			const FMoveDef* Hs = M.Def->Move(FName(*Json::Str(Json::Obj(Json::Obj(M.BaseDef->AI, TEXT("qhi")), TEXT("kills")), TEXT("combo"))));
+			const bool bToward = Diff >= 2 && Hs && O.ComboHits >= 3 && M.Qhi >= Hs->QhiCost;
+			if (M.Qhi - Reserve() >= 20.0 && !bToward)
+			{
+				return false;
+			}
+			To = TEXT("own_face");
+		}
+		else
+		{
+			To = PickForm(M, true);
+		}
+		const FMoveDef* Mv = To.IsNone() ? nullptr : M.Def->Move(To);
+		if (!Mv || !M.CanUse(*Mv))
+		{
+			return false;
+		}
+		Intent.Clear();
+		Intent.Command(Notation(To));
+		return true;
+	}
+
+	bool FCpuBrain::KillPlan(FFighter& M, const FSeen& Seen, double Dist)
+	{
+		if (!M.UsesQhi() || M.Form == EForm::Spent || Diff < 1 || Intent.Busy())
+		{
+			return false;
+		}
+		const TSharedPtr<FJsonObject> K = Json::Obj(Json::Obj(M.BaseDef->AI, TEXT("qhi")), TEXT("kills"));
+		// Heart Stop the moment a combo allows it (the simulation's own gate: hits, shapes, caught),
+		// from neutral or out of the last blow's cancel window, as a player would.
+		const FName Combo(*Json::Str(K, TEXT("combo")));
+		if (const FMoveDef* Hs = M.Def->Move(Combo); Hs && M.CanUse(*Hs))
+		{
+			const int32 Lead = FCommand::Parse(Notation(Combo)).Steps.Num() + 1;
+			const bool bCancel = M.State == EState::Move && M.Move && M.MoveContact == TEXT("hit") && M.Move->Cancel != FIntPoint::ZeroValue
+				&& M.MF + Lead >= M.Move->Cancel.X && M.MF + Lead <= M.Move->Cancel.Y;
+			if ((M.IsActionable() || bCancel) && Rng.FRand() < 0.4 + 0.2 * Diff)
+			{
+				Intent.Command(Notation(Combo));
+				return true;
+			}
+		}
+		if (!M.IsActionable())
+		{
+			return false;
+		}
+		// Find the Crack: an opponent standing guard (or idling) within its reach, the meter near
+		// full. A guard is no answer to it, a blow in its long startup is, so it is a read on a turtle.
+		const FName Crack(*Json::Str(K, TEXT("standing")));
+		const FMoveDef* Fc = M.Def->Move(Crack);
+		if (!Fc || !M.CanUse(*Fc) || M.Qhi < QhiSetting(TEXT("crack_from"), 95.0) || Seen.bAir || !Seen.bActionable || Dist > Reach(Crack) + 0.05)
+		{
+			return false;
+		}
+		const bool bGuard = Seen.State == EState::Block || Seen.State == EState::CrouchBlock || Seen.State == EState::BlockStun;
+		const bool bStill = bGuard || Seen.State == EState::Idle || Seen.State == EState::Crouch;
+		if (!bStill)
+		{
+			return false;
+		}
+		double Chance = QhiSetting(TEXT("crack_chance"), 0.0) * (bGuard ? 3.0 : 1.0);
+		const FFighter& O = Opp();
+		if (double(M.Health) / M.MaxHealth() < 0.3 && double(O.Health) / O.MaxHealth() > 0.5)
+		{
+			// Far behind: the one blow that can turn the round.
+			Chance *= 2.0;
+		}
+		if (Rng.FRand() < Chance)
+		{
+			Intent.Command(Notation(Crack));
+			return true;
+		}
+		return false;
+	}
+
+	void FCpuBrain::Observe(const FFighter& M)
+	{
+#if !UE_BUILD_SHIPPING
+		if (!M.UsesQhi())
+		{
+			return;
+		}
+		const bool bFight = Sim.Phase == EPhase::Fight;
+		if (bFight)
+		{
+			++Tele.Ticks;
+			if (LastQhi >= 0.0)
+			{
+				const double Delta = M.Qhi - LastQhi;
+				(Delta < 0.0 ? Tele.Spent : Tele.Gained) += FMath::Abs(Delta);
+			}
+			const FName In = FormName(M.Form);
+			++Tele.FormTicks.FindOrAdd(In);
+			Tele.Dealt.FindOrAdd(In) += FMath::Max(0, Opp().DamageTaken - LastDealt);
+			Tele.Taken.FindOrAdd(In) += FMath::Max(0, M.DamageTaken - LastTaken);
+			for (const TPair<FName, TSharedRef<FMoveDef>>& KV : M.Def->Moves)
+			{
+				const FMoveDef& Mv = *KV.Value;
+				if (!Mv.bKill)
+				{
+					continue;
+				}
+				// A counter's chance is its Qhi in hand while the catch that leads to it can begin.
+				bool bChance = M.IsActionable() && M.CanUse(Mv);
+				for (const TPair<FName, TSharedRef<FMoveDef>>& P : M.Def->Moves)
+				{
+					if (P.Value->ParryCounter == Mv.Id)
+					{
+						bChance = M.IsActionable() && M.CanUse(*P.Value) && M.Qhi >= Mv.QhiCost;
+					}
+				}
+				if (bChance)
+				{
+					++Tele.KillChances.FindOrAdd(Mv.Id);
+				}
+			}
+		}
+		LastQhi = M.Qhi;
+		LastDealt = Opp().DamageTaken;
+		LastTaken = M.DamageTaken;
+		for (const FSimEvent& E : Sim.Events)
+		{
+			if (E.Type == EEvent::Form && E.Who == Index)
+			{
+				if (E.Kind == TEXT("borrowed") || (E.Kind == TEXT("own") && bFight))
+				{
+					++Tele.Forms.FindOrAdd(E.Kind == TEXT("own") ? FName(TEXT("own")) : E.Move);
+					Tele.ComboShifts += Opp().ComboHits > 0 ? 1 : 0;
+				}
+				Tele.Spents += E.Kind == TEXT("spent") ? 1 : 0;
+				Tele.Breaks += E.Kind == TEXT("broken") ? 1 : 0;
+			}
+			else if (E.Type == EEvent::Move && E.Who == Index)
+			{
+				if (const FMoveDef* Mv = M.Def->Move(E.Move); Mv && Mv->bKill)
+				{
+					++Tele.KillTries.FindOrAdd(E.Move);
+				}
+			}
+			else if (E.Type == EEvent::Hit && E.By == Index && E.bKill)
+			{
+				++Tele.Kills.FindOrAdd(E.Move);
+			}
+			else if (E.Type == EEvent::ComboEnd && E.Who != Index && E.Hits >= 2)
+			{
+				++Tele.Combos.FindOrAdd(E.Hits >= 6 ? FName(TEXT("6+")) : FName(*FString::FromInt(E.Hits)));
+			}
+			else if (E.Type == EEvent::RoundEnd)
+			{
+				++Tele.Rounds;
+				Tele.Unused += FightQhi;
+				if (E.Winner >= 0 && E.Winner != Index)
+				{
+					++Tele.Losses.FindOrAdd(FormName(LastForm));
+				}
+			}
+		}
+		if (bFight)
+		{
+			FightQhi = M.Qhi;
+			LastForm = M.Form;
+		}
+#endif
+	}
+
+	void FCpuBrain::FQhiTelemetry::Add(const FQhiTelemetry& O)
+	{
+		auto Merge = [](TMap<FName, int32>& Into, const TMap<FName, int32>& From)
+		{
+			for (const TPair<FName, int32>& KV : From)
+			{
+				Into.FindOrAdd(KV.Key) += KV.Value;
+			}
+		};
+		Ticks += O.Ticks;
+		Spent += O.Spent;
+		Gained += O.Gained;
+		ComboShifts += O.ComboShifts;
+		Spents += O.Spents;
+		Breaks += O.Breaks;
+		Unused += O.Unused;
+		Rounds += O.Rounds;
+		Merge(Forms, O.Forms);
+		Merge(KillChances, O.KillChances);
+		Merge(KillTries, O.KillTries);
+		Merge(Kills, O.Kills);
+		Merge(Losses, O.Losses);
+		Merge(FormTicks, O.FormTicks);
+		Merge(Combos, O.Combos);
+		Merge(Dealt, O.Dealt);
+		Merge(Taken, O.Taken);
+	}
+
+	FString FCpuBrain::FQhiTelemetry::Summary() const
+	{
+		auto List = [](const TMap<FName, int32>& Map, double Per = 1.0)
+		{
+			FString Out;
+			for (const TPair<FName, int32>& KV : Map)
+			{
+				Out += FString::Printf(TEXT("%s%s %.0f"), Out.IsEmpty() ? TEXT("") : TEXT(", "), *KV.Key.ToString(), KV.Value / Per);
+			}
+			return Out.IsEmpty() ? FString(TEXT("none")) : Out;
+		};
+		const double Secs = FMath::Max(1, Ticks) / 60.0;
+		// Per form: share of the time, and damage dealt and taken a second in it.
+		FString PerForm;
+		for (const TPair<FName, int32>& KV : FormTicks)
+		{
+			const double S = FMath::Max(1, KV.Value) / 60.0;
+			PerForm += FString::Printf(TEXT("%s%s %.0f%% (deals %.0f/s, takes %.0f/s)"), PerForm.IsEmpty() ? TEXT("") : TEXT(", "), *KV.Key.ToString(),
+				100.0 * KV.Value / FMath::Max(1, Ticks), Dealt.FindRef(KV.Key) / S, Taken.FindRef(KV.Key) / S);
+		}
+		return FString::Printf(TEXT("forms [%s]; combos by hits [%s]; Qhi spent %.0f (%.1f/s), gained %.0f; shapes [%s], %d inside combos; spent %d, broken %d; ")
+			TEXT("kill chances (s) [%s], tried [%s], kills [%s]; unused at round end %.0f avg over %d rounds; losses by form [%s]"),
+			*PerForm, *List(Combos), Spent, Spent / Secs, Gained, *List(Forms), ComboShifts, Spents, Breaks, *List(KillChances, 60.0), *List(KillTries), *List(Kills),
+			Rounds > 0 ? Unused / Rounds : 0.0, Rounds, *List(Losses));
 	}
 
 	bool FCpuBrain::QhiPlan(const FFighter& M, const FSeen& Seen, double Dist)
@@ -150,17 +499,22 @@ namespace Slop
 			// and not into an attack already coming. A better CPU waits for the knockdown.
 			const bool bDown = Seen.State == EState::Down || Seen.State == EState::WakeUp || Seen.State == EState::Fall;
 			const bool bFar = Dist > 2.8 && !bOppBusy;
-			if (M.Qhi >= QhiSetting(TEXT("shapeshift_from"), 90.0) && M.BorrowRefusal().IsNone()
-				&& ((bDown && Dist > 0.9 && Rng.FRand() < 0.3 + 0.3 * Diff) || (bFar && Rng.FRand() < 0.05 - 0.015 * Diff)))
+			if ((bDown && Dist > 0.9 && Rng.FRand() < 0.3 + 0.3 * Diff) || (bFar && Rng.FRand() < 0.03))
 			{
-				Intent.Command(Json::Str(Q, TEXT("shapeshift")));
-				return true;
+				// Which shape: the opponent's, a remembered one for the matchup, or the Fragment's.
+				const FName Form = PickForm(M, false);
+				if (!Form.IsNone())
+				{
+					Intent.Command(Notation(Form));
+					return true;
+				}
 			}
 		}
 		else if (M.Form == EForm::Borrowed)
 		{
 			// Give the shape back before the Qhi runs out (a novice holds on until it breaks).
-			const double Below = QhiSetting(TEXT("revert_below"), 10.0);
+			// (A shape that costs more to hold, the Fragment's, is given back sooner.)
+			const double Below = QhiSetting(TEXT("revert_below"), 10.0) * M.UpkeepScale;
 			if (Below > 0.0 && M.Qhi < Below && !bOppBusy && Dist > 1.3 && Rng.FRand() < 0.5)
 			{
 				Intent.Command(Json::Str(Q, TEXT("revert")));
@@ -169,17 +523,20 @@ namespace Slop
 		}
 		else if (M.Form == EForm::Spent)
 		{
-			// Spent, the old man survives: out of reach when pressed, and guarding otherwise.
+			// Spent, the old man boxes to survive: he gives ground when pressed (his retreat when the
+			// shape has one, a step back otherwise) and guards (the spent AI's "guard").
 			if (Dist < 1.5 && Seen.bActionable && Rng.FRand() < 0.05 + 0.05 * Diff)
 			{
-				if (const TArray<TSharedPtr<FJsonValue>>* R = AiArr(TEXT("retreat")))
+				const TArray<TSharedPtr<FJsonValue>>* R = AiArr(TEXT("retreat"));
+				if (R && R->Num() > 0)
 				{
-					if (R->Num() > 0)
-					{
-						Intent.Command((*R)[Rng.RandRange(0, R->Num() - 1)]->AsString());
-						return true;
-					}
+					Intent.Command((*R)[Rng.RandRange(0, R->Num() - 1)]->AsString());
 				}
+				else
+				{
+					Intent.Hold(4, Rng.RandRange(10, 20));
+				}
+				return true;
 			}
 		}
 		return false;
@@ -226,6 +583,7 @@ namespace Slop
 		FFighter& M = Me();
 		SyncForm();
 		const FSeen Seen = Perceive();
+		Observe(M);
 		if (!Sim.CanAct())
 		{
 			Intent.Clear();
@@ -247,6 +605,11 @@ namespace Slop
 			return Finish();
 		}
 		NoteBlocked(M);
+		// The Grandmaster feels his blow land and changes shape inside the combo.
+		if (ComboShift(M))
+		{
+			return Intent.Next(M.Facing);
+		}
 		if (Intent.Busy())
 		{
 			return Intent.Next(M.Facing);
@@ -270,11 +633,34 @@ namespace Slop
 		NoteHit(M);
 		if (!M.IsActionable() && M.State != EState::Air)
 		{
+			// (Heart Stop may still be cancelled into from the blow that set it up.)
+			if (KillPlan(M, Seen, FMath::Abs(Seen.Pos.X - M.Pos.X)))
+			{
+				return Intent.Next(M.Facing);
+			}
 			return FPadIntent::Pad(5, M.Facing);
 		}
 		FFighter& O = Opp();
 		// Distances too are as seen: the CPU judges spacing from what was on screen, not from now.
 		const double Dist = FMath::Abs(Seen.Pos.X - M.Pos.X);
+		// A change of shape inside a combo: the new shape carries the combo on (or ends it).
+		if (bFollowUp)
+		{
+			bFollowUp = false;
+			if (KillPlan(M, Seen, Dist))
+			{
+				return Intent.Next(M.Facing);
+			}
+			if (O.State == EState::HitStun || O.State == EState::Juggle)
+			{
+				StartCombo(false, Diff >= 2);
+				return Intent.Next(M.Facing);
+			}
+		}
+		if (KillPlan(M, Seen, Dist))
+		{
+			return Intent.Next(M.Facing);
+		}
 		// A jump is read from its start: the arc is predictable, so the anti-air is timed to meet
 		// the opponent on the way down (from what was seen, not from inputs).
 		PlanAntiAir(M, Seen);
@@ -299,9 +685,30 @@ namespace Slop
 		}
 		const FMoveDef* SM = Seen.Move;
 		// --- Reactions to what has been seen ---
-		if (Seen.State == EState::Move && SM && SM->IsAttack() && Seen.MF <= SM->LastActive() && Dist < 2.4)
+		if (Seen.State == EState::Move && SM && SM->IsAttack() && SM->Level == ELevel::Unblockable && Seen.MF < SM->Startup && Dist < 2.4
+			&& Seen.Tick - Seen.MF != UnblockJudged)
 		{
-			if (M.State != EState::Air && Rng.FRand() < L.Block)
+			// No guard stops it (the Grandmaster's Find the Crack): strike it in its startup if there
+			// is time and reach, otherwise back out of reach. Judged once a blow.
+			UnblockJudged = Seen.Tick - Seen.MF;
+			if (M.IsActionable() && Rng.FRand() < L.Block)
+			{
+				const FString Hit = AttackFor(Dist);
+				if (!Hit.IsEmpty() && SM->Startup - Seen.MF - L.React > 12)
+				{
+					Intent.Command(Hit);
+				}
+				else
+				{
+					Intent.Hold(4, 24);
+				}
+				return Intent.Next(M.Facing);
+			}
+		}
+		if (Seen.State == EState::Move && SM && SM->IsAttack() && Seen.MF <= SM->LastActive() && Dist < 2.4 && SM->Level != ELevel::Unblockable)
+		{
+			// (A shape's own AI notes may guard more: the Grandmaster's spent, boxing body does.)
+			if (M.State != EState::Air && Rng.FRand() < L.Block + Json::Num(Ai, TEXT("guard"), 0.0))
 			{
 				BlockT = FMath::Max(8, SM->LastActive() - Seen.MF + 10);
 				bBlockLow = SM->Level == ELevel::Low || (SM->Level != ELevel::Overhead && Rng.FRand() < 0.2);
@@ -658,6 +1065,12 @@ namespace Slop
 			{
 				continue;
 			}
+			// A catch whose answer costs Qhi (Two Fingers into One Strike) is only a read worth
+			// making with the Qhi in hand.
+			if (const FMoveDef* Answer = M.Def->Move(PM->ParryCounter); Answer && Answer->QhiCost > 0.0 && (!M.UsesQhi() || M.Qhi < Answer->QhiCost))
+			{
+				continue;
+			}
 			const FString Cmd = Notation(PM->Id);
 			const int32 Lead = FCommand::Parse(Cmd).Steps.Num() + 1;
 			// The repeated blow lands at Total + Startup; the window must open a tick before it and
@@ -818,7 +1231,7 @@ namespace Slop
 		}
 	}
 
-	void FCpuBrain::StartCombo(bool bPunish)
+	void FCpuBrain::StartCombo(bool bPunish, bool bLongest)
 	{
 		const TArray<TSharedPtr<FJsonValue>>* Combos = AiArr(TEXT("combos"));
 		if (!Combos || Combos->Num() == 0 || Rng.FRand() > L.Combo)
@@ -826,7 +1239,12 @@ namespace Slop
 			Intent.Command(bPunish ? TEXT("D+HP") : TEXT("HP"));
 			return;
 		}
-		const TArray<TSharedPtr<FJsonValue>>& C = (*Combos)[Rng.RandRange(0, Combos->Num() - 1)]->AsArray();
+		int32 Pick = Rng.RandRange(0, Combos->Num() - 1);
+		for (int32 I = 0; bLongest && I < Combos->Num(); ++I)
+		{
+			Pick = (*Combos)[I]->AsArray().Num() > (*Combos)[Pick]->AsArray().Num() ? I : Pick;
+		}
+		const TArray<TSharedPtr<FJsonValue>>& C = (*Combos)[Pick]->AsArray();
 		for (const TSharedPtr<FJsonValue>& Link : C)
 		{
 			Intent.Command(Link->AsString());
@@ -921,7 +1339,8 @@ namespace Slop
 		for (const FCommand& C : Me().Def->Commands)
 		{
 			const FMoveDef* Mv = Me().Def->Move(C.Move);
-			if (!Mv || Mv->IsThrowKind() || Mv->bFinisher || !Mv->IsAttack() || Mv->Hitboxes.Num() == 0)
+			// (The instant kills are chosen by KillPlan, never as an ordinary blow.)
+			if (!Mv || Mv->IsThrowKind() || Mv->bFinisher || Mv->bKill || !Mv->IsAttack() || Mv->Hitboxes.Num() == 0)
 			{
 				continue;
 			}
@@ -1046,6 +1465,14 @@ namespace Slop
 		}
 		const double Dist = FMath::Abs(O.Pos.X - M.Pos.X);
 		const bool bLow = double(M.Health) / M.MaxHealth() < 0.5;
+		// An unblockable blow winding up (the Grandmaster's Find the Crack): claw it in its long
+		// startup when close, gust it from further off.
+		if (O.State == EState::Move && O.Move && O.Move->Level == ELevel::Unblockable && O.MF + L.React < O.Move->Startup && Dist < 2.4
+			&& Rng.FRand() < 0.1)
+		{
+			Do(Dist < 1.6 ? TEXT("HP") : TEXT("B,F+HK"));
+			return Intent.Next(M.Facing);
+		}
 		if (bSeenAir && Dist < 2.4 && Rng.FRand() < L.Aa * 0.2)
 		{
 			Do(TEXT("D+HP"));
@@ -1268,211 +1695,5 @@ namespace Slop
 			return P;
 		}
 		return FPadState();
-	}
-
-	// --- The stranger -------------------------------------------------------------------------------------------
-
-	FStrangerRules::FStrangerRules(FFightSim& InSim, int32 InStage, const FString& BowHint, TFunction<void(int32)> InOnStage)
-		: Sim(InSim), Stage(InStage), OnStage(MoveTemp(InOnStage))
-	{
-		switch (Stage)
-		{
-		case 0:
-			Say(60, TEXT("Yes?"));
-			SetStage(1);
-			break;
-		case 3:
-			Say(60, TEXT("What have you learned, child?"));
-			SetStage(4);
-			break;
-		case 5:
-			Say(50, TEXT("Interesting."));
-			Say(150, TEXT("(You remember?)"));
-			Say(250, TEXT("So do you."));
-			Say(380, TEXT("It seems I'm not the only immortal bastard around here."));
-			SetStage(6);
-			break;
-		default:
-			Say(60, TEXT("You again."));
-			break;
-		}
-		Say(Stage != 6 ? 240 : 520, BowHint, true);
-	}
-
-	void FStrangerRules::SetStage(int32 S)
-	{
-		if (S > Stage)
-		{
-			Stage = FMath::Max(Stage, S);
-			if (OnStage)
-			{
-				OnStage(Stage);
-			}
-		}
-	}
-
-	void FStrangerRules::Line(const FString& Text, bool bHint)
-	{
-		FSimEvent E;
-		E.Type = EEvent::Line;
-		E.Who = 1;
-		E.Text = Text;
-		E.bHint = bHint;
-		Sim.Emit(E);
-		if (!bHint)
-		{
-			LastLineText = Text;
-		}
-	}
-
-	bool FStrangerRules::IgnoreContact(FFightSim& S, const FContact& C)
-	{
-		if (C.Def != 1)
-		{
-			return false;
-		}
-		if (C.Proj >= 0)
-		{
-			S.Projectiles[C.Proj].bDead = true;
-		}
-		if (bBusy || bEnded)
-		{
-			return true;
-		}
-		IdleT = 0;
-		switch (Stage)
-		{
-		case 0:
-		case 1:
-			Evade(TEXT("Careful, child."));
-			SetStage(2);
-			break;
-		case 2:
-			Strike(FString());
-			SetStage(3);
-			break;
-		case 3:
-		case 4:
-			Crack();
-			SetStage(5);
-			break;
-		default:
-			Strike(TEXT("Apparently, very little."));
-			break;
-		}
-		return true;
-	}
-
-	void FStrangerRules::Evade(const FString& Text)
-	{
-		FFighter& D = Sim.Fighters[1];
-		if (const FMoveDef* M = D.Def->Move(TEXT("dax_evade")))
-		{
-			D.StartMove(*M);
-		}
-		Line(Text);
-		FSimEvent E;
-		E.Type = EEvent::StrangerEvade;
-		Sim.Emit(E);
-	}
-
-	// Steps in beside the attacker and catches them, so nothing they were doing can carry on.
-	void FStrangerRules::Catch(int32 StunTicks)
-	{
-		FFighter& A = Sim.Fighters[0];
-		FFighter& D = Sim.Fighters[1];
-		double Dir = FMath::Sign(A.Pos.X - D.Pos.X);
-		if (Dir == 0.0)
-		{
-			Dir = 1.0;
-		}
-		D.Pos.X = FMath::Clamp(A.Pos.X - Dir * 0.78 * D.Scale(), -FFightSim::StageHalf + D.Def->PushW, FFightSim::StageHalf - D.Def->PushW);
-		D.Facing = A.Pos.X > D.Pos.X ? 1 : -1;
-		A.Move = nullptr;
-		A.Vel = FVector2D::ZeroVector;
-		A.Pos.Y = 0.0;
-		A.TakeStun(StunTicks, EStun::Dazed);
-		for (FProjectile& P : Sim.Projectiles)
-		{
-			P.bDead = true;
-		}
-	}
-
-	void FStrangerRules::Strike(const FString& Text)
-	{
-		bBusy = true;
-		Catch(40);
-		FFighter& D = Sim.Fighters[1];
-		if (const FMoveDef* M = D.Def->Move(TEXT("dax_palm")))
-		{
-			D.StartMove(*M);
-		}
-		if (!Text.IsEmpty())
-		{
-			Line(Text);
-		}
-		FSimEvent E;
-		E.Type = EEvent::StrangerStrike;
-		Sim.Emit(E);
-	}
-
-	void FStrangerRules::Crack()
-	{
-		bBusy = true;
-		Catch(110);
-		FFighter& D = Sim.Fighters[1];
-		if (const FMoveDef* M = D.Def->Move(TEXT("dax_crack")))
-		{
-			D.StartMove(*M);
-		}
-		FSimEvent E;
-		E.Type = EEvent::StrangerCrack;
-		Sim.Emit(E);
-	}
-
-	void FStrangerRules::OnTick(FFightSim& S)
-	{
-		if (bEnded || S.Phase != EPhase::Fight)
-		{
-			return;
-		}
-		++T;
-		++IdleT;
-		for (const FLine& Ln : Lines)
-		{
-			if (Ln.At == T && !Ln.Text.IsEmpty())
-			{
-				Line(Ln.Text, Ln.bHint);
-			}
-		}
-		FFighter& A = S.Fighters[0];
-		if (!bBusy && A.IsActionable() && (A.Input.Held() & BtnBL) && S.Fighters[1].IsActionable())
-		{
-			if (++Bow >= BowTicks)
-			{
-				End(TEXT("Go."));
-			}
-		}
-		else
-		{
-			Bow = 0;
-		}
-		if (!bBusy && IdleT >= IdleTicks)
-		{
-			End(TEXT("Go on."));
-		}
-	}
-
-	void FStrangerRules::End(const FString& Text)
-	{
-		bEnded = true;
-		Line(Text);
-		Sim.Phase = EPhase::MatchEnd;
-		Sim.PhaseT = 0;
-		FSimEvent E;
-		E.Type = EEvent::MatchEnd;
-		E.Winner = -1;
-		E.Text = Text;
-		Sim.Emit(E);
 	}
 }

@@ -36,11 +36,10 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 		return false;
 	}
 	const EMode M = Config.Mode;
-	const bool bPractice = M == EMode::Training || M == EMode::Tutorial || M == EMode::Stranger || M == EMode::Trials;
+	const bool bPractice = M == EMode::Training || M == EMode::Tutorial || M == EMode::Trials;
 	Sim.bTraining = bPractice;
 	Sim.RoundsToWin = FMath::Max(1, Config.RoundsToWin);
 	Sim.RoundLength = FMath::Max(0, Config.RoundSeconds) * 60;
-	Sim.bFinishersEnabled = M != EMode::Stranger;
 	if (D1->Move(TEXT("stage_vat")) && Config.Stage == TEXT("rendering_yards"))
 	{
 		Sim.StageFinisher = TEXT("stage_vat");
@@ -56,15 +55,6 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 	if (M == EMode::Survival && Config.P1Health > 0)
 	{
 		Sim.Fighters[0].Health = FMath::Min(Sim.Fighters[0].MaxHealth(), Config.P1Health);
-	}
-	if (M == EMode::Stranger)
-	{
-		// No announcer and no rounds: he is simply there.
-		Sim.Phase = EPhase::Fight;
-		for (FFighter& F : Sim.Fighters)
-		{
-			F.SetState(EState::Idle);
-		}
 	}
 	UWorld* W = GetWorld();
 	FActorSpawnParameters P;
@@ -140,13 +130,6 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 		Sim.bRefillHealth = M == EMode::Training;
 		Sim.bInfiniteRun = M == EMode::Trials;
 	}
-	else if (M == EMode::Stranger)
-	{
-		USlopGameInstance* G = GI();
-		const FString Bow = Json::Str(Json::Obj(GetContent().Story, TEXT("stranger")), TEXT("bow"));
-		Stranger = MakeUnique<FStrangerRules>(Sim, G->Progress.Stranger(), Bow, [G](int32 Stage) { G->Progress.SetStranger(Stage); });
-		Sim.Hooks = Stranger.Get();
-	}
 	else if (M != EMode::Tutorial)
 	{
 		const int32 Diff = FMath::Clamp(Config.Difficulty, 0, 2);
@@ -161,7 +144,9 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 				}
 				else
 				{
-					Brains[I] = MakeUnique<FCpuBrain>(Sim, I, Config.CpuTier >= 0 ? Config.CpuTier : Diff, (int32)(FPlatformTime::Cycles() & 0x7fff) + I * 101);
+					TUniquePtr<FCpuBrain> Cpu = MakeUnique<FCpuBrain>(Sim, I, Config.CpuTier >= 0 ? Config.CpuTier : Diff, (int32)(FPlatformTime::Cycles() & 0x7fff) + I * 101);
+					CpuBrains[I] = Cpu.Get();
+					Brains[I] = MoveTemp(Cpu);
 				}
 			}
 		}
@@ -169,7 +154,9 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 		if (Auto >= 0 && !Brains[0])
 		{
 			// Development autoplay: the CPU takes the player's side.
-			Brains[0] = MakeUnique<FCpuBrain>(Sim, 0, Auto, (int32)(FPlatformTime::Cycles() & 0x7fff));
+			TUniquePtr<FCpuBrain> Cpu = MakeUnique<FCpuBrain>(Sim, 0, Auto, (int32)(FPlatformTime::Cycles() & 0x7fff));
+			CpuBrains[0] = Cpu.Get();
+			Brains[0] = MoveTemp(Cpu);
 		}
 	}
 	if (M == EMode::Tutorial)
@@ -213,7 +200,6 @@ void ASlopMatch::ApplySettings()
 
 void ASlopMatch::EndPlay(const EEndPlayReason::Type Reason)
 {
-	Sim.Hooks = nullptr;
 	for (TObjectPtr<ASlopFighterActor>& V : Views)
 	{
 		if (V)
@@ -584,6 +570,16 @@ void ASlopMatch::HandleEvent(const FSimEvent& E)
 		if (!bEnded)
 		{
 			bEnded = true;
+#if !UE_BUILD_SHIPPING
+			// Development: how a Qhi fighter's CPU used its meter this match.
+			for (int32 I = 0; I < 2; ++I)
+			{
+				if (CpuBrains[I] && Sim.Fighters[I].UsesQhi() && FParse::Param(FCommandLine::Get(), TEXT("SlopAiLog")))
+				{
+					UE_LOG(LogTemp, Display, TEXT("SlopAiLog %s (side %d): %s"), *Sim.Fighters[I].BaseDef->Id.ToString(), I, *CpuBrains[I]->Telemetry().Summary());
+				}
+			}
+#endif
 			Result.Winner = E.Winner;
 			Result.Wins[0] = Sim.Wins[0];
 			Result.Wins[1] = Sim.Wins[1];
@@ -592,7 +588,6 @@ void ASlopMatch::HandleEvent(const FSimEvent& E)
 			Result.Finisher = E.Move;
 			Result.bFlawless = E.bFlawless;
 			Result.Mode = Config.Mode;
-			Result.StrangerLine = !E.Text.IsEmpty() ? E.Text : (Stranger ? Stranger->LastLine() : FString());
 			Result.Health[0] = Sim.Fighters[0].Health;
 			Result.Health[1] = Sim.Fighters[1].Health;
 			Result.TimeLeft = TimeLeft;

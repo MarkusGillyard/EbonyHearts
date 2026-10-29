@@ -88,9 +88,8 @@ namespace Slop
 		RoundStart, Fight, Move, Chain, Jump, Land, Run, Hit, Block, Armor, Parry, Throw, ThrowBreak,
 		Projectile, ProjectileEnd, Clash, Teleport, Buff, BuffEnd, ComboEnd, KO, FinishPrompt,
 		FinishTimeout, FinisherRange, Finisher, FinisherEnd, Timeout, RoundEnd, WinPose, MatchEnd,
-		// The stranger encounter: a spoken line (Text; bHint for instructions), his evade, palm and strike.
-		Line, StrangerEvade, StrangerStrike, StrangerCrack,
-		// The Grandmaster changes shape (Kind: "borrowed", "own", "spent", "broken", "recentred"),
+		// The Grandmaster changes shape (Kind: "borrowed", How "copied" or "remembered"; "own",
+		// "spent", "broken", "recentred"),
 		// fails to (Kind "failed": broken in its startup; "refused": How says why), Move names the
 		// fighter whose shape was borrowed.
 		Form
@@ -114,6 +113,8 @@ namespace Slop
 		FName Kind;
 		bool bCounter = false;
 		bool bKO = false;
+		// The blow was one of the Grandmaster's instant kills.
+		bool bKill = false;
 		bool bThrow = false;
 		bool bSoft = false;
 		bool bFinish = false;

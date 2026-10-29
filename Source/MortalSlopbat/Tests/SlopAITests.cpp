@@ -3,6 +3,7 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
 #include "AI/SlopAI.h"
+#include "Core/SlopFlow.h"
 #include "Tests/SlopSimHarness.h"
 #include "Core/SlopLog.h"
 
@@ -25,11 +26,7 @@ namespace
 		return E;
 	}
 
-	FName RivalOf(FName Id)
-	{
-		const TSharedPtr<FJsonObject> Fighters = Json::Obj(GetContent().Story, TEXT("fighters"));
-		return FName(*Json::Str(Json::Obj(Fighters, *Id.ToString()), TEXT("rival"), TEXT("gorm")));
-	}
+	FName RivalOf(FName Id) { return FGameFlow::TrialPartner(Id); }
 
 	// Whether `Notation` can begin now (or within the ticks its motion takes to enter).
 	bool CanStart(const FFighter& F, const FString& Notation)
@@ -51,6 +48,15 @@ namespace
 		for (const FChainLink& Link : M.Chain)
 		{
 			if (Link.Input == Notation && F.MF >= Link.From - 1 && F.MF <= Link.To - 1)
+			{
+				return true;
+			}
+		}
+		// The Grandmaster's change of shape inside the combo, once his blow has landed.
+		for (const FCommand& Cmd : F.Def->Commands)
+		{
+			const FMoveDef* Target = F.Def->Move(Cmd.Move);
+			if (Cmd.Text == Notation && Target && (Target->bShapeshift || Target->bRevert) && F.UsesQhi() && F.MoveContact == TEXT("hit") && F.MF > M.Startup)
 			{
 				return true;
 			}
@@ -895,70 +901,6 @@ bool FSlopJumpInRead::RunTest(const FString&)
 			TestTrue(FString::Printf(TEXT("answers to an early one land (%d of %d)"), Landed, Answers), Landed * 10 >= Answers * 7);
 		}
 	}
-	return true;
-}
-
-SLOP_TEST(FSlopStranger, "AI.StrangerMemoryOnlyMovesForward")
-bool FSlopStranger::RunTest(const FString&)
-{
-	const FFighterDef* Dax = GetContent().Fighter(TEXT("daxion"));
-	const FFighterDef* Ashka = GetContent().Fighter(TEXT("ashka"));
-	int32 Saved = 0;
-	TArray<int32> Stages;
-	for (int32 Meeting = 0; Meeting < 4; ++Meeting)
-	{
-		FFightSim Sim;
-		Sim.bIntro = false;
-		Sim.RoundsToWin = 1;
-		Sim.bFinishersEnabled = false;
-		Sim.Setup(Ashka, Dax);
-		FStrangerRules Rules(Sim, Saved, TEXT("Hold Block to bow out."), [&](int32 S) { Saved = S; });
-		Sim.Hooks = &Rules;
-		const FPadState Zero[2];
-		while (Sim.Phase != EPhase::Fight)
-		{
-			Sim.Step(Zero);
-		}
-		// Walk in and punch until the encounter ends.
-		int32 T = 0;
-		for (; T < 60 * 40 && Sim.Phase != EPhase::MatchEnd; ++T)
-		{
-			FPadState Pads[2];
-			const FFighter& P = Sim.Fighters[0];
-			const double Gap = FMath::Abs(Sim.Fighters[1].Pos.X - P.Pos.X);
-			Pads[0] = Gap > 0.9 ? FPadIntent::Pad(6, P.Facing) : FPadIntent::Pad(5, P.Facing, (T % 20 == 0) ? BtnHP : 0);
-			Sim.Step(Pads);
-			if (Sim.Fighters[1].Health < Sim.Fighters[1].MaxHealth())
-			{
-				AddError(TEXT("the stranger was hurt"));
-				break;
-			}
-		}
-		Stages.Add(Saved);
-	}
-	TestTrue("first meeting: warned, then struck down", Stages[0] >= 2);
-	for (int32 I = 1; I < Stages.Num(); ++I)
-	{
-		TestTrue("memory never goes back", Stages[I] >= Stages[I - 1]);
-	}
-	TestEqual("in the end he recognises the player", Stages.Last(), 6);
-	// Bowing out: hold Block.
-	FFightSim Sim;
-	Sim.bIntro = false;
-	Sim.RoundsToWin = 1;
-	Sim.bFinishersEnabled = false;
-	Sim.Setup(Ashka, Dax);
-	int32 S2 = 6;
-	FStrangerRules Rules(Sim, S2, TEXT(""), [&](int32 S) { S2 = S; });
-	Sim.Hooks = &Rules;
-	for (int32 T = 0; T < 600 && Sim.Phase != EPhase::MatchEnd; ++T)
-	{
-		FPadState Pads[2];
-		Pads[0] = FPadIntent::Pad(5, Sim.Fighters[0].Facing, 0, BtnBL);
-		Sim.Step(Pads);
-	}
-	TestEqual("holding Block bows out", (int32)Sim.Phase, (int32)EPhase::MatchEnd);
-	TestEqual("with his line", Rules.LastLine(), FString(TEXT("Go.")));
 	return true;
 }
 

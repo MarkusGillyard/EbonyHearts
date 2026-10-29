@@ -310,8 +310,6 @@ bool FSlopProgressFile::RunTest(const FString&)
 		TestFalse("not a new best", P.RecordSurvival(TEXT("gorm"), 3));
 		TestTrue("trial first time", P.TrialDone(TEXT("nix"), TEXT("Tide")));
 		TestFalse("trial again", P.TrialDone(TEXT("nix"), TEXT("Tide")));
-		P.SetStranger(3);
-		P.SetStranger(1);
 	}
 	{
 		FSlopProgress P;
@@ -323,7 +321,6 @@ bool FSlopProgressFile::RunTest(const FString&)
 		TestTrue("roost unlocked", P.IsUnlocked(TEXT("arena:roost")));
 		TestTrue("ending seen", P.EndingSeen(TEXT("ashka")));
 		TestEqual("survival", P.BestSurvival(TEXT("gorm")), 7);
-		TestEqual("stranger memory only moves forward", P.Stranger(), 3);
 	}
 	// A damaged file is set aside and a fresh profile used.
 	FFileHelper::SaveStringToFile(TEXT("{ not json"), *Path);
@@ -342,7 +339,7 @@ bool FSlopProgressFile::RunTest(const FString&)
 		FSlopProgress P;
 		P.Load();
 		TestEqual("old record brought over", P.BestScore(TEXT("bram"), 2), 77000);
-		TestEqual("stranger brought over", P.Stranger(), 5);
+		TestEqual("the old encounter's memory carried as it was", Json::Int(P.Data, TEXT("stranger"), 0), 5);
 		FString After;
 		FFileHelper::LoadFileToString(After, *OldPath);
 		TestEqual("the original file is untouched", After, OldText);
@@ -356,8 +353,8 @@ bool FSlopProgressFile::RunTest(const FString&)
 
 // --- Flow -------------------------------------------------------------------------------------------------
 
-// The alternate colours chosen at the select screen last the whole run: through a stranger met
-// mid-Arcade and back, and into Survival's Try Again (both had dropped them).
+// The alternate colours chosen at the select screen last the whole run, and into Survival's Try
+// Again (which had dropped them).
 SLOP_TEST(FSlopFlowColours, "Flow.ColoursLastTheRun")
 bool FSlopFlowColours::RunTest(const FString&)
 {
@@ -365,9 +362,7 @@ bool FSlopFlowColours::RunTest(const FString&)
 	F.Config.bCostume[0] = true;
 	F.StartArcade(TEXT("ashka"), 1, F.PlanArcade(TEXT("ashka"), 1, 7));
 	TestTrue("arcade keeps them", F.Config.bCostume[0]);
-	F.StartStranger(true);
-	TestTrue("the stranger fight too", F.Config.bCostume[0]);
-	F.ResumeArcade();
+	F.ArcadeAdvance(false, 0.0);
 	TestTrue("and the rest of the run", F.Config.bCostume[0]);
 	F.StartSurvival(TEXT("ashka"), 3);
 	TestTrue("survival keeps them", F.Config.bCostume[0]);

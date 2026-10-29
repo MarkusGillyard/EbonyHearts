@@ -24,7 +24,6 @@ namespace SlopScreens
 	TSharedPtr<FSlopScreen> MoveList(FName Fighter, bool bOverlay);
 	TSharedPtr<FSlopScreen> Extras();
 	TSharedPtr<FSlopScreen> Ending(FName Fighter, bool bFromArcade);
-	TSharedPtr<FSlopScreen> StrangerOffer();
 	// `bFromExtras`: back returns to Extras (after an arcade ending it goes to the main menu).
 	TSharedPtr<FSlopScreen> Credits(bool bFromExtras = false);
 	TSharedPtr<FSlopScreen> TrialsPick();

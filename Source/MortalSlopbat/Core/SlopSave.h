@@ -97,7 +97,8 @@ namespace Slop
 		static FString Path();
 	};
 
-	// Arcade records, unlocks, endings seen, trials done and the stranger's memory.
+	// Arcade records, unlocks, endings seen and trials done. (Files from before Ebony Hearts may hold
+	// a "stranger" memory from the encounter it no longer has: kept as it is, read by nothing.)
 	class FSlopProgress
 	{
 	public:
@@ -130,9 +131,6 @@ namespace Slop
 		bool EndingSeen(FName Fighter) const;
 		void Count(const FString& Stat, int32 N = 1);
 		int32 Stat(const FString& Stat) const;
-		// The stranger's memory only ever moves forward.
-		void SetStranger(int32 Stage);
-		int32 Stranger() const;
 		bool TutorialDone() const;
 		void SetTutorialDone();
 

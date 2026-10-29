@@ -272,8 +272,8 @@ namespace SlopScreensImpl
 		FMainMenu()
 		{
 			Entries = {
-				{LOCTEXT("Arcade", "Arcade"), LOCTEXT("ArcadeD", "Climb a tower of the Slopbat's chosen to the roost itself. Your choice of tower sets the difficulty."), TEXT("arcade")},
-				{LOCTEXT("Survival", "Survival"), LOCTEXT("SurvivalD", "An endless ladder: one round a fight, your health carried on with a little given back after each win, and the Slopbat waiting every fifth wave. How far can you climb?"), TEXT("survival")},
+				{LOCTEXT("Arcade", "Arcade"), LOCTEXT("ArcadeD", "Climb a tower of the tournament's fighters to the Ebony Heart Fragment in its roost. Your choice of tower sets the difficulty."), TEXT("arcade")},
+				{LOCTEXT("Survival", "Survival"), LOCTEXT("SurvivalD", "An endless ladder: one round a fight, your health carried on with a little given back after each win, and the Ebony Heart Fragment waiting every fifth wave. How far can you climb?"), TEXT("survival")},
 				{LOCTEXT("Versus", "Versus"), LOCTEXT("VersusD", "Two players on one machine. Any fighter, any stage, mirror matches welcome."), TEXT("versus")},
 				{LOCTEXT("VersusCpu", "Versus CPU"), LOCTEXT("VersusCpuD", "One fight against the CPU: your fighter, theirs, and the stage. It fights at the CPU difficulty in Settings."), TEXT("cpu")},
 				{LOCTEXT("Training", "Training"), LOCTEXT("TrainingD", "Practise against a dummy that stands, blocks, jumps or fights back. Move lists, frame data and hitboxes."), TEXT("training")},
@@ -652,9 +652,9 @@ namespace SlopScreensImpl
 					Flourish();
 					S->Line(Score, 30.f, SlopUI::Amber);
 					const FRung* Next = F.CurrentRung();
-					const FText Who = Next->Kind == TEXT("boss") ? LOCTEXT("TheSlopbat", "the Slopbat") : (Next->Kind == TEXT("mirror") ? LOCTEXT("TheReflection", "the Reflection") : FText::FromString(Def(Next->Opponent)->Name));
+					const FText Who = Next->Kind == TEXT("boss") ? LOCTEXT("TheSlopbat", "the Ebony Heart Fragment") : (Next->Kind == TEXT("mirror") ? LOCTEXT("TheReflection", "the Reflection") : FText::FromString(Def(Next->Opponent)->Name));
 					S->Line(FText::Format(LOCTEXT("Next", "Next: {0}"), Who), 30.f, SlopUI::Dim);
-					S->Item(LOCTEXT("Continue", "Continue"), [GI]() { GI->Goto(GI->Flow.bStrangerPending ? SlopScreens::StrangerOffer() : SlopScreens::FaceOff()); });
+					S->Item(LOCTEXT("Continue", "Continue"), [GI]() { GI->Goto(SlopScreens::FaceOff()); });
 					S->Item(LOCTEXT("QuitArcade", "Quit Arcade"), GoMenu);
 				}
 				else
@@ -719,7 +719,7 @@ namespace SlopScreensImpl
 				S->Heading = FText::Format(LOCTEXT("WaveCleared", "WAVE {0} CLEARED"), Waves);
 				Flourish();
 				const int32 Carried = F.Config.P1Health > 0 ? F.Config.P1Health : P1->Health;
-				const FText Next = F.Config.P2 == TEXT("slopbat") ? LOCTEXT("TheSlopbat", "the Slopbat") : FText::FromString(Def(F.Config.P2)->Name);
+				const FText Next = F.Config.P2 == TEXT("slopbat") ? LOCTEXT("TheSlopbat", "the Ebony Heart Fragment") : FText::FromString(Def(F.Config.P2)->Name);
 				S->Line(FText::Format(LOCTEXT("Carried", "Health carried on: {0}%   ·   Next: wave {1}, {2} ({3})"), FMath::RoundToInt(100.0 * Carried / P1->Health),
 					Waves + 1, Next, FGameFlow::DifficultyName(F.Config.Difficulty)), 30.f, SlopUI::Dim);
 				S->Item(LOCTEXT("Continue", "Continue"), [GI]() { GI->Goto(SlopScreens::FaceOff()); });
@@ -740,29 +740,6 @@ namespace SlopScreensImpl
 					GI->Goto(SlopScreens::FaceOff());
 				});
 				S->Item(LOCTEXT("CharSelect", "Character Select"), [GI]() { GI->Flow.EndSurvival(); GI->Goto(SlopScreens::Select(EMode::Survival)); });
-				S->Item(LOCTEXT("MainMenu", "Main Menu"), GoMenu);
-			}
-		}
-		else if (M == EMode::Stranger)
-		{
-			S->Heading = LOCTEXT("TheStranger", "THE STRANGER");
-			S->HeadingSize = 80.f;
-			if (!R.StrangerLine.IsEmpty())
-			{
-				S->Line(FText::Format(LOCTEXT("Quote", "“{0}”"), FText::FromString(R.StrangerLine)), 36.f, SlopUI::Text);
-			}
-			if (F.Config.bFromArcade && F.InArcade())
-			{
-				S->Item(LOCTEXT("Continue", "Continue"), [GI]()
-				{
-					GI->Flow.bStrangerPending = false;
-					GI->Flow.ResumeArcade();
-					GI->Goto(SlopScreens::FaceOff());
-				});
-			}
-			else
-			{
-				S->Item(LOCTEXT("Extras", "Extras"), [GI]() { GI->Goto(SlopScreens::Extras()); });
 				S->Item(LOCTEXT("MainMenu", "Main Menu"), GoMenu);
 			}
 		}
@@ -827,29 +804,6 @@ namespace SlopScreens
 	TSharedPtr<FSlopScreen> TrainingOptions() { return Named(MakeTraining(), TEXT("TrainingOptions")); }
 	TSharedPtr<FSlopScreen> Results(const FMatchResult& R) { return Named(MakeResults(R), TEXT("Results")); }
 	TSharedPtr<FSlopScreen> DataError() { return Named(MakeDataError(), TEXT("DataError")); }
-
-	TSharedPtr<FSlopScreen> StrangerOffer()
-	{
-		TSharedRef<FListScreen> S = MakeShared<FListScreen>();
-		S->ScreenName = TEXT("StrangerOffer");
-		const TSharedPtr<FJsonObject> St = Json::Obj(GetContent().Story, TEXT("stranger"));
-		S->Heading = FText::FromString(Json::Str(St, TEXT("offer"), TEXT("A stranger in white watches the fight from the far walkway.")));
-		S->HeadingSize = 48.f;
-		S->Top = 320.f;
-		USlopGameInstance* GI = USlopGameInstance::Get();
-		S->Item(FText::FromString(Json::Str(St, TEXT("approach"), TEXT("Approach him"))), [GI]()
-		{
-			GI->Flow.bStrangerPending = false;
-			GI->Flow.StartStranger(true);
-			GI->StartMatch();
-		});
-		S->Item(FText::FromString(Json::Str(St, TEXT("leave"), TEXT("Walk on"))), [GI]()
-		{
-			GI->Flow.bStrangerPending = false;
-			GI->Goto(SlopScreens::FaceOff());
-		});
-		return S;
-	}
 }
 
 #undef LOCTEXT_NAMESPACE

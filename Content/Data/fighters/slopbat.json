@@ -1,10 +1,13 @@
 {
 	"id": "slopbat",
-	"name": "The Slopbat",
-	"title": "Sovereign of the Sump",
+	"name": "Ebony Heart Fragment",
+	"title": "The Slopbat",
 	"pronoun": "it",
 	"style": "Tar, wing and storm",
 	"boss": true,
+	"copyable": true,
+	"shape_upkeep": 2.0,
+	"resource": "none",
 	"no_basics": "all",
 	"stats": {
 		"height": 2.65,
@@ -696,6 +699,12 @@
 		]
 	],
 	"ai": {
-		"boss": true
+		"boss": true,
+		"range": 1.5,
+		"aggression": 0.6,
+		"zoning": 0.4,
+		"weights": {"claw": 1.2, "low_claw": 1.0, "rising_claw": 0.6, "bite": 0.5},
+		"anti_air": ["rising_claw"],
+		"combos": [["HP", "HP"]]
 	}
 }

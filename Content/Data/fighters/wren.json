@@ -1,10 +1,10 @@
 {
 	"id": "wren",
-	"name": "Wren Sallow",
-	"title": "The Fen Light",
+	"name": "Wren",
+	"title": "The All-Rounder",
 	"pronoun": "her",
 	"style": "Mixed martial arts and marsh-light",
-	"blurb": "A composed young fighter from the fen who strikes, throws and locks with equal ease, and carries a little of the marsh-light in her hands.",
+	"blurb": "A young all-rounder of elite discipline who strikes, throws and locks with equal precision, with a little marsh-light magic in her hands.",
 	"stats": {
 		"height": 1.68,
 		"health": 1000,

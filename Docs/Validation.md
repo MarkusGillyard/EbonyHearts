@@ -7,48 +7,69 @@ for sessions, `Saved/Logs/tests.log` for the last test run.
 
 ## Automated tests
 
-`run_tests` (Unreal automation, headless): **122 tests, all passing** on the source of 2.7.0 (101 on 2.6.7).
+`run_tests` (Unreal automation, headless): **132 tests, all passing** on the source of 2.7.0 (101 on 2.6.7).
 
 | Area | What the tests hold |
 |---|---|
 | Timing and input | Same inputs at 30/60/144 Hz and uneven frame times give the same match; the clock's catch-up and overload; the 6-tick buffer and its expiry; presses during hit-stop kept; held directions; motions from either side and through a crossover; opposite directions cancel; one press starts one move. |
 | Combat | A counter hit's extra freeze falls on the victim alone and leaves frame advantage as it was; Ashka's teep comes out on forward + low kick and pushes far for little damage; active windows from the first frame; whiffs out of range; highs, lows, overheads and guards from either side; chip only from specials and projectiles; throws, breaks, back throws, command grabs beating block; trades; counter hits; damage scaling; juggle limit; run-meter costs; projectiles one at a time and clashing; parry, armour, teleport; Ashka's shin check catches a sweep (the kicker stung and left open, Ashka moving first) and lets a high punch through; no special loops into itself, inside its cancel window or out of it, mid-stage or at the edge, and one allowed to (Bram's Prize Ring Drive) strings exactly its three, and mashing any button ends within a string; bodies never overlap or leave the stage. |
 | Match rules | KO and the next round, double KO, timeout and draw, a shorter clock or none, deciding KO with finisher, the finish window timing out, restart clearing everything, input after KO changing nothing, flawless, no match running forever. |
-| Roster and AI | All data loads and validates; every trial possible; CPU against CPU in every pairing; the CPU never reacts before its delay; the boss can't be thrown, fights to an end, and storms only below half health; the stranger's memory only moves forward; swept again and again, the CPU Ashka checks some sweeps and is swept no more often than guarding alone; jabbed again and again, the CPU Bram parries some jabs with Stand Down and is hit no more often than blocking alone; a blocked uppercut thrown from close in is punished by the hard CPU 26 times in 28 and by the easy one 26 in 78 (before 2.6.6: 8 in 32 and 3 in 83), and a roundhouse at its range, pushed out of reach, never; uppercuts whiffed from just out of reach are punished by the hard CPU 39 times in 154, every answer landing (before 2.6.7: 27 in 169); a blocked jump-in is read by its fall: kicked early (a long way to fall) the CPU's answer lands 21 times in 21, kicked deep (landing at once) it swings at once 1 time in 7 (7 in 9 when the anti-air planned from the sight of the jump still fired). |
+| Roster and AI | All data loads and validates; every trial possible; CPU against CPU in every pairing; the CPU never reacts before its delay; the boss can't be thrown, fights to an end, and storms only below half health; the Grandmaster's CPU uses every one of his arts; swept again and again, the CPU Ashka checks some sweeps and is swept no more often than guarding alone; jabbed again and again, the CPU Bram parries some jabs with Stand Down and is hit no more often than blocking alone; a blocked uppercut thrown from close in is punished by the hard CPU 26 times in 28 and by the easy one 26 in 78 (before 2.6.6: 8 in 32 and 3 in 83), and a roundhouse at its range, pushed out of reach, never; uppercuts whiffed from just out of reach are punished by the hard CPU 39 times in 154, every answer landing (before 2.6.7: 27 in 169); a blocked jump-in is read by its fall: kicked early (a long way to fall) the CPU's answer lands 21 times in 21, kicked deep (landing at once) it swings at once 1 time in 7 (7 in 9 when the anti-air planned from the sight of the jump still fired). |
 | Animation | The ported rig matches the Godot original joint by joint on every pose of every fighter; the animator follows every state of a match; through the follow-through the arm carrying a blow stays exactly on its authored pose until the blow is over; a straight drives the struck head away, a hook turns the face the way the fist travels, an uppercut lifts the chin and a body shot folds the torso, from either side; turning round after a cross-over moves no joint more than 30 cm in a frame and ends facing the new way; a high punch marks the face, a low punch the torso and a sweep the legs of every fighter; beaten legs limp (hips back standing, lower walking) with the feet on the floor. |
 | Content | Every fighter has a body that maps onto the rig, the character material on every slot and a portrait; every stage piece the data places exists with its materials and surface textures. |
 | Saves | Settings round trip and bad values; rebinding never binds twice; reserved keys and pad buttons refused (directions, menu keys, F-keys); progress records, a damaged file set aside, the original game's file read once and never written; an interrupted write recovered; a damaged settings file set aside; a later version's progress copied aside. |
-| Flow | Arcade ladders, scoring and the end; Survival waves, carried health and the boss; alternate colours kept through the stranger's fight mid-Arcade and Survival's Try Again. |
+| Flow | Arcade ladders, scoring and the end; Survival waves, carried health and the boss; alternate colours kept through the run and Survival's Try Again; the Grandmaster's secret rung after a run without a continue. |
 
-## The two new fighters (2.7.0)
+## Ebony Hearts and the new fighters (2.7.0)
 
 Checked on the editor build, windowed at 1920 x 1080 on the real display, with screenshots
-(`Saved/Screenshots/LinuxEditor/`: `nf_*`, `tour_*`, `ev_*`, `spent_*`, `gmst_*`) and the log.
+(`Saved/Screenshots/LinuxEditor/`: `nf_*`, `tour_*`, `ev_*`, `spent_*`, `gmst_*` for the fighters'
+first pass; `gmx_*`, `gmy_*`, `gmz_*`, `gml_*`, `gmb_*` for the expansion, played by the
+development script `-SlopScript=` against a standing opponent) and the log.
 
 | What | How | Result |
 |---|---|---|
-| Roster | `Fighters.RosterOfSevenAndTheSecretGrandmaster`; the select screen in a fresh profile and with `-SlopUnlock=grandmaster` | Seven to start (the six and Wren), the eighth tile sealed ("?", "???", the clue) until unlocked; unlocked, his portrait, name and story; no data errors |
+| Roster and canon | `Fighters.RosterOfSevenAndTheSecretGrandmaster`, `Content.DaxionIsArchivedNotInTheGame`; the select screen in a fresh profile and with `-SlopUnlock=grandmaster`; a boss fight | Seven to start (the six and Wren), the eighth tile sealed until unlocked; no data errors; nothing loaded or cooked names Daxion and his archive is whole; the HUD reads "WREN" and "EBONY HEART FRAGMENT" |
 | Qhi and no run meter | `OwnBodyHasQhiAndNoRunMeter`; the HUD in a match | Gold Qhi bar with the half mark, no run bar; Run + forward glides on Qhi |
-| Borrowed Face | `BorrowsEveryStandardOpponentForHalfTheQhi` (all seven), `CopyOutfightsTheOriginal` (all seven), `ShapeshiftNeedsHalfTheMeter`, `BrokenShapeshiftCostsLittle`, `RevertingRefundsNothing`, `ADecidedFightLetsTheShapeGo`, `BossesAndMirrorsCannotBeBorrowed`, `NoCancelIntoAChangeOfShapeAndNoFarming`; his tour (borrowing Gorm) and CPU matches (borrowing Wren and Bram) | Exactly 50 paid on the frame it takes, refused below it (aloud), 8 for a broken startup, nothing back on reverting, the opponent's whole moveset with Qhi's edge, a full run meter, the opponent's body and materials with a gold rim and motes, "BORROWED FACE: <name>" and "QHI · AS <name>" on the HUD |
-| Spent | `EmptyMeterBreaksTheShapeIntoTheSpentBody`, `SpentBodyIsWeakDrunkenBoxing`, `EveryRoundStartsInHisOwnShape`; `-SlopQhi=0` in a match | Drunken boxing for about nine seconds, weaker on both counts, no Qhi move or glide, "QHI SPENT" and the rust bar refilling to its mark; recentres short of another shapeshift |
+| (a) Borrowed Face | `BorrowsEveryStandardOpponentForHalfTheQhi` (all seven), `CopyOutfightsTheOriginal`, `ShapeshiftNeedsHalfTheMeter`, `BrokenShapeshiftCostsLittle`, `RevertingRefundsNothing`, `ADecidedFightLetsTheShapeGo`, `MirrorsCannotBeBorrowed`, `NoCancelIntoAChangeOfShapeAndNoFarming`, `RememberedShapeCostsThirtyAndIsNotEnhanced` | Exactly 50 on frame 30, Qhi-enhanced, said to be copied; refused below it (aloud); 8 for a broken startup; nothing back on reverting |
+| (b) Form library | `FormLibraryHoldsEveryFighterAndTheFragment`, `RememberedShapeCostsThirtyAndIsNotEnhanced`; `gmy_03` | Every fighter's shape and the Fragment's, each on an input of its own; 30 on frame 24, not enhanced, said to be remembered; straight from one shape into another; "SHAPE: NIX HOLLOW" on screen |
+| (c) Inside a combo | `ChangesShapeInsideACombo`; `gmz_01` | Frame 3, at once actionable, the opponent still caught, the hit count carrying on (jab, Ashka's jab, Own Face, his kick: 1, 2, 3); two changes a combo and no third; counted afresh after |
+| (d) The Fragment's shape | `FragmentShapeCostsSixtyHasNoRunMeterAndDoubleUpkeep`; `gmy_04`, `gmy_05` | 60, no second meter, no boss in it, his own health, upkeep exactly double; facing the Fragment, Borrowed Face takes it for 50, enhanced, upkeep still double; its Tar Spit fired from his hands |
+| (e) Own Face | `OwnFaceIsFreeAndInABorrowedShapeAlwaysMeansOwnFace` | Frame 14 (3 in a combo), free, nothing back, never a copy or a refusal on the way |
+| Instant kills | `TwoFingersOneStrikeKillsAndHasCounterplay`, `FindTheCrackKillsAStandingOpponentUnlessInterrupted`, `HeartStopEndsOnlyALongComboOfTwoShapes`, the trial "Two Shapes, Heart Stop"; `gmz_03`, `gmz_05`, `gmx_12`, `gmx_13` | Each ends the round whatever the health: One Strike only with 75 Qhi (else a parry), not on a low, not on the Fragment; Find the Crack 90, broken by a jab in its startup (no refund), never begun on an airborne opponent; Heart Stop only at five hits through two shapes, for all the Qhi; on screen the call, the K.O. and the close-up |
+| Spent | `EmptyMeterBreaksTheShapeIntoTheSpentBody`, `SpentBodyIsWeakTraditionalBoxing`, `EveryRoundStartsInHisOwnShape`; `gmx_08` to `gmx_11` | Traditional boxing (no drunken boxing, no grappling, no kicks): a high guard, jab, cross and hook chain, the right hook, the left hook to the body, a slip and a parry; weaker on both counts; no Qhi move or glide; "THE SHAPE BREAKS: QHI SPENT"; recentres short of any shape |
+| Every move | `EveryMoveIsCovered` (`Docs/MoveCoverage.md`) | 247 of 247 counted moves covered (17 excluded: finishers and moves the game starts itself); Daxion's three moves carried |
 | Defences | `WorstPhysicalBestMagicalDefence` | Ashka's jab hurts him more than Bram, her Ember Shot half as much, Wick Knee by its share |
-| Wren | `FeintCancelsIntoAnythingButItself`, `BarTheDoorCatchesIntoAnArmlock`, `FlickerStepPassesThroughProjectiles`; her tour with boxes; the data-wide tests (reach, throws, loops, hands, feet, floor) | All hold; the armlock cannot be broken by mashing, a low beats the parry |
-| Unlock | `UnlockedByAnArcadeWithoutAContinue`; `-SlopSecret=wren -SlopAutoPlay=2` in a fresh profile | The still-water face-off, a Master fight in the Drowned Chapel, the result, Wren's ending, and `fighter:grandmaster` saved in the profile's progress |
-| CPU | `GrandmasterKeepsTheQhiRules`, `NewFightersMatchups`, every pairing | Below |
+| Move list | Pause, Move List, as the Grandmaster (`gml_*`) | The Qhi rules, each change of shape with its frame (and frame 3 in a combo) and price (the Fragment's upkeep x2), the kills' gates, "WHEN SPENT (boxing)" |
+| Wren | `FeintCancelsIntoAnythingButItself`, `BarTheDoorCatchesIntoAnArmlock`, `FlickerStepPassesThroughProjectiles`; her tour with boxes; the data-wide tests | All hold; unchanged by the expansion |
+| Unlock | `UnlockedByAnArcadeWithoutAContinue`; `-SlopSecret=wren -SlopAutoPlay=2` in a fresh profile | The still-water face-off, the challenge fight, the result, the ending, and `fighter:grandmaster` saved |
+| Old saves | `Saves.ProgressRecordsCorruptionAndMigration` (an older file with a "stranger" memory) | Loaded, records brought over, the memory carried as it was, the original file untouched |
+| CPU | `GrandmasterKeepsTheQhiRules`, `GrandmasterCpuUsesHisArts`, `NewFightersMatchups`, every pairing | Below |
 
-CPU against CPU (`AI.NewFightersMatchups`, eight matches per pairing, both sides of the screen;
-the numbers swing a good deal with the seeds): Wren wins 40%, 21% and 50% at Novice, Warrior and
-Master (in another run 29%, 42%, 62%); the Grandmaster 20%, 16% and 36% (a novice CPU misuses his
-meter, as a novice player would), and in his challenge's tier (the same rules and meters, 150 ms
-reactions and sharper reads) 71% against Master CPUs, Bram's rushdown still beating him 7 times in
-8. Across all 192 pairings (three levels, both sides): Ashka 33, Gorm 27, Nix 29, Mirela 13,
-Bram 36, Hollis 17, Wren 20, the Grandmaster 17 match wins.
+CPU against CPU (`AI.NewFightersMatchups`; the numbers swing with the seeds, so the tuning runs
+used 24 seeds a pairing, 168 matches a level, with `-SlopSeeds=24 -SlopOnly=grandmaster`). The
+Grandmaster at Novice, Warrior, Master and his challenge's tier (against Master CPUs): before the
+expansion's AI pass 9%, 16%, 32%, 68% (8 seeds) and 13%, 17%, 28%, 63% (24 seeds); after it 47%,
+50%, 58%, 90% (24 seeds; 39%, 52%, 61%, 89% at 8). The sweep that found it: remembered shapes
+taken from a standstill lost matches (switching them off alone gave 32% and 71% at the top two
+levels), and his zoning won them (palms from 1.6 m at zoning 0.7: 65% and 87%). His telemetry
+at Master over those 168 matches: 89% of the time in his own body (dealing 23 a second, taking
+20), 10% in a shape (21 and 19), 1% spent; 128 changes of shape inside combos; the Fragment's
+shape 30 times; Find the Crack tried and always answered; One Strike landing at the challenge's
+tier; Heart Stop rare (its combos seldom reach five hits). Wren unchanged: 40%, 21%, 50%. Across
+all 192 pairings (three levels, both sides): Ashka 33, Gorm 24, Nix 28, Mirela 10, Bram 34,
+Hollis 19, Wren 18, the Grandmaster 26 match wins (17 before the pass).
 
 Found and fixed while checking: the CPU pairing test kept six win counters (a seventh fighter wrote
-past them); a body put on over another kept the old body's materials (the borrowed Gorm wore the
-Grandmaster's robe textures); the pose library rebuilt for a new form kept its old poses (the spent
-body stood in the Qhi stance); a gold rim at four times a fighter's own washed a borrowed shape out;
-a move without a swing sound asked for a sound called "None".
+past them); a body put on over another kept the old body's materials; the pose library rebuilt for
+a new form kept its old poses; a gold rim at four times a fighter's own washed a borrowed shape
+out; a move without a swing sound asked for a sound called "None". In the expansion: in a
+remembered shape facing someone else, D,B,F + Block copied the opponent instead of giving his own
+face back (it is Own Face in every shape now); the unholdable Fragment could be caught into One
+Strike; Heart Stop's six-hit gate was out of reach of any combo in the game (five now, with a
+trial for it); a remembered shape of the fighter he faced was called "BORROWED FACE"; the
+trials of Wren and the Grandmaster ran against Gorm once their invented rivals were gone (they
+name partners now); a full asset import would have brought Daxion's body back.
 
 ## Playing the modes
 

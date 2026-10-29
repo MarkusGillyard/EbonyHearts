@@ -1,10 +1,10 @@
 {
 	"id": "grandmaster",
-	"name": "The Grandmaster",
-	"title": "He gives no other name",
+	"name": "Grandmaster",
+	"title": "Master of Qhi",
 	"pronoun": "him",
 	"style": "Qhi and a lifetime of martial arts",
-	"blurb": "A grandmaster of the old schools whose body has failed him and whose Qhi has not. He can wear the face of whoever stands against him, better than they wear it themselves.",
+	"blurb": "An elderly master of martial arts and Qhi. With Qhi he can wear the shape of any fighter, better than they wear it themselves.",
 	"resource": "qhi",
 	"spent_form": "grandmaster_spent",
 	"copyable": false,
@@ -37,7 +37,9 @@
 		"fail_cost": 8,
 		"copy_power": 1.2,
 		"copy_guard": 0.85,
-		"copy_speed": 1.08
+		"copy_speed": 1.08,
+		"shift_frame": 3,
+		"max_shifts": 2
 	},
 	"motion": {
 		"bounce": 0.15,
@@ -891,6 +893,436 @@
 					]
 				]
 			}
+		},
+		"shape_template": {
+			"name": "Shape",
+			"kind": "special",
+			"startup": 1,
+			"active": 0,
+			"recovery": 0,
+			"total": 32,
+			"level": "none",
+			"effects": {
+				"shapeshift": {
+					"frame": 24
+				}
+			},
+			"tags": [
+				"shapeshift"
+			],
+			"anim": {
+				"keys": [
+					[
+						6,
+						"gm_borrow_gather",
+						"out"
+					],
+					[
+						18,
+						"gm_borrow_gather",
+						"linear"
+					],
+					[
+						24,
+						"gm_borrow_sweep",
+						"snap"
+					],
+					[
+						32,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "cast_wave"
+			}
+		},
+		"step_aside": {
+			"name": "Step Aside",
+			"kind": "special",
+			"startup": 1,
+			"active": 0,
+			"recovery": 0,
+			"total": 20,
+			"level": "none",
+			"qhi": 12,
+			"magic": 1.0,
+			"motion": [
+				[
+					3,
+					0.0
+				],
+				[
+					10,
+					-0.85
+				]
+			],
+			"props": {
+				"invuln": [
+					3,
+					12
+				]
+			},
+			"tags": [
+				"escape"
+			],
+			"anim": {
+				"keys": [
+					[
+						5,
+						"mc_step_aside_05",
+						"linear"
+					],
+					[
+						6,
+						"mc_step_aside_06",
+						"linear"
+					],
+					[
+						7,
+						"mc_step_aside_07",
+						"linear"
+					],
+					[
+						8,
+						"mc_step_aside_08",
+						"linear"
+					],
+					[
+						9,
+						"mc_step_aside_09",
+						"linear"
+					],
+					[
+						10,
+						"mc_step_aside_10",
+						"linear"
+					],
+					[
+						11,
+						"mc_step_aside_11",
+						"linear"
+					],
+					[
+						12,
+						"mc_step_aside_12",
+						"linear"
+					],
+					[
+						13,
+						"mc_step_aside_13",
+						"linear"
+					],
+					[
+						14,
+						"mc_step_aside_14",
+						"linear"
+					],
+					[
+						15,
+						"mc_step_aside_15",
+						"linear"
+					],
+					[
+						16,
+						"mc_step_aside_16",
+						"linear"
+					],
+					[
+						20,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "whoosh_light"
+			}
+		},
+		"two_fingers": {
+			"name": "Two Fingers",
+			"kind": "special",
+			"startup": 4,
+			"active": 0,
+			"recovery": 0,
+			"total": 34,
+			"level": "none",
+			"effects": {
+				"parry": {
+					"frames": [
+						4,
+						9
+					],
+					"levels": [
+						"high",
+						"mid"
+					],
+					"stun": 26,
+					"catch": true,
+					"counter": "one_strike"
+				}
+			},
+			"tags": [
+				"counter"
+			],
+			"anim": {
+				"keys": [
+					[
+						4,
+						"gm_fingers",
+						"snap"
+					],
+					[
+						10,
+						"gm_fingers",
+						"linear"
+					],
+					[
+						34,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "whoosh_light"
+			}
+		},
+		"one_strike": {
+			"name": "One Strike",
+			"kind": "grab",
+			"startup": 1,
+			"active": 3,
+			"recovery": 0,
+			"total": 56,
+			"level": "throw",
+			"qhi": 75,
+			"effects": {
+				"kill": {}
+			},
+			"hitboxes": [
+				{
+					"rect": [
+						0.15,
+						0.6,
+						0.65,
+						1.0
+					]
+				}
+			],
+			"throw": {
+				"frames": 56,
+				"damage_frame": 40,
+				"damage": 0,
+				"release": [
+					7.0,
+					3.4
+				],
+				"recover": 12,
+				"path": [
+					[
+						0,
+						0.74,
+						0.0
+					],
+					[
+						56,
+						0.76,
+						0.0
+					]
+				]
+			},
+			"anim": {
+				"keys": [
+					[
+						1,
+						"gm_fingers",
+						"linear"
+					]
+				],
+				"hold": [
+					[
+						2,
+						"gm_fingers",
+						"snap"
+					],
+					[
+						30,
+						"gm_fingers",
+						"linear"
+					],
+					[
+						38,
+						"gm_palm_load",
+						"out"
+					],
+					[
+						40,
+						"gm_still_palm",
+						"snap"
+					],
+					[
+						56,
+						"stance",
+						"inout"
+					]
+				],
+				"victim": [
+					[
+						2,
+						"dazed",
+						"out"
+					],
+					[
+						40,
+						"dazed",
+						"linear"
+					],
+					[
+						42,
+						"air_hit",
+						"snap"
+					]
+				]
+			},
+			"tags": [
+				"grab"
+			],
+			"sfx": {
+				"swing": "grab"
+			}
+		},
+		"find_the_crack": {
+			"name": "Find the Crack",
+			"kind": "special",
+			"startup": 58,
+			"active": 3,
+			"recovery": 40,
+			"level": "unblockable",
+			"qhi": 90,
+			"damage": 100,
+			"magic": 1.0,
+			"hitstun": 60,
+			"effect": "knockdown",
+			"launch": [
+				7.5,
+				3.2
+			],
+			"hitstop": 26,
+			"effects": {
+				"kill": {
+					"requires": "standing"
+				}
+			},
+			"hitboxes": [
+				{
+					"rect": [
+						0.15,
+						0.7,
+						0.75,
+						1.2
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						10,
+						"gm_rise_load",
+						"out"
+					],
+					[
+						50,
+						"gm_rise_load",
+						"linear"
+					],
+					[
+						58,
+						"gm_still_palm",
+						"snap"
+					],
+					[
+						61,
+						"gm_still_palm",
+						"linear"
+					],
+					[
+						101,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "cast_storm"
+			}
+		},
+		"heart_stop": {
+			"name": "Heart Stop",
+			"kind": "special",
+			"startup": 6,
+			"active": 3,
+			"recovery": 22,
+			"level": "mid",
+			"qhi": 30,
+			"qhi_all": true,
+			"any_shape": true,
+			"damage": 60,
+			"magic": 1.0,
+			"hitstun": 40,
+			"blockstun": 14,
+			"effect": "knockdown",
+			"launch": [
+				4.5,
+				4.0
+			],
+			"hitstop": 20,
+			"effects": {
+				"kill": {
+					"requires": "combo",
+					"combo": 5
+				}
+			},
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						0.9,
+						0.56,
+						0.5
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						3,
+						"hp_load",
+						"out"
+					],
+					[
+						6,
+						"hp_hit",
+						"snap"
+					],
+					[
+						9,
+						"hp_hit",
+						"linear"
+					],
+					[
+						31,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "heavy"
+			}
 		}
 	},
 	"commands": [
@@ -929,6 +1361,22 @@
 		[
 			"D,D+BL",
 			"qhi_ward"
+		],
+		[
+			"B,B+LK",
+			"step_aside"
+		],
+		[
+			"F,B+HP",
+			"two_fingers"
+		],
+		[
+			"B,F,B,F+HP",
+			"find_the_crack"
+		],
+		[
+			"F,D,F+HP",
+			"heart_stop"
 		]
 	],
 	"finisher": {
@@ -939,7 +1387,7 @@
 	"ai": {
 		"range": 2.4,
 		"aggression": 0.4,
-		"zoning": 0.5,
+		"zoning": 0.7,
 		"weights": {
 			"hp": 1.0,
 			"lp": 1.0,
@@ -957,6 +1405,7 @@
 			"uppercut"
 		],
 		"parries": [
+			"two_fingers",
 			"yield",
 			"weave"
 		],
@@ -974,27 +1423,84 @@
 			"D,F+HP"
 		],
 		"qhi": {
+			"about": "Values by CPU difficulty (Novice, Warrior, Master, and the secret challenge's tier). shapeshift_from: Qhi to copy the opponent (Borrowed Face, 50); combo_form_from: Qhi to take a remembered shape chosen for the matchup (30) inside a combo (from a standstill only where the copy is refused); fragment_from / fragment_chance: the Fragment's shape (60); combo_shift: chance a landed blow is followed by a change of shape inside the combo; revert_below: Qhi under which a shape is given back (times its upkeep); keep: Qhi kept back (more when in danger, less when closing out); crack_from / crack_chance: Find the Crack against an opponent standing guard (chance a tick, tripled on a guard); kills: his instant kills by gate.",
 			"shapeshift": "D,B,F+BL",
 			"revert": "D,B,F+BL",
-			"shapeshift_from": [
-				95,
-				85,
-				75
-			],
-			"revert_below": [
-				0,
-				10,
-				16
-			],
-			"keep": [
-				10,
-				15,
-				15
-			]
+			"shapeshift_from": [95, 85, 75, 70],
+			"combo_form_from": [101, 60, 50, 50],
+			"fragment_from": [101, 101, 97, 94],
+			"fragment_chance": [0, 0, 0.35, 0.5],
+			"combo_shift": [0, 0.2, 0.5, 0.75],
+			"revert_below": [0, 10, 16, 18],
+			"keep": [10, 15, 15, 12],
+			"crack_from": 95,
+			"crack_chance": [0, 0.004, 0.01, 0.02],
+			"kills": {"combo": "heart_stop", "standing": "find_the_crack"}
 		},
-		"zone_from": 2.0,
+		"zone_from": 1.6,
 		"wards": [
 			"qhi_ward"
+		]
+	},
+	"carried": {
+		"about": "Techniques of fighters no longer in Ebony Hearts that the Grandmaster carries on (archived move -> his move). Read by the move-coverage report; see Archive/Slopperfall/Daxion/README.md.",
+		"daxion": {
+			"dax_evade": "step_aside",
+			"dax_palm": "one_strike",
+			"dax_crack": "find_the_crack"
+		}
+	},
+	"forms": {
+		"template": "shape_template",
+		"list": [
+			{
+				"target": "ashka",
+				"input": "RN+LP",
+				"cost": 30,
+				"name": "Shape: Ashka Rook"
+			},
+			{
+				"target": "bram",
+				"input": "RN+HP",
+				"cost": 30,
+				"name": "Shape: Bram Ketch"
+			},
+			{
+				"target": "wren",
+				"input": "RN+LK",
+				"cost": 30,
+				"name": "Shape: Wren"
+			},
+			{
+				"target": "gorm",
+				"input": "RN+HK",
+				"cost": 30,
+				"name": "Shape: Gorm Tallow"
+			},
+			{
+				"target": "nix",
+				"input": "D+RN+LP",
+				"cost": 30,
+				"name": "Shape: Nix Hollow"
+			},
+			{
+				"target": "mirela",
+				"input": "D+RN+HP",
+				"cost": 30,
+				"name": "Shape: Mirela Sorrow"
+			},
+			{
+				"target": "hollis",
+				"input": "D+RN+LK",
+				"cost": 30,
+				"name": "Shape: Hollis Fathom"
+			},
+			{
+				"target": "slopbat",
+				"input": "D+RN+HK",
+				"cost": 60,
+				"name": "Shape: the Ebony Heart Fragment"
+			}
 		]
 	}
 }

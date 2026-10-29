@@ -394,6 +394,12 @@ namespace Slop
 			Qhi = R.Max;
 		}
 		++QhiIdle;
+		// A combo of his has ended: its changes of shape and its shapes are counted afresh.
+		if (Opponent().ComboHits == 0)
+		{
+			FormShifts = 0;
+			ComboShapes.Reset();
+		}
 		switch (Form)
 		{
 		case EForm::Own:
@@ -424,7 +430,7 @@ namespace Slop
 		case EForm::Borrowed:
 			if (Sim->Phase == EPhase::Fight)
 			{
-				Qhi = FMath::Max(0.0, Qhi - R.Upkeep);
+				Qhi = FMath::Max(0.0, Qhi - R.Upkeep * UpkeepScale);
 			}
 			if (Qhi <= 0.0)
 			{
@@ -458,7 +464,7 @@ namespace Slop
 		}
 	}
 
-	void FFighter::SetForm(EForm F, const FFighterDef* D, FName Kind)
+	void FFighter::SetForm(EForm F, const FFighterDef* D, FName Kind, FName How)
 	{
 		Form = F;
 		Def = D;
@@ -467,6 +473,7 @@ namespace Slop
 		E.Type = EEvent::Form;
 		E.Who = Index;
 		E.Kind = Kind;
+		E.How = How;
 		E.Move = D->CopyOf ? D->CopyOf->Id : NAME_None;
 		Sim->Emit(E);
 	}
@@ -478,22 +485,64 @@ namespace Slop
 		return O.Def && O.Def->CopyOf ? O.Def->CopyOf : O.BaseDef;
 	}
 
-	FName FFighter::BorrowRefusal() const
+	const FFighterDef* FFighter::ShapeTarget(const FMoveDef& M) const
 	{
-		const FFighterDef* T = BorrowTarget();
+		return M.FormTarget.IsNone() ? BorrowTarget() : BaseDef->FormSources.FindRef(M.FormTarget);
+	}
+
+	static FName RefusalFor(const FFighterDef* T, const FFighterDef* Base, const FFighterDef* Now, bool bEnhanced)
+	{
 		if (!T)
 		{
 			return TEXT("shapeless");
 		}
-		if (T->bBoss)
-		{
-			return TEXT("boss");
-		}
-		if (T->Id == BaseDef->Id || T->Resource == EResource::Qhi)
+		// A Grandmaster copied is a mirror: it shows only itself.
+		if (T->Id == Base->Id || T->Resource == EResource::Qhi)
 		{
 			return TEXT("mirror");
 		}
-		return T->bCopyable ? NAME_None : FName(TEXT("shapeless"));
+		if (!T->bCopyable)
+		{
+			return TEXT("shapeless");
+		}
+		// Already wearing that very shape (copied or remembered alike).
+		if (Now->CopyOf == T && (Now->Power != T->Power) == bEnhanced)
+		{
+			return TEXT("same");
+		}
+		return NAME_None;
+	}
+
+	FName FFighter::BorrowRefusal() const
+	{
+		return RefusalFor(BorrowTarget(), BaseDef, Def, true);
+	}
+
+	FName FFighter::ShapeRefusal(const FMoveDef& M) const
+	{
+		return RefusalFor(ShapeTarget(M), BaseDef, Def, M.bFormEnhanced);
+	}
+
+	double FFighter::ShapeCost(const FMoveDef& M) const
+	{
+		// Copying the opponent facing him is the owner's fixed price: half the meter's capacity.
+		return M.FormCost < 0.0 || M.FormTarget.IsNone() ? QhiRules().ShapeshiftCost() : M.FormCost;
+	}
+
+	bool FFighter::KillAllowed(const FMoveDef& M) const
+	{
+		const FFighter& O = Opponent();
+		if (M.KillRequires == TEXT("standing"))
+		{
+			// Begun only against an opponent free on the ground: its long telegraph must be seen.
+			return O.IsActionable() && !O.IsAirborne() && O.Health > 0;
+		}
+		if (M.KillRequires == TEXT("combo"))
+		{
+			// The end of a long combo that took at least two of his shapes.
+			return (O.State == EState::HitStun || O.State == EState::Juggle) && O.ComboHits >= M.KillCombo && ComboShapes.Num() >= 2;
+		}
+		return true;
 	}
 
 	void FFighter::Refuse(FName Why)
@@ -513,9 +562,12 @@ namespace Slop
 
 	void FFighter::ChangeShape(const FMoveDef& M)
 	{
+		const bool bQuick = bQuickShift;
+		bQuickShift = false;
 		if (M.bShapeshift)
 		{
-			const FName Why = BorrowRefusal();
+			const FName Why = ShapeRefusal(M);
+			const double Cost = ShapeCost(M);
 			if (Sim->Phase != EPhase::Fight)
 			{
 				// The round ended during the startup: nothing happens, nothing is paid.
@@ -524,23 +576,39 @@ namespace Slop
 			{
 				Refuse(Why);
 			}
+			else if (Qhi < Cost)
+			{
+				// Spent on something else meanwhile (a blow taken in a borrowed shape).
+				Refuse(TEXT("qhi"));
+			}
 			else
 			{
-				SpendQhi(QhiRules().ShapeshiftCost());
+				SpendQhi(Cost);
 				RunMeter = RunMax;
 				RunIdle = 0;
 				bShapeBreaking = false;
-				SetForm(EForm::Borrowed, Sim->ShapeOf(*BorrowTarget(), *BaseDef), TEXT("borrowed"));
+				const FFighterDef* Target = ShapeTarget(M);
+				UpkeepScale = M.FormUpkeep * Target->ShapeUpkeep;
+				SetForm(EForm::Borrowed, Sim->ShapeOf(*Target, *BaseDef, M.bFormEnhanced), TEXT("borrowed"), M.bFormEnhanced ? FName(TEXT("copied")) : FName(TEXT("remembered")));
+				FormShifts += bQuick ? 1 : 0;
 			}
 		}
 		else if (Form == EForm::Borrowed)
 		{
+			UpkeepScale = 1.0;
 			SetForm(EForm::Own, BaseDef, TEXT("own"));
+			FormShifts += bQuick ? 1 : 0;
 		}
-		// The move ends on its form frame; the new body steadies itself before it can act.
 		Move = nullptr;
 		MF = 0;
 		Vel = FVector2D::ZeroVector;
+		if (bQuick)
+		{
+			// Inside a combo the new shape carries straight on: the opponent's stun runs as it was.
+			ToNeutral();
+			return;
+		}
+		// From a standstill the new body steadies itself before it can act.
 		SetState(EState::Land);
 		LandFramesNow = 10;
 	}
@@ -779,7 +847,7 @@ namespace Slop
 
 	// --- Commands and moves ---------------------------------------------------------------------------
 
-	bool FFighter::TryCommands(const TArray<FCommand>& List, int32 MinPriority, bool bSpecialsOnly, bool bFeint)
+	bool FFighter::TryCommands(const TArray<FCommand>& List, int32 MinPriority, bool bSpecialsOnly, bool bFeint, bool bShift)
 	{
 		if (Input.PressAge(BtnAll) < 0)
 		{
@@ -806,6 +874,10 @@ namespace Slop
 			{
 				continue;
 			}
+			if (bShift && !(M->bShapeshift || M->bRevert))
+			{
+				continue;
+			}
 			// A cancel into the same move only as many times running as the move allows: a rush
 			// that cancels into itself without end is an infinite.
 			const bool bSelf = bSpecialsOnly && M == Move;
@@ -820,10 +892,10 @@ namespace Slop
 			}
 			if (!CanUse(*M))
 			{
-				if (M->bShapeshift && Form == EForm::Own && Sim->Phase == EPhase::Fight)
+				if (M->bShapeshift && Form != EForm::Spent && Sim->Phase == EPhase::Fight && !(M->FormTarget.IsNone() && Form == EForm::Borrowed))
 				{
 					// Said aloud, so the player knows why nothing happened.
-					const FName Why = BorrowRefusal();
+					const FName Why = ShapeRefusal(*M);
 					Refuse(Why.IsNone() ? FName(TEXT("qhi")) : Why);
 				}
 				continue;
@@ -833,6 +905,11 @@ namespace Slop
 			const int32 Used = bSelf ? SelfCancelsUsed + 1 : 0;
 			StartMove(*M);
 			SelfCancelsUsed = Used;
+			if (bShift)
+			{
+				// Taken inside the combo: it takes on the shift frame (MoveFrame has run frame 1).
+				bQuickShift = true;
+			}
 			return true;
 		}
 		return false;
@@ -856,7 +933,17 @@ namespace Slop
 		{
 			return false;
 		}
-		if (M.bShapeshift && (Form != EForm::Own || Sim->Phase != EPhase::Fight || Qhi < QhiRules().ShapeshiftCost() || !BorrowRefusal().IsNone()))
+		if (M.bShapeshift && (Form == EForm::Spent || Sim->Phase != EPhase::Fight || Qhi < ShapeCost(M) || !ShapeRefusal(M).IsNone()))
+		{
+			return false;
+		}
+		if (M.bShapeshift && M.FormTarget.IsNone() && Form == EForm::Borrowed)
+		{
+			// The opponent's shape is copied from his own body: in a borrowed shape the same input
+			// is Own Face.
+			return false;
+		}
+		if (M.bKill && (!UsesQhi() || !KillAllowed(M)))
 		{
 			return false;
 		}
@@ -922,10 +1009,11 @@ namespace Slop
 		{
 			SpendRun(M.RunCost);
 		}
-		if (M.QhiCost > 0.0)
+		if (M.QhiCost > 0.0 || M.bQhiAll)
 		{
-			SpendQhi(M.QhiCost);
+			SpendQhi(M.bQhiAll ? FMath::Max(Qhi, M.QhiCost) : M.QhiCost);
 		}
+		bQuickShift = false;
 		if (!M.bAir)
 		{
 			Vel = FVector2D::ZeroVector;
@@ -963,6 +1051,13 @@ namespace Slop
 			return;
 		}
 		if (bLive && FMoveDef::InRange(Move->Feint, MF) && TryCommands(Def->Commands, -1, false, true))
+		{
+			return;
+		}
+		// The Grandmaster changes shape inside his combos: once a blow of his has landed, any time
+		// after its first active frame while the opponent is still caught, a limited number of times.
+		if (bLive && UsesQhi() && Form != EForm::Spent && MoveContact == TEXT("hit") && MF > Move->Startup && FormShifts < QhiRules().MaxShifts
+			&& (Opponent().State == EState::HitStun || Opponent().State == EState::Juggle) && TryCommands(Def->Commands, -1, false, false, true))
 		{
 			return;
 		}
@@ -1072,7 +1167,7 @@ namespace Slop
 	void FFighter::MoveFrame()
 	{
 		const FMoveDef& M = *Move;
-		if ((M.bShapeshift || M.bRevert) && MF == M.FormFrame)
+		if ((M.bShapeshift || M.bRevert) && MF == (bQuickShift ? QhiRules().ShiftFrame : M.FormFrame))
 		{
 			ChangeShape(M);
 			return;

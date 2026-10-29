@@ -1,25 +1,30 @@
 # Ebony Hearts
 
 A bog-gothic arcade fighting game by Markus Gillyard, in the line of Mortal Kombat 3 (called
-Mortal Slopbat until 2.7.0; the project, module and save folder keep that name inside): seven
-fighters and a secret eighth, the Slopbat waiting at the top of every tower, a stranger in white who is not part of
-the tournament, four stages in the Sump, finishers, combo trials and a full arcade ladder.
+Mortal Slopbat until 2.7.0; the project, module and save folder keep that name inside). The
+Ebony Heart has been lost for five hundred years, and the bored Outer Gods stage a tournament for
+one worthy mortal to claim it: seven fighters and a secret eighth, a Fragment of the Heart in the
+Slopbat's shape at the top of every tower, four stages in the Sump, finishers, combo trials and a
+full arcade ladder.
 
 This is the Unreal Engine 5 rebuild of the Godot 4.7.2 game (version 1.1.0, at
 `~/Documents/Mortal Slopbat`, left untouched). The rules, roster, moves, story and modes are the
-original's, from the same data files; the fighters, stages, rendering and menus are new.
+original's, from the same data files, with Ebony Hearts' canon, Wren and the Grandmaster added and
+Daxion archived for Slopperfall (`Archive/Slopperfall/Daxion`); the fighters, stages, rendering
+and menus are new.
 `Docs/Preservation.md` lists every part of the original and what became of it.
 
 ## Playing
 
-Linux x86_64 with a Vulkan driver. Unpack the release archive and run `./MortalSlopbat.sh`; the
+Linux x86_64 with a Vulkan driver. Unpack the release archive and run `./EbonyHearts.sh`; the
 readme inside (`Docs/Player-README.txt`) gives the controls, save locations and modes.
 
 - **Modes:** Arcade (Novice, Warrior and Master towers, a rival, the Reflection, the Slopbat,
   endings, continues, scores), Survival, Versus (each device given to a player), Training (dummy
   behaviours, frame data, boxes, input history), Tutorial, Trials, Extras, Settings.
-- **Roster:** Ashka Rook, Gorm Tallow, Nix Hollow, Mirela Sorrow, Bram Ketch, Hollis Fathom; the
-  Slopbat; Daxion, the stranger in white.
+- **Roster:** Ashka Rook, Gorm Tallow, Nix Hollow, Mirela Sorrow, Bram Ketch, Hollis Fathom, Wren;
+  Grandmaster (secret, unlocked by an arcade run without a continue); the Ebony Heart Fragment in
+  the Slopbat's shape.
 - **Stages:** The Rendering Yards, The Drowned Chapel, Lowmere Stilt Market, the Slopbat's Roost.
 - **Controllers:** PlayStation and Xbox pads through SDL; keyboard halves for two players on one
   keyboard. What has and has not been tested on real hardware is in `Docs/Validation.md`.

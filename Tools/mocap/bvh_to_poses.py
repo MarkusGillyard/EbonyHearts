@@ -46,8 +46,9 @@ CLIPS = {
     "roundhouse": ("Male2_G9_RoundhouseRight", "RightFoot", (13, 4, 22), {}, "basics"),
     "hk": ("Male2_G2_FrontKick", "RightFoot", (9, 4, 16), {}, "basics"),
     "ashka_teep": ("Male2_G17_PushKickLeft", "LeftFoot", (8, 3, 14), {}, "ashka"),
-    # Daxion's step aside: a lean-away dodge, deepest at frame 8 of its 18 (the simulation moves him).
-    "dax_evade": ("Male2_E19_DodgeLeft", "Head", (8, 0, 10), {}, "daxion"),
+    # The Grandmaster's step aside (Daxion's evade, carried over): a lean-away dodge, deepest at
+    # frame 8 of its 20 (the simulation moves him).
+    "step_aside": ("Male2_E19_DodgeLeft", "Head", (8, 0, 12), {}, "grandmaster"),
     # Wren's kickboxing and taekwondo: the lead-leg head kick, the backfist, the spinning back
     # kick (Turning Light) and the reverse spinning crescent that lifts jumpers (Lifting Light).
     "wren_head_kick": ("Male2_G8_RoundhouseLeft", "LeftFoot", (9, 3, 20), {"fist_l": 1, "fist_r": 1}, "wren"),
@@ -56,6 +57,10 @@ CLIPS = {
     "lifting_light": ("Male2_G20_ReverseSpinCrescentRight", "RightFoot", (6, 5, 24), {"fist_l": 1, "fist_r": 1}, "wren"),
     # The Grandmaster's weave: a slip under the blow, deepest at frame 6 of its 22.
     "weave": ("Male2_E21_DuckLeft", "Head", (6, 0, 16), {}, "grandmaster"),
+    # His boxing with no Qhi left: a hook to the head and one to the body (both takes start in a
+    # right lead, so the mirror makes them the right hook and the left hook to the body).
+    "box_hook": ("Male2_E5_HookLeft", "LeftHand", (7, 3, 14), {"fist_l": 1, "fist_r": 1}, "grandmaster_spent"),
+    "box_body_hook": ("Male2_E10_BodyHookRight", "RightHand", (7, 3, 15), {"fist_l": 1, "fist_r": 1}, "grandmaster_spent"),
 }
 
 # pose -> (take, take frame, the fields taken). Laid over the shared pose of that name; fields not

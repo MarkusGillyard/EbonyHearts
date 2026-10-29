@@ -76,10 +76,6 @@ namespace Slop
 		case EEvent::RoundEnd: return TEXT("round_end");
 		case EEvent::WinPose: return TEXT("win_pose");
 		case EEvent::MatchEnd: return TEXT("match_end");
-		case EEvent::Line: return TEXT("line");
-		case EEvent::StrangerEvade: return TEXT("stranger_evade");
-		case EEvent::StrangerStrike: return TEXT("stranger_strike");
-		case EEvent::StrangerCrack: return TEXT("stranger_crack");
 		case EEvent::Form: return TEXT("form");
 		}
 		return TEXT("?");
@@ -291,6 +287,8 @@ namespace Slop
 		M.Chip = Int(D, TEXT("chip"), 0);
 		M.Magic = FMath::Clamp(Num(D, TEXT("magic"), 0.0), 0.0, 1.0);
 		M.QhiCost = FMath::Max(0.0, Num(D, TEXT("qhi"), 0.0));
+		M.bQhiAll = Bool(D, TEXT("qhi_all"), false);
+		M.bAnyShape = Bool(D, TEXT("any_shape"), false);
 		M.Hitstun = Int(D, TEXT("hitstun"), 18);
 		M.Blockstun = Int(D, TEXT("blockstun"), 12);
 		M.Hitstop = Int(D, TEXT("hitstop"), -1);
@@ -466,6 +464,16 @@ namespace Slop
 			{
 				M.bShapeshift = true;
 				M.FormFrame = Int(Sh, TEXT("frame"), M.Total);
+				M.FormTarget = FName(*Str(Sh, TEXT("target")));
+				M.FormCost = Num(Sh, TEXT("cost"), -1.0);
+				M.bFormEnhanced = Bool(Sh, TEXT("enhanced"), M.FormTarget.IsNone());
+				M.FormUpkeep = Num(Sh, TEXT("upkeep"), 1.0);
+			}
+			if (const TSharedPtr<FJsonObject> Kl = Obj(FX, TEXT("kill")))
+			{
+				M.bKill = true;
+				M.KillRequires = FName(*Str(Kl, TEXT("requires")));
+				M.KillCombo = Int(Kl, TEXT("combo"), M.KillCombo);
 			}
 			if (const TSharedPtr<FJsonObject> Rv = Obj(FX, TEXT("revert")))
 			{
@@ -539,7 +547,7 @@ namespace Slop
 
 	const TArray<FName>& FContent::Special()
 	{
-		static const TArray<FName> S = {TEXT("slopbat"), TEXT("daxion")};
+		static const TArray<FName> S = {TEXT("slopbat")};
 		return S;
 	}
 
@@ -749,6 +757,20 @@ namespace Slop
 			{
 				Errors.Add(KV.Key.ToString() + TEXT(": a Qhi fighter needs a spent form"));
 			}
+			// The shapes his form commands take.
+			for (const auto& MV : F.Moves)
+			{
+				const FName T = MV.Value->FormTarget;
+				if (MV.Value->bShapeshift && !T.IsNone())
+				{
+					const FFighterDef* Src = Fighter(T);
+					if (!Src || Src->Resource == EResource::Qhi)
+					{
+						Errors.Add(KV.Key.ToString() + TEXT(": a form takes a shape that is missing or a Qhi fighter's: ") + T.ToString());
+					}
+					F.FormSources.Add(T, Src);
+				}
+			}
 		}
 		return Errors.Num() == 0;
 	}
@@ -768,6 +790,7 @@ namespace Slop
 		F.bBoss = Bool(D, TEXT("boss"), false);
 		F.bHidden = Bool(D, TEXT("hidden"), F.bBoss);
 		F.bCopyable = Bool(D, TEXT("copyable"), !F.bHidden);
+		F.ShapeUpkeep = Num(D, TEXT("shape_upkeep"), 1.0);
 		F.Body = FName(*Str(D, TEXT("body"), Owner));
 		F.SpentFormId = FName(*Str(D, TEXT("spent_form")));
 		const FString Res = Str(D, TEXT("resource"), TEXT("run"));
@@ -796,6 +819,49 @@ namespace Slop
 			R.CopyPower = Num(Q, TEXT("copy_power"), R.CopyPower);
 			R.CopyGuard = Num(Q, TEXT("copy_guard"), R.CopyGuard);
 			R.CopySpeed = Num(Q, TEXT("copy_speed"), R.CopySpeed);
+			R.ShiftFrame = Int(Q, TEXT("shift_frame"), R.ShiftFrame);
+			R.MaxShifts = Int(Q, TEXT("max_shifts"), R.MaxShifts);
+		}
+		// The form library (data "forms"): one shapeshift a listed fighter, each made from the
+		// template move with that fighter as its target, its own price and input.
+		if (const TSharedPtr<FJsonObject> Forms = Obj(D, TEXT("forms")))
+		{
+			const TSharedPtr<FJsonObject> MovesJ = Obj(D, TEXT("moves"));
+			const TSharedPtr<FJsonObject> Template = Obj(MovesJ, *Str(Forms, TEXT("template")));
+			const TArray<TSharedPtr<FJsonValue>>* CommandsJ = Arr(D, TEXT("commands"));
+			if (!Template.IsValid() || !CommandsJ)
+			{
+				Errors.Add(Owner + TEXT(": forms need a template move and commands"));
+			}
+			else if (const TArray<TSharedPtr<FJsonValue>>* List = Arr(Forms, TEXT("list")))
+			{
+				TArray<TSharedPtr<FJsonValue>> Commands = *CommandsJ;
+				for (const TSharedPtr<FJsonValue>& V : *List)
+				{
+					const TSharedPtr<FJsonObject> E = V->AsObject();
+					const FString Target = Str(E, TEXT("target"));
+					TSharedPtr<FJsonObject> Mv = MakeShared<FJsonObject>();
+					Mv->Values = Template->Values;
+					Mv->SetStringField(TEXT("name"), Str(E, TEXT("name"), Template->GetStringField(TEXT("name"))));
+					TSharedPtr<FJsonObject> FX = MakeShared<FJsonObject>();
+					TSharedPtr<FJsonObject> Sh = MakeShared<FJsonObject>();
+					if (const TSharedPtr<FJsonObject> Old = Obj(Obj(Template, TEXT("effects")), TEXT("shapeshift")))
+					{
+						Sh->Values = Old->Values;
+					}
+					Sh->SetStringField(TEXT("target"), Target);
+					Sh->SetNumberField(TEXT("cost"), Num(E, TEXT("cost"), 30.0));
+					Sh->SetBoolField(TEXT("enhanced"), Bool(E, TEXT("enhanced"), false));
+					Sh->SetNumberField(TEXT("upkeep"), Num(E, TEXT("upkeep"), 1.0));
+					FX->SetObjectField(TEXT("shapeshift"), Sh);
+					Mv->SetObjectField(TEXT("effects"), FX);
+					const FString Id = TEXT("shape_") + Target;
+					MovesJ->SetObjectField(Id, Mv);
+					TArray<TSharedPtr<FJsonValue>> Pair = {MakeShared<FJsonValueString>(Str(E, TEXT("input"))), MakeShared<FJsonValueString>(Id)};
+					Commands.Add(MakeShared<FJsonValueArray>(Pair));
+				}
+				D->SetArrayField(TEXT("commands"), Commands);
+			}
 		}
 		if (const TSharedPtr<FJsonObject> Mo = Obj(D, TEXT("motion")))
 		{
@@ -1050,30 +1116,41 @@ namespace Slop
 		}
 	}
 
-	TSharedRef<FFighterDef> MakeBorrowedShape(const FFighterDef& Target, const FFighterDef& Copier)
+	TSharedRef<FFighterDef> MakeBorrowedShape(const FFighterDef& Target, const FFighterDef& Copier, bool bEnhanced)
 	{
 		TSharedRef<FFighterDef> S = MakeShared<FFighterDef>(Target);
 		const FQhiRules& Q = Copier.Qhi;
 		S->CopyOf = &Target;
-		S->Resource = EResource::Run;
+		// The shape keeps its source's second bar: a run meter, or none (the Fragment flies).
+		S->Resource = Target.Resource == EResource::None ? EResource::None : EResource::Run;
 		S->bCopyable = false;
 		S->SpentForm = nullptr;
 		S->SpentFormId = NAME_None;
-		S->Power = Target.Power * Q.CopyPower;
-		S->Arcana = Target.Arcana * Q.CopyPower;
-		S->PhysDef = Target.PhysDef * Q.CopyGuard;
-		S->MagicDef = Target.MagicDef * Q.CopyGuard;
-		S->WalkF = Target.WalkF * Q.CopySpeed;
-		S->WalkB = Target.WalkB * Q.CopySpeed;
-		S->RunSpeed = Target.RunSpeed * Q.CopySpeed;
+		S->FormSources.Reset();
+		// Whatever the source, the Grandmaster inside it is no boss: he can be thrown and finished.
+		S->bBoss = false;
+		S->bHidden = false;
+		S->bUnthrowable = false;
+		if (bEnhanced)
+		{
+			S->Power = Target.Power * Q.CopyPower;
+			S->Arcana = Target.Arcana * Q.CopyPower;
+			S->PhysDef = Target.PhysDef * Q.CopyGuard;
+			S->MagicDef = Target.MagicDef * Q.CopyGuard;
+			S->WalkF = Target.WalkF * Q.CopySpeed;
+			S->WalkB = Target.WalkB * Q.CopySpeed;
+			S->RunSpeed = Target.RunSpeed * Q.CopySpeed;
+		}
 		// The fight's end lets the shape go, so it never performs the other fighter's finisher.
 		S->bHasFinisher = false;
-		// The way back: the copier's reversal, on the copier's own input for it, ahead of any of
-		// the target's commands on the same input.
+		// What he keeps in every shape: his changes of shape (to any other, and back to his own)
+		// and his own techniques marked for it, on his own inputs, ahead of any of the target's
+		// commands on the same input.
+		S->FormSources = Copier.FormSources;
 		for (const FCommand& C : Copier.Commands)
 		{
 			const TSharedRef<FMoveDef>* M = Copier.Moves.Find(C.Move);
-			if (M && (*M)->bRevert)
+			if (M && ((*M)->bRevert || (*M)->bShapeshift || (*M)->bAnyShape))
 			{
 				S->Moves.Add(C.Move, *M);
 				S->Commands.Insert(C, 0);

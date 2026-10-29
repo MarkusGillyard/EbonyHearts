@@ -377,7 +377,6 @@ namespace Slop
 		Data->SetObjectField(TEXT("trials"), MakeShared<FJsonObject>());
 		Data->SetArrayField(TEXT("endings"), {});
 		Data->SetArrayField(TEXT("unlocks"), {});
-		Data->SetNumberField(TEXT("stranger"), 0);
 		TSharedRef<FJsonObject> Stats = MakeShared<FJsonObject>();
 		for (const TCHAR* S : {TEXT("matches"), TEXT("wins"), TEXT("finishers"), TEXT("flawless")})
 		{
@@ -451,7 +450,11 @@ namespace Slop
 				Data->SetArrayField(K, Clean);
 			}
 		}
-		Data->SetNumberField(TEXT("stranger"), FMath::Clamp(Json::Int(J, TEXT("stranger"), 0), 0, 6));
+		// The encounter Ebony Hearts no longer has left a memory in older files: carried as it was.
+		if (J->HasField(TEXT("stranger")))
+		{
+			Data->SetNumberField(TEXT("stranger"), FMath::Clamp(Json::Int(J, TEXT("stranger"), 0), 0, 6));
+		}
 		Data->SetBoolField(TEXT("tutorial_done"), Json::Bool(J, TEXT("tutorial_done"), false));
 	}
 
@@ -472,7 +475,10 @@ namespace Slop
 				Data->SetArrayField(K, *A);
 			}
 		}
-		Data->SetNumberField(TEXT("stranger"), FMath::Clamp(Json::Int(Old, TEXT("stranger"), 0), 0, 6));
+		if (Old->HasField(TEXT("stranger")))
+		{
+			Data->SetNumberField(TEXT("stranger"), FMath::Clamp(Json::Int(Old, TEXT("stranger"), 0), 0, 6));
+		}
 		Data->SetBoolField(TEXT("tutorial_done"), Json::Bool(Old, TEXT("tutorial_done"), false));
 		Data->SetBoolField(TEXT("imported"), true);
 	}
@@ -638,16 +644,6 @@ namespace Slop
 
 	int32 FSlopProgress::Stat(const FString& S) const { return Json::Int(Json::Obj(Data, TEXT("stats")), *S, 0); }
 
-	void FSlopProgress::SetStranger(int32 Stage)
-	{
-		if (Stage > Stranger())
-		{
-			Data->SetNumberField(TEXT("stranger"), FMath::Min(Stage, 6));
-			Save();
-		}
-	}
-
-	int32 FSlopProgress::Stranger() const { return Json::Int(Data, TEXT("stranger"), 0); }
 	bool FSlopProgress::TutorialDone() const { return Json::Bool(Data, TEXT("tutorial_done"), false); }
 
 	void FSlopProgress::SetTutorialDone()

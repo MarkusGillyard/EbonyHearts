@@ -64,7 +64,7 @@ public:
 	void SkipFinisher() { Sim.SkipFinisher(); }
 	// Applies the comfort and graphics settings (shake, flashes, effects, depth of field).
 	void ApplySettings();
-	// Slow motion asked for by a set piece (the stranger's blow).
+	// Slow motion asked for by a set piece (an instant kill's blow).
 	void KoSlowExternal(int32 Ticks) { KoSlow = FMath::Max(KoSlow, Ticks); }
 	USlopGameInstance* GetGI() const { return GI(); }
 	Slop::FFinisherDirector Director;
@@ -79,8 +79,9 @@ public:
 	Slop::FMatchConfig Config;
 	Slop::FMatchResult Result;
 	TUniquePtr<Slop::IBrain> Brains[2];
+	// The CPU brains among them, for their development telemetry (-SlopAiLog).
+	Slop::FCpuBrain* CpuBrains[2] = {nullptr, nullptr};
 	Slop::FTrainingDummy* Dummy = nullptr;
-	TUniquePtr<Slop::FStrangerRules> Stranger;
 	// The events of the ticks run this frame, for the HUD and effects.
 	TArray<Slop::FSimEvent> FrameEvents;
 	// The pads fed to the simulation on the last tick (input display).

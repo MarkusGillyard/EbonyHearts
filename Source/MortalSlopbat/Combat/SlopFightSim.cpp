@@ -131,13 +131,14 @@ namespace Slop
 
 	// --- Setup and rounds ----------------------------------------------------------------------------
 
-	const FFighterDef* FFightSim::ShapeOf(const FFighterDef& Target, const FFighterDef& Copier)
+	const FFighterDef* FFightSim::ShapeOf(const FFighterDef& Target, const FFighterDef& Copier, bool bEnhanced)
 	{
-		if (const TSharedRef<FFighterDef>* S = Shapes.Find(Target.Id))
+		const FName Key(*(Target.Id.ToString() + (bEnhanced ? TEXT("+") : TEXT(""))));
+		if (const TSharedRef<FFighterDef>* S = Shapes.Find(Key))
 		{
 			return &S->Get();
 		}
-		return &Shapes.Add(Target.Id, MakeBorrowedShape(Target, Copier)).Get();
+		return &Shapes.Add(Key, MakeBorrowedShape(Target, Copier, bEnhanced)).Get();
 	}
 
 	// Damage after the fighters' strength and defences. `Magic` is the blow's magical share: a
@@ -183,6 +184,10 @@ namespace Slop
 			F.QhiIdle = 0;
 			F.QhiGainAt = 0;
 			F.bShapeBreaking = false;
+			F.UpkeepScale = 1.0;
+			F.FormShifts = 0;
+			F.ComboShapes.Reset();
+			F.bQuickShift = false;
 			F.Health = F.MaxHealth();
 			F.RunMeter = FFighter::RunMax;
 			F.RunIdle = 0;
@@ -267,10 +272,6 @@ namespace Slop
 		if (Phase == EPhase::Fight || Phase == EPhase::Finish)
 		{
 			Resolve();
-		}
-		if (Hooks)
-		{
-			Hooks->OnTick(*this);
 		}
 		CheckRound();
 		if (bRefillHealth)
@@ -601,10 +602,6 @@ namespace Slop
 		ClashProjectiles();
 		for (const FContact& C : Contacts)
 		{
-			if (Hooks && Hooks->IgnoreContact(*this, C))
-			{
-				continue;
-			}
 			Apply(C);
 		}
 		ResolveThrows();
@@ -743,6 +740,11 @@ namespace Slop
 				{
 					Counter = nullptr;
 				}
+				// A body that cannot be held (the Fragment's) is only parried, never caught.
+				if (Counter && Caught.bParryCatch && A.Def->bUnthrowable)
+				{
+					Counter = nullptr;
+				}
 				A.BreakMove();
 				A.Hitstop = 10;
 				D.Hitstop = 10;
@@ -847,8 +849,14 @@ namespace Slop
 		}
 		const int32 N = D.ComboHits + 1;
 		const double K = N <= 2 ? 1.0 : FMath::Max(0.4, 1.0 - 0.1 * (N - 2));
-		// Scaling never takes a damaging hit below 1, but a hit that does none stays harmless.
-		const int32 Dmg = Damage > 0 ? FMath::Max(1, FMath::RoundToInt(Damage * K)) : 0;
+		// Scaling never takes a damaging hit below 1, but a hit that does none stays harmless. An
+		// instant kill takes whatever health is left.
+		const bool bKill = !P && M.bKill;
+		const int32 Dmg = bKill ? FMath::Max(1, D.Health) : (Damage > 0 ? FMath::Max(1, FMath::RoundToInt(Damage * K)) : 0);
+		if (A.UsesQhi())
+		{
+			A.ComboShapes.AddUnique(A.Form == EForm::Borrowed && A.Def->CopyOf ? A.Def->CopyOf->Id : A.BaseDef->Id);
+		}
 		D.Health = FMath::Max(0, D.Health - Dmg);
 		D.DamageTaken += Dmg;
 		if (D.Form == EForm::Borrowed)
@@ -943,6 +951,7 @@ namespace Slop
 		E.Kind = P ? P->Kind : FName();
 		E.bCounter = bCounter;
 		E.bKO = D.Health <= 0;
+		E.bKill = bKill;
 		Emit(E);
 	}
 
@@ -1014,10 +1023,6 @@ namespace Slop
 			C.Move = A.Move;
 			C.bThrow = true;
 			C.Point = D.Pos;
-			if (Hooks && Hooks->IgnoreContact(*this, C))
-			{
-				continue;
-			}
 			A.ThrowVictim = D.Index;
 			A.ThrowT = 0;
 			A.MoveContact = TEXT("hit");
@@ -1068,7 +1073,8 @@ namespace Slop
 		D.Facing = -A.Facing;
 		if (A.ThrowT == TD.DamageFrame)
 		{
-			const int32 Dmg = Dealt(A, D, TD.Damage, 0.0);
+			const bool bKill = A.Move->bKill;
+			const int32 Dmg = bKill ? FMath::Max(1, D.Health) : Dealt(A, D, TD.Damage, 0.0);
 			D.Health = FMath::Max(0, D.Health - Dmg);
 			D.DamageTaken += Dmg;
 			if (D.Form == EForm::Borrowed)
@@ -1085,6 +1091,7 @@ namespace Slop
 			E.Combo = D.ComboHits;
 			E.bThrow = true;
 			E.bKO = D.Health <= 0;
+			E.bKill = bKill;
 			Emit(E);
 		}
 		if (A.ThrowT >= TD.Frames)

@@ -1,5 +1,6 @@
 {
-	"about": "Combo trials per fighter: `steps` are the commands entered in order (each as soon as it can come out: a chain link once the blow before it has landed, a special in a cancel window after contact, anything else once the fighter is free again); `moves` are the hits that must land as one combo, in order. The test suite performs every trial headless against the fighter's rival from touching distance, so only combos that connect are listed.",
+	"about": "Combo trials per fighter: `steps` are the commands entered in order (each as soon as it can come out: a chain link once the blow before it has landed, a special in a cancel window after contact, anything else once the fighter is free again); `moves` are the hits that must land as one combo, in order. The test suite performs every trial headless against the fighter's trial partner (its rival; for a fighter with none, `partners` names who its trials were written against; otherwise Gorm) from touching distance, so only combos that connect are listed.",
+	"partners": {"wren": "mirela", "grandmaster": "wren"},
 	"ashka": [
 		{
 			"name": "Lantern Lash",
@@ -511,6 +512,11 @@
 				"lk",
 				"wren_head_kick"
 			]
+		},
+		{
+			"name": "Two Shapes, Heart Stop",
+			"steps": ["LP", "HP", "RN+LP", "HP", "HP", "LP", "F,D,F+HP"],
+			"moves": ["lp", "gm_two_fingers", "hp", "hp2", "ashka_elbow_chain", "heart_stop"]
 		}
 	]
 }

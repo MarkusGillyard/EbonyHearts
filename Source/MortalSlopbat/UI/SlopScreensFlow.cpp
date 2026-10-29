@@ -192,7 +192,7 @@ namespace SlopScreensFlowImpl
 					{
 						if (!SideShown(Side))
 						{
-							return Mode == EMode::Arcade ? LOCTEXT("Await", "The Slopbat's chosen await.")
+							return Mode == EMode::Arcade ? LOCTEXT("Await", "The Outer Gods are watching.")
 								: Mode == EMode::Survival ? LOCTEXT("Waves", "Wave after wave, until you fall.")
 								: Mode == EMode::Training ? LOCTEXT("Partner", "Then a sparring partner to practise on.")
 								: Mode == EMode::Cpu ? FText::Format(LOCTEXT("CpuSide", "Then the CPU's fighter ({0})."), FGameFlow::DifficultyName(FMath::Clamp(GI->Settings.Difficulty, 0, 2)))
@@ -545,7 +545,7 @@ namespace SlopScreensFlowImpl
 		}
 		FText RungText(const FRung& R) const
 		{
-			if (R.Kind == TEXT("boss")) return LOCTEXT("Boss", "The Slopbat");
+			if (R.Kind == TEXT("boss")) return LOCTEXT("Boss", "The Ebony Heart Fragment");
 			if (R.Kind == TEXT("mirror")) return LOCTEXT("Mirror", "The Reflection");
 			const FText N = FText::FromString(Def(R.Opponent)->Name);
 			return R.Kind == TEXT("rival") ? FText::Format(LOCTEXT("RivalName", "{0} (rival)"), N) : N;
@@ -937,7 +937,7 @@ namespace SlopScreensFlowImpl
 		{
 			const FFighterDef* D = Def(Fighter);
 			Rows.Reset();
-			auto Frames = [](const FMoveDef& M)
+			auto Frames = [D](const FMoveDef& M)
 			{
 				// A parry lists what it catches and when; anything else that strikes nothing (a
 				// buff, a step) only how long it takes.
@@ -951,21 +951,40 @@ namespace SlopScreensFlowImpl
 							Lv.Add(LevelName(L));
 						}
 					}
-					return FString::Printf(TEXT("parry   catches %s on frames %d-%d   total %d%s"), *FString::Join(Lv, TEXT(", ")), M.ParryFrames.X, M.ParryFrames.Y, M.Total,
-						M.ParryDamage > 0 ? *FString::Printf(TEXT("   stings %d"), M.ParryDamage) : TEXT(""));
+					// A catch whose answer is an instant kill says what it needs.
+					const FMoveDef* Answer = D->Move(M.ParryCounter);
+					const FString Kill = Answer && Answer->bKill ? FString::Printf(TEXT("   with %d Qhi the catch becomes %s, an instant kill"), FMath::RoundToInt(Answer->QhiCost), *Answer->Name) : FString();
+					return FString::Printf(TEXT("parry   catches %s on frames %d-%d   total %d%s%s"), *FString::Join(Lv, TEXT(", ")), M.ParryFrames.X, M.ParryFrames.Y, M.Total,
+						M.ParryDamage > 0 ? *FString::Printf(TEXT("   stings %d"), M.ParryDamage) : TEXT(""), *Kill);
 				}
 				// A projectile's advantage depends on how far it travels, so only what it is.
 				if (M.Projectile.bHas)
 				{
 					return FString::Printf(TEXT("%s projectile   %d dmg   leaves on frame %d   total %d"), LevelName(M.Projectile.Level), M.Damage + M.Projectile.Damage, M.Projectile.Frame, M.Total);
 				}
+				// His changes of shape: when each takes (from a standstill, and inside a combo) and its price.
 				if (M.bShapeshift)
 				{
-					return FString::Printf(TEXT("takes on frame %d   costs half the Qhi"), M.FormFrame);
+					const FQhiRules& Q = D->Qhi;
+					if (M.FormTarget.IsNone())
+					{
+						return FString::Printf(TEXT("takes on frame %d (%d inside a combo)   costs half the Qhi   Qhi-enhanced"), M.FormFrame, Q.ShiftFrame);
+					}
+					const FFighterDef* T = D->FormSources.FindRef(M.FormTarget);
+					const double Upkeep = M.FormUpkeep * (T ? T->ShapeUpkeep : 1.0);
+					return FString::Printf(TEXT("takes on frame %d (%d inside a combo)   costs %d Qhi%s%s"), M.FormFrame, Q.ShiftFrame, FMath::RoundToInt(M.FormCost),
+						M.bFormEnhanced ? TEXT("   Qhi-enhanced") : TEXT(""), Upkeep != 1.0 ? *FString::Printf(TEXT("   upkeep x%.0f"), Upkeep) : TEXT(""));
 				}
 				if (M.bRevert)
 				{
-					return FString::Printf(TEXT("his own face back on frame %d   no Qhi returned"), M.FormFrame);
+					return FString::Printf(TEXT("his own face back on frame %d (%d inside a combo)   no Qhi returned"), M.FormFrame, D->Qhi.ShiftFrame);
+				}
+				if (M.bKill)
+				{
+					const FString Gate = M.KillRequires == TEXT("standing") ? FString(TEXT("only begun against a standing opponent; a blow in its startup breaks it"))
+						: M.KillRequires == TEXT("combo") ? FString::Printf(TEXT("only to end a combo of %d+ hits through two of his shapes; spends all his Qhi"), M.KillCombo)
+						: FString();
+					return FString::Printf(TEXT("INSTANT KILL   startup %d   %s"), M.Startup, *Gate);
 				}
 				if (!M.IsAttack() && !M.Throw.bHas)
 				{
@@ -997,7 +1016,9 @@ namespace SlopScreensFlowImpl
 				Rows.Add(FString::Printf(TEXT("Glide|%s|floats forward in place of running, draining Qhi"), *FCommand::Pretty(TEXT("F+RN"))));
 				Rows.Add(TEXT("Borrowed Face|") + FCommand::Pretty(D->NotationOf(TEXT("borrowed_face"))) + FString::Printf(TEXT("|becomes the opponent facing him, stronger by Qhi (%d%% damage, %d%% taken, %d%% speed) for half the Qhi; the shape has a run meter and burns Qhi while worn and with every blow it takes; the same input gives it back"),
 					FMath::RoundToInt(Q.CopyPower * 100), FMath::RoundToInt(Q.CopyGuard * 100), FMath::RoundToInt(Q.CopySpeed * 100)));
-				Rows.Add(FString::Printf(TEXT("Spent|—|an empty meter leaves him in a weak drunken boxing, slow and easily hurt, until %d Qhi has crept back"), FMath::RoundToInt(Q.RecoverAt)));
+				Rows.Add(TEXT("Shapes|") + FCommand::Pretty(TEXT("RN+LP")) + TEXT(" ...|from his form library: every fighter's shape (Run or Down + Run with a button; listed below), remembered, not enhanced"));
+				Rows.Add(FString::Printf(TEXT("Inside a combo|—|once a blow of his lands, a change of shape takes on frame %d, at most %d in one combo, for its own price"), Q.ShiftFrame, Q.MaxShifts));
+				Rows.Add(FString::Printf(TEXT("Spent|—|an empty meter leaves him boxing: a weak, careful guard with slips and parries, slow and easily hurt, until %d Qhi has crept back"), FMath::RoundToInt(Q.RecoverAt)));
 				Rows.Add(FString::Printf(TEXT("Defence|—|blows hurt him %d%% more, magic %d%% less; a caught blow gives back %d Qhi, once every %d seconds"),
 					FMath::RoundToInt((D->PhysDef - 1.0) * 100), FMath::RoundToInt((1.0 - D->MagicDef) * 100), FMath::RoundToInt(Q.DefendGain), Q.DefendGainEvery / 60));
 			}
@@ -1012,7 +1033,7 @@ namespace SlopScreensFlowImpl
 			}
 			if (bQhi && D->SpentForm)
 			{
-				Section(LOCTEXT("WhenSpent", "WHEN SPENT (drunken boxing)"));
+				Section(LOCTEXT("WhenSpent", "WHEN SPENT (boxing)"));
 				for (const FCommand& C : D->SpentForm->Commands)
 				{
 					const FMoveDef* M = D->SpentForm->Move(C.Move);
@@ -1190,11 +1211,12 @@ namespace SlopScreensFlowImpl
 			}
 			Sel = FMath::Clamp(GI->ExtrasChoice, 0, 5);
 		}
-		bool StrangerMet() const { return GI->Progress.Stranger() > 0; }
+		// The fourth item is the secret fighter's: a clue until he is unlocked, then his move list.
+		bool SecretOpen() const { return GI->IsUnlocked(FGameFlow::SecretFighter()); }
 		TArray<FText> Labels() const
 		{
 			return {LOCTEXT("Endings", "Endings"), LOCTEXT("Records", "Records"), LOCTEXT("MoveLists", "Move Lists"),
-				StrangerMet() ? LOCTEXT("Stranger", "The Stranger in White") : LOCTEXT("Unknown", "???"), LOCTEXT("Credits", "Credits"), LOCTEXT("Back", "Back")};
+				SecretOpen() ? FText::FromString(Def(FGameFlow::SecretFighter())->Name) : LOCTEXT("Unknown", "???"), LOCTEXT("Credits", "Credits"), LOCTEXT("Back", "Back")};
 		}
 		FText Records() const
 		{
@@ -1230,10 +1252,6 @@ namespace SlopScreensFlowImpl
 			S += FString::Printf(TEXT("\nTrials cleared: %d of %d"), TrialsDone, TrialsAll);
 			S += FString::Printf(TEXT("\nAlternate colours unlocked: %s"), Colours.Num() > 0 ? *FString::Join(Colours, TEXT(", ")) : TEXT("none yet (clear arcade with a fighter)"));
 			S += FString::Printf(TEXT("\nThe Roost as a versus stage: %s"), GI->Progress.IsUnlocked(TEXT("arena:roost")) ? TEXT("unlocked") : TEXT("clear arcade once"));
-			if (!GI->IsUnlocked(FGameFlow::SecretFighter()))
-			{
-				S += TEXT("\n???: ") + Json::Str(Json::Obj(GetContent().Story, TEXT("secret")), TEXT("hint"));
-			}
 			return FText::FromString(S);
 		}
 		virtual TSharedRef<SWidget> Build() override
@@ -1272,7 +1290,8 @@ namespace SlopScreensFlowImpl
 						}
 						case 1: return Records();
 						case 2: return LOCTEXT("MovesD", "Every fighter's moves, combos and frame data.");
-						case 3: return StrangerMet() ? LOCTEXT("StrangerD", "Seek out the stranger again, on the stilt market's far walkway.") : LOCTEXT("UnknownD", "Something waits for those who fight without a scratch.");
+						case 3: return SecretOpen() ? LOCTEXT("SecretD", "Unlocked: choose him on any select screen. Confirm for his moves, his Qhi and his shapes.")
+							: FText::FromString(Json::Str(Json::Obj(GetContent().Story, TEXT("secret")), TEXT("hint")));
 						case 4: return LOCTEXT("CreditsD", "Who made this, and with what.");
 						default: return FText::GetEmpty();
 						}
@@ -1282,17 +1301,16 @@ namespace SlopScreensFlowImpl
 		}
 		void Choose()
 		{
-			Sound(Sel == 3 && !StrangerMet() ? TEXT("ui_locked") : TEXT("ui_select"));
+			Sound(Sel == 3 && !SecretOpen() ? TEXT("ui_locked") : TEXT("ui_select"));
 			GI->ExtrasChoice = Sel == 5 ? 0 : Sel;
 			switch (Sel)
 			{
 			case 0: if (Seen.IsValidIndex(Page)) GI->Goto(SlopScreens::Ending(Seen[Page], false)); break;
 			case 2: GI->Goto(SlopScreens::MoveList(FContent::Roster()[0], false)); break;
 			case 3:
-				if (StrangerMet())
+				if (SecretOpen())
 				{
-					GI->Flow.StartStranger(false);
-					GI->StartMatch();
+					GI->Goto(SlopScreens::MoveList(FGameFlow::SecretFighter(), false));
 				}
 				break;
 			case 4: GI->Goto(SlopScreens::Credits(true)); break;
@@ -1304,7 +1322,7 @@ namespace SlopScreensFlowImpl
 		{
 			switch (E.Action)
 			{
-			// "???" can be chosen before the stranger is met: it gives a clue, as in the original.
+			// "???" can be chosen before the secret fighter is unlocked: it gives a clue.
 			case EUi::Up: Sel = Step(Sel, 6, -1, [](int32) { return true; }); Sound(TEXT("ui_move")); break;
 			case EUi::Down: Sel = Step(Sel, 6, 1, [](int32) { return true; }); Sound(TEXT("ui_move")); break;
 			case EUi::Left: if (Sel == 0 && Seen.Num()) Page = (Page + Seen.Num() - 1) % Seen.Num(); break;
@@ -1417,7 +1435,7 @@ namespace SlopScreensFlowImpl
 		{
 			const FText Body = LOCTEXT("CreditsBody",
 				"A game by Markus Gillyard\n\n"
-				"Design, characters and story: Markus Gillyard. The stranger in white comes from Markus Gillyard's Wyseforge mythology.\n"
+				"Design, characters and story: Markus Gillyard.\n"
 				"Programming, animation, stages and synthesised sound: made for this game.\n\n"
 				"Bodies: MakeHuman (makehumancommunity.org) base mesh, skins, eyes and hair, CC0, made with MPFB for Blender.\n"
 				"Surfaces: ambientCG (ambientcg.com) and Poly Haven (polyhaven.com), CC0.\n"

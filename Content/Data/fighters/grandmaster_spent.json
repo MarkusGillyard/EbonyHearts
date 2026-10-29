@@ -1,236 +1,358 @@
 {
 	"id": "grandmaster_spent",
-	"name": "The Grandmaster",
-	"title": "Spent",
+	"name": "Grandmaster",
+	"title": "Out of Qhi",
 	"pronoun": "him",
-	"style": "Drunken boxing, out of Qhi",
-	"blurb": "With his Qhi gone the old master's body is all he has left: a reeling, wobbling drunken boxing that survives on perception and very little else.",
+	"style": "Boxing, out of Qhi",
+	"blurb": "With his Qhi gone the old master boxes: a clean, careful guard and sound combinations on legs that no longer carry him far.",
 	"body": "grandmaster",
 	"resource": "none",
 	"copyable": false,
 	"stats": {
 		"height": 1.7,
 		"health": 1000,
-		"walk_f": 1.6,
-		"walk_b": 1.45,
+		"walk_f": 1.7,
+		"walk_b": 1.55,
 		"run_speed": 1.6,
-		"jump_vy": 7.0,
-		"jump_vx": 1.9,
+		"jump_vy": 7.2,
+		"jump_vx": 2.0,
 		"phys_def": 1.5,
 		"magic_def": 0.9,
-		"power": 0.6,
+		"power": 0.65,
 		"arcana": 0.6
 	},
 	"motion": {
-		"bounce": 0.7,
-		"rock": 3.2,
-		"pace": 0.55,
-		"walk_bob": 1.4,
-		"step_lift": 0.55,
-		"walk_twist": 1.6,
+		"bounce": 0.3,
+		"rock": 0.7,
+		"pace": 0.75,
+		"walk_bob": 0.45,
+		"step_lift": 0.7,
+		"walk_twist": 0.8,
 		"walk_cycle": false,
 		"run_cycle": false
 	},
 	"no_basics": [
 		"roundhouse",
-		"uppercut",
-		"hp2"
+		"sweep",
+		"crouch_lk",
+		"crouch_hk",
+		"jump_kick",
+		"jump_kick_n",
+		"hk",
+		"lk"
 	],
 	"basic_tweaks": {
 		"hp": {
-			"name": "Cup Fist",
-			"chain": [],
-			"anim": {
-				"tip": "hand_l",
-				"keys": [
-					[
-						3,
-						"drunk_cup_load",
-						"out"
+			"name": "Jab"
+		},
+		"hp2": {
+			"name": "Cross",
+			"chain": [
+				{
+					"input": "HK",
+					"move": "box_hook",
+					"window": [
+						5,
+						15
 					],
-					[
-						6,
-						"drunk_cup_hit",
-						"snap"
-					],
-					[
-						9,
-						"drunk_cup_hit",
-						"linear"
-					],
-					[
-						20,
-						"stance",
-						"inout"
-					]
-				]
-			}
+					"cost": 6
+				}
+			]
 		},
 		"lp": {
-			"name": "Spilling Jab",
-			"chain": []
+			"name": "Body Jab"
+		},
+		"lp2": {
+			"name": "Body Cross"
 		}
 	},
 	"moves": {
-		"drunk_lurch": {
-			"name": "Lurching Elbow",
-			"kind": "special",
-			"startup": 14,
-			"active": 4,
-			"recovery": 26,
-			"level": "mid",
-			"damage": 70,
-			"hitstun": 22,
-			"blockstun": 12,
-			"push_hit": 0.5,
-			"push_block": 0.55,
-			"motion": [
-				[
-					3,
-					0.05
-				],
-				[
-					14,
-					1.0
-				],
-				[
-					18,
-					1.15
-				]
-			],
+		"box_hook": {
+			"name": "Right Hook",
+			"startup": 7,
+			"active": 3,
+			"recovery": 14,
+			"level": "high",
+			"damage": 55,
+			"hitstun": 20,
+			"blockstun": 11,
+			"push_hit": 0.3,
+			"push_block": 0.38,
 			"hitboxes": [
 				{
 					"rect": [
-						0.22,
-						1.05,
-						0.44,
-						0.42
+						0.24,
+						1.3,
+						0.48,
+						0.3
 					]
 				}
 			],
 			"hurtboxes": [
 				{
 					"frames": [
-						10,
-						30
+						5,
+						11
 					],
 					"rect": [
-						0.1,
-						0.9,
-						0.5,
-						0.6
+						0.18,
+						1.3,
+						0.36,
+						0.2
 					]
 				}
 			],
-			"tags": [
-				"rush"
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						4,
+						"mc_box_hook_04",
+						"linear"
+					],
+					[
+						5,
+						"mc_box_hook_05",
+						"linear"
+					],
+					[
+						6,
+						"mc_box_hook_06",
+						"linear"
+					],
+					[
+						7,
+						"mc_box_hook_07",
+						"linear"
+					],
+					[
+						8,
+						"mc_box_hook_08",
+						"linear"
+					],
+					[
+						9,
+						"mc_box_hook_09",
+						"linear"
+					],
+					[
+						10,
+						"mc_box_hook_10",
+						"linear"
+					],
+					[
+						11,
+						"mc_box_hook_11",
+						"linear"
+					],
+					[
+						12,
+						"mc_box_hook_12",
+						"linear"
+					],
+					[
+						13,
+						"mc_box_hook_13",
+						"linear"
+					],
+					[
+						14,
+						"mc_box_hook_14",
+						"linear"
+					],
+					[
+						15,
+						"mc_box_hook_15",
+						"linear"
+					],
+					[
+						16,
+						"mc_box_hook_16",
+						"linear"
+					],
+					[
+						17,
+						"mc_box_hook_17",
+						"linear"
+					],
+					[
+						18,
+						"mc_box_hook_18",
+						"linear"
+					],
+					[
+						19,
+						"mc_box_hook_19",
+						"linear"
+					],
+					[
+						20,
+						"mc_box_hook_20",
+						"linear"
+					],
+					[
+						24,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "light"
+			}
+		},
+		"box_body_hook": {
+			"name": "Left Hook to the Body",
+			"startup": 7,
+			"active": 3,
+			"recovery": 15,
+			"level": "mid",
+			"damage": 50,
+			"hitstun": 20,
+			"blockstun": 11,
+			"push_hit": 0.3,
+			"push_block": 0.38,
+			"hitboxes": [
+				{
+					"rect": [
+						0.24,
+						0.95,
+						0.46,
+						0.3
+					]
+				}
+			],
+			"hurtboxes": [
+				{
+					"frames": [
+						5,
+						11
+					],
+					"rect": [
+						0.18,
+						0.95,
+						0.36,
+						0.22
+					]
+				}
 			],
 			"anim": {
 				"tip": "hand_l",
 				"keys": [
 					[
 						4,
-						"drunk_lurch_load",
-						"out"
-					],
-					[
-						14,
-						"drunk_lurch",
-						"snap"
-					],
-					[
-						18,
-						"drunk_lurch",
+						"mc_box_body_hook_04",
 						"linear"
 					],
 					[
-						32,
-						"drunk_stagger",
-						"inout"
+						5,
+						"mc_box_body_hook_05",
+						"linear"
 					],
 					[
-						44,
-						"stance",
-						"inout"
-					]
-				]
-			},
-			"sfx": {
-				"swing": "medium"
-			}
-		},
-		"drunk_roll": {
-			"name": "Tumble",
-			"kind": "special",
-			"startup": 1,
-			"active": 0,
-			"recovery": 0,
-			"total": 30,
-			"level": "none",
-			"motion": [
-				[
-					3,
-					0.0
-				],
-				[
-					18,
-					-1.4
-				],
-				[
-					22,
-					-1.5
-				]
-			],
-			"props": {
-				"low_profile": [
-					4,
-					20
-				]
-			},
-			"tags": [
-				"escape"
-			],
-			"anim": {
-				"keys": [
+						6,
+						"mc_box_body_hook_06",
+						"linear"
+					],
 					[
-						4,
-						"drunk_fall",
-						"out"
+						7,
+						"mc_box_body_hook_07",
+						"linear"
+					],
+					[
+						8,
+						"mc_box_body_hook_08",
+						"linear"
+					],
+					[
+						9,
+						"mc_box_body_hook_09",
+						"linear"
+					],
+					[
+						10,
+						"mc_box_body_hook_10",
+						"linear"
+					],
+					[
+						11,
+						"mc_box_body_hook_11",
+						"linear"
 					],
 					[
 						12,
-						"drunk_roll",
-						"inout"
-					],
-					[
-						20,
-						"drunk_roll",
+						"mc_box_body_hook_12",
 						"linear"
 					],
 					[
-						30,
+						13,
+						"mc_box_body_hook_13",
+						"linear"
+					],
+					[
+						14,
+						"mc_box_body_hook_14",
+						"linear"
+					],
+					[
+						15,
+						"mc_box_body_hook_15",
+						"linear"
+					],
+					[
+						16,
+						"mc_box_body_hook_16",
+						"linear"
+					],
+					[
+						17,
+						"mc_box_body_hook_17",
+						"linear"
+					],
+					[
+						18,
+						"mc_box_body_hook_18",
+						"linear"
+					],
+					[
+						19,
+						"mc_box_body_hook_19",
+						"linear"
+					],
+					[
+						20,
+						"mc_box_body_hook_20",
+						"linear"
+					],
+					[
+						21,
+						"mc_box_body_hook_21",
+						"linear"
+					],
+					[
+						25,
 						"stance",
 						"inout"
 					]
 				]
 			},
 			"sfx": {
-				"swing": "whoosh_light"
+				"swing": "light"
 			}
 		},
-		"drunk_weave": {
-			"name": "Reel",
+		"box_slip": {
+			"name": "Slip",
 			"kind": "special",
 			"startup": 3,
 			"active": 0,
 			"recovery": 0,
-			"total": 24,
+			"total": 22,
 			"level": "none",
 			"effects": {
 				"parry": {
 					"frames": [
 						3,
-						7
+						8
 					],
 					"levels": [
 						"high"
@@ -246,16 +368,86 @@
 				"keys": [
 					[
 						3,
-						"drunk_reel",
-						"out"
-					],
-					[
-						9,
-						"drunk_reel",
+						"mc_weave_03",
 						"linear"
 					],
 					[
-						24,
+						4,
+						"mc_weave_04",
+						"linear"
+					],
+					[
+						5,
+						"mc_weave_05",
+						"linear"
+					],
+					[
+						6,
+						"mc_weave_06",
+						"linear"
+					],
+					[
+						7,
+						"mc_weave_07",
+						"linear"
+					],
+					[
+						8,
+						"mc_weave_08",
+						"linear"
+					],
+					[
+						9,
+						"mc_weave_09",
+						"linear"
+					],
+					[
+						10,
+						"mc_weave_10",
+						"linear"
+					],
+					[
+						11,
+						"mc_weave_11",
+						"linear"
+					],
+					[
+						12,
+						"mc_weave_12",
+						"linear"
+					],
+					[
+						13,
+						"mc_weave_13",
+						"linear"
+					],
+					[
+						14,
+						"mc_weave_14",
+						"linear"
+					],
+					[
+						15,
+						"mc_weave_15",
+						"linear"
+					],
+					[
+						16,
+						"mc_weave_16",
+						"linear"
+					],
+					[
+						17,
+						"mc_weave_17",
+						"linear"
+					],
+					[
+						18,
+						"mc_weave_18",
+						"linear"
+					],
+					[
+						22,
 						"stance",
 						"inout"
 					]
@@ -265,26 +457,26 @@
 				"swing": "whoosh_light"
 			}
 		},
-		"drunk_yield": {
-			"name": "Spilled Cup",
+		"box_parry": {
+			"name": "Parry",
 			"kind": "special",
 			"startup": 4,
 			"active": 0,
 			"recovery": 0,
-			"total": 32,
+			"total": 28,
 			"level": "none",
 			"effects": {
 				"parry": {
 					"frames": [
 						4,
-						7
+						8
 					],
 					"levels": [
 						"high",
 						"mid"
 					],
 					"stun": 20,
-					"counter": "drunk_slap"
+					"counter": "box_counter"
 				}
 			},
 			"tags": [
@@ -294,16 +486,16 @@
 				"keys": [
 					[
 						4,
-						"drunk_catch",
+						"box_parry",
 						"snap"
 					],
 					[
 						9,
-						"drunk_catch",
+						"box_parry",
 						"linear"
 					],
 					[
-						32,
+						28,
 						"stance",
 						"inout"
 					]
@@ -313,20 +505,20 @@
 				"swing": "whoosh_light"
 			}
 		},
-		"drunk_slap": {
-			"name": "Spilled Cup: slap",
+		"box_counter": {
+			"name": "Parry: counter cross",
 			"kind": "special",
-			"startup": 5,
+			"startup": 4,
 			"active": 3,
-			"recovery": 18,
+			"recovery": 16,
 			"level": "mid",
-			"damage": 45,
+			"damage": 55,
 			"hitstun": 22,
 			"blockstun": 12,
 			"hitboxes": [
 				{
 					"rect": [
-						0.2,
+						0.24,
 						1.1,
 						0.5,
 						0.4
@@ -338,28 +530,28 @@
 				"keys": [
 					[
 						2,
-						"drunk_cup_load",
+						"hp2_load",
 						"out"
 					],
 					[
-						5,
-						"drunk_cup_hit",
+						4,
+						"hp2_hit",
 						"snap"
 					],
 					[
-						8,
-						"drunk_cup_hit",
+						7,
+						"hp2_hit",
 						"linear"
 					],
 					[
-						25,
+						23,
 						"stance",
 						"inout"
 					]
 				]
 			},
 			"sfx": {
-				"swing": "light"
+				"swing": "medium"
 			}
 		},
 		"qhi_spent": {
@@ -374,12 +566,12 @@
 				"keys": [
 					[
 						6,
-						"drunk_sag",
+						"box_settle",
 						"out"
 					],
 					[
-						16,
-						"drunk_sag",
+						14,
+						"box_settle",
 						"linear"
 					],
 					[
@@ -393,43 +585,52 @@
 	},
 	"commands": [
 		[
-			"F,F+HP",
-			"drunk_lurch"
+			"HK",
+			"box_hook"
 		],
 		[
-			"B,B+LK",
-			"drunk_roll"
+			"LK",
+			"box_body_hook"
 		],
 		[
 			"B,D+LP",
-			"drunk_weave"
+			"box_slip"
 		],
 		[
 			"B,D+HP",
-			"drunk_yield"
+			"box_parry"
 		]
 	],
 	"ai": {
-		"range": 1.7,
-		"aggression": 0.2,
+		"range": 1.1,
+		"aggression": 0.35,
 		"zoning": 0.0,
 		"weights": {
-			"hp": 0.8,
-			"lp": 1.2,
-			"hk": 0.4,
-			"lk": 1.2,
-			"sweep": 0.5,
-			"crouch_lk": 1.0,
-			"drunk_lurch": 0.3
+			"hp": 1.3,
+			"lp": 1.3,
+			"box_hook": 1.0,
+			"box_body_hook": 1.0,
+			"uppercut": 0.4,
+			"crouch_lp": 0.6
 		},
-		"anti_air": [],
-		"parries": [
-			"drunk_yield",
-			"drunk_weave"
+		"anti_air": [
+			"uppercut"
 		],
-		"combos": [],
-		"retreat": [
-			"B,B+LK"
-		]
+		"parries": [
+			"box_parry",
+			"box_slip"
+		],
+		"combos": [
+			[
+				"HP",
+				"HP",
+				"HK"
+			],
+			[
+				"LP",
+				"LP"
+			]
+		],
+		"guard": 0.15
 	}
 }

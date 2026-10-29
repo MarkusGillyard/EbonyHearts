@@ -2,66 +2,24 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 
-#include "Tests/SlopSimHarness.h"
+#include "Tests/SlopGmHarness.h"
 #include "AI/SlopAI.h"
 #include "Core/SlopFlow.h"
 #include "Core/SlopSave.h"
 #include "Serialization/JsonSerializer.h"
 
-// The two fighters added after the six: Wren Sallow, the seventh of the starting roster, and the
+// The two fighters added after the six: Wren, the seventh of the starting roster, and the
 // Grandmaster, who is unlocked. His rules are checked here as the owner set them: a Qhi
 // meter in place of the run meter, a shapeshift into the opponent facing him for exactly half the
-// meter, a copy stronger than its original, a run meter only while he wears one, and a spent,
-// drunken body when the Qhi is gone.
+// meter, a copy stronger than its original, a run meter only while he wears one, and a spent body
+// that boxes when the Qhi is gone. His form library, changes of shape inside combos and instant
+// kills are checked in SlopFormTests.cpp.
 namespace SlopRosterTestSuite
 {
 using namespace Slop;
 using namespace Slop::Test;
 
 #define SLOP_TEST(Name, Path) IMPLEMENT_SIMPLE_AUTOMATION_TEST(Name, "Slop." Path, EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::ProductFilter)
-
-const FFighterDef* Fighter(const TCHAR* Id) { return GetContent().Fighter(FName(Id)); }
-
-// Damage the right-hand fighter has taken.
-int32 Taken(FSimHarness& H) { return H.F(1).MaxHealth() - H.F(1).Health; }
-
-// A match against `Opponent` with real rules (no infinite meters), the Grandmaster on the left.
-struct FGmMatch : FSimHarness
-{
-	explicit FGmMatch(const TCHAR* Opponent, const TCHAR* Self = TEXT("grandmaster")) : FSimHarness(Fighter(Self), Fighter(Opponent), false)
-	{
-		Sim.RoundLength = 0;
-		Place(3.0);
-	}
-	FFighter& Gm() { return F(0); }
-	// D,B,F + Block: Borrowed Face (and, in a borrowed shape, Own Face).
-	void Shapeshift() { Motion(0, {D, D | L, L, R}, BL); }
-	const FSimEvent* FormEvent(FName Kind, int32 Since = 0) const
-	{
-		for (int32 I = Since; I < Log.Num(); ++I)
-		{
-			if (Log[I].Type == EEvent::Form && Log[I].Kind == Kind)
-			{
-				return &Log[I];
-			}
-		}
-		return nullptr;
-	}
-	bool Borrow()
-	{
-		Shapeshift();
-		return Until([this]() { return Gm().Form == EForm::Borrowed; }, 60);
-	}
-	// The opponent's high punch from where it lands.
-	int32 JabDamageOnGm()
-	{
-		Place(0.7);
-		const int32 Was = Gm().Health;
-		Step(0, 0, 0, HP);
-		Idle(20);
-		return Was - Gm().Health;
-	}
-};
 
 SLOP_TEST(FSlopRosterSevenAndSecret, "Fighters.RosterOfSevenAndTheSecretGrandmaster")
 bool FSlopRosterSevenAndSecret::RunTest(const FString&)
@@ -74,7 +32,8 @@ bool FSlopRosterSevenAndSecret::RunTest(const FString&)
 	}
 	TestFalse("the Grandmaster is not a starting fighter", R.Contains(FName(TEXT("grandmaster"))));
 	TestTrue("the Grandmaster is the secret fighter", FContent::Secret().Contains(FName(TEXT("grandmaster"))) && Fighter(TEXT("grandmaster")));
-	TestTrue("the Slopbat and the stranger are still there", Fighter(TEXT("slopbat")) && Fighter(TEXT("daxion")) && Fighter(TEXT("slopbat"))->bBoss);
+	TestTrue("the Ebony Heart Fragment (the Slopbat) is still the boss", Fighter(TEXT("slopbat")) && Fighter(TEXT("slopbat"))->bBoss);
+	TestNull("Daxion is not in Ebony Hearts", Fighter(TEXT("daxion")));
 	TestEqual("no data errors", GetContent().Errors.Num(), 0);
 	return true;
 }
@@ -226,7 +185,7 @@ bool FSlopGmShapeBreaks::RunTest(const FString&)
 	H.Idle(30);
 	TestNotNull("the shape breaks", H.FormEvent(TEXT("broken")));
 	TestEqual("into the spent body", H.Gm().Form, EForm::Spent);
-	TestEqual("drunken boxing", H.Gm().Def->Id, FName(TEXT("grandmaster_spent")));
+	TestEqual("the body that boxes", H.Gm().Def->Id, FName(TEXT("grandmaster_spent")));
 	// The spent body recovers slowly: it stays spent for many seconds.
 	int32 Ticks = 0;
 	while (H.Gm().Form == EForm::Spent && Ticks < 2000)
@@ -241,7 +200,7 @@ bool FSlopGmShapeBreaks::RunTest(const FString&)
 	return true;
 }
 
-SLOP_TEST(FSlopGmSpentWeak, "Fighters.Grandmaster.SpentBodyIsWeakDrunkenBoxing")
+SLOP_TEST(FSlopGmSpentWeak, "Fighters.Grandmaster.SpentBodyIsWeakTraditionalBoxing")
 bool FSlopGmSpentWeak::RunTest(const FString&)
 {
 	const FFighterDef* Own = Fighter(TEXT("grandmaster"));
@@ -252,7 +211,24 @@ bool FSlopGmSpentWeak::RunTest(const FString&)
 	TestTrue("weaker blows", Spent->Power < Own->Power);
 	TestTrue("slower feet", Spent->WalkF < Own->WalkF && Spent->JumpVy < Own->JumpVy);
 	TestEqual("no meter of any kind", Spent->Resource, EResource::None);
-	TestTrue("drunken boxing, not grappling", Spent->Style.Contains(TEXT("Drunken")) && !Spent->Style.Contains(TEXT("Jiu")));
+	TestTrue("traditional boxing: no drunken boxing, no grappling", Spent->Style.Contains(TEXT("Boxing")) && !Spent->Style.Contains(TEXT("Drunk")) && !Spent->Style.Contains(TEXT("Jiu")));
+	// A boxer's tools only: punches on all four buttons, a guard, a slip and a parry; no kicks.
+	for (const TCHAR* Kick : {TEXT("hk"), TEXT("lk"), TEXT("roundhouse"), TEXT("sweep"), TEXT("crouch_lk"), TEXT("crouch_hk"), TEXT("jump_kick"), TEXT("jump_kick_n")})
+	{
+		TestNull(FString::Printf(TEXT("no %s"), Kick), Spent->Move(FName(Kick)));
+	}
+	for (const TCHAR* Btn : {TEXT("HP"), TEXT("LP"), TEXT("HK"), TEXT("LK")})
+	{
+		const FCommand* C = Spent->Commands.FindByPredicate([Btn](const FCommand& X) { return X.Text == Btn; });
+		const FMoveDef* M = C ? Spent->Move(C->Move) : nullptr;
+		TestTrue(FString::Printf(TEXT("%s throws a punch"), Btn), M && M->IsAttack() && (M->Tip == TEXT("hand_l") || M->Tip == TEXT("hand_r")));
+	}
+	TestTrue("a slip and a parry", Spent->NotationOf(TEXT("box_slip")) == TEXT("B,D+LP") && Spent->NotationOf(TEXT("box_parry")) == TEXT("B,D+HP"));
+	// The combination: jab, cross, hook.
+	const FMoveDef* Jab = Spent->Move(TEXT("hp"));
+	const FMoveDef* Cross = Spent->Move(TEXT("hp2"));
+	TestTrue("jab into cross", Jab && Jab->Chain.ContainsByPredicate([](const FChainLink& L) { return L.Move == TEXT("hp2"); }));
+	TestTrue("cross into the hook", Cross && Cross->Chain.ContainsByPredicate([](const FChainLink& L) { return L.Move == TEXT("box_hook"); }));
 	for (const FCommand& C : Spent->Commands)
 	{
 		const FMoveDef* M = Spent->Move(C.Move);
@@ -317,24 +293,9 @@ bool FSlopGmDefences::RunTest(const FString&)
 	return true;
 }
 
-SLOP_TEST(FSlopGmRefusals, "Fighters.Grandmaster.BossesAndMirrorsCannotBeBorrowed")
+SLOP_TEST(FSlopGmRefusals, "Fighters.Grandmaster.MirrorsCannotBeBorrowed")
 bool FSlopGmRefusals::RunTest(const FString&)
 {
-	{
-		FGmMatch H(TEXT("slopbat"));
-		H.Shapeshift();
-		H.Idle(50);
-		const FSimEvent* E = H.FormEvent(TEXT("refused"));
-		TestTrue("the Slopbat's shape: refused, and said why", E && E->How == FName(TEXT("boss")));
-		TestEqual("nothing paid", H.Gm().Qhi, 100.0);
-		TestEqual("still his own shape", H.Gm().Form, EForm::Own);
-	}
-	{
-		FGmMatch H(TEXT("daxion"));
-		H.Shapeshift();
-		H.Idle(50);
-		TestEqual("the stranger: no shape to borrow", H.Gm().Form, EForm::Own);
-	}
 	{
 		FGmMatch H(TEXT("grandmaster"));
 		H.Shapeshift();
@@ -639,17 +600,27 @@ bool FSlopGmCpuFair::RunTest(const FString&)
 // Win rates of the two new fighters against everyone, by CPU difficulty (both sides at the same
 // level, each side of the screen, several seeds), logged for tuning. CPU-against-CPU results swing
 // a good deal with the seeds, so the bounds are wide: Wren an all-rounder, neither a pushover nor
-// dominant; the Grandmaster weak in a novice CPU's hands (the meter misused) and holding his own
-// at Master, where his secret fight is.
+// dominant; the Grandmaster even-handed at the lower levels, holding his own at Master, and above
+// that, at the secret challenge's tier, beating Master CPUs more often than not.
 SLOP_TEST(FSlopNewMatchups, "AI.NewFightersMatchups")
 bool FSlopNewMatchups::RunTest(const FString&)
 {
+	// More seeds for tuning: -SlopSeeds=<n> (8 by default); -SlopOnly=<fighter> runs one fighter.
+	int32 Seeds = 8;
+	FParse::Value(FCommandLine::Get(), TEXT("SlopSeeds="), Seeds);
+	FString Only;
+	FParse::Value(FCommandLine::Get(), TEXT("SlopOnly="), Only);
 	for (const TCHAR* Who : {TEXT("wren"), TEXT("grandmaster")})
 	{
+		if (!Only.IsEmpty() && Only != Who)
+		{
+			continue;
+		}
 		for (int32 Level = 0; Level < (FName(Who) == FName(TEXT("grandmaster")) ? 4 : 3); ++Level)
 		{
 			int32 Won = 0, Played = 0;
 			FString Line;
+			FCpuBrain::FQhiTelemetry Tele;
 			for (const FName& Opp : FContent::Roster())
 			{
 				if (Opp == FName(Who))
@@ -657,7 +628,7 @@ bool FSlopNewMatchups::RunTest(const FString&)
 					continue;
 				}
 				int32 W = 0, N = 0;
-				for (int32 Seed = 0; Seed < 8; ++Seed)
+				for (int32 Seed = 0; Seed < Seeds; ++Seed)
 				{
 					const int32 Side = Seed % 2;
 					FFightSim Sim;
@@ -672,6 +643,7 @@ bool FSlopNewMatchups::RunTest(const FString&)
 						FPadState Pads[2] = {C0.Think(), C1.Think()};
 						Sim.Step(Pads);
 					}
+					Tele.Add((Side == 0 ? C0 : C1).Telemetry());
 					if (Sim.MatchWinner >= 0)
 					{
 						++N;
@@ -684,13 +656,22 @@ bool FSlopNewMatchups::RunTest(const FString&)
 			}
 			const double Rate = Played > 0 ? double(Won) / Played : 0.0;
 			UE_LOG(LogTemp, Display, TEXT("Matchups %s level %d: %.0f%%  (%s)"), Who, Level, Rate * 100.0, *Line);
+			if (FName(Who) == FName(TEXT("grandmaster")))
+			{
+				// The dev-only telemetry of his CPU across those matches.
+				UE_LOG(LogTemp, Display, TEXT("Telemetry grandmaster level %d: %s"), Level, *Tele.Summary());
+			}
 			if (FName(Who) == FName(TEXT("wren")))
 			{
 				TestTrue(FString::Printf(TEXT("Wren at level %d wins a fair share (%.0f%%)"), Level, Rate * 100), Rate >= 0.15 && Rate <= 0.8);
 			}
 			else if (Level == 2)
 			{
-				TestTrue(FString::Printf(TEXT("the Master CPU Grandmaster holds his own (%.0f%%)"), Rate * 100), Rate >= 0.3);
+				TestTrue(FString::Printf(TEXT("the Master CPU Grandmaster holds his own (%.0f%%)"), Rate * 100), Rate >= 0.3 && Rate <= 0.8);
+			}
+			else if (Level < 2)
+			{
+				TestTrue(FString::Printf(TEXT("the Grandmaster at level %d neither a pushover nor dominant (%.0f%%)"), Level, Rate * 100), Rate >= 0.1 && Rate <= 0.75);
 			}
 			else if (Level == 3)
 			{

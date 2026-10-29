@@ -7,7 +7,7 @@ class USlopGameInstance;
 class ASlopMatch;
 
 // The fight's heads-up display: health with names, run meters beneath, round wins, the timer,
-// announcements, the combo counter and counter-hit callout, the stranger's lines, and the
+// announcements, the combo counter and counter-hit callout, the Grandmaster's changes of shape, and the
 // training readouts (dummy mode, input history, frame data, states).
 class SSlopHud : public SCompoundWidget
 {

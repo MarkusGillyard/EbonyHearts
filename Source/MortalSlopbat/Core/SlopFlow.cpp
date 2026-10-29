@@ -14,7 +14,6 @@ namespace Slop
 		case EMode::Cpu: return TEXT("cpu");
 		case EMode::Training: return TEXT("training");
 		case EMode::Tutorial: return TEXT("tutorial");
-		case EMode::Stranger: return TEXT("stranger");
 		case EMode::Watch: return TEXT("watch");
 		case EMode::Survival: return TEXT("survival");
 		case EMode::Trials: return TEXT("trials");
@@ -106,9 +105,8 @@ namespace Slop
 		Arcade.Rungs = Rungs;
 		Arcade.StartedAt = Now;
 		Survival = FSurvival();
-		bStrangerPending = false;
-		// The player's colours outlive the fresh configuration (here and below: a stranger met in
-		// Arcade, Survival's Try Again had dropped them).
+		// The player's colours outlive the fresh configuration (here and below: Survival's Try Again
+		// had dropped them).
 		const bool bCostume = Config.bCostume[0];
 		Config = FMatchConfig();
 		Config.bCostume[0] = bCostume;
@@ -170,11 +168,8 @@ namespace Slop
 		{
 			Arcade.Rung = Arcade.Rungs.Num() - 1;
 			Arcade.Seconds = Now - Arcade.StartedAt;
-			bStrangerPending = false;
 			return false;
 		}
-		const FRung* R = CurrentRung();
-		bStrangerPending = bFlawless && R && R->Kind != TEXT("boss") && GetContent().Fighter(TEXT("daxion")) != nullptr;
 		ConfigureRung();
 		return true;
 	}
@@ -189,7 +184,6 @@ namespace Slop
 	{
 		Arcade.Rungs.Add({SecretFighter(), TEXT("drowned_chapel"), TEXT("secret")});
 		Arcade.Rung = Arcade.Rungs.Num() - 1;
-		bStrangerPending = false;
 		ConfigureRung();
 	}
 
@@ -207,13 +201,23 @@ namespace Slop
 		ConfigureRung();
 	}
 
+	FName FGameFlow::TrialPartner(FName Fighter)
+	{
+		FName Partner = StoryOf(Fighter, TEXT("rival"));
+		if (!GetContent().Fighter(Partner))
+		{
+			Partner = FName(*Json::Str(Json::Obj(GetContent().Trials, TEXT("partners")), *Fighter.ToString()));
+		}
+		if (!GetContent().Fighter(Partner) || Partner == Fighter)
+		{
+			Partner = Fighter != TEXT("gorm") ? FName(TEXT("gorm")) : FName(TEXT("bram"));
+		}
+		return Partner;
+	}
+
 	void FGameFlow::StartTrials(FName Fighter)
 	{
-		FName Rival = StoryOf(Fighter, TEXT("rival"));
-		if (!GetContent().Fighter(Rival))
-		{
-			Rival = Fighter != TEXT("gorm") ? FName(TEXT("gorm")) : FName(TEXT("bram"));
-		}
+		const FName Rival = TrialPartner(Fighter);
 		Arcade = FArcade();
 		Survival = FSurvival();
 		Config = FMatchConfig();
@@ -231,7 +235,6 @@ namespace Slop
 		Survival.Fighter = Fighter;
 		Survival.Seed = Seed;
 		Arcade = FArcade();
-		bStrangerPending = false;
 		const bool bCostume = Config.bCostume[0];
 		Config = FMatchConfig();
 		Config.bCostume[0] = bCostume;
@@ -284,20 +287,6 @@ namespace Slop
 		Survival.Last = Config.P2;
 		++Survival.Wave;
 		ConfigureWave();
-	}
-
-	void FGameFlow::StartStranger(bool bFromArcade)
-	{
-		const FName P1 = Config.P1;
-		const bool bCostume = Config.bCostume[0];
-		Config = FMatchConfig();
-		Config.bCostume[0] = bCostume;
-		Config.Mode = EMode::Stranger;
-		Config.P1 = P1.IsNone() ? FName(TEXT("ashka")) : P1;
-		Config.P2 = TEXT("daxion");
-		Config.Stage = TEXT("stilt_market");
-		Config.RoundsToWin = 1;
-		Config.bFromArcade = bFromArcade;
 	}
 }
 

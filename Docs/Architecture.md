@@ -9,7 +9,7 @@ types beyond containers and maths, so they run headless in tests exactly as they
 | Folder | What it holds |
 |---|---|
 | `Combat/` | The simulation, ported from the original's `FightSim`: fighters, moves, hit and hurt boxes, blocking, throws, juggles, counter hits, projectiles, rounds, finishers. Fixed 60 Hz ticks, integer frame counts. `SlopData` loads and validates `Content/Data` (the original's JSON; since the port it has gained presentation fields only: each fighter's `motion` and each weapon move's `sfx.hit`); malformed data stops the game at a data-error screen rather than playing wrong. `SlopInput` is the command parser and its six-tick buffer. |
-| `AI/` | The CPU brain (every read of the opponent passes through its reaction delay, so it never answers a move it could not yet have seen), the Slopbat's patterns, the training dummy, the stranger's rules. |
+| `AI/` | The CPU brain (every read of the opponent passes through its reaction delay, so it never answers a move it could not yet have seen), the Grandmaster's Qhi play and its development telemetry, the Fragment's patterns, the training dummy. |
 | `Anim/` | The original's pose library, IK rig and animator, ported and checked joint by joint against a dump from the Godot build (`Tools/reference`). On top of the port: follow-through (each part chases the pose on its own spring; the arm carrying a blow is exempt), strikes that arrive at speed and drive through, hit-stop that lingers instead of freezing, reactions shaped by the blow's direction, a stance and walk with each style's rhythm, hands carried with the chest, and a turn-round on cross-over. Style refinements to the original's poses are kept apart, in `poses/<id>_style.json` and `poses_common_style.json`, laid over them at load, and so are the poses converted from motion capture (`poses_mocap.json`) and the basics' animation that uses them (`basics_style.json`, written by the converter), with hand-made changes to the basics in `basics_tweaks.json` laid on last; the port test builds without them. `SlopMeshRig` maps the solved rig onto the 53-bone skeleton the fighters are skinned to. |
 | `Core/` | Game instance (screens, matches, settings, saves), the input router (keyboard halves and pads, menus and fights, rebinding, device assignment, unplug), audio, the arcade and survival flow, save files, the frame-time recorder. |
 | `View/` | What is drawn: the match actor (clock, events, presentation), fighters, the fight camera, stages, effects, finisher choreography, tutorial and trials guides, the menu showroom. |
@@ -19,13 +19,46 @@ types beyond containers and maths, so they run headless in tests exactly as they
 **Shapes.** A fighter fights with a definition (`FFighter::Def`) and is someone
 (`FFighter::BaseDef`). For everyone but the Grandmaster the two are the same. His own body, his
 spent body (`grandmaster_spent`, a definition of its own wearing his body) and a borrowed shape
-(`MakeBorrowedShape`: the opponent's definition with Qhi laid in and his reversal added, made once
-per match and kept by `FFightSim::Shapes`) are all plain `FFighterDef`s, so moves, commands,
-hurtboxes, throws and the CPU's notes all follow the shape with no special cases; health, Qhi
-and the fighter's identity stay with `BaseDef`. Shapes change only between moves (on a
-shapeshift's form frame, or when the body is free), and the view rebinds a fighter's body
-whenever its definition changes (`ASlopMatch::RebindView`). Damage passes through each side's
-power and defences, weighed by the blow's magical share (`Dealt` in `SlopFightSim.cpp`).
+(`MakeBorrowedShape(Target, Copier, bEnhanced)`: the target's definition, Qhi laid in when
+enhanced, with his changes of shape and his `any_shape` techniques added on his inputs; made once
+per match for each target and enhancement and kept by `FFightSim::Shapes`) are all plain
+`FFighterDef`s, so moves, commands, hurtboxes, throws and the CPU's notes all follow the shape with
+no special cases; health, Qhi and the fighter's identity stay with `BaseDef`.
+
+The **form library** is data: `grandmaster.json` "forms" expands at load into one `shape_<target>`
+move and command per entry (`FMoveDef::FormTarget`, `FormCost`, `bFormEnhanced`, `FormUpkeep`;
+targets linked into `FFighterDef::FormSources`). The opponent's copy is a shape move with no target
+(`borrowed_face`), its price fixed at `FQhiRules::ShapeshiftCost()`. `FFighter::ChangeShape` takes
+or gives back the shape on the move's form frame; a target's `shape_upkeep` scales the upkeep
+however it was taken. **Inside a combo** `MoveTick` lets a shape command start once a blow of his
+has landed (`bQuickShift`): it takes on `FQhiRules::ShiftFrame` and returns him to neutral with the
+opponent's stun running on; `FormShifts` counts against `MaxShifts` and `ComboShapes` records the
+shapes that landed blows, both reset when his combo ends. **Instant kills** are `effects.kill` on a
+move: `FFighter::KillAllowed` gates the start ("standing", "combo"), the hit or the hold's damage
+frame takes the victim's whole health, and the event's `bKill` drives the HUD's call and the
+close-up (`FFinisherDirector::KillStep`). A catching parry (`bParryCatch`) takes the attacker
+straight into its counter's hold, but only when the counter's Qhi can be paid and the attacker can
+be held.
+
+Shapes change only between moves (on a shapeshift's form frame, or when the body is free), and the
+view rebinds a fighter's body whenever its definition changes (`ASlopMatch::RebindView`). Damage
+passes through each side's power and defences, weighed by the blow's magical share (`Dealt` in
+`SlopFightSim.cpp`).
+
+**Move coverage.** `Combat/SlopCoverage` lists every move of every fighter (and the archived
+fighters' techniques named in `grandmaster.json` "carried") with how the Grandmaster reaches it,
+from the loaded data: the moves reachable from a fighter's commands, chains and counters, then
+whether each is reachable in his shape of that fighter (and not shadowed by one of his own inputs).
+The test `Fighters.Grandmaster.EveryMoveIsCovered` fails on any gap and writes the report.
+
+**The Grandmaster's CPU.** `FCpuBrain` reads his AI `qhi` block by difficulty: `Reserve` (the Qhi
+it keeps), `PickForm` (which shape: the copy, the Fragment's, or a remembered one scored for the
+matchup from each fighter's own AI notes), `ComboShift` (a change of shape pressed as a landed
+blow's hitstop ends; the new shape's longest string follows), `KillPlan` (Heart Stop when the
+simulation allows it, from neutral or a cancel; Find the Crack on a guard). A catch whose counter
+costs Qhi is only read with the Qhi in hand; every CPU answers an unblockable startup with a blow
+or a retreat instead of a guard. In development builds `Observe` fills `FQhiTelemetry` from the
+simulation's events each tick (compiled out of Shipping).
 
 **Timing.** `FFixedClock` turns rendered frames of any length into whole 60 Hz ticks (at most four
 a frame; a longer stall drops time rather than spiralling). Drawing interpolates between the last

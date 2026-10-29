@@ -7,7 +7,7 @@ namespace Slop
 {
 	// Turns intentions written relative to a fighter (forward, back, motions, buttons) into the
 	// screen-space pad states FFightSim::Step reads, one tick at a time. CPU brains, the training
-	// dummy, the tutorial and the stranger drive their fighters through the same input path as a
+	// dummy and the tutorial drive their fighters through the same input path as a
 	// player's keys.
 	class FPadIntent
 	{
@@ -90,6 +90,39 @@ namespace Slop
 		FFighter& Me() const { return Sim.Fighters[Index]; }
 		FFighter& Opp() const { return Sim.Fighters[1 - Index]; }
 
+		// How a Qhi fighter's CPU (the Grandmaster's) used its meter, counted in development builds
+		// only (left empty in Shipping): logged by the AI tests and, with -SlopAiLog, at a match's end.
+		struct FQhiTelemetry
+		{
+			int32 Ticks = 0;
+			double Spent = 0.0;
+			double Gained = 0.0;
+			// Shapes taken, by source ("own": Own Face during the fight), and how many of the changes
+			// were taken inside a combo.
+			TMap<FName, int32> Forms;
+			int32 ComboShifts = 0;
+			int32 Spents = 0;
+			int32 Breaks = 0;
+			// Instant kills, by move: ticks it could have begun (for a counter: ticks its Qhi was in
+			// hand), times begun, and kills.
+			TMap<FName, int32> KillChances;
+			TMap<FName, int32> KillTries;
+			TMap<FName, int32> Kills;
+			// Time in each form ("own", "borrowed", "spent"), and the damage dealt and taken in it.
+			TMap<FName, int32> FormTicks;
+			// His combos: how many, by length ("2", "3", ... "6+").
+			TMap<FName, int32> Combos;
+			TMap<FName, int32> Dealt;
+			TMap<FName, int32> Taken;
+			// Qhi left in hand as rounds ended, and rounds lost, by the form he was in.
+			double Unused = 0.0;
+			int32 Rounds = 0;
+			TMap<FName, int32> Losses;
+			void Add(const FQhiTelemetry& O);
+			FString Summary() const;
+		};
+		const FQhiTelemetry& Telemetry() const { return Tele; }
+
 	private:
 		const FSeen& Perceive();
 		void Plan(FFighter& M, const FSeen& O, double Dist);
@@ -107,7 +140,8 @@ namespace Slop
 		FName PunisherFor(int32 Gap, double Dist);
 		// Ticks from now until a move started now first hits: its inputs and a tick, then its startup.
 		int32 TicksToHit(FName MoveId) const;
-		void StartCombo(bool bPunish);
+		// One of the fighter's AI combos (bLongest: its longest, to carry a combo on as far as it goes).
+		void StartCombo(bool bPunish, bool bLongest = false);
 		// The fighter took another shape (the Grandmaster): its moves and AI notes are that shape's.
 		void SyncForm();
 		// The Grandmaster's Qhi: when to borrow the opponent's shape, when to give it back before
@@ -117,6 +151,20 @@ namespace Slop
 		// Whether a move leaves the Qhi the CPU means to keep (always, for moves that cost none).
 		bool Affordable(const FMoveDef& Mv) const;
 		double QhiSetting(const TCHAR* Key, double Default) const;
+		// The Qhi kept back: the difficulty's reserve ("keep"), more when the CPU is in danger, less
+		// when the opponent is nearly beaten.
+		double Reserve() const;
+		// Which shape move to take now (none: stay as he is): the opponent's own, enhanced, with the
+		// meter high; the Fragment's with a full meter at the best levels; a remembered one chosen
+		// for the matchup inside a combo (or where the copy is refused).
+		FName PickForm(const FFighter& M, bool bInCombo) const;
+		// A blow of his has just landed: change shape inside the combo (fighter AI qhi
+		// "combo_shift", a chance by difficulty). True when a command was started.
+		bool ComboShift(FFighter& M);
+		// The instant kills: Heart Stop when a combo allows it, Find the Crack against an opponent
+		// standing guard within reach. True when a command was started.
+		bool KillPlan(FFighter& M, const FSeen& Seen, double Dist);
+		void Observe(const FFighter& M);
 		FPadState Finish();
 		double Reach(FName MoveId);
 		FString AttackFor(double Dist);
@@ -158,6 +206,18 @@ namespace Slop
 		// How the CPU was hit lately ("low", "jump" or "other", newest first), so it adapts.
 		TArray<FName> HitBy;
 		int32 LastDamage = 0;
+		// The Grandmaster: a change of shape inside a combo wants the new shape's blows at once; the
+		// blow a change was tried in (one try a blow); telemetry.
+		bool bFollowUp = false;
+		int32 ShiftTriedAt = -1;
+		FQhiTelemetry Tele;
+		double LastQhi = -1.0;
+		int32 LastDealt = 0;
+		int32 LastTaken = 0;
+		double FightQhi = 0.0;
+		EForm LastForm = EForm::Own;
+		// The start tick (as seen) of the last unblockable blow judged, so it is answered once.
+		int32 UnblockJudged = -1;
 	};
 
 	// The Slopbat's mind: readable patterns rather than reflexes. Claws up close and now and then a
@@ -230,45 +290,4 @@ namespace Slop
 		FPadState BlockAll() const;
 	};
 
-	// The optional encounter with the stranger in white. He cannot be hurt and does not fight; he
-	// answers. His memory (`Stage`) only moves forward:
-	//   0 never met  1 met  2 warned  3 struck down  4 asked  5 finished properly  6 recognised
-	// Holding Block bows out; standing idle long enough, he sends the player on.
-	class FStrangerRules : public ISimHooks, public IBrain
-	{
-	public:
-		static constexpr int32 BowTicks = 50;
-		static constexpr int32 IdleTicks = 25 * 60;
-
-		// `OnStage` is called with every new memory stage so the caller can save it at once.
-		FStrangerRules(FFightSim& InSim, int32 InStage, const FString& BowHint, TFunction<void(int32)> InOnStage);
-		virtual bool IgnoreContact(FFightSim& S, const FContact& C) override;
-		virtual void OnTick(FFightSim& S) override;
-		virtual FPadState Think() override { return FPadState(); }
-		int32 GetStage() const { return Stage; }
-		const FString& LastLine() const { return LastLineText; }
-		bool Ended() const { return bEnded; }
-
-	private:
-		void Say(int32 At, const FString& Text, bool bHint = false) { Lines.Add({At, Text, bHint}); }
-		void SetStage(int32 S);
-		void Line(const FString& Text, bool bHint = false);
-		void Evade(const FString& Text);
-		void Catch(int32 StunTicks);
-		void Strike(const FString& Text);
-		void Crack();
-		void End(const FString& Text);
-
-		struct FLine { int32 At; FString Text; bool bHint; };
-		FFightSim& Sim;
-		int32 Stage = 0;
-		TFunction<void(int32)> OnStage;
-		TArray<FLine> Lines;
-		int32 T = 0;
-		int32 Bow = 0;
-		int32 IdleT = 0;
-		bool bEnded = false;
-		bool bBusy = false;
-		FString LastLineText;
-	};
 }

@@ -32,7 +32,7 @@ namespace Slop
 		void Step(const FVector2D& Home);
 	};
 
-	// The Grandmaster's shapes: his own (Qhi), spent (Qhi exhausted: the drunken fallback), or
+	// The Grandmaster's shapes: his own (Qhi), spent (Qhi exhausted: he boxes), or
 	// borrowed from the opponent. Every other fighter stays Own.
 	enum class EForm : uint8 { Own, Spent, Borrowed };
 	const TCHAR* FormName(EForm F);
@@ -72,6 +72,14 @@ namespace Slop
 		int32 QhiGainAt = 0;
 		// A borrowed shape whose Qhi ran out: it breaks at the next moment the body is free.
 		bool bShapeBreaking = false;
+		// The shape's upkeep, as a multiple of the rules' (the Fragment's shape burns twice as fast).
+		double UpkeepScale = 1.0;
+		// Inside the current combo: the changes of shape made in it, and the shapes that landed blows
+		// (an instant kill that ends a combo asks for two).
+		int32 FormShifts = 0;
+		TArray<FName, TInlineAllocator<4>> ComboShapes;
+		// The change of shape in progress was begun inside a combo (it takes at once).
+		bool bQuickShift = false;
 		FInputBuffer Input;
 		FVector2D Pos = FVector2D::ZeroVector;
 		FVector2D Vel = FVector2D::ZeroVector;
@@ -144,10 +152,17 @@ namespace Slop
 		bool UsesQhi() const { return BaseDef && BaseDef->Resource == EResource::Qhi; }
 		bool HasRunMeter() const { return Def->Resource == EResource::Run; }
 		const FQhiRules& QhiRules() const { return BaseDef->Qhi; }
-		// Why the opponent's shape cannot be borrowed now ("boss", "shapeless", "mirror"), or None.
+		// Why the opponent's shape cannot be borrowed now ("shapeless", "mirror", "same"), or None.
 		FName BorrowRefusal() const;
-		// The definition the opponent's shape would be borrowed from (null when refused).
+		// The definition the opponent's shape would be borrowed from.
 		const FFighterDef* BorrowTarget() const;
+		// A shapeshift move's target (the opponent's shape, or the one its form names), why it is
+		// refused (as above), and its price in Qhi.
+		const FFighterDef* ShapeTarget(const FMoveDef& M) const;
+		FName ShapeRefusal(const FMoveDef& M) const;
+		double ShapeCost(const FMoveDef& M) const;
+		// Whether an instant kill's conditions hold now (see FMoveDef::KillRequires).
+		bool KillAllowed(const FMoveDef& M) const;
 		void SpendQhi(double Amount);
 		// A caught blow's Qhi, at most once every DefendGainEvery ticks.
 		void DefendGain();
@@ -167,7 +182,8 @@ namespace Slop
 		void ComboReset();
 		// bSpecialsOnly: a cancel (specials only, the same move only as its self_cancels allow);
 		// bFeint: a feint's cancel (any other ground command). Neither starts a change of shape.
-		bool TryCommands(const TArray<FCommand>& List, int32 MinPriority = -1, bool bSpecialsOnly = false, bool bFeint = false);
+		// bShift: a change of shape inside a combo (only changes of shape).
+		bool TryCommands(const TArray<FCommand>& List, int32 MinPriority = -1, bool bSpecialsOnly = false, bool bFeint = false, bool bShift = false);
 		bool CanUse(const FMoveDef& M) const;
 		void StartMove(const FMoveDef& M);
 		void ReleaseThrow();
@@ -180,7 +196,7 @@ namespace Slop
 		void BreakMove();
 		// Puts on a definition: `Kind` names the change for the event ("borrowed", "own", "spent",
 		// "broken", "recentred").
-		void SetForm(EForm F, const FFighterDef* D, FName Kind);
+		void SetForm(EForm F, const FFighterDef* D, FName Kind, FName How = NAME_None);
 
 	private:
 		void RegenRun();
@@ -222,16 +238,6 @@ namespace Slop
 		int32 Proj = -1;
 		bool bThrow = false;
 		FVector2D Point = FVector2D::ZeroVector;
-	};
-
-	// Optional rule hooks (the stranger encounter).
-	class ISimHooks
-	{
-	public:
-		virtual ~ISimHooks() = default;
-		// Return true to make the contact pass harmlessly.
-		virtual bool IgnoreContact(FFightSim& Sim, const FContact& C) { return false; }
-		virtual void OnTick(FFightSim& Sim) {}
 	};
 
 	// A match on the fighting plane. Step() takes both players' device state for one 60 Hz tick
@@ -284,14 +290,13 @@ namespace Slop
 		bool bInfiniteRun = false;
 		// Borrowed shapes made this match, by the fighter copied (MakeBorrowedShape).
 		TMap<FName, TSharedRef<FFighterDef>> Shapes;
-		const FFighterDef* ShapeOf(const FFighterDef& Target, const FFighterDef& Copier);
+		const FFighterDef* ShapeOf(const FFighterDef& Target, const FFighterDef& Copier, bool bEnhanced = true);
 		// Training: health refills once a combo ends.
 		bool bRefillHealth = false;
 		bool bFinishersEnabled = true;
 		// The arena's own finisher, when it has one (a move id in the shared basics).
 		FName StageFinisher;
 		bool bIntro = true;
-		ISimHooks* Hooks = nullptr;
 		bool Flawless[2] = {false, false};
 		// Damage taken over the whole match: a flawless match is one the winner finished unhurt.
 		int32 MatchDamage[2] = {0, 0};

@@ -28,7 +28,13 @@ bool FSlopRigMatchesOriginal::RunTest(const FString&)
 	for (const auto& FV : Ref->Values)
 	{
 		const FFighterDef* Def = GetContent().Fighter(FName(*FV.Key));
-		if (!TestNotNull(FString(*FV.Key), Def))
+		const FString Key(*FV.Key);
+		if (!Def && FPaths::DirectoryExists(FPaths::ProjectDir() / TEXT("Archive/Slopperfall") / (Key.Left(1).ToUpper() + Key.Mid(1))))
+		{
+			// A fighter of the original no longer in Ebony Hearts, kept in the archive (Daxion).
+			continue;
+		}
+		if (!TestNotNull(Key, Def))
 		{
 			continue;
 		}

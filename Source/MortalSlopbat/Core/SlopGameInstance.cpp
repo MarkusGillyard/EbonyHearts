@@ -330,10 +330,10 @@ void USlopGameInstance::OnMatchFinished(const FMatchResult& R)
 	Note(FString::Printf(TEXT("Result: %s %d-%d %s, winner %d%s%s, %d s left"), *R.P1.ToString(), R.Wins[0], R.Wins[1], *R.P2.ToString(), R.Winner,
 		R.bFlawless ? TEXT(", flawless") : TEXT(""), R.Finisher.IsNone() ? TEXT("") : *(TEXT(", ") + R.Finisher.ToString()), R.TimeLeft));
 	Router->bFightActive = false;
-	// The records count real fights, as the original did: not the tutorial, the stranger or a
+	// The records count real fights, as the original did: not the tutorial or a
 	// watched CPU match; a Versus win is a win for whichever player took it.
 	const EMode Mode = Flow.Config.Mode;
-	if (Mode != EMode::Tutorial && Mode != EMode::Stranger && Mode != EMode::Watch)
+	if (Mode != EMode::Tutorial && Mode != EMode::Watch)
 	{
 		Progress.Count(TEXT("matches"));
 		if (R.Winner == 0 || (Mode == EMode::Versus && R.Winner >= 0))
@@ -885,7 +885,7 @@ void USlopGameInstance::DevCommandLine()
 			C.P2 = FName(*Parts[1]);
 			const FString Mode = Parts[2];
 			C.Mode = Mode == TEXT("versus") ? EMode::Versus : Mode == TEXT("training") ? EMode::Training : Mode == TEXT("watch") ? EMode::Watch
-				: Mode == TEXT("stranger") ? EMode::Stranger : Mode == TEXT("trials") ? EMode::Trials : EMode::Cpu;
+				: Mode == TEXT("trials") ? EMode::Trials : EMode::Cpu;
 			if (Parts.Num() >= 4)
 			{
 				C.Stage = FName(*Parts[3]);
@@ -935,6 +935,19 @@ void USlopGameInstance::DevCommandLine()
 				}
 			};
 		}
+	}
+	// A script for the first side's fighter against a standing opponent (see FScriptBrain), with
+	// -SlopMatch: "-SlopScript=D+RN+LP;w40;shot:nix".
+	FString ScriptArg;
+	if (Match && FParse::Value(Cmd, TEXT("SlopScript="), ScriptArg, false))
+	{
+		Match->Brains[0] = MakeUnique<FScriptBrain>(Match->Sim, 0, ScriptArg, [this](const FString& Name)
+		{
+			if (Match)
+			{
+				RequestShot(Match->Sim.TickCount + 1, Name + TEXT(".png"));
+			}
+		});
 	}
 	// Select-screen portraits, head and shoulders, one screenshot per fighter (cropped and
 	// imported by Tools/portraits.py).

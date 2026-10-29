@@ -275,8 +275,8 @@ namespace SlopSettingsImpl
 					GI->Settings.Save();
 					GI->Notice(LOCTEXT("AllReset", "All settings reset"));
 				}));
-				// As in the original: records, unlocks, endings and the stranger's memory, on a second press.
-				Rows.Add(Action(LOCTEXT("Erase", "Erase progress (records, unlocks, endings, the stranger's memory)"), [this]()
+				// As in the original: records, unlocks and endings, on a second press.
+				Rows.Add(Action(LOCTEXT("Erase", "Erase progress (records, unlocks, endings)"), [this]()
 				{
 					if (GI->Now() - EraseArmedAt <= 4.0)
 					{

@@ -9,7 +9,7 @@ evidence behind every claim here.
 |---|---|
 | Source | `~/Documents/Unreal Projects/MortalSlopbat`, branch `ue5`; pushed to the private `MarkusGillyard/Slopbat` as branch `ue5` (its own history; `main` untouched). The Godot original at `~/Documents/Mortal Slopbat` is unchanged. |
 | Engine | Unreal Engine 5.8.4 at `/media/cinqic/Cinqic Storage/UnrealEngine/UE_5.8.4`; Vulkan SM6; Linux x86_64. |
-| Game | Complete: eight fighters (seven to start, the Grandmaster unlocked by a secret challenge), the Slopbat and the stranger; four stages; Arcade, Survival, Versus, Versus CPU, Training, Tutorial, Trials, Extras, Settings; saves and settings; controllers and keyboard. |
+| Game | Ebony Hearts (formerly Mortal Slopbat), complete: eight fighters (seven to start, the Grandmaster unlocked by a secret challenge) and the Ebony Heart Fragment in the Slopbat's shape; four stages; Arcade, Survival, Versus, Versus CPU, Training, Tutorial, Trials, Extras, Settings; saves and settings; controllers and keyboard. |
 | Art | All eight fighters built from CC0 MakeHuman bodies with scripted costumes (`Tools/blender`); four stage sets built in Blender (`Tools/blender/stages`); CC0 surfaces, props, skies and sounds. |
 | Tests | Automation tests (`run_tests`), scripted flows for every mode (`Tools/playtest`), unattended packaged sessions (`Tools/perf/soak.sh`). |
 | Combat feel | 2.2.0 applies the presentation changes ranked by the study in `Docs/Martial-arts.md` (strikes, hit-stop, reactions, styles, sound) and one rule change (counter-hit freeze on the victim); frame data otherwise unchanged. 2.3.0 to 2.5.0 bring in motion capture: strikes, footwork, the block, Daxion's evade, intros and wins. |
@@ -35,34 +35,76 @@ then `editor_py Tools/import_assets.py` with `SLOP_IMPORT_ONLY=fighters` or `sta
 second run with `SLOP_IMPORT_ONLY=slots`. Portraits: `run_game -SlopPortraits`, then
 `Tools/portraits.py`, then the `portraits` import step.
 
-## The two new fighters (2.7.0)
+## Ebony Hearts (2.7.0)
 
-Wren Sallow (the Fen Light, the seventh of the starting roster) and the Grandmaster (unlocked;
-his name is his title, at the owner's wish, and nothing in the game undercuts it) were added from the owner's directive of 29 October
-(`~/Documents/Mortal_Slopbat_Grandmaster_All_Rounder_Claude_Engineering_Directive_2026-10-29.md`)
-and his two visual directions (the Grandmaster inspired by Cary-Hiroyuki Tagawa; Wren by Valentina
-Shevchenko and Ronda Rousey). `Docs/Design.md` has the rules and the roster sheet;
-`Docs/Architecture.md` how shapes work in code; `Docs/Assets.md` the likeness question.
+Three directives of 29 October 2026 made 2.7.0, all on branch `ue5-grandmaster-wren` and merged
+into `ue5`: the two new fighters
+(`~/Documents/Mortal_Slopbat_Grandmaster_All_Rounder_Claude_Engineering_Directive_2026-10-29.md`,
+with the owner's visual directions: the Grandmaster inspired by Cary-Hiroyuki Tagawa, Wren by
+Valentina Shevchenko and Ronda Rousey), the rename to **Ebony Hearts**, and the continuity and
+Grandmaster expansion
+(`~/Documents/Ebony_Hearts_Claude_Opus_Continuity_Grandmaster_Expansion_Directive_2026-10-29.md`).
+`Docs/Design.md` has the canon and every rule; `Docs/Architecture.md` how shapes, the form library,
+kills, coverage and the CPU's telemetry work in code; `Docs/Assets.md` the likeness question and
+the archive.
 
-- **Data.** `Content/Data/fighters/wren.json`, `grandmaster.json`, `grandmaster_spent.json` (the
-  spent body is a definition of its own wearing his body), their poses (authored for a 1.8 m body,
-  scaled) and looks; motion capture for Wren's head kick, backfist, spinning back kick and crescent
-  and his weave, Wren's intro and win (`Tools/mocap`); story, rival lines, endings, trials.
-- **Bodies.** `Tools/blender/fighters.json` and `fighter_outfits3.py`, built like the others; import
-  just these with `SLOP_FIGHTERS=wren,grandmaster` (the importer now takes it for the fighters,
-  slots and portraits steps).
+- **The game and its canon.** Ebony Hearts: the Ebony Heart, lost exactly five hundred years; the
+  bored Outer Gods' tournament for one worthy mortal; a Fragment of the Heart in the Slopbat's shape
+  as the final boss ("Ebony Heart Fragment" on its bar). Ashka is Pure Good, the Grandmaster
+  Neutral; the protagonist (Ashka or Wren), the others' alignments and Wren's and the
+  Grandmaster's motives are undecided and stated nowhere. Names are **Wren** and **Grandmaster**.
+  The project, module, executable inside the package and save folder keep the old name; the
+  release archive and its launcher are `EbonyHearts`.
+- **Wren** (`wren.json`): the seventh starting fighter, the All-Rounder; unchanged by the
+  expansion (no nerf).
+- **Grandmaster** (`grandmaster.json`, `grandmaster_spent.json`): his Qhi stance (upright, hands
+  calmly behind his back) as approved; the opponent's copy still exactly 50% and Qhi-enhanced; a
+  data-driven **form library** (`"forms"`: every fighter's shape for 30, the Fragment's for 60 with
+  doubled upkeep and no run meter); **changes of shape inside a combo** (frame 3, at most two, the
+  combo carrying on); **Own Face** free; three **instant kills** with counterplay (Two Fingers into
+  One Strike at 75 Qhi, Find the Crack at 90 against a standing opponent, Heart Stop to end a combo
+  of five or more through two shapes, all the Qhi); **traditional boxing** when spent (no drunken
+  boxing, no grappling); Daxion's techniques as his own. The prices and frames (a)-(e) are in
+  `Docs/Design.md`.
+- **Daxion removed.** Archived whole for Slopperfall in `Archive/Slopperfall/Daxion` (data, poses,
+  capture, body, portrait, lines; its README lists where each technique went); his encounter's
+  code is in the history up to `59e61c6`. The importer skips a body with no look, so a full
+  re-import does not bring his back. Old saves load as before (their "stranger" memory is kept,
+  read by nothing).
+- **Every move in the game.** `Slop.Fighters.Grandmaster.EveryMoveIsCovered` builds the coverage
+  from the loaded data (`Combat/SlopCoverage`) and writes `Saved/Reports/MoveCoverage.md`;
+  `Docs/MoveCoverage.md` is the copy from this release (247 of 247 counted moves covered).
+- **His CPU.** A dedicated pass (`FCpuBrain`: `Reserve`, `PickForm`, `ComboShift`, `KillPlan`,
+  fighter AI `qhi` by difficulty, its keys explained in the data's `about`). Measured over 168
+  matches a level (24 seeds against each fighter): before the pass 9%, 16%, 32% and 68% (Novice,
+  Warrior, Master, and the secret challenge's tier against Master CPUs); after it 47%, 50%, 58-61%
+  and 83-90%. The largest gain was his zoning (palms from 1.6 m instead of 2.0, zoning 0.7):
+  remembered shapes from a standstill lost him matches, so his CPU takes them inside combos (and
+  in a mirror) only. Development telemetry (`FCpuBrain::FQhiTelemetry`) counts how he used his
+  meter; `AI.NewFightersMatchups` logs it by level, `-SlopAiLog` at a match's end.
+  `-SlopSeeds=<n>` and `-SlopOnly=<fighter>` make the matchup test a tuning run (24 seeds take
+  about 25 s).
 - **Testing him.** `-SlopUnlock=grandmaster` (development builds) makes him selectable for the
   session without saving it; `-SlopSecret=<fighter>` starts at his challenge as if that fighter had
-  just cleared a tower without a continue; `-SlopMatch=grandmaster,ashka,training` as before.
-- **Tuning.** Every number is data: `qhi` in `grandmaster.json` (the 50% price is fixed in code,
-  `FQhiRules::ShapeshiftShare`, as the owner set it), `stats` for defences and power.
-  `AI.NewFightersMatchups` logs CPU win rates by difficulty for both.
+  just cleared a tower without a continue; `-SlopQhi=<n>` starts his meter at n;
+  `-SlopMatch=grandmaster,ashka,training` as before. Trials has "Two Shapes, Heart Stop".
+- **Tuning.** Every number is data: `qhi` in `grandmaster.json` (the 50% copy price is fixed in
+  code, `FQhiRules::ShapeshiftShare`, as the owner set it), `forms` for the library's prices,
+  `shape_upkeep` on a fighter (the Fragment's 2), `stats` for defences and power, `ai.qhi` for his
+  CPU.
+- **Open questions for Markus.** Likeness clearance for both new fighters before any commercial
+  release (`Docs/Assets.md`). The six original fighters' bios and endings still speak of asking the
+  Slopbat for something (the original's text, left as it is under the new canon). Wren and the
+  Grandmaster have no rival (none decided), so their towers have no rival rung. Heart Stop is
+  rare in CPU hands (its combos seldom reach five hits); a player can reach it (the trial). The
+  balance numbers are CPU against CPU only; nobody has played the expansion yet.
 
 ## Open
 
 - **More motion capture.** From ACCAD's Male 2 takes (CC BY 3.0): the shared strikes, Ashka's
   teep, walking and running (step cycles played by distance, so the feet keep pace), the standing
-  block's guard, Daxion's evade, and the human fighters' intros and wins. Gorm, Mirela and Hollis
+  block's guard, the Grandmaster's step aside (Daxion's evade, carried over), weave and boxing
+  hooks, Wren's kicks and backfist, and the human fighters' intros and wins. Gorm, Mirela and Hollis
   keep their own walks (a sumo shuffle, circle walking, a diver's plod). The set has no hit
   reactions or falls, so those stay procedural. Unused: the bounce (the study prefers a rock for
   the idle) and the uppercut take (no clean contact). Since 2.5.2 a captured cycle's foot stays
@@ -82,7 +124,7 @@ Shevchenko and Ronda Rousey). `Docs/Design.md` has the rules and the roster shee
 - **Steadiness and cloth (2.5.6).** The fight camera swung wildly after any long frame (its
   springs were stepped whole); they now step at 240 Hz, as do the animator's lean, recoil and
   tumble springs (a test held after a stall shows joints jumping 1.5 m a frame with the old ones).
-  Coats, gowns, the stranger's robe and Gorm's apron sway with the hips' motion through the
+  Coats, gowns, the robes and Gorm's apron sway with the hips' motion through the
   material (no cloth bones), up to 10 cm at the hem. The Storm Shroud stays unblockable, now with
   its telegraph back.
 - **Restored from the original (2.5.5).** Comparing the port's presentation with the Godot

@@ -52,8 +52,8 @@ Engine, Copyright 1998 – 2026, Epic Games, Inc. All rights reserved."
 ## Likeness: two fighters drawn from real people's looks
 
 The owner asked that two of the new fighters be inspired by real people: the Grandmaster's face
-and presence by the actor Cary-Hiroyuki Tagawa's older, more intimidating roles, and Wren
-Sallow's build, presence and fighting style by the mixed martial artists Valentina Shevchenko
+and presence by the actor Cary-Hiroyuki Tagawa's older, more intimidating roles, and Wren's
+build, presence and fighting style by the mixed martial artists Valentina Shevchenko
 (chiefly) and Ronda Rousey. Both were built from the CC0 MakeHuman base by general traits only (an
 old man's heavy brow, high cheekbones and hollow cheeks, a shaved head and grey goatee; a young
 athlete's conditioned build, braids and composed face), with no photographs, scans, film or
@@ -65,3 +65,15 @@ original design (ink blue, bone grey and pale gold) and not any film character's
 many jurisdictions whether or not it is a copy. If either character is judged, by people who know
 those faces, to read as that person, clear it with them (or their representatives) or move the
 design further from them. This is the one open rights question.
+
+## Archived: Daxion, kept for Slopperfall
+
+Daxion's data, key poses, the ten poses captured for his evade (ACCAD Male 2 `E19_DodgeLeft`,
+CC BY 3.0, credited as above), his imported body (mesh, skeleton, physics asset, materials and
+textures, Git LFS), his portrait and his lines are in `Archive/Slopperfall/Daxion`, outside
+`Content` and `Content/Data`, so Ebony Hearts neither loads nor cooks nor ships them. His body's
+sources stay with the fighter pipeline (`Tools/blender/fighters.json`,
+`fighter_outfits2.py` `daxion()`, `SourceArt/Fighters/daxion`); the importer leaves out a body
+that has no look in `Content/Data/looks`. The same capture now animates the Grandmaster's Step
+Aside (`mc_step_aside_*`), and two more Male 2 takes his boxing hooks when spent (`E5_HookLeft`,
+`E10_BodyHookRight`, mirrored).
