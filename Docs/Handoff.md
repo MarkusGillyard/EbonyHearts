@@ -109,6 +109,11 @@ the archive.
   transitions; follow-through and settle on every strike; footwork that carries weight between
   steps; model polish (deformation at shoulders, hips and knees, hands, cloth). Measure before and
   after, as the 2.2.0 feel study did (`Docs/Martial-arts.md`).
+- **Legs and feet look bad on every fighter, worst in kicks** (Markus, same session; Gorm made it
+  obvious). Check in kicks and stances: knee and ankle deformation (skinning weights, bone roll),
+  foot orientation and toe bend through a kick's chamber, extension and retraction (IK solve and
+  the kick poses' foot and knee targets), feet sliding or sinking, and Gorm's heavy legs and boots
+  specifically. Fix alongside the animation-flow work above.
 - **More motion capture.** From ACCAD's Male 2 takes (CC BY 3.0): the shared strikes, Ashka's
   teep, walking and running (step cycles played by distance, so the feet keep pace), the standing
   block's guard, the Grandmaster's step aside (Daxion's evade, carried over), weave and boxing
