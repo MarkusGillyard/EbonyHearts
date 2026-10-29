@@ -1,0 +1,14 @@
+{
+	"build": {"shoulders": 0.94, "chest": 0.92, "waist": 0.9, "limbs": 0.96, "hips": 0.94},
+	"materials": {
+		"skin": {"color": "#c9a184"},
+		"beard": {"color": "#c9c6bf", "kind": "fur", "roughness": 0.8},
+		"robe": {"color": "#1b2333", "kind": "fabric", "roughness": 0.75},
+		"inner": {"color": "#b9b4a8", "kind": "fabric", "roughness": 0.8},
+		"sash": {"color": "#121214", "kind": "fabric", "roughness": 0.7},
+		"embroidery": {"color": "#d9b866", "kind": "silk", "roughness": 0.35},
+		"shoes": {"color": "#111113", "kind": "fabric", "roughness": 0.8}
+	},
+	"glow": "#ffcf5a",
+	"accent": 0.3
+}

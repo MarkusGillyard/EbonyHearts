@@ -52,6 +52,12 @@ private:
 	FLinearColor ComboColor[2];
 	float ComboT[2] = {0, 0};
 	float ComboPop[2] = {0, 0};
+	// The Grandmaster's changes of shape, called out under his bar.
+	FText FormText[2];
+	FLinearColor FormColor[2];
+	float FormT[2] = {0, 0};
+	// The Qhi bar shown, trailing a spend so the cost reads.
+	float QhiTrail[2] = {1, 1};
 	// Health shown, trailing the real value so a blow's damage reads as a draining bar.
 	float Trail[2] = {1, 1};
 	// Input history per side for the input display: [dir arrow, buttons, ticks held].

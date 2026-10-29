@@ -247,6 +247,7 @@
 		},
 		"tar_spit": {
 			"name": "Tar Spit",
+			"magic": 0.6,
 			"kind": "special",
 			"startup": 16,
 			"active": 0,
@@ -476,6 +477,7 @@
 		},
 		"storm_shroud": {
 			"name": "Storm Shroud",
+			"magic": 1.0,
 			"startup": 50,
 			"active": 14,
 			"recovery": 40,

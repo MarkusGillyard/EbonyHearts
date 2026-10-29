@@ -369,6 +369,7 @@
 		},
 		"sinkstep": {
 			"name": "Sinkstep",
+			"magic": 0.3,
 			"startup": 34,
 			"active": 4,
 			"recovery": 18,

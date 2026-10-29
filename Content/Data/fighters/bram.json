@@ -457,6 +457,7 @@
 		},
 		"flare_high": {
 			"name": "Signal Flare (high)",
+			"magic": 0.5,
 			"kind": "special",
 			"startup": 13,
 			"active": 0,
@@ -518,6 +519,7 @@
 		},
 		"flare_low": {
 			"name": "Signal Flare (low)",
+			"magic": 0.5,
 			"kind": "special",
 			"startup": 13,
 			"active": 0,

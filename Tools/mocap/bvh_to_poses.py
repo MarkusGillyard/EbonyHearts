@@ -48,6 +48,14 @@ CLIPS = {
     "ashka_teep": ("Male2_G17_PushKickLeft", "LeftFoot", (8, 3, 14), {}, "ashka"),
     # Daxion's step aside: a lean-away dodge, deepest at frame 8 of its 18 (the simulation moves him).
     "dax_evade": ("Male2_E19_DodgeLeft", "Head", (8, 0, 10), {}, "daxion"),
+    # Wren's kickboxing and taekwondo: the lead-leg head kick, the backfist, the spinning back
+    # kick (Turning Light) and the reverse spinning crescent that lifts jumpers (Lifting Light).
+    "wren_head_kick": ("Male2_G8_RoundhouseLeft", "LeftFoot", (9, 3, 20), {"fist_l": 1, "fist_r": 1}, "wren"),
+    "wren_backfist": ("Male2_E12_BackfistRight", "RightHand", (10, 3, 18), {"fist_l": 1, "fist_r": 1}, "wren"),
+    "turning_light": ("Male2_G4_SpinningBackKick", "LeftFoot", (12, 4, 22), {"fist_l": 1, "fist_r": 1}, "wren"),
+    "lifting_light": ("Male2_G20_ReverseSpinCrescentRight", "RightFoot", (6, 5, 24), {"fist_l": 1, "fist_r": 1}, "wren"),
+    # The Grandmaster's weave: a slip under the blow, deepest at frame 6 of its 22.
+    "weave": ("Male2_E21_DuckLeft", "Head", (6, 0, 16), {}, "grandmaster"),
 }
 
 # pose -> (take, take frame, the fields taken). Laid over the shared pose of that name; fields not
@@ -76,6 +84,7 @@ STATES = {
     "gorm": {"intro": ("Male2_D1_StandToReady", 0, 80), "win": ("Male2_D10_Victory2", 0, 130)},
     "mirela": {"intro": ("Male2_D1_StandToReady", 0, 80), "win": ("Male2_D8_BowToReady", 0, 128)},
     "nix": {"intro": ("Male2_D1_StandToReady", 0, 80), "win": ("Male2_D12_ReadyToTaunt1ToReady", 0, 130)},
+    "wren": {"intro": ("Male2_D9_WarmUpToReadyToWarmUp", 0, 80), "win": ("Male2_D9_Victory1", 0, 130)},
 }
 
 # Left out: the uppercut (the take's furthest reach is its overhead follow-through, not the blow,

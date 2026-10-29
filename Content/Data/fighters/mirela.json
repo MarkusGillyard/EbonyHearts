@@ -234,6 +234,7 @@
 		},
 		"lament": {
 			"name": "Lament",
+			"magic": 1.0,
 			"kind": "special",
 			"startup": 13,
 			"active": 0,
@@ -293,6 +294,7 @@
 		},
 		"keen": {
 			"name": "Keen",
+			"magic": 1.0,
 			"startup": 14,
 			"active": 8,
 			"recovery": 24,

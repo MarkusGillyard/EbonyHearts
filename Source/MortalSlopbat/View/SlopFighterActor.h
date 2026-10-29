@@ -20,6 +20,12 @@ public:
 	// Binds to a simulated fighter; `MeshPath` is the skeletal mesh to wear. Returns false when the
 	// mesh is missing or does not have the game skeleton.
 	bool Setup(const Slop::FFighter& Fighter, const FString& MeshPath);
+	// The fighter changed shape (the Grandmaster): its own body takes the form's poses; a borrowed
+	// shape puts on the other fighter's body. False when the mesh is missing.
+	bool Rebind(const Slop::FFighter& Fighter);
+	// The definition and body the actor is set up for.
+	const Slop::FFighterDef* BoundDef = nullptr;
+	FName BoundBody;
 	void SyncFromSim(bool bTeleport = false) { Anim.SyncFromSim(bTeleport); }
 	// Poses the body for this rendered frame.
 	void UpdateVisual(double Frac, double Delta);

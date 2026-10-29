@@ -131,9 +131,32 @@ namespace Slop
 
 	// --- Setup and rounds ----------------------------------------------------------------------------
 
+	const FFighterDef* FFightSim::ShapeOf(const FFighterDef& Target, const FFighterDef& Copier)
+	{
+		if (const TSharedRef<FFighterDef>* S = Shapes.Find(Target.Id))
+		{
+			return &S->Get();
+		}
+		return &Shapes.Add(Target.Id, MakeBorrowedShape(Target, Copier)).Get();
+	}
+
+	// Damage after the fighters' strength and defences. `Magic` is the blow's magical share: a
+	// physical blow is weighed by the attacker's Power and the defender's PhysDef, a magical one by
+	// Arcana and MagicDef, a mixed one by both in proportion. A damaging blow stays damaging.
+	static int32 Dealt(const FFighter& A, const FFighter& D, int32 Damage, double Magic)
+	{
+		if (Damage <= 0)
+		{
+			return Damage;
+		}
+		const double K = (1.0 - Magic) * A.Def->Power * D.Def->PhysDef + Magic * A.Def->Arcana * D.Def->MagicDef;
+		return FMath::Max(1, FMath::RoundToInt(Damage * K));
+	}
+
 	void FFightSim::Setup(const FFighterDef* D1, const FFighterDef* D2)
 	{
 		MatchDamage[0] = MatchDamage[1] = 0;
+		Shapes.Reset();
 		for (int32 I = 0; I < 2; ++I)
 		{
 			Fighters[I] = FFighter();
@@ -153,6 +176,13 @@ namespace Slop
 		Projectiles.Reset();
 		for (FFighter& F : Fighters)
 		{
+			// Every round is fought from the fighter's own shape with full meters.
+			F.Def = F.BaseDef;
+			F.Form = EForm::Own;
+			F.Qhi = F.UsesQhi() ? F.QhiRules().Max : 0.0;
+			F.QhiIdle = 0;
+			F.QhiGainAt = 0;
+			F.bShapeBreaking = false;
 			F.Health = F.MaxHealth();
 			F.RunMeter = FFighter::RunMax;
 			F.RunIdle = 0;
@@ -628,8 +658,22 @@ namespace Slop
 		const FMoveDef& M = *C.Move;
 		const FProjectileDef* PD = P ? &P->Def() : nullptr;
 		const ELevel Level = PD ? PD->Level : M.Level;
-		int32 Damage = PD ? PD->Damage : M.Damage;
-		const int32 Chip = PD ? PD->Chip : M.Chip;
+		const double Magic = PD ? PD->Magic : M.Magic;
+		if (P && D.State == EState::Move && D.Move && FMoveDef::InRange(D.Move->Ward, D.MF))
+		{
+			// Warded: the projectile breaks up against the fighter's Qhi.
+			P->bDead = true;
+			FSimEvent E = Ev(EEvent::Parry, D.Index, A.Index);
+			E.Move = M.Id;
+			E.Point = C.Point;
+			E.Level = Level;
+			E.bProj = true;
+			E.Kind = TEXT("ward");
+			Emit(E);
+			return;
+		}
+		int32 Damage = Dealt(A, D, PD ? PD->Damage : M.Damage, Magic);
+		const int32 Chip = Dealt(A, D, PD ? PD->Chip : M.Chip, Magic);
 		FName Effect = PD ? PD->Effect : M.Effect;
 		int32 HS = PD ? PD->Hitstop : M.Hitstop;
 		const bool bFlying = Effect == TEXT("launch") || Effect == TEXT("knockdown") || Effect == TEXT("sweep");
@@ -690,20 +734,47 @@ namespace Slop
 		{
 			if (D.MF >= D.Move->ParryFrames.X && D.MF <= D.Move->ParryFrames.Y)
 			{
-				// Caught: the attacker is left open and the parrier answers at once.
-				A.Move = nullptr;
-				A.TakeStun(D.Move->ParryStun, EStun::Dazed);
+				// Caught: the attacker is left open and the parrier answers at once (a weave slips
+				// the blow and leaves the attacker stumbling past instead).
+				const FMoveDef& Caught = *D.Move;
+				const FMoveDef* Counter = D.Def->Move(Caught.ParryCounter);
+				// A counter that costs Qhi only follows when the meter can pay for it.
+				if (Counter && Counter->QhiCost > 0.0 && D.Qhi < Counter->QhiCost)
+				{
+					Counter = nullptr;
+				}
+				A.BreakMove();
 				A.Hitstop = 10;
 				D.Hitstop = 10;
-				if (const FMoveDef* Counter = D.Def->Move(D.Move->ParryCounter))
+				D.DefendGain();
+				if (Caught.bParryCatch && Counter && !A.IsAirborne())
 				{
+					// Caught for good: taken straight into the counter's hold.
+					A.Vel = FVector2D::ZeroVector;
 					D.StartMove(*Counter);
+					D.ThrowVictim = A.Index;
+					D.ThrowT = 0;
+					D.MoveContact = TEXT("hit");
+					A.ThrownBy = D.Index;
+					A.SetState(EState::Thrown);
+					FSimEvent T = Ev(EEvent::Throw, A.Index, D.Index);
+					T.Move = Counter->Id;
+					Emit(T);
+				}
+				else
+				{
+					A.TakeStun(Caught.ParryStun, Caught.bParryStagger ? EStun::Break : EStun::Dazed);
+					if (Counter)
+					{
+						D.StartMove(*Counter);
+					}
 				}
 				FSimEvent E = Ev(EEvent::Parry, D.Index, A.Index);
 				E.Move = M.Id;
 				E.Point = C.Point;
 				E.Level = Level;
-				const int32 Sting = FMath::Min(D.Move->ParryDamage, A.Health - 1);
+				E.Kind = Caught.bParryStagger ? FName(TEXT("weave")) : FName(TEXT("parry"));
+				const int32 Sting = FMath::Min(Dealt(D, A, Caught.ParryDamage, 0.0), A.Health - 1);
 				if (Sting > 0)
 				{
 					A.Health -= Sting;
@@ -780,6 +851,11 @@ namespace Slop
 		const int32 Dmg = Damage > 0 ? FMath::Max(1, FMath::RoundToInt(Damage * K)) : 0;
 		D.Health = FMath::Max(0, D.Health - Dmg);
 		D.DamageTaken += Dmg;
+		if (D.Form == EForm::Borrowed)
+		{
+			// A borrowed shape is held by Qhi, and every blow it takes shakes it loose.
+			D.SpendQhi(Dmg * D.QhiRules().HitDrain);
+		}
 		D.ComboHits = N;
 		D.ComboDamage += Dmg;
 		D.LastHitMove = &M;
@@ -946,7 +1022,7 @@ namespace Slop
 			A.ThrowT = 0;
 			A.MoveContact = TEXT("hit");
 			D.ThrownBy = A.Index;
-			D.Move = nullptr;
+			D.BreakMove();
 			D.Vel = FVector2D::ZeroVector;
 			D.SetState(EState::Thrown);
 			FSimEvent E = Ev(EEvent::Throw, D.Index, A.Index);
@@ -992,9 +1068,13 @@ namespace Slop
 		D.Facing = -A.Facing;
 		if (A.ThrowT == TD.DamageFrame)
 		{
-			const int32 Dmg = TD.Damage;
+			const int32 Dmg = Dealt(A, D, TD.Damage, 0.0);
 			D.Health = FMath::Max(0, D.Health - Dmg);
 			D.DamageTaken += Dmg;
+			if (D.Form == EForm::Borrowed)
+			{
+				D.SpendQhi(Dmg * D.QhiRules().HitDrain);
+			}
 			D.ComboHits += 1;
 			D.ComboDamage += Dmg;
 			FSimEvent E = Ev(EEvent::Hit, D.Index, A.Index);

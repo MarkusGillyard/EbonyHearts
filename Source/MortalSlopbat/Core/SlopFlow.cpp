@@ -130,7 +130,8 @@ namespace Slop
 		Config.P2Health = bBoss ? BossHealth[FMath::Clamp(Arcade.Tower, 0, 2)] : 0;
 		Config.P1Health = 0;
 		Config.Mode = EMode::Arcade;
-		Config.Difficulty = Arcade.Tower;
+		// The old master fights at his best whatever the tower: the demonstration is the point.
+		Config.Difficulty = R.Kind == TEXT("secret") ? 2 : Arcade.Tower;
 	}
 
 	int32 FGameFlow::FightScore(const FMatchResult& R)
@@ -175,6 +176,20 @@ namespace Slop
 		bStrangerPending = bFlawless && R && R->Kind != TEXT("boss") && GetContent().Fighter(TEXT("daxion")) != nullptr;
 		ConfigureRung();
 		return true;
+	}
+
+	bool FGameFlow::SecretEarned() const
+	{
+		const FRung* R = CurrentRung();
+		return R && R->Kind == TEXT("boss") && Arcade.Continues == 0 && Arcade.Fighter != SecretFighter() && GetContent().Fighter(SecretFighter()) != nullptr;
+	}
+
+	void FGameFlow::AddSecretRung()
+	{
+		Arcade.Rungs.Add({SecretFighter(), TEXT("drowned_chapel"), TEXT("secret")});
+		Arcade.Rung = Arcade.Rungs.Num() - 1;
+		bStrangerPending = false;
+		ConfigureRung();
 	}
 
 	void FGameFlow::ArcadeRetry()

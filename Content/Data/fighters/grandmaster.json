@@ -1,0 +1,1000 @@
+{
+	"id": "grandmaster",
+	"name": "Kazan Still",
+	"title": "The Grandmaster",
+	"pronoun": "him",
+	"style": "Qhi and a lifetime of martial arts",
+	"blurb": "An old grandmaster whose body has failed him and whose Qhi has not. He can wear the face of whoever stands against him, better than they wear it themselves.",
+	"resource": "qhi",
+	"spent_form": "grandmaster_spent",
+	"copyable": false,
+	"stats": {
+		"height": 1.7,
+		"health": 1000,
+		"walk_f": 2.1,
+		"walk_b": 1.9,
+		"run_speed": 4.4,
+		"jump_vy": 8.0,
+		"jump_vx": 2.4,
+		"phys_def": 1.2,
+		"magic_def": 0.5,
+		"power": 0.95
+	},
+	"qhi": {
+		"max": 100,
+		"regen": 0.06,
+		"regen_delay": 60,
+		"spent_regen": 0.045,
+		"recover_at": 25,
+		"glide_drain": 0.25,
+		"glide_min": 5,
+		"chain_share": 0.35,
+		"upkeep": 0.06,
+		"hit_drain": 0.05,
+		"defend_gain": 5,
+		"spent_defend_gain": 3,
+		"defend_gain_every": 120,
+		"fail_cost": 8,
+		"copy_power": 1.2,
+		"copy_guard": 0.85,
+		"copy_speed": 1.08
+	},
+	"motion": {
+		"bounce": 0.15,
+		"rock": 0.5,
+		"pace": 0.7,
+		"walk_bob": 0.35,
+		"step_lift": 0.7,
+		"walk_twist": 0.6,
+		"walk_cycle": false,
+		"run_cycle": false
+	},
+	"basic_tweaks": {
+		"hp": {
+			"name": "Palm",
+			"magic": 0.3,
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						2,
+						"gm_palm_load",
+						"out"
+					],
+					[
+						5,
+						"gm_palm",
+						"snap"
+					],
+					[
+						8,
+						"gm_palm",
+						"linear"
+					],
+					[
+						18,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"recovery": 8
+		},
+		"lp": {
+			"chain": [
+				{
+					"input": "LP",
+					"move": "lp2",
+					"window": [
+						5,
+						15
+					],
+					"cost": 6
+				},
+				{
+					"input": "HP",
+					"move": "gm_two_fingers",
+					"window": [
+						5,
+						14
+					],
+					"cost": 12
+				}
+			],
+			"recovery": 8
+		},
+		"hk": {
+			"recovery": 13
+		},
+		"lk": {
+			"recovery": 10
+		}
+	},
+	"moves": {
+		"gm_two_fingers": {
+			"name": "Old Hands: two fingers",
+			"kind": "chain",
+			"startup": 6,
+			"active": 2,
+			"recovery": 16,
+			"level": "high",
+			"damage": 40,
+			"magic": 0.5,
+			"hitstun": 42,
+			"blockstun": 10,
+			"effect": "daze",
+			"push_hit": 0.15,
+			"push_block": 0.4,
+			"hitboxes": [
+				{
+					"rect": [
+						0.3,
+						1.36,
+						0.42,
+						0.2
+					]
+				}
+			],
+			"hurtboxes": [
+				{
+					"frames": [
+						5,
+						10
+					],
+					"rect": [
+						0.2,
+						1.36,
+						0.36,
+						0.16
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						3,
+						"gm_fingers_load",
+						"out"
+					],
+					[
+						6,
+						"gm_fingers",
+						"snap"
+					],
+					[
+						9,
+						"gm_fingers",
+						"linear"
+					],
+					[
+						24,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "light"
+			}
+		},
+		"still_palm": {
+			"name": "Still Palm",
+			"kind": "special",
+			"startup": 13,
+			"active": 0,
+			"recovery": 20,
+			"level": "none",
+			"qhi": 12,
+			"magic": 1.0,
+			"projectile": {
+				"frame": 13,
+				"kind": "qhi",
+				"offset": [
+					0.7,
+					1.28
+				],
+				"speed": 9.5,
+				"size": [
+					0.8,
+					0.3
+				],
+				"life": 75,
+				"level": "high",
+				"damage": 75,
+				"chip": 14,
+				"hitstun": 26,
+				"blockstun": 16,
+				"push_hit": 0.6,
+				"push_block": 0.5,
+				"magic": 1.0
+			},
+			"tags": [
+				"projectile"
+			],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						6,
+						"gm_palm_load",
+						"out"
+					],
+					[
+						13,
+						"gm_still_palm",
+						"snap"
+					],
+					[
+						24,
+						"gm_still_palm",
+						"linear"
+					],
+					[
+						33,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "cast_wave"
+			}
+		},
+		"sinking_palm": {
+			"name": "Sinking Palm",
+			"kind": "special",
+			"startup": 15,
+			"active": 0,
+			"recovery": 22,
+			"level": "none",
+			"qhi": 10,
+			"magic": 1.0,
+			"projectile": {
+				"frame": 15,
+				"kind": "qhi_low",
+				"offset": [
+					0.65,
+					0.16
+				],
+				"speed": 6.2,
+				"size": [
+					0.55,
+					0.26
+				],
+				"life": 90,
+				"level": "low",
+				"damage": 60,
+				"chip": 10,
+				"hitstun": 24,
+				"blockstun": 14,
+				"ground": "roll",
+				"push_hit": 0.5,
+				"push_block": 0.45,
+				"magic": 1.0
+			},
+			"tags": [
+				"projectile",
+				"low"
+			],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						7,
+						"gm_sink_load",
+						"out"
+					],
+					[
+						15,
+						"gm_sink_palm",
+						"snap"
+					],
+					[
+						28,
+						"gm_sink_palm",
+						"linear"
+					],
+					[
+						37,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "cast_wave"
+			}
+		},
+		"rising_palm": {
+			"name": "Rising Palm",
+			"kind": "special",
+			"startup": 6,
+			"active": 6,
+			"recovery": 26,
+			"level": "mid",
+			"qhi": 10,
+			"damage": 85,
+			"magic": 0.7,
+			"chip": 12,
+			"hitstun": 28,
+			"blockstun": 14,
+			"effect": "launch",
+			"launch": [
+				1.2,
+				8.4
+			],
+			"juggle_cost": 2,
+			"hitstop": 12,
+			"push_block": 0.5,
+			"props": {
+				"invuln": [
+					1,
+					5
+				]
+			},
+			"hitboxes": [
+				{
+					"rect": [
+						0.08,
+						1.0,
+						0.55,
+						1.25
+					]
+				}
+			],
+			"hurtboxes": [
+				{
+					"frames": [
+						6,
+						20
+					],
+					"rect": [
+						0.1,
+						1.2,
+						0.4,
+						0.6
+					]
+				}
+			],
+			"tags": [
+				"anti_air",
+				"reversal"
+			],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						3,
+						"gm_rise_load",
+						"out"
+					],
+					[
+						6,
+						"gm_rising_palm",
+						"snap"
+					],
+					[
+						12,
+						"gm_rising_palm",
+						"linear"
+					],
+					[
+						26,
+						"gm_rise_load",
+						"inout"
+					],
+					[
+						37,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "cast_wave"
+			}
+		},
+		"drift": {
+			"name": "Drift",
+			"kind": "special",
+			"startup": 1,
+			"active": 0,
+			"recovery": 0,
+			"total": 30,
+			"level": "none",
+			"qhi": 12,
+			"magic": 1.0,
+			"motion": [
+				[
+					4,
+					0.0
+				],
+				[
+					19,
+					2.4
+				],
+				[
+					22,
+					2.5
+				]
+			],
+			"lift": [
+				[
+					4,
+					0.0
+				],
+				[
+					11,
+					0.75
+				],
+				[
+					19,
+					0.15
+				],
+				[
+					22,
+					0.0
+				]
+			],
+			"props": {
+				"invuln": [
+					5,
+					17
+				],
+				"airborne": [
+					5,
+					20
+				]
+			},
+			"tags": [
+				"approach",
+				"crossup"
+			],
+			"anim": {
+				"keys": [
+					[
+						4,
+						"gm_drift",
+						"out"
+					],
+					[
+						19,
+						"gm_drift",
+						"linear"
+					],
+					[
+						23,
+						"crouch",
+						"out"
+					],
+					[
+						30,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "whoosh_light"
+			}
+		},
+		"weave": {
+			"name": "Weave",
+			"kind": "special",
+			"startup": 2,
+			"active": 0,
+			"recovery": 0,
+			"total": 22,
+			"level": "none",
+			"effects": {
+				"parry": {
+					"frames": [
+						2,
+						11
+					],
+					"levels": [
+						"high",
+						"mid"
+					],
+					"stun": 16,
+					"stagger": true
+				}
+			},
+			"tags": [
+				"counter"
+			],
+			"anim": {
+				"keys": [
+					[
+						3,
+						"mc_weave_03",
+						"linear"
+					],
+					[
+						4,
+						"mc_weave_04",
+						"linear"
+					],
+					[
+						5,
+						"mc_weave_05",
+						"linear"
+					],
+					[
+						6,
+						"mc_weave_06",
+						"linear"
+					],
+					[
+						7,
+						"mc_weave_07",
+						"linear"
+					],
+					[
+						8,
+						"mc_weave_08",
+						"linear"
+					],
+					[
+						9,
+						"mc_weave_09",
+						"linear"
+					],
+					[
+						10,
+						"mc_weave_10",
+						"linear"
+					],
+					[
+						11,
+						"mc_weave_11",
+						"linear"
+					],
+					[
+						12,
+						"mc_weave_12",
+						"linear"
+					],
+					[
+						13,
+						"mc_weave_13",
+						"linear"
+					],
+					[
+						14,
+						"mc_weave_14",
+						"linear"
+					],
+					[
+						15,
+						"mc_weave_15",
+						"linear"
+					],
+					[
+						16,
+						"mc_weave_16",
+						"linear"
+					],
+					[
+						17,
+						"mc_weave_17",
+						"linear"
+					],
+					[
+						18,
+						"mc_weave_18",
+						"linear"
+					],
+					[
+						22,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "whoosh_light"
+			}
+		},
+		"yield": {
+			"name": "Yield",
+			"kind": "special",
+			"startup": 3,
+			"active": 0,
+			"recovery": 0,
+			"total": 30,
+			"level": "none",
+			"effects": {
+				"parry": {
+					"frames": [
+						3,
+						9
+					],
+					"levels": [
+						"high",
+						"mid",
+						"overhead"
+					],
+					"stun": 30,
+					"counter": "returning_palm"
+				}
+			},
+			"tags": [
+				"counter"
+			],
+			"anim": {
+				"keys": [
+					[
+						3,
+						"gm_yield",
+						"snap"
+					],
+					[
+						10,
+						"gm_yield",
+						"linear"
+					],
+					[
+						30,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "whoosh_light"
+			}
+		},
+		"returning_palm": {
+			"name": "Yield: returning palm",
+			"kind": "special",
+			"startup": 4,
+			"active": 3,
+			"recovery": 16,
+			"level": "mid",
+			"qhi": 6,
+			"damage": 85,
+			"magic": 0.7,
+			"hitstun": 28,
+			"blockstun": 14,
+			"effect": "knockdown",
+			"launch": [
+				3.6,
+				3.6
+			],
+			"hitstop": 12,
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						0.95,
+						0.6,
+						0.55
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						2,
+						"gm_palm_load",
+						"out"
+					],
+					[
+						4,
+						"gm_still_palm",
+						"snap"
+					],
+					[
+						7,
+						"gm_still_palm",
+						"linear"
+					],
+					[
+						22,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"qhi_ward": {
+			"name": "Ward",
+			"kind": "special",
+			"startup": 3,
+			"active": 0,
+			"recovery": 0,
+			"total": 44,
+			"level": "none",
+			"qhi": 10,
+			"props": {
+				"ward": [
+					3,
+					40
+				]
+			},
+			"tags": [
+				"buff"
+			],
+			"anim": {
+				"keys": [
+					[
+						3,
+						"gm_ward",
+						"out"
+					],
+					[
+						38,
+						"gm_ward",
+						"linear"
+					],
+					[
+						44,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "steam"
+			}
+		},
+		"borrowed_face": {
+			"name": "Borrowed Face",
+			"kind": "special",
+			"startup": 1,
+			"active": 0,
+			"recovery": 0,
+			"total": 40,
+			"level": "none",
+			"effects": {
+				"shapeshift": {
+					"frame": 30
+				}
+			},
+			"tags": [
+				"shapeshift"
+			],
+			"anim": {
+				"keys": [
+					[
+						8,
+						"gm_borrow_gather",
+						"out"
+					],
+					[
+						22,
+						"gm_borrow_gather",
+						"linear"
+					],
+					[
+						30,
+						"gm_borrow_sweep",
+						"snap"
+					],
+					[
+						40,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "cast_wave"
+			}
+		},
+		"own_face": {
+			"name": "Own Face",
+			"kind": "special",
+			"startup": 1,
+			"active": 0,
+			"recovery": 0,
+			"total": 20,
+			"level": "none",
+			"effects": {
+				"revert": {
+					"frame": 14
+				}
+			},
+			"tags": [
+				"shapeshift"
+			],
+			"anim": {
+				"keys": [
+					[
+						6,
+						"intro",
+						"out"
+					],
+					[
+						14,
+						"intro",
+						"linear"
+					],
+					[
+						20,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "whoosh_light"
+			}
+		},
+		"qhi_recentre": {
+			"name": "Recentre",
+			"kind": "special",
+			"startup": 1,
+			"active": 0,
+			"recovery": 0,
+			"total": 14,
+			"level": "none",
+			"anim": {
+				"keys": [
+					[
+						5,
+						"gm_recentre",
+						"out"
+					],
+					[
+						10,
+						"gm_recentre",
+						"linear"
+					],
+					[
+						14,
+						"stance",
+						"inout"
+					]
+				]
+			}
+		},
+		"still_water": {
+			"name": "Still Water",
+			"kind": "finisher",
+			"startup": 1,
+			"active": 0,
+			"recovery": 0,
+			"total": 240,
+			"anim": {
+				"keys": [
+					[
+						14,
+						"gm_palm_load",
+						"out"
+					],
+					[
+						30,
+						"gm_fingers",
+						"snap"
+					],
+					[
+						120,
+						"gm_fingers",
+						"linear"
+					],
+					[
+						150,
+						"stance",
+						"inout"
+					],
+					[
+						240,
+						"win",
+						"inout"
+					]
+				]
+			}
+		}
+	},
+	"commands": [
+		[
+			"D,B,F+BL",
+			"borrowed_face"
+		],
+		[
+			"D,B,F+BL",
+			"own_face"
+		],
+		[
+			"D,F+HP",
+			"still_palm"
+		],
+		[
+			"D,F+LP",
+			"sinking_palm"
+		],
+		[
+			"D,U+HP",
+			"rising_palm"
+		],
+		[
+			"D,B+LK",
+			"drift"
+		],
+		[
+			"B,D+LP",
+			"weave"
+		],
+		[
+			"B,D+HP",
+			"yield"
+		],
+		[
+			"D,D+BL",
+			"qhi_ward"
+		]
+	],
+	"finisher": {
+		"input": "B,B,F+HP",
+		"range": "close",
+		"move": "still_water"
+	},
+	"ai": {
+		"range": 2.4,
+		"aggression": 0.4,
+		"zoning": 0.5,
+		"weights": {
+			"hp": 1.0,
+			"lp": 1.0,
+			"hk": 0.7,
+			"lk": 1.0,
+			"sweep": 0.6,
+			"roundhouse": 0.3,
+			"crouch_lk": 0.8,
+			"still_palm": 1.4,
+			"sinking_palm": 1.0,
+			"drift": 0.25
+		},
+		"anti_air": [
+			"rising_palm",
+			"uppercut"
+		],
+		"parries": [
+			"yield",
+			"weave"
+		],
+		"combos": [
+			[
+				"LP",
+				"HP"
+			],
+			[
+				"LP",
+				"LP"
+			]
+		],
+		"juggle": [
+			"D,F+HP"
+		],
+		"qhi": {
+			"shapeshift": "D,B,F+BL",
+			"revert": "D,B,F+BL",
+			"shapeshift_from": [
+				95,
+				85,
+				75
+			],
+			"revert_below": [
+				0,
+				10,
+				16
+			],
+			"keep": [
+				10,
+				15,
+				15
+			]
+		},
+		"zone_from": 2.0,
+		"wards": [
+			"qhi_ward"
+		]
+	}
+}

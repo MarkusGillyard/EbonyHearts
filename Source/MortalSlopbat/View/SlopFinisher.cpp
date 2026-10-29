@@ -283,6 +283,86 @@ namespace Slop
 				Fx->DustAt(VPos);
 			}
 		}
+		else if (Id == TEXT("led_astray"))
+		{
+			// Wren opens her hand; the marsh-lights gather, string out into the dark behind her
+			// opponent, and lead them away into the fog until the last light winks out.
+			CloseUp(Mid, Face, 4.8, 0, 236);
+			const FVector Palm = A->Anim.StrikePoint(TEXT("hand_l"));
+			if (T > 12 && T < 70 && (int32)T % 4 == 0)
+			{
+				Fx->BurstColor(Palm, FLinearColor(0.37f, 0.95f, 0.84f), 3, 0.6, 0.6);
+			}
+			if (Once(TEXT("chime"), 14))
+			{
+				Audio->Play(TEXT("bell"), -8.f, 1.6f);
+			}
+			const double Away = 7.0 * EaseRange(70, 215, T);
+			if (T > 40 && T < 220 && (int32)T % 5 == 0)
+			{
+				// The lights ahead of them, always a little further off.
+				for (int32 I = 1; I <= 3; ++I)
+				{
+					Fx->BurstColor(VPos + FVector(-Face * 0.15 * I, 1.1 + 0.15 * FMath::Sin(T * 0.08 + I), -Away - 0.9 * I), FLinearColor(0.37f, 0.95f, 0.84f), 2, 0.3, 0.7);
+				}
+			}
+			if (T > 50)
+			{
+				VA.PoseOverride = TEXT("dazed");
+				VA.LiftExtra = FVector(-Face * 0.3 * EaseRange(70, 215, T), 0, -Away);
+				V->SetTint(FLinearColor(0.01f, 0.015f, 0.02f), (float)(0.75 * EaseRange(90, 215, T)));
+			}
+			if (Once(TEXT("follow"), 70))
+			{
+				Audio->Play(TEXT("far_whoosh"), -8.f, 0.8f);
+			}
+			if (Once(TEXT("gone"), 216))
+			{
+				V->SetHidden(true);
+				Audio->Play(TEXT("splash"), -10.f, 0.7f);
+				Audio->Play(TEXT("bell"), -12.f, 1.9f);
+			}
+		}
+		else if (Id == TEXT("still_water"))
+		{
+			// Two fingers to the brow, and the Qhi stops everything in the body: it stills, darkens
+			// to standing water, and falls as water.
+			CloseUp(Mid, Face, 3.6, 0, 225);
+			const FVector Brow = VPos + FVector(0, 1.55 * VF.Scale(), 0.15);
+			if (T > 8 && T < 30 && (int32)T % 3 == 0)
+			{
+				Fx->BurstColor(A->Anim.StrikePoint(TEXT("hand_l")), FLinearColor(1.f, 0.8f, 0.35f), 3, 0.5, 0.5);
+			}
+			if (Once(TEXT("touch"), 30))
+			{
+				Audio->Play(TEXT("palm_strike"), -2.f, 0.9f);
+				Audio->Play(TEXT("bell"), -4.f, 0.7f);
+				Fx->FlashAt(Brow, FLinearColor(1.f, 0.82f, 0.45f), 18.f);
+				Fx->BurstColor(Brow, FLinearColor(1.f, 0.8f, 0.35f), 16, 2.0, 0.5);
+			}
+			if (T > 30)
+			{
+				VA.PoseOverride = TEXT("dazed");
+				V->SetTint(FLinearColor(0.03f, 0.06f, 0.08f), (float)FMath::Clamp((T - 40) / 70, 0.0, 1.0), 0.9f);
+			}
+			if (T > 120)
+			{
+				V->SetDissolve((float)FMath::Clamp((T - 120) / 60, 0.0, 1.0), FLinearColor(0.55f, 0.75f, 0.85f));
+				if ((int32)T % 3 == 0 && T < 185)
+				{
+					Fx->BurstColor(VPos + FVector(FMath::FRandRange(-0.25, 0.25), 0.3 + FMath::FRand() * 1.4, 0.2), FLinearColor(0.92f, 0.92f, 0.88f), 10, 1.0, 0.6);
+				}
+			}
+			if (Once(TEXT("fall"), 170))
+			{
+				Audio->Play(TEXT("splash"), 0.f, 0.9f);
+				Fx->DustAt(VPos);
+			}
+			if (Once(TEXT("gone"), 186))
+			{
+				V->SetHidden(true);
+			}
+		}
 		else if (Id == TEXT("lights_out"))
 		{
 			if (T < 70)

@@ -359,6 +359,7 @@
 		},
 		"ember_shot": {
 			"name": "Ember Shot",
+			"magic": 1.0,
 			"kind": "special",
 			"startup": 12,
 			"active": 0,
@@ -419,6 +420,7 @@
 		},
 		"wick_knee": {
 			"name": "Wick Knee",
+			"magic": 0.4,
 			"kind": "special",
 			"startup": 11,
 			"active": 7,
@@ -595,6 +597,7 @@
 		},
 		"rising_knee": {
 			"name": "Rising Knee",
+			"magic": 0.4,
 			"kind": "special",
 			"startup": 5,
 			"active": 6,

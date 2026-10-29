@@ -616,7 +616,29 @@ namespace SlopScreensImpl
 			}
 		};
 		const EMode M = R.Mode;
-		if (M == EMode::Arcade)
+		const TSharedPtr<FJsonObject> Secret = Json::Obj(GetContent().Story, TEXT("secret"));
+		if (M == EMode::Arcade && F.OnSecretRung())
+		{
+			// The old master's challenge, won or lost, ends the run: there is no continue against
+			// him, and the tower was already recorded when the Slopbat fell.
+			const bool bWon = R.Winner == 0;
+			const FName Fighter = R.P1;
+			if (bWon)
+			{
+				const int32 Pts = F.AddArcadeScore(R);
+				GI->Progress.Unlock(USlopGameInstance::UnlockKey(FGameFlow::SecretFighter()));
+				GI->Progress.RaiseArcadeScore(Fighter, F.ArcadeTower(), F.ArcadeScore());
+				S->Line(FText::Format(LOCTEXT("ScoreLine", "+{0} points   ·   total {1}"), FText::AsNumber(Pts), FText::AsNumber(F.ArcadeScore())), 30.f, SlopUI::Amber);
+			}
+			S->Heading = FText::FromString(Json::Str(Secret, bWon ? TEXT("won") : TEXT("lost")));
+			S->HeadingSize = 44.f;
+			if (bWon)
+			{
+				S->Line(FText::FromString(Json::Str(Secret, TEXT("unlocked"))), 30.f, SlopUI::Accent);
+			}
+			S->Item(LOCTEXT("Continue", "Continue"), [GI, Fighter]() { GI->Goto(SlopScreens::Ending(Fighter, true)); });
+		}
+		else if (M == EMode::Arcade)
 		{
 			if (R.Winner == 0)
 			{
@@ -647,7 +669,21 @@ namespace SlopScreensImpl
 					S->Line(FText::Format(LOCTEXT("TimeLine", "Time {0}:{1}   ·   continues {2}{3}"), (int32)Secs / 60, FText::FromString(FString::Printf(TEXT("%02d"), (int32)Secs % 60)),
 						F.ArcadeContinues(), Total > OldBest ? LOCTEXT("NewBest", "   ·   NEW BEST SCORE") : FText::GetEmpty()), 30.f, Total > OldBest ? SlopUI::Accent : SlopUI::Dim);
 					const FName Fighter = R.P1;
-					S->Item(LOCTEXT("Continue", "Continue"), [GI, Fighter]() { GI->Goto(SlopScreens::Ending(Fighter, true)); });
+					if (F.SecretEarned() && !GI->IsUnlocked(FGameFlow::SecretFighter()))
+					{
+						// No continue all the way up: someone on the still water has been watching.
+						S->Line(FText::FromString(Json::Str(Secret, TEXT("offer"))), 30.f, SlopUI::Text);
+						S->Item(FText::FromString(Json::Str(Secret, TEXT("approach"), TEXT("Face him"))), [GI]()
+						{
+							GI->Flow.AddSecretRung();
+							GI->Goto(SlopScreens::FaceOff());
+						});
+						S->Item(FText::FromString(Json::Str(Secret, TEXT("leave"), TEXT("Walk on"))), [GI, Fighter]() { GI->Goto(SlopScreens::Ending(Fighter, true)); });
+					}
+					else
+					{
+						S->Item(LOCTEXT("Continue", "Continue"), [GI, Fighter]() { GI->Goto(SlopScreens::Ending(Fighter, true)); });
+					}
 				}
 			}
 			else

@@ -112,6 +112,8 @@ namespace Slop
 		static FString Path();
 
 		void RecordArcade(FName Fighter, int32 Difficulty, double Seconds, int32 Score);
+		// A better total for a tower already recorded (the run went on past the Slopbat).
+		void RaiseArcadeScore(FName Fighter, int32 Difficulty, int32 Score);
 		// Returns true for a new best.
 		bool RecordSurvival(FName Fighter, int32 Waves);
 		// Returns true the first time.

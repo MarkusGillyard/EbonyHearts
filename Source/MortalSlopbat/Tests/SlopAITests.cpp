@@ -158,7 +158,9 @@ SLOP_TEST(FSlopTrialsPossible, "Trials.EveryTrialIsPossible")
 bool FSlopTrialsPossible::RunTest(const FString&)
 {
 	int32 Total = 0;
-	for (const FName& Id : FContent::Roster())
+	TArray<FName> Ids = FContent::Roster();
+	Ids.Append(FContent::Secret());
+	for (const FName& Id : Ids)
 	{
 		const FName Rival = RivalOf(Id);
 		const TArray<TSharedPtr<FJsonValue>>* List = Json::Arr(GetContent().Trials, *Id.ToString());
@@ -194,9 +196,11 @@ bool FSlopCpuAllPairs::RunTest(const FString&)
 {
 	// Every pairing, each side, at every difficulty: a whole match runs to its end, nobody is
 	// stuck in one state for long, nobody leaves the stage.
-	const TArray<FName>& Roster = FContent::Roster();
+	TArray<FName> Roster = FContent::Roster();
+	Roster.Append(FContent::Secret());
 	int32 Matches = 0, Stuck = 0, Outside = 0, Unfinished = 0;
-	int32 Wins[6] = {0, 0, 0, 0, 0, 0};
+	TArray<int32> Wins;
+	Wins.SetNumZeroed(Roster.Num());
 	for (int32 Level = 0; Level < 3; ++Level)
 	{
 		for (int32 A = 0; A < Roster.Num(); ++A)

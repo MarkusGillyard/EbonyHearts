@@ -39,6 +39,8 @@ void ASlopVfx::Setup(ASlopMatch* InMatch)
 		{TEXT("Plane"), FLinearColor(1.f, 0.88f, 0.65f), 3.f, true},   // ring (camera-facing quad)
 		{TEXT("Plane"), FLinearColor(1.f, 0.85f, 0.6f), 2.f, true},    // soft flash disc
 		{TEXT("Cube"), FLinearColor(0.9f, 0.9f, 0.86f), 2.f, true},    // pale flakes (salt, ash, tallow)
+		{TEXT("Cube"), FLinearColor(1.f, 0.78f, 0.32f), 9.f, true},    // Qhi
+		{TEXT("Sphere"), FLinearColor(0.32f, 0.95f, 0.82f), 6.f, true}, // fen-light wisps
 	};
 	for (int32 K = 0; K < (int32)EKind::Count; ++K)
 	{
@@ -93,7 +95,9 @@ void ASlopVfx::BurstColor(const FVector& P, const FLinearColor& C, int32 N, doub
 	// The nearest of the effect families to the colour asked for.
 	const FLinearColor H = C.LinearRGBToHSV();
 	EKind K = EKind::Ember;
-	if (H.B > 0.75f && H.G < 0.25f) K = EKind::Pale;
+	if (H.G > 0.4f && H.R > 163.f && H.R < 200.f) K = EKind::Wisp;
+	else if (H.G > 0.5f && H.R >= 36.f && H.R <= 56.f) K = EKind::Qhi;
+	else if (H.B > 0.75f && H.G < 0.25f) K = EKind::Pale;
 	else if (H.R > 70.f && H.R < 160.f) K = EKind::Slop;
 	else if (H.G < 0.3f) K = EKind::Dust;
 	Burst(K, P, N, Speed, Life, 0.03, FVector(0, 0.5, 0));
@@ -157,6 +161,9 @@ namespace
 			{TEXT("anchor"), {FLinearColor(0.25f, 0.25f, 0.27f), 0.f, 0.f, 0.f, EProjSolid::Anchor, 3}},
 			{TEXT("quake"), {FLinearColor(0.55f, 0.45f, 0.32f), 0.f, 0.f, 0.f, EProjSolid::None, 3, 0.015f, 0.09f}},
 			{TEXT("gust"), {FLinearColor(0.75f, 0.82f, 0.8f), 0.f, 0.f, 0.f, EProjSolid::None, 3, 0.008f, 0.13f}},
+			// The Grandmaster's palms: a long gold bolt at head height, and a wave along the floor.
+			{TEXT("qhi"), {FLinearColor(1.f, 0.8f, 0.36f), 9.f, 9.f, 0.7f, EProjSolid::None, 8, 0.012f, 0.035f}},
+			{TEXT("qhi_low"), {FLinearColor(1.f, 0.76f, 0.3f), 5.f, 6.f, 0.45f, EProjSolid::None, 8, 0.01f, 0.05f}},
 		};
 		static const FProjLook Default = {FLinearColor(0.9f, 0.85f, 0.6f), 6.f, 6.f, 1.f, EProjSolid::None, -1};
 		const FProjLook* L = Looks.Find(Kind);
@@ -213,6 +220,11 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 			Spawn(EKind::Ring, P, FVector::ZeroVector, 0.34, 0.2, 7.5, 0, 0);
 			Flash(P, FLinearColor(1.f, 0.9f, 0.7f), 14.f);
 		}
+		if (Mv && !E.bProj && Mv->Magic >= 0.2)
+		{
+			// A blow carried by magic flares in its fighter's colour as it lands.
+			Burst(MagicKind(A.Index), P, 6 + (int32)(Mv->Magic * 12.0), 2.5 + S * 2.0, 0.35, 0.025, Along * 0.6);
+		}
 		if (Gore != TEXT("off") && !E.bProj && E.Damage > 0)
 		{
 			const int32 N = Gore == TEXT("low") ? 3 : 6 + (int32)(S * 10);
@@ -257,7 +269,8 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 		// It breaks up into what it was made of: fire into embers, steel into sparks, tar into
 		// slime, the bubble into spray, the anchor and the ground's shock into dust.
 		const FProjLook& L = LookOf(E.Kind);
-		const EKind K = L.Glow > 0.f && E.Kind != TEXT("bubble") && E.Kind != TEXT("wave") ? EKind::Ember
+		const EKind K = E.Kind.ToString().StartsWith(TEXT("qhi")) ? EKind::Qhi
+			: L.Glow > 0.f && E.Kind != TEXT("bubble") && E.Kind != TEXT("wave") ? EKind::Ember
 			: (L.Solid == EProjSolid::Blade || L.Solid == EProjSolid::Harpoon) ? EKind::Spark
 			: E.Kind == TEXT("bubble") || E.Kind == TEXT("wave") ? EKind::Pale
 			: L.Solid == EProjSolid::Tar ? EKind::Slop : EKind::Dust;
@@ -265,6 +278,20 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 		break;
 	}
 	case EEvent::Parry:
+		if (E.Kind == TEXT("ward"))
+		{
+			// A projectile breaking on the Grandmaster's ward: gold, not the guard's pale.
+			Spawn(EKind::Ring, P, FVector::ZeroVector, 0.2, 0.2, 5.0, 0, 0);
+			Burst(EKind::Qhi, P, 14, 3.0, 0.35, 0.025);
+			Flash(P, FLinearColor(1.f, 0.82f, 0.45f), 6.f);
+			break;
+		}
+		if (E.Kind == TEXT("weave"))
+		{
+			// Slipped: no contact to mark, only the air the blow passed through.
+			Burst(EKind::Pale, P, 4, 1.2, 0.2, 0.012);
+			break;
+		}
 		// A caught blow: a quick pale ring and a flash where the guard met it.
 		Spawn(EKind::Ring, P, FVector::ZeroVector, 0.14, 0.12, 4.0, 0, 0);
 		Flash(P, FLinearColor(0.85f, 0.92f, 1.f), 5.f);
@@ -278,6 +305,54 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 		Burst(EKind::Pale, Mid, 8, 2.2, 0.25, 0.015);
 		break;
 	}
+	case EEvent::Move:
+		if (E.Who >= 0 && E.Who <= 1)
+		{
+			// Movement carried by magic (Wren's flicker, the Grandmaster's drift): a burst where it
+			// starts, in the fighter's colour.
+			const FFighter& F = M->Sim.Fighters[E.Who];
+			const FMoveDef* Mv = F.Def->Move(E.Move);
+			if (Mv && Mv->Magic >= 0.9 && !Mv->IsAttack() && !Mv->Projectile.bHas)
+			{
+				Burst(MagicKind(E.Who), FVector(F.Pos.X, 0.9 * F.Scale(), 0.15), 18, 2.2, 0.45, 0.03, FVector(-F.Facing * 0.6, 0.2, 0));
+			}
+		}
+		break;
+	case EEvent::Form:
+		if (E.Who >= 0 && E.Who <= 1)
+		{
+			const FFighter& F = M->Sim.Fighters[E.Who];
+			const FVector Body(F.Pos.X, 1.0 * F.Scale(), 0.2);
+			const FName K = E.Kind;
+			if (K == TEXT("borrowed") || K == TEXT("own"))
+			{
+				// The shape changes in a column of gold: a wide ring, motes up the body, a light.
+				Spawn(EKind::Ring, Body, FVector::ZeroVector, 0.32, 0.3, 7.0, 0, 0);
+				for (int32 I = 0; I < 5; ++I)
+				{
+					Burst(EKind::Qhi, Body + FVector(0, (I - 2) * 0.3, 0), K == TEXT("borrowed") ? 12 : 6, 2.4, 0.6, 0.03, FVector(0, 0.8, 0));
+				}
+				Flash(Body, FLinearColor(1.f, 0.82f, 0.45f), K == TEXT("borrowed") ? 22.f : 10.f);
+			}
+			else if (K == TEXT("spent") || K == TEXT("broken"))
+			{
+				// The Qhi gives out: what was gold falls as grey dust, with a dull rust light.
+				Burst(EKind::Dust, Body, 18, 1.4, 0.8, 0.06, FVector(0, -0.3, 0));
+				Burst(EKind::Qhi, Body, K == TEXT("broken") ? 16 : 6, 1.6, 0.4, 0.02, FVector(0, -0.6, 0));
+				Flash(Body, FLinearColor(0.7f, 0.3f, 0.15f), 8.f);
+			}
+			else if (K == TEXT("recentred"))
+			{
+				Spawn(EKind::Ring, Body, FVector::ZeroVector, 0.24, 0.2, 4.0, 0, 0);
+				Burst(EKind::Qhi, Body, 8, 1.4, 0.5, 0.025, FVector(0, 0.6, 0));
+			}
+			else if (K == TEXT("failed") || K == TEXT("refused"))
+			{
+				// A shape that would not come: a few motes scatter from the hands.
+				Burst(EKind::Qhi, Body + FVector(F.Facing * 0.25, 0.4, 0), 6, 1.8, 0.3, 0.02);
+			}
+		}
+		break;
 	case EEvent::Teleport:
 		if (E.Who >= 0)
 		{
@@ -287,6 +362,50 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 		break;
 	default:
 		break;
+	}
+}
+
+ASlopVfx::EKind ASlopVfx::MagicKind(int32 Who) const
+{
+	const ASlopMatch* M = Match.Get();
+	const FFighterDef* D = M ? M->Sim.Fighters[FMath::Clamp(Who, 0, 1)].BaseDef : nullptr;
+	const FLinearColor H = FLinearColor(FColor::FromHex(Json::Str(D ? D->Look : nullptr, TEXT("glow"), TEXT("#ffd27a")))).LinearRGBToHSV();
+	if (H.R > 163.f && H.R < 200.f) return EKind::Wisp;
+	if (H.R >= 36.f && H.R <= 56.f) return EKind::Qhi;
+	if (H.R > 70.f && H.R <= 163.f) return EKind::Slop;
+	if (H.R > 190.f && H.R < 290.f) return EKind::Pale;
+	return EKind::Ember;
+}
+
+void ASlopVfx::QhiStep(double Delta)
+{
+	const ASlopMatch* M = Match.Get();
+	if (!M || Delta <= 0.0)
+	{
+		return;
+	}
+	for (int32 I = 0; I < 2; ++I)
+	{
+		const FFighter& F = M->Sim.Fighters[I];
+		const bool bBorrowed = F.Form == EForm::Borrowed;
+		const bool bGlide = F.UsesQhi() && F.Form == EForm::Own && F.State == EState::Run;
+		if (!bBorrowed && !bGlide)
+		{
+			QhiT[I] = 0;
+			continue;
+		}
+		QhiT[I] += Delta;
+		// A borrowed shape smoulders gold, thinning as its Qhi runs down; a glide trails it underfoot.
+		const double Every = (bReduced ? 2.0 : 1.0) * (bBorrowed ? FMath::Lerp(0.16, 0.05, FMath::Clamp(F.Qhi / 50.0, 0.0, 1.0)) : 0.04);
+		while (QhiT[I] >= Every)
+		{
+			QhiT[I] -= Every;
+			const double H = F.Def->Height;
+			const FVector At = bBorrowed
+				? FVector(F.Pos.X + FMath::FRandRange(-0.22, 0.22), F.Pos.Y + FMath::FRandRange(0.15, 0.95) * H, FMath::FRandRange(-0.1, 0.2))
+				: FVector(F.Pos.X - F.Facing * FMath::FRandRange(0.0, 0.3), F.Pos.Y + FMath::FRandRange(0.0, 0.12), FMath::FRandRange(-0.1, 0.2));
+			Spawn(EKind::Qhi, At, FVector(FMath::FRandRange(-0.15, 0.15), bBorrowed ? FMath::FRandRange(0.5, 1.1) : 0.15, 0), 0.55, 0.022, 0, 1.5, bBorrowed ? -0.4 : 0.0);
+		}
 	}
 }
 
@@ -664,6 +783,7 @@ void ASlopVfx::Step(double Delta)
 	SoundRings();
 	StormStep(Delta);
 	WhipStep();
+	QhiStep(Delta);
 	for (int32 K = 0; K < (int32)EKind::Count; ++K)
 	{
 		TArray<FParticle>& A = Parts[K];

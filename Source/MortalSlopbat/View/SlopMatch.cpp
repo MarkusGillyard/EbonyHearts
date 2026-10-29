@@ -75,27 +75,12 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 	for (int32 I = 0; I < 2; ++I)
 	{
 		Views[I] = W->SpawnActor<ASlopFighterActor>(P);
-		if (!Views[I]->Setup(Sim.Fighters[I], USlopGameInstance::MeshFor(Sim.Fighters[I].Def->Id)))
+		if (!Views[I]->Setup(Sim.Fighters[I], USlopGameInstance::MeshFor(Sim.Fighters[I].Def->Body)))
 		{
 			return false;
 		}
 		Views[I]->bSweats = true;
-	}
-	if (Config.bMirrorDark)
-	{
-		Views[1]->SetTint(FLinearColor(0.06f, 0.1f, 0.05f), 0.72f, 0.6f);
-	}
-	else if (Config.P1 == Config.P2)
-	{
-		// Mirror matches: the second player wears the alternate colours.
-		Views[1]->SetCostume(FLinearColor(0.55f, 0.75f, 1.1f));
-	}
-	for (int32 I = 0; I < 2; ++I)
-	{
-		if (Config.bCostume[I] && !(I == 1 && Config.P1 == Config.P2))
-		{
-			Views[I]->SetCostume(FLinearColor(0.55f, 0.75f, 1.1f));
-		}
+		DressView(I);
 	}
 	Camera = W->SpawnActor<ASlopFightCamera>(P);
 	Camera->Bind(&Sim);
@@ -376,9 +361,16 @@ void ASlopMatch::FixedTick()
 	++SteppedThisFrame;
 	LastPads[0] = Pads[0];
 	LastPads[1] = Pads[1];
-	for (ASlopFighterActor* V : Views)
+	for (int32 I = 0; I < 2; ++I)
 	{
-		V->SyncFromSim();
+		if (Views[I]->BoundDef != Sim.Fighters[I].Def)
+		{
+			RebindView(I);
+		}
+		else
+		{
+			Views[I]->SyncFromSim();
+		}
 	}
 	for (const FSimEvent& E : Sim.Events)
 	{
@@ -399,6 +391,50 @@ void ASlopMatch::FixedTick()
 	}
 }
 
+void ASlopMatch::DressView(int32 I)
+{
+	ASlopFighterActor* V = Views[I];
+	const FFighter& F = Sim.Fighters[I];
+	const FLinearColor Alt(0.55f, 0.75f, 1.1f);
+	if (Config.bMirrorDark && I == 1)
+	{
+		V->SetTint(FLinearColor(0.06f, 0.1f, 0.05f), 0.72f, 0.6f);
+	}
+	if (F.Form == EForm::Borrowed)
+	{
+		// A borrowed shape is lit from inside by the Grandmaster's Qhi: a strong gold rim over the
+		// other fighter's own colours, so who is who never needs guessing.
+		V->SetAccent(FLinearColor(FColor::FromHex(Json::Str(F.BaseDef->Look, TEXT("glow"), TEXT("#ffcf5a")))), 0.32f);
+		return;
+	}
+	if (F.Form == EForm::Spent)
+	{
+		// Spent: the Qhi's rim has gone out.
+		V->SetAccent(FLinearColor::Black, 0.f);
+	}
+	else
+	{
+		V->SetAccent(FLinearColor(FColor::FromHex(Json::Str(F.BaseDef->Look, TEXT("glow"), TEXT("#ffffff")))), 0.3f * (float)Json::Num(F.BaseDef->Look, TEXT("accent"), 0.24));
+	}
+	if ((Config.P1 == Config.P2 && I == 1 && !Config.bMirrorDark) || (Config.bCostume[I] && !(I == 1 && Config.P1 == Config.P2)))
+	{
+		// Mirror matches: the second player wears the alternate colours.
+		V->SetCostume(Alt);
+	}
+}
+
+void ASlopMatch::RebindView(int32 I)
+{
+	if (!Views[I]->Rebind(Sim.Fighters[I]))
+	{
+		UE_LOG(LogSlop, Error, TEXT("No body for %s's shape %s"), *Sim.Fighters[I].BaseDef->Id.ToString(), *Sim.Fighters[I].Def->Id.ToString());
+		return;
+	}
+	Views[I]->bSweats = true;
+	ApplySettings();
+	DressView(I);
+}
+
 void ASlopMatch::FinishFromGuide(int32 Winner)
 {
 	if (bEnded)
@@ -409,8 +445,8 @@ void ASlopMatch::FinishFromGuide(int32 Winner)
 	Announce(NSLOCTEXT("SlopMatch", "WellFought", "WELL FOUGHT"), NSLOCTEXT("SlopMatch", "Awaits", "The Sump awaits."));
 	Result = FMatchResult();
 	Result.Winner = Winner;
-	Result.P1 = Sim.Fighters[0].Def->Id;
-	Result.P2 = Sim.Fighters[1].Def->Id;
+	Result.P1 = Sim.Fighters[0].BaseDef->Id;
+	Result.P2 = Sim.Fighters[1].BaseDef->Id;
 	Result.Mode = Config.Mode;
 	FTimerHandle H;
 	GetWorldTimerManager().SetTimer(H, FTimerDelegate::CreateWeakLambda(this, [this]()
@@ -477,6 +513,13 @@ void ASlopMatch::HandleEvent(const FSimEvent& E)
 	case EEvent::Armor:
 		Camera->AddShake(0.012);
 		break;
+	case EEvent::Form:
+		if (E.Kind == TEXT("borrowed") || E.Kind == TEXT("spent") || E.Kind == TEXT("broken"))
+		{
+			Camera->AddShake(E.Kind == TEXT("borrowed") ? 0.012 : 0.008);
+			GI()->Router->Rumble(E.Who, 0.35f, 0.18f);
+		}
+		break;
 	case EEvent::Throw:
 		Camera->AddShake(0.008);
 		break;
@@ -518,8 +561,8 @@ void ASlopMatch::HandleEvent(const FSimEvent& E)
 			Result.Winner = E.Winner;
 			Result.Wins[0] = Sim.Wins[0];
 			Result.Wins[1] = Sim.Wins[1];
-			Result.P1 = Sim.Fighters[0].Def->Id;
-			Result.P2 = Sim.Fighters[1].Def->Id;
+			Result.P1 = Sim.Fighters[0].BaseDef->Id;
+			Result.P2 = Sim.Fighters[1].BaseDef->Id;
 			Result.Finisher = E.Move;
 			Result.bFlawless = E.bFlawless;
 			Result.Mode = Config.Mode;
@@ -625,6 +668,16 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 	}
 	case EEvent::Armor: A->Play(TEXT("armor"), -2.f); break;
 	case EEvent::Parry:
+		if (E.Kind == TEXT("ward"))
+		{
+			A->Play(TEXT("bell"), -6.f, 1.4f);
+			break;
+		}
+		if (E.Kind == TEXT("weave"))
+		{
+			A->Play(TEXT("whoosh_light"), -6.f, 0.85f);
+			break;
+		}
 		// The guard's slap with a hard knock over it; a shin check is bone on bone, duller and lower.
 		A->Play(TEXT("block"), -2.f, 0.9f);
 		A->Play(E.Level == ELevel::Low ? TEXT("kenney:impactPunch_heavy") : TEXT("kenney:impactWood_medium"), -4.f, E.Level == ELevel::Low ? 0.8f : 1.1f);
@@ -645,9 +698,20 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 	case EEvent::Projectile:
 		// Two kinds have no cast of their own (silent in the original too): Gorm's quake gets the
 		// ground crumbling as the wave runs out from the slap, the Slopbat's gust a far rush of air.
-		A->Play(E.Kind == TEXT("quake") ? FString(TEXT("crumble")) : E.Kind == TEXT("gust") ? FString(TEXT("far_whoosh")) : TEXT("cast_") + E.Kind.ToString(), -4.f);
+		// The Grandmaster's palms sound as the orb and the wave.
+		A->Play(E.Kind == TEXT("quake") ? FString(TEXT("crumble")) : E.Kind == TEXT("gust") ? FString(TEXT("far_whoosh"))
+			: E.Kind == TEXT("qhi") ? FString(TEXT("cast_orb")) : E.Kind == TEXT("qhi_low") ? FString(TEXT("cast_wave")) : TEXT("cast_") + E.Kind.ToString(), -4.f);
 		break;
 	case EEvent::Clash: A->Play(TEXT("burst"), -2.f); break;
+	case EEvent::Form:
+		// A bell for the Qhi taking a shape or letting it go; dust and a low gong when it gives out.
+		if (E.Kind == TEXT("borrowed")) { A->Play(TEXT("bell"), -2.f, 0.8f); A->Play(TEXT("cast_wave"), -6.f, 0.7f); }
+		else if (E.Kind == TEXT("own")) A->Play(TEXT("bell"), -5.f, 1.05f);
+		else if (E.Kind == TEXT("spent") || E.Kind == TEXT("broken")) { A->Play(TEXT("gong"), -4.f, 0.55f); A->Play(TEXT("crumble"), -6.f, 0.9f); }
+		else if (E.Kind == TEXT("recentred")) A->Play(TEXT("bell"), -8.f, 1.25f);
+		else if (E.Kind == TEXT("failed")) A->Play(TEXT("burst"), -6.f, 0.7f);
+		else if (E.Kind == TEXT("refused")) A->Play(TEXT("ui_locked"), -8.f, 0.9f, ESlopBus::Ui);
+		break;
 	case EEvent::Jump: A->Play(Arena->Footstep, -12.f + Arena->FootstepDb, 1.1f); break;
 	case EEvent::KO: A->Play(TEXT("ko_hit"), 0.f); break;
 	case EEvent::RoundStart: A->Play(TEXT("gong"), -4.f); break;

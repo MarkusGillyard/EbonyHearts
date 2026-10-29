@@ -372,5 +372,145 @@
 				"vent"
 			]
 		}
+	],
+	"wren": [
+		{
+			"name": "One-Two, Head Kick",
+			"steps": [
+				"LP",
+				"HP",
+				"HK"
+			],
+			"moves": [
+				"lp",
+				"wren_cross",
+				"wren_head_kick"
+			]
+		},
+		{
+			"name": "Thigh Kick, Head Kick",
+			"steps": [
+				"LK",
+				"HK"
+			],
+			"moves": [
+				"lk",
+				"wren_head_kick"
+			]
+		},
+		{
+			"name": "One-Two, Backfist",
+			"steps": [
+				"LP",
+				"HP",
+				"B+HP"
+			],
+			"moves": [
+				"lp",
+				"wren_cross",
+				"wren_backfist"
+			]
+		},
+		{
+			"name": "Turning Light",
+			"steps": [
+				"B,F+HK"
+			],
+			"moves": [
+				"turning_light"
+			]
+		},
+		{
+			"name": "Flying Cross",
+			"steps": [
+				"B,F+HP"
+			],
+			"moves": [
+				"flying_cross"
+			]
+		},
+		{
+			"name": "Head Kick, Lifting Light",
+			"steps": [
+				"LK",
+				"HK",
+				"D,U+LK"
+			],
+			"moves": [
+				"lk",
+				"wren_head_kick",
+				"lifting_light"
+			]
+		},
+		{
+			"name": "Feint into the Reaping Throw",
+			"steps": [
+				"D,B+LK",
+				"F+LP"
+			],
+			"moves": [
+				"throw_f"
+			]
+		}
+	],
+	"grandmaster": [
+		{
+			"name": "Old Hands",
+			"steps": [
+				"LP",
+				"HP"
+			],
+			"moves": [
+				"lp",
+				"gm_two_fingers"
+			]
+		},
+		{
+			"name": "Old Hands, Still Palm",
+			"steps": [
+				"LP",
+				"HP",
+				"D,F+HP"
+			],
+			"moves": [
+				"lp",
+				"gm_two_fingers",
+				"still_palm"
+			]
+		},
+		{
+			"name": "Old Hands, Rising Palm",
+			"steps": [
+				"LP",
+				"HP",
+				"D,U+HP"
+			],
+			"moves": [
+				"lp",
+				"gm_two_fingers",
+				"rising_palm"
+			]
+		},
+		{
+			"name": "Sinking Palm",
+			"steps": [
+				"D,F+LP"
+			],
+			"moves": [
+				"sinking_palm"
+			]
+		},
+		{
+			"name": "Borrowed Face",
+			"steps": [
+				"D,B,F+BL",
+				"LK",
+				"HK"
+			],
+			"moves": [
+				"lk",
+				"wren_head_kick"
+			]
+		}
 	]
 }

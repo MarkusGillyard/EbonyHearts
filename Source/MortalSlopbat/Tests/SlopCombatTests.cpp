@@ -670,7 +670,7 @@ bool FSlopNoOverlap::RunTest(const FString&)
 SLOP_TEST(FSlopNoInfinite, "Combat.Combo.NoGroundInfinite")
 bool FSlopNoInfinite::RunTest(const FString&)
 {
-	for (const FName& Id : FContent::Roster())
+	for (const FName& Id : FContent::Fighting())
 	{
 		for (const int32 Btn : {HP, LP, HK, LK})
 		{
@@ -699,7 +699,7 @@ bool FSlopNoInfinite::RunTest(const FString&)
 SLOP_TEST(FSlopNoSpecialLoop, "Combat.Combo.NoSpecialLoops")
 bool FSlopNoSpecialLoop::RunTest(const FString&)
 {
-	for (const FName& Id : FContent::Roster())
+	for (const FName& Id : FContent::Fighting())
 	{
 		const FFighterDef* D = GetContent().Fighter(Id);
 		for (const FCommand& C : D->Commands)
@@ -766,7 +766,7 @@ bool FSlopNoSpecialLoop::RunTest(const FString&)
 SLOP_TEST(FSlopNoCancelLoop, "Combat.Combo.NoCancelLoops")
 bool FSlopNoCancelLoop::RunTest(const FString&)
 {
-	for (const FName& Id : FContent::Roster())
+	for (const FName& Id : FContent::Fighting())
 	{
 		const FFighterDef* D = GetContent().Fighter(Id);
 		for (const FCommand& C : D->Commands)
@@ -809,7 +809,7 @@ SLOP_TEST(FSlopSelfCancelBound, "Combat.Combo.SelfCancelsAreBounded")
 bool FSlopSelfCancelBound::RunTest(const FString&)
 {
 	int32 Found = 0;
-	for (const FName& Id : FContent::Roster())
+	for (const FName& Id : FContent::Fighting())
 	{
 		const FFighterDef* D = GetContent().Fighter(Id);
 		for (const FCommand& C : D->Commands)

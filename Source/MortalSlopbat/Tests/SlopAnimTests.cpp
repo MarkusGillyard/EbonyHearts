@@ -262,7 +262,7 @@ bool FSlopBlowDirections::RunTest(const FString&)
 SLOP_TEST(FSlopStrikesReachBoxes, "Anim.StrikesReachTheirHitboxes")
 bool FSlopStrikesReachBoxes::RunTest(const FString&)
 {
-	TArray<FName> Ids = FContent::Roster();
+	TArray<FName> Ids = FContent::Fighting();
 	Ids.Append(FContent::Special());
 	int32 Checked = 0;
 	for (const FName& Id : Ids)
@@ -346,7 +346,7 @@ bool FSlopStrikesReachBoxes::RunTest(const FString&)
 SLOP_TEST(FSlopHurtboxesFitBody, "Anim.CrouchingHeadFitsTheHurtbox")
 bool FSlopHurtboxesFitBody::RunTest(const FString&)
 {
-	TArray<FName> Ids = FContent::Roster();
+	TArray<FName> Ids = FContent::Fighting();
 	Ids.Append(FContent::Special());
 	for (const FName& Id : Ids)
 	{
@@ -401,7 +401,7 @@ bool FSlopHurtboxesFitBody::RunTest(const FString&)
 SLOP_TEST(FSlopBodiesApart, "Anim.BodiesPushedTogetherDoNotOverlap")
 bool FSlopBodiesApart::RunTest(const FString&)
 {
-	const TArray<FName>& Roster = FContent::Roster();
+	const TArray<FName> Roster = FContent::Fighting();
 	double Tightest = 1e9;
 	FString TightestPair;
 	for (const FName& IdA : Roster)
@@ -458,7 +458,7 @@ SLOP_TEST(FSlopFloorHolds, "Anim.KnockdownsStayAboveTheFloor")
 bool FSlopFloorHolds::RunTest(const FString&)
 {
 	const FFighterDef* Attacker = GetContent().Fighter(TEXT("bram"));
-	TArray<FName> Ids = FContent::Roster();
+	TArray<FName> Ids = FContent::Fighting();
 	Ids.Append(FContent::Special());
 	for (const FName& Id : Ids)
 	{
@@ -524,7 +524,7 @@ bool FSlopFloorHolds::RunTest(const FString&)
 SLOP_TEST(FSlopThrowPaths, "Anim.ThrownBodiesStayOutOfFloorAndThrower")
 bool FSlopThrowPaths::RunTest(const FString&)
 {
-	TArray<FName> Ids = FContent::Roster();
+	TArray<FName> Ids = FContent::Fighting();
 	Ids.Append(FContent::Special());
 	for (const FName& Id : Ids)
 	{
@@ -599,7 +599,7 @@ bool FSlopThrowPaths::RunTest(const FString&)
 SLOP_TEST(FSlopHandsOutsideBody, "Anim.HandsStayOutsideTheBody")
 bool FSlopHandsOutsideBody::RunTest(const FString&)
 {
-	TArray<FName> Ids = FContent::Roster();
+	TArray<FName> Ids = FContent::Fighting();
 	Ids.Append(FContent::Special());
 	const TCHAR* Poses[] = {TEXT("stance"), TEXT("block"), TEXT("crouch"), TEXT("block_low"), TEXT("hit_head"), TEXT("hit_body"), TEXT("hit_leg"), TEXT("block_hit")};
 	for (const FName& Id : Ids)
@@ -926,7 +926,7 @@ SLOP_TEST(FSlopBlowRegions, "Anim.BlowsMarkWhereTheyLand")
 bool FSlopBlowRegions::RunTest(const FString&)
 {
 	const FFighterDef* Attacker = GetContent().Fighter(TEXT("bram"));
-	for (const FName& Id : FContent::Roster())
+	for (const FName& Id : FContent::Fighting())
 	{
 		for (const TPair<const TCHAR*, int32>& Blow : {TPair<const TCHAR*, int32>(TEXT("hp"), 0), TPair<const TCHAR*, int32>(TEXT("lp"), 1), TPair<const TCHAR*, int32>(TEXT("sweep"), 2)})
 		{
@@ -973,7 +973,7 @@ bool FSlopBlowRegions::RunTest(const FString&)
 SLOP_TEST(FSlopLimp, "Anim.BeatenLegsLimp")
 bool FSlopLimp::RunTest(const FString&)
 {
-	for (const FName& Id : FContent::Roster())
+	for (const FName& Id : FContent::Fighting())
 	{
 		double HipsBack[2] = {0, 0};
 		double LowestHips[2] = {1e9, 1e9};

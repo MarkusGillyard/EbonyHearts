@@ -65,20 +65,26 @@ namespace SlopScreensFlowImpl
 		bool bCostume[2] = {false, false};
 		// Training and Versus CPU: after the player's fighter, the other side's.
 		bool bPickingDummy = false;
-		static constexpr int32 Cols = 3;
+		static constexpr int32 Cols = 4;
 
-		explicit FSelect(EMode InMode) : Mode(InMode)
-		{
-			for (const FName& Id : FContent::Roster())
-			{
-				if (Def(Id))
-				{
-					Ids.Add(Id);
-				}
-			}
-		}
+		// The roster, then the secret fighters: a locked one keeps its place as a sealed tile.
+		explicit FSelect(EMode InMode) : Mode(InMode), Ids(USlopGameInstance::SelectOrder()) {}
 
 		bool TwoSides() const { return Mode == EMode::Versus; }
+		bool Locked(int32 I) const { return !GI->IsUnlocked(Ids[I]); }
+		// A random fighter that may be picked, other than `Not`.
+		int32 RandomPick(int32 Not) const
+		{
+			TArray<int32> Open;
+			for (int32 I = 0; I < Ids.Num(); ++I)
+			{
+				if (I != Not && !Locked(I))
+				{
+					Open.Add(I);
+				}
+			}
+			return Open.Num() > 0 ? Open[FMath::RandRange(0, Open.Num() - 1)] : FMath::Max(0, Not);
+		}
 
 		virtual void Enter() override
 		{
@@ -90,8 +96,8 @@ namespace SlopScreensFlowImpl
 			if (GI->AutoPlayLevel >= 0)
 			{
 				// Unattended runs pick their fighters at random, for variety.
-				Cursor[0] = FMath::RandRange(0, Ids.Num() - 1);
-				Cursor[1] = FMath::RandRange(0, Ids.Num() - 1);
+				Cursor[0] = RandomPick(-1);
+				Cursor[1] = RandomPick(-1);
 			}
 		}
 
@@ -108,7 +114,13 @@ namespace SlopScreensFlowImpl
 				return SlopUI::PanelEdge;
 			};
 			TSharedRef<SOverlay> Face = SNew(SOverlay);
-			if (const FSlateBrush* Portrait = SlopUI::Portrait(Ids[I]))
+			const bool bSealed = Locked(I);
+			if (bSealed)
+			{
+				// Sealed: nothing of who waits here shows, only that someone does.
+				Face->AddSlot().VAlign(VAlign_Center).HAlign(HAlign_Center)[SlopUI::Title(FText::FromString(TEXT("?")), 120.f, SlopUI::Dim * 0.7f)];
+			}
+			else if (const FSlateBrush* Portrait = SlopUI::Portrait(Ids[I]))
 			{
 				Face->AddSlot()[SNew(SImage).Image(Portrait)];
 			}
@@ -124,10 +136,10 @@ namespace SlopScreensFlowImpl
 			[
 				SNew(SBorder).BorderImage(SlopUI::Box()).BorderBackgroundColor(FLinearColor(0.f, 0.f, 0.f, 0.62f)).Padding(FMargin(4, 4)).HAlign(HAlign_Center)
 				[
-					SlopUI::Label(FText::FromString(D->Name.ToUpper()), 22.f, SlopUI::Text)
+					SlopUI::Label(bSealed ? FText::FromString(TEXT("???")) : FText::FromString(D->Name.ToUpper()), 20.f, SlopUI::Text)
 				]
 			];
-			return SNew(SBox).WidthOverride(198).HeightOverride(238)
+			return SNew(SBox).WidthOverride(180).HeightOverride(216)
 			[
 				SNew(SBorder).BorderImage(SlopUI::Rounded()).BorderBackgroundColor_Lambda(Border).Padding_Lambda([this, I]()
 				{
@@ -171,7 +183,7 @@ namespace SlopScreensFlowImpl
 				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 				[
 					SNew(STextBlock).Font(SlopUI::Display(54.f)).ColorAndOpacity(Side == 0 ? SlopUI::Accent : SlopUI::Amber).ShadowOffset(FVector2D(2, 2))
-					.Text_Lambda([this, Side]() { return SideShown(Side) ? FText::FromString(Def(Ids[Cursor[Side]])->Name.ToUpper()) : FText::FromString(TEXT("?")); })
+					.Text_Lambda([this, Side]() { return SideShown(Side) && !Locked(Cursor[Side]) ? FText::FromString(Def(Ids[Cursor[Side]])->Name.ToUpper()) : FText::FromString(TEXT("?")); })
 				]
 				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 4, 0, 0)
 				[
@@ -185,6 +197,10 @@ namespace SlopScreensFlowImpl
 								: Mode == EMode::Training ? LOCTEXT("Partner", "Then a sparring partner to practise on.")
 								: Mode == EMode::Cpu ? FText::Format(LOCTEXT("CpuSide", "Then the CPU's fighter ({0})."), FGameFlow::DifficultyName(FMath::Clamp(GI->Settings.Difficulty, 0, 2)))
 								: LOCTEXT("RivalTrials", "Your rival will stand for the trials.");
+						}
+						if (Locked(Cursor[Side]))
+						{
+							return FText::FromString(Json::Str(Json::Obj(GetContent().Story, TEXT("secret")), TEXT("hint"), TEXT("Someone is watching.")));
 						}
 						const FFighterDef* D = Def(Ids[Cursor[Side]]);
 						FString S = D->Title + TEXT("   ·   ") + D->Style + TEXT("\n") + Json::Str(StoryOf(Ids[Cursor[Side]]), TEXT("bio"), D->Blurb);
@@ -217,7 +233,7 @@ namespace SlopScreensFlowImpl
 				TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
 				for (int32 C = 0; C < Cols && R * Cols + C < Ids.Num(); ++C)
 				{
-					Row->AddSlot().AutoWidth().Padding(6)[Tile(R * Cols + C)];
+					Row->AddSlot().AutoWidth().Padding(5)[Tile(R * Cols + C)];
 				}
 				Grid->AddSlot().AutoHeight().HAlign(HAlign_Center)[Row];
 			}
@@ -232,7 +248,7 @@ namespace SlopScreensFlowImpl
 						.Text_Lambda([this]() { return bPickingDummy ? LOCTEXT("ChooseDummy", "CHOOSE YOUR OPPONENT") : LOCTEXT("Choose", "CHOOSE YOUR FIGHTER"); })
 					]
 				]
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(640, 290, 640, 760))[SNew(SBox).HAlign(HAlign_Center).VAlign(VAlign_Top)[Grid]]
+				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(560, 290, 800, 500))[SNew(SBox).HAlign(HAlign_Center).VAlign(VAlign_Top)[Grid]]
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(30, 800, 560, 220))[Info(0)]
 				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(1330, 800, 560, 220))[Info(1)];
 			return Frame(Canvas, [this]()
@@ -247,8 +263,8 @@ namespace SlopScreensFlowImpl
 		{
 			if (ASlopShowroom* Room = GI->OpenShowroom())
 			{
-				Room->Show(0, Ids[Cursor[0]], bCostume[0]);
-				Room->Show(1, SideShown(1) ? Ids[Cursor[1]] : NAME_None, bCostume[1]);
+				Room->Show(0, Locked(Cursor[0]) ? NAME_None : Ids[Cursor[0]], bCostume[0]);
+				Room->Show(1, SideShown(1) && !Locked(Cursor[1]) ? Ids[Cursor[1]] : NAME_None, bCostume[1]);
 			}
 			if (Then && (FinishIn -= Dt) <= 0.f)
 			{
@@ -282,6 +298,11 @@ namespace SlopScreensFlowImpl
 
 		void Confirm(int32 Side)
 		{
+			if (Locked(Cursor[bPickingDummy ? 1 : Side]))
+			{
+				Sound(TEXT("ui_locked"));
+				return;
+			}
 			if (bPickingDummy)
 			{
 				GI->Flow.Config.P2 = Ids[Cursor[1]];
@@ -382,7 +403,7 @@ namespace SlopScreensFlowImpl
 				// A random fighter (never the one already under the cursor), to pick or move on from.
 				if (Ids.Num() > 1)
 				{
-					Cursor[Side] = (Cursor[Side] + FMath::RandRange(1, Ids.Num() - 1)) % Ids.Num();
+					Cursor[Side] = RandomPick(Cursor[Side]);
 					bCostume[Side] = false;
 					Sound(TEXT("ui_move"));
 				}
@@ -651,6 +672,20 @@ namespace SlopScreensFlowImpl
 				{
 					Lines.Add(FText::FromString(Json::Str(GetContent().Story, TEXT("boss_intro"))));
 					GI->Audio->Play(TEXT("screech"), -6.f);
+				}
+				else if (R->Kind == TEXT("secret"))
+				{
+					// Off the ladder: no fight count, only the old man and what he says.
+					Above = FText::FromString(Json::Str(Json::Obj(GetContent().Story, TEXT("secret")), TEXT("above"), TEXT("The still water")));
+					AboveColour = SlopUI::Amber;
+					AboveSize = 54.f;
+					if (const TArray<TSharedPtr<FJsonValue>>* L = Json::Arr(Json::Obj(GetContent().Story, TEXT("secret")), TEXT("lines")))
+					{
+						for (const TSharedPtr<FJsonValue>& V : *L)
+						{
+							Lines.Add(FText::FromString(V->AsString()));
+						}
+					}
 				}
 				if (Lines.Num() > 0)
 				{
@@ -924,9 +959,26 @@ namespace SlopScreensFlowImpl
 				{
 					return FString::Printf(TEXT("%s projectile   %d dmg   leaves on frame %d   total %d"), LevelName(M.Projectile.Level), M.Damage + M.Projectile.Damage, M.Projectile.Frame, M.Total);
 				}
+				if (M.bShapeshift)
+				{
+					return FString::Printf(TEXT("takes on frame %d   costs half the Qhi"), M.FormFrame);
+				}
+				if (M.bRevert)
+				{
+					return FString::Printf(TEXT("his own face back on frame %d   no Qhi returned"), M.FormFrame);
+				}
 				if (!M.IsAttack() && !M.Throw.bHas)
 				{
-					return FString::Printf(TEXT("total %d frames"), M.Total);
+					FString S = FString::Printf(TEXT("total %d frames"), M.Total);
+					if (M.Feint != FIntPoint::ZeroValue)
+					{
+						S += FString::Printf(TEXT("   cancels into anything on frames %d-%d"), M.Feint.X, M.Feint.Y);
+					}
+					if (M.Ward != FIntPoint::ZeroValue)
+					{
+						S += FString::Printf(TEXT("   breaks projectiles on frames %d-%d"), M.Ward.X, M.Ward.Y);
+					}
+					return S;
 				}
 				const int32 Hit = M.HitAdvantage();
 				return FString::Printf(TEXT("%s   %d dmg   startup %d  active %d  recovery %d   on block %+d   on hit %s%s"),
@@ -935,16 +987,42 @@ namespace SlopScreensFlowImpl
 					M.SelfCancels > 0 ? *FString::Printf(TEXT("   up to %d in a row"), M.SelfCancels + 1) : TEXT(""));
 			};
 			auto Section = [this](const FText& T) { Rows.Add(TEXT("#") + T.ToString()); };
+			auto Cost = [](const FMoveDef& M) { return M.QhiCost > 0.0 ? FString::Printf(TEXT("   Qhi %d"), FMath::RoundToInt(M.QhiCost)) : FString(); };
+			const bool bQhi = D->Resource == EResource::Qhi;
+			if (bQhi)
+			{
+				// His meter's rules, as the owner set them: the move list is where a player learns them.
+				const FQhiRules& Q = D->Qhi;
+				Section(LOCTEXT("QhiRules", "QHI (his meter: he has no run meter of his own)"));
+				Rows.Add(FString::Printf(TEXT("Glide|%s|floats forward in place of running, draining Qhi"), *FCommand::Pretty(TEXT("F+RN"))));
+				Rows.Add(TEXT("Borrowed Face|") + FCommand::Pretty(D->NotationOf(TEXT("borrowed_face"))) + FString::Printf(TEXT("|becomes the opponent facing him, stronger by Qhi (%d%% damage, %d%% taken, %d%% speed) for half the Qhi; the shape has a run meter and burns Qhi while worn and with every blow it takes; the same input gives it back"),
+					FMath::RoundToInt(Q.CopyPower * 100), FMath::RoundToInt(Q.CopyGuard * 100), FMath::RoundToInt(Q.CopySpeed * 100)));
+				Rows.Add(FString::Printf(TEXT("Spent|—|an empty meter leaves him in a weak drunken boxing, slow and easily hurt, until %d Qhi has crept back"), FMath::RoundToInt(Q.RecoverAt)));
+				Rows.Add(FString::Printf(TEXT("Defence|—|blows hurt him %d%% more, magic %d%% less; a caught blow gives back %d Qhi, once every %d seconds"),
+					FMath::RoundToInt((D->PhysDef - 1.0) * 100), FMath::RoundToInt((1.0 - D->MagicDef) * 100), FMath::RoundToInt(Q.DefendGain), Q.DefendGainEvery / 60));
+			}
 			Section(LOCTEXT("Specials", "SPECIALS"));
 			for (const FCommand& C : D->Commands)
 			{
 				const FMoveDef* M = D->Move(C.Move);
 				if (M && M->Kind == EMoveKind::Special)
 				{
-					Rows.Add(FString::Printf(TEXT("%s|%s|%s"), *M->Name, *FCommand::Pretty(C.Text), *Frames(*M)));
+					Rows.Add(FString::Printf(TEXT("%s|%s|%s%s"), *M->Name, *FCommand::Pretty(C.Text), *Frames(*M), *Cost(*M)));
 				}
 			}
-			Section(LOCTEXT("Combos", "DIAL-A-COMBOS (each link spends run meter)"));
+			if (bQhi && D->SpentForm)
+			{
+				Section(LOCTEXT("WhenSpent", "WHEN SPENT (drunken boxing)"));
+				for (const FCommand& C : D->SpentForm->Commands)
+				{
+					const FMoveDef* M = D->SpentForm->Move(C.Move);
+					if (M && M->Kind == EMoveKind::Special)
+					{
+						Rows.Add(FString::Printf(TEXT("%s|%s|%s"), *M->Name, *FCommand::Pretty(C.Text), *Frames(*M)));
+					}
+				}
+			}
+			Section(bQhi ? LOCTEXT("CombosQhi", "DIAL-A-COMBOS (each link spends a little Qhi)") : LOCTEXT("Combos", "DIAL-A-COMBOS (each link spends run meter)"));
 			// Chains from each opener, written as the full string of presses.
 			TFunction<void(const FMoveDef&, const FString&, const FString&, int32)> Walk = [&](const FMoveDef& M, const FString& Inputs, const FString& Names, int32 Depth)
 			{
@@ -1051,7 +1129,7 @@ namespace SlopScreensFlowImpl
 
 		virtual void OnUi(const FUiEvent& E) override
 		{
-			const TArray<FName>& R = FContent::Roster();
+			const TArray<FName> R = GI->Playable();
 			switch (E.Action)
 			{
 			case EUi::Up: Scroll = FMath::Max(0, Scroll - 1); GI->RebuildScreen(); break;
@@ -1103,7 +1181,7 @@ namespace SlopScreensFlowImpl
 		virtual void Enter() override
 		{
 			Seen.Reset();
-			for (const FName& Id : FContent::Roster())
+			for (const FName& Id : GI->Playable())
 			{
 				if (GI->Progress.EndingSeen(Id))
 				{
@@ -1124,7 +1202,7 @@ namespace SlopScreensFlowImpl
 				GI->Progress.Stat(TEXT("matches")), GI->Progress.Stat(TEXT("wins")), GI->Progress.Stat(TEXT("finishers")), GI->Progress.Stat(TEXT("flawless")));
 			int32 TrialsDone = 0, TrialsAll = 0;
 			TArray<FString> Colours;
-			for (const FName& Id : FContent::Roster())
+			for (const FName& Id : GI->Playable())
 			{
 				const FFighterDef* D = Def(Id);
 				FString Line = D->Name + TEXT(":  ");
@@ -1152,6 +1230,10 @@ namespace SlopScreensFlowImpl
 			S += FString::Printf(TEXT("\nTrials cleared: %d of %d"), TrialsDone, TrialsAll);
 			S += FString::Printf(TEXT("\nAlternate colours unlocked: %s"), Colours.Num() > 0 ? *FString::Join(Colours, TEXT(", ")) : TEXT("none yet (clear arcade with a fighter)"));
 			S += FString::Printf(TEXT("\nThe Roost as a versus stage: %s"), GI->Progress.IsUnlocked(TEXT("arena:roost")) ? TEXT("unlocked") : TEXT("clear arcade once"));
+			if (!GI->IsUnlocked(FGameFlow::SecretFighter()))
+			{
+				S += TEXT("\n???: ") + Json::Str(Json::Obj(GetContent().Story, TEXT("secret")), TEXT("hint"));
+			}
 			return FText::FromString(S);
 		}
 		virtual TSharedRef<SWidget> Build() override
@@ -1174,7 +1256,7 @@ namespace SlopScreensFlowImpl
 							// Every fighter: the endings seen to choose from, the rest saying how to earn them.
 							FString S = Seen.Num() > 0 ? LOCTEXT("EndingsSeen", "Endings (left and right to choose, confirm to watch):\n\n").ToString()
 								: LOCTEXT("NoEndings", "Clear an arcade tower to see a fighter's ending.\n\n").ToString();
-							for (const FName& Id : FContent::Roster())
+							for (const FName& Id : GI->Playable())
 							{
 								const FFighterDef* D = Def(Id);
 								const int32 I = Seen.IndexOfByKey(Id);

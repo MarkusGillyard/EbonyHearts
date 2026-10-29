@@ -58,6 +58,9 @@ namespace Slop
 		FName Ground = TEXT("die");
 		bool bReturns = false;
 		bool bTether = false;
+		// The share of its damage that is magical (data "magic": 0 physical, 1 magical, between
+		// them mixed); defences read it (FFighterDef::PhysDef, MagicDef).
+		double Magic = 0.0;
 		// Shared basics are authored for a 1.8 m body; this converts offsets and sizes.
 		double Scale = 1.0;
 	};
@@ -157,6 +160,26 @@ namespace Slop
 		bool bAirKnock = false;
 		FString StageInput;
 		FName StageId;
+		// The share of the damage that is magical (data "magic"; see FProjectileDef::Magic).
+		double Magic = 0.0;
+		// Qhi spent when the move starts (data "qhi"); only a fighter with a Qhi meter can use it.
+		double QhiCost = 0.0;
+		// A feint (props "feint"): frames on which the move cancels into any other ground command,
+		// without having made contact.
+		FIntPoint Feint = FIntPoint::ZeroValue;
+		// A ward (props "ward"): frames on which projectiles touching the fighter break up harmlessly.
+		FIntPoint Ward = FIntPoint::ZeroValue;
+		// A caught blow leaves the attacker stumbling (EStun::Break) rather than dazed: a weave
+		// slips the blow instead of trapping the arm (parry "stagger").
+		bool bParryStagger = false;
+		// A caught blow is caught for good: the parrier takes hold of the attacker at once and the
+		// counter (a grab with a throw sequence) plays on them, unbreakable (parry "catch").
+		bool bParryCatch = false;
+		// The Grandmaster's shapeshift (effects "shapeshift": the frame it takes) and its reversal
+		// (effects "revert"). The move ends on that frame, in the new shape.
+		bool bShapeshift = false;
+		bool bRevert = false;
+		int32 FormFrame = 0;
 		// Presentation-only effect ranges ("sink", "whip").
 		FIntPoint Sink = FIntPoint::ZeroValue;
 		FIntPoint Whip = FIntPoint::ZeroValue;
@@ -220,6 +243,44 @@ namespace Slop
 		TArray<FName> Poses;
 	};
 
+	// What a fighter's second bar holds: the run meter, the Grandmaster's Qhi, or nothing (his
+	// spent form, which has neither).
+	enum class EResource : uint8 { Run, Qhi, None };
+
+	// The Grandmaster's Qhi (fighter JSON "qhi"). Per tick unless named otherwise.
+	struct FQhiRules
+	{
+		// Fixed by the owner: a shapeshift that takes costs half of the meter's capacity.
+		static constexpr double ShapeshiftShare = 0.5;
+		double Max = 100.0;
+		// Passive recovery once nothing has been spent for RegenDelay ticks.
+		double Regen = 0.05;
+		int32 RegenDelay = 60;
+		// Spent: the meter creeps back at this rate, and the body stays spent until it reaches RecoverAt.
+		double SpentRegen = 0.04;
+		double RecoverAt = 30.0;
+		// The glide that takes the place of running drains this much, and needs GlideMin to start.
+		double GlideDrain = 0.25;
+		double GlideMin = 5.0;
+		// A dial-a-combo link costs this share of its run cost in Qhi.
+		double ChainShare = 0.35;
+		// A borrowed shape is held by Qhi: Upkeep a tick, and HitDrain for each point of damage taken.
+		double Upkeep = 0.067;
+		double HitDrain = 0.1;
+		// A parry or weave that catches a blow gives back a little, at most once every DefendGainEvery ticks.
+		double DefendGain = 5.0;
+		double SpentDefendGain = 3.0;
+		int32 DefendGainEvery = 120;
+		// A shapeshift broken before it takes costs this (the focus spent), never the full price.
+		double FailCost = 8.0;
+		// The Qhi laid into a borrowed shape: damage dealt, damage taken, walk and run speed.
+		double CopyPower = 1.15;
+		double CopyGuard = 0.9;
+		double CopySpeed = 1.08;
+
+		double ShapeshiftCost() const { return Max * ShapeshiftShare; }
+	};
+
 	struct FFighterDef
 	{
 		static constexpr double BaseHeight = 1.8;
@@ -243,6 +304,27 @@ namespace Slop
 		bool bBoss = false;
 		bool bHidden = false;
 		bool bUnthrowable = false;
+		// Damage taken from physical and magical blows (stats "phys_def", "magic_def"; 1 as
+		// authored, above 1 takes more), and dealt by the fighter's physical and magical blows
+		// ("power", "arcana"). A mixed blow is weighed by its Magic share.
+		double PhysDef = 1.0;
+		double MagicDef = 1.0;
+		double Power = 1.0;
+		double Arcana = 1.0;
+		EResource Resource = EResource::Run;
+		FQhiRules Qhi;
+		// Whether the Grandmaster can borrow this fighter's shape (data "copyable"; bosses and the
+		// fighters that are not in the roster cannot be).
+		bool bCopyable = true;
+		// The mesh and look worn (data "body"; the fighter's own id by default). A form of another
+		// fighter wears that fighter's body.
+		FName Body;
+		// For a Qhi fighter: the form his body falls into when the meter is spent (data
+		// "spent_form", linked once every fighter is loaded).
+		FName SpentFormId;
+		const FFighterDef* SpentForm = nullptr;
+		// A borrowed shape: the fighter it was copied from (null for everyone's own definition).
+		const FFighterDef* CopyOf = nullptr;
 		FMotionStyle Motion;
 		// "walk_f", "walk_b", "run": the captured cycles this fighter uses (by its Motion).
 		TMap<FName, FCycleDef> Cycles;
@@ -279,7 +361,13 @@ namespace Slop
 	public:
 		// Selectable roster in select-screen order; fighters that exist but are not selectable.
 		static const TArray<FName>& Roster();
+		// Fighters that are selectable once unlocked (the Grandmaster).
+		static const TArray<FName>& Secret();
 		static const TArray<FName>& Special();
+		// Definitions that are another fighter's form, never picked (the Grandmaster spent).
+		static const TArray<FName>& Forms();
+		// Every definition a fighter fights with: the roster, the secret fighters and their forms.
+		static TArray<FName> Fighting();
 
 		// Loads every file under DataDir. Returns false (with Errors filled) when anything is
 		// malformed; a match must not start on bad data.
@@ -312,6 +400,11 @@ namespace Slop
 		TSharedPtr<FFighterDef> ParseFighter(const TSharedPtr<FJsonObject>& D);
 		void Validate(const FFighterDef& F);
 	};
+
+	// The shape the Grandmaster takes on borrowing `Target`'s: the target's whole fighting
+	// definition (moves, commands, body, AI), strengthened by Qhi (`Copier`'s rules: power, guard,
+	// speed), with a run meter, no finisher of its own, and the copier's reversal added.
+	TSharedRef<FFighterDef> MakeBorrowedShape(const FFighterDef& Target, const FFighterDef& Copier);
 
 	// The game's data, loaded from the project's Content/Data on first use.
 	FContent& GetContent();

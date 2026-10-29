@@ -55,6 +55,15 @@ public:
 	void OnMatchFinished(const Slop::FMatchResult& R);
 	// The skeletal mesh a fighter wears.
 	static FString MeshFor(FName Fighter);
+	// Whether a fighter may be picked: the starting roster always, a secret fighter once this
+	// profile has unlocked it (development builds: or named by -SlopUnlock= for the session, which
+	// never touches the saved progress).
+	bool IsUnlocked(FName Fighter) const;
+	// Every fighter that may be picked now, in select-screen order.
+	TArray<FName> Playable() const;
+	// Every fighter there is to pick, secret ones included (locked ones show as such).
+	static TArray<FName> SelectOrder();
+	static FString UnlockKey(FName Fighter) { return TEXT("fighter:") + Fighter.ToString(); }
 	// The menu figures behind the select screen (spawned on first use, taking the view).
 	class ASlopShowroom* OpenShowroom();
 	void CloseShowroom();
@@ -136,6 +145,8 @@ private:
 	double QuitAtSeconds = -1.0;
 	// Development: the fighters whose portraits are still to be rendered.
 	TArray<FName> PortraitQueue;
+	// Development: secret fighters selectable this session only (-SlopUnlock=a,b).
+	TSet<FName> DevUnlocked;
 	int32 PortraitWait = 0;
 	// Test automation: scripted menu actions (-SlopUi=delay:action,...), dispatched as if pressed.
 	struct FUiStep { double Delay; Slop::EUi Action; int32 Side; };

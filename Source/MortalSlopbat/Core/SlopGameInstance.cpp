@@ -221,6 +221,38 @@ void USlopGameInstance::Notice(const FText& Text, double Seconds)
 	NoticeUntil = Now() + Seconds;
 }
 
+bool USlopGameInstance::IsUnlocked(FName Fighter) const
+{
+	if (FContent::Roster().Contains(Fighter))
+	{
+		return true;
+	}
+	return FContent::Secret().Contains(Fighter) && (Progress.IsUnlocked(UnlockKey(Fighter)) || DevUnlocked.Contains(Fighter));
+}
+
+TArray<FName> USlopGameInstance::SelectOrder()
+{
+	TArray<FName> Out;
+	for (const TArray<FName>* L : {&FContent::Roster(), &FContent::Secret()})
+	{
+		for (const FName& Id : *L)
+		{
+			if (GetContent().Fighter(Id))
+			{
+				Out.Add(Id);
+			}
+		}
+	}
+	return Out;
+}
+
+TArray<FName> USlopGameInstance::Playable() const
+{
+	TArray<FName> Out = SelectOrder();
+	Out.RemoveAll([this](const FName& Id) { return !IsUnlocked(Id); });
+	return Out;
+}
+
 FString USlopGameInstance::MeshFor(FName Fighter)
 {
 	const FString Id = Fighter.ToString();
@@ -816,6 +848,16 @@ void USlopGameInstance::DevCommandLine()
 {
 #if !UE_BUILD_SHIPPING
 	const TCHAR* Cmd = FCommandLine::Get();
+	FString UnlockArg;
+	if (FParse::Value(Cmd, TEXT("SlopUnlock="), UnlockArg, false))
+	{
+		TArray<FString> Parts;
+		UnlockArg.ParseIntoArray(Parts, TEXT(","));
+		for (const FString& P : Parts)
+		{
+			DevUnlocked.Add(FName(*P));
+		}
+	}
 	FString MatchArg;
 	if (FParse::Value(Cmd, TEXT("SlopMatch="), MatchArg, false))
 	{
@@ -895,6 +937,7 @@ void USlopGameInstance::DevCommandLine()
 		if (PortraitQueue.Num() == 0)
 		{
 			PortraitQueue = FContent::Roster();
+			PortraitQueue.Append(FContent::Secret());
 			PortraitQueue.Append(FContent::Special());
 		}
 		Root->SetVisibility(EVisibility::Collapsed);

@@ -1,0 +1,435 @@
+{
+	"id": "grandmaster_spent",
+	"name": "Kazan Still",
+	"title": "The Grandmaster, spent",
+	"pronoun": "him",
+	"style": "Drunken boxing, out of Qhi",
+	"blurb": "With his Qhi gone the old man's body is all he has left: a reeling, wobbling drunken boxing that survives on perception and very little else.",
+	"body": "grandmaster",
+	"resource": "none",
+	"copyable": false,
+	"stats": {
+		"height": 1.7,
+		"health": 1000,
+		"walk_f": 1.6,
+		"walk_b": 1.45,
+		"run_speed": 1.6,
+		"jump_vy": 7.0,
+		"jump_vx": 1.9,
+		"phys_def": 1.5,
+		"magic_def": 0.9,
+		"power": 0.6,
+		"arcana": 0.6
+	},
+	"motion": {
+		"bounce": 0.7,
+		"rock": 3.2,
+		"pace": 0.55,
+		"walk_bob": 1.4,
+		"step_lift": 0.55,
+		"walk_twist": 1.6,
+		"walk_cycle": false,
+		"run_cycle": false
+	},
+	"no_basics": [
+		"roundhouse",
+		"uppercut",
+		"hp2"
+	],
+	"basic_tweaks": {
+		"hp": {
+			"name": "Cup Fist",
+			"chain": [],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						3,
+						"drunk_cup_load",
+						"out"
+					],
+					[
+						6,
+						"drunk_cup_hit",
+						"snap"
+					],
+					[
+						9,
+						"drunk_cup_hit",
+						"linear"
+					],
+					[
+						20,
+						"stance",
+						"inout"
+					]
+				]
+			}
+		},
+		"lp": {
+			"name": "Spilling Jab",
+			"chain": []
+		}
+	},
+	"moves": {
+		"drunk_lurch": {
+			"name": "Lurching Elbow",
+			"kind": "special",
+			"startup": 14,
+			"active": 4,
+			"recovery": 26,
+			"level": "mid",
+			"damage": 70,
+			"hitstun": 22,
+			"blockstun": 12,
+			"push_hit": 0.5,
+			"push_block": 0.55,
+			"motion": [
+				[
+					3,
+					0.05
+				],
+				[
+					14,
+					1.0
+				],
+				[
+					18,
+					1.15
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.22,
+						1.05,
+						0.44,
+						0.42
+					]
+				}
+			],
+			"hurtboxes": [
+				{
+					"frames": [
+						10,
+						30
+					],
+					"rect": [
+						0.1,
+						0.9,
+						0.5,
+						0.6
+					]
+				}
+			],
+			"tags": [
+				"rush"
+			],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						4,
+						"drunk_lurch_load",
+						"out"
+					],
+					[
+						14,
+						"drunk_lurch",
+						"snap"
+					],
+					[
+						18,
+						"drunk_lurch",
+						"linear"
+					],
+					[
+						32,
+						"drunk_stagger",
+						"inout"
+					],
+					[
+						44,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "medium"
+			}
+		},
+		"drunk_roll": {
+			"name": "Tumble",
+			"kind": "special",
+			"startup": 1,
+			"active": 0,
+			"recovery": 0,
+			"total": 30,
+			"level": "none",
+			"motion": [
+				[
+					3,
+					0.0
+				],
+				[
+					18,
+					-1.4
+				],
+				[
+					22,
+					-1.5
+				]
+			],
+			"props": {
+				"low_profile": [
+					4,
+					20
+				]
+			},
+			"tags": [
+				"escape"
+			],
+			"anim": {
+				"keys": [
+					[
+						4,
+						"drunk_fall",
+						"out"
+					],
+					[
+						12,
+						"drunk_roll",
+						"inout"
+					],
+					[
+						20,
+						"drunk_roll",
+						"linear"
+					],
+					[
+						30,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "whoosh_light"
+			}
+		},
+		"drunk_weave": {
+			"name": "Reel",
+			"kind": "special",
+			"startup": 3,
+			"active": 0,
+			"recovery": 0,
+			"total": 24,
+			"level": "none",
+			"effects": {
+				"parry": {
+					"frames": [
+						3,
+						7
+					],
+					"levels": [
+						"high"
+					],
+					"stun": 10,
+					"stagger": true
+				}
+			},
+			"tags": [
+				"counter"
+			],
+			"anim": {
+				"keys": [
+					[
+						3,
+						"drunk_reel",
+						"out"
+					],
+					[
+						9,
+						"drunk_reel",
+						"linear"
+					],
+					[
+						24,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "whoosh_light"
+			}
+		},
+		"drunk_yield": {
+			"name": "Spilled Cup",
+			"kind": "special",
+			"startup": 4,
+			"active": 0,
+			"recovery": 0,
+			"total": 32,
+			"level": "none",
+			"effects": {
+				"parry": {
+					"frames": [
+						4,
+						7
+					],
+					"levels": [
+						"high",
+						"mid"
+					],
+					"stun": 20,
+					"counter": "drunk_slap"
+				}
+			},
+			"tags": [
+				"counter"
+			],
+			"anim": {
+				"keys": [
+					[
+						4,
+						"drunk_catch",
+						"snap"
+					],
+					[
+						9,
+						"drunk_catch",
+						"linear"
+					],
+					[
+						32,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "whoosh_light"
+			}
+		},
+		"drunk_slap": {
+			"name": "Spilled Cup: slap",
+			"kind": "special",
+			"startup": 5,
+			"active": 3,
+			"recovery": 18,
+			"level": "mid",
+			"damage": 45,
+			"hitstun": 22,
+			"blockstun": 12,
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						1.1,
+						0.5,
+						0.4
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						2,
+						"drunk_cup_load",
+						"out"
+					],
+					[
+						5,
+						"drunk_cup_hit",
+						"snap"
+					],
+					[
+						8,
+						"drunk_cup_hit",
+						"linear"
+					],
+					[
+						25,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "light"
+			}
+		},
+		"qhi_spent": {
+			"name": "Spent",
+			"kind": "special",
+			"startup": 1,
+			"active": 0,
+			"recovery": 0,
+			"total": 26,
+			"level": "none",
+			"anim": {
+				"keys": [
+					[
+						6,
+						"drunk_sag",
+						"out"
+					],
+					[
+						16,
+						"drunk_sag",
+						"linear"
+					],
+					[
+						26,
+						"stance",
+						"inout"
+					]
+				]
+			}
+		}
+	},
+	"commands": [
+		[
+			"F,F+HP",
+			"drunk_lurch"
+		],
+		[
+			"B,B+LK",
+			"drunk_roll"
+		],
+		[
+			"B,D+LP",
+			"drunk_weave"
+		],
+		[
+			"B,D+HP",
+			"drunk_yield"
+		]
+	],
+	"ai": {
+		"range": 1.7,
+		"aggression": 0.2,
+		"zoning": 0.0,
+		"weights": {
+			"hp": 0.8,
+			"lp": 1.2,
+			"hk": 0.4,
+			"lk": 1.2,
+			"sweep": 0.5,
+			"crouch_lk": 1.0,
+			"drunk_lurch": 0.3
+		},
+		"anti_air": [],
+		"parries": [
+			"drunk_yield",
+			"drunk_weave"
+		],
+		"combos": [],
+		"retreat": [
+			"B,B+LK"
+		]
+	}
+}

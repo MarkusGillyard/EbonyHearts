@@ -3,6 +3,7 @@
 #include "Engine/SkeletalMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Core/SlopLog.h"
+#include "Core/SlopGameInstance.h"
 
 using namespace Slop;
 
@@ -35,6 +36,11 @@ bool ASlopFighterActor::Setup(const FFighter& Fighter, const FString& MeshPath)
 		return false;
 	}
 	Body->SetSkinnedAssetAndUpdate(Mesh);
+	BoundDef = Fighter.Def;
+	BoundBody = Fighter.Def->Body;
+	Marks[0] = Marks[1] = Marks[2] = 0.0;
+	LastFlash = LastSweat = -1.f;
+	bSwayValid = false;
 	Anim.Setup(Fighter, GetContent().CommonPoses);
 	MeshRig.ConfigureRig(Anim.Rig);
 	Anim.SyncFromSim(true);
@@ -65,6 +71,23 @@ bool ASlopFighterActor::Setup(const FFighter& Fighter, const FString& MeshPath)
 	SetScalar(TEXT("HeadRadius"), float(0.075 * Anim.Rig.H * 100.0));
 	SetScalar(TEXT("BodyRadius"), float(0.125 * Anim.Rig.H * 100.0));
 	UpdateVisual(1.0, 0.0);
+	return true;
+}
+
+bool ASlopFighterActor::Rebind(const FFighter& Fighter)
+{
+	if (Fighter.Def->Body != BoundBody)
+	{
+		const float KeepBlood = Blood;
+		const bool bOk = Setup(Fighter, USlopGameInstance::MeshFor(Fighter.Def->Body));
+		SetBlood(KeepBlood);
+		return bOk;
+	}
+	// The same body in another form: its poses change, the skin keeps its marks.
+	BoundDef = Fighter.Def;
+	Anim.Setup(Fighter, GetContent().CommonPoses);
+	MeshRig.ConfigureRig(Anim.Rig);
+	Anim.SyncFromSim(true);
 	return true;
 }
 

@@ -115,6 +115,9 @@ public:
 
 private:
 	void FixedTick();
+	// A fighter that changed shape gets its new body, and the looks this match gives it.
+	void RebindView(int32 I);
+	void DressView(int32 I);
 	void HandleEvent(const Slop::FSimEvent& E);
 	void PlayEventSound(const Slop::FSimEvent& E);
 public:

@@ -65,6 +65,26 @@
 				"When the waters fell, the people of Lowmere found the brass helmet on the steps of the drowned chapel, its three portholes turned toward the sea.",
 				"It was empty. Someone inside it, they swear, was humming."
 			]
+		},
+		"wren": {
+			"rival": "mirela", "home": "stilt_market",
+			"bio": "Wren Sallow walked out of the fen one winter with marsh-light in her hands and no name for the place she came from. She has trained every day since as if one particular fight were coming, and she will not say whose.",
+			"rival_lines": ["You sing the lost down into the water. I lead them out of it.", "Then one of us is lying to them."],
+			"ending": [
+				"Wren asked the Slopbat for nothing. She asked it a question: where the lights over the fen come from.",
+				"It answered her, and for the first time in her life she was afraid. She left the Roost before it had finished.",
+				"In Lowmere they say the marsh-lights still follow her along the causeways at night, keeping a careful distance, the way you follow someone you owe."
+			]
+		},
+		"grandmaster": {
+			"rival": "wren", "home": "drowned_chapel",
+			"bio": "Kazan Still was the greatest martial artist of his age, and he has outlived it. His body is failing; his Qhi is not. Those who have faced him say the worst moment is not when he strikes, but when he looks back at them with their own face.",
+			"rival_lines": ["I watched you on the causeway, the night the lights followed you.", "I know. They told me."],
+			"ending": [
+				"Kazan Still asked the Slopbat for one more year in a body that would carry him.",
+				"It gave him the year, and not his youth; he did not ask for that. He spent the year teaching, and would not say what.",
+				"When it was over his students found the training hall empty and the pool in its courtyard perfectly still. None of them could agree whose face they saw in it."
+			]
 		}
 	},
 	"reflection": "Your own reflection climbs out of the slop.",
@@ -75,5 +95,16 @@
 		"approach": "Approach him",
 		"leave": "Walk on",
 		"bow": "Hold Block to bow and leave."
+	},
+	"secret": {
+		"offer": "The waters recede. In the Drowned Chapel an old man stands on the still water. He has been watching you climb.",
+		"approach": "Face him",
+		"leave": "Walk on",
+		"above": "THE STILL WATER",
+		"lines": ["An old man waits on the flooded nave, his hands behind his back.", "Kazan Still: “You never needed a second chance. Show me what else you learned.”"],
+		"won": "Kazan Still bows, and the water closes over his reflection.",
+		"lost": "The old man bows and is gone. The water is still again.",
+		"unlocked": "Kazan Still, the Grandmaster, can now be chosen.",
+		"hint": "An old master is said to watch the champions who never need a second chance."
 	}
 }

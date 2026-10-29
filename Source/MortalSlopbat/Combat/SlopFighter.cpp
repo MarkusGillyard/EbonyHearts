@@ -10,12 +10,26 @@ namespace Slop
 
 	static bool IsGuard(EStun K) { return K == EStun::Guard || K == EStun::CrouchGuard; }
 
+	const TCHAR* FormName(EForm F)
+	{
+		switch (F)
+		{
+		case EForm::Own: return TEXT("own");
+		case EForm::Spent: return TEXT("spent");
+		case EForm::Borrowed: return TEXT("borrowed");
+		}
+		return TEXT("?");
+	}
+
 	void FFighter::Setup(FFightSim* InSim, int32 InIndex, const FFighterDef* InDef)
 	{
 		Sim = InSim;
 		Index = InIndex;
 		Def = InDef;
+		BaseDef = InDef;
+		Form = EForm::Own;
 		Health = InDef->Health;
+		Qhi = UsesQhi() ? QhiRules().Max : 0.0;
 	}
 
 	FFighter& FFighter::Opponent() const { return Sim->Fighters[1 - Index]; }
@@ -222,6 +236,14 @@ namespace Slop
 			}
 		}
 		RegenRun();
+		const bool bWasMoving = State == EState::Move;
+		QhiTick();
+		if (State == EState::Move && !bWasMoving)
+		{
+			// The body gave out or steadied itself this tick: that move has begun on its first frame.
+			ApplyPush();
+			return;
+		}
 		switch (State)
 		{
 		case EState::Intro:
@@ -315,6 +337,236 @@ namespace Slop
 	{
 		RunMeter = FMath::Max(0.0, RunMeter - Amount);
 		RunIdle = 0;
+	}
+
+	// --- Qhi and shapes -------------------------------------------------------------------------------
+
+	void FFighter::SpendQhi(double Amount)
+	{
+		Qhi = FMath::Max(0.0, Qhi - Amount);
+		QhiIdle = 0;
+	}
+
+	void FFighter::DefendGain()
+	{
+		// Only his own body earns Qhi back: a borrowed shape's parries give nothing, so a copy
+		// can never feed the meter that holds it.
+		if (!UsesQhi() || Form == EForm::Borrowed || Sim->TickCount < QhiGainAt)
+		{
+			return;
+		}
+		const FQhiRules& R = QhiRules();
+		Qhi = FMath::Min(R.Max, Qhi + (Form == EForm::Spent ? R.SpentDefendGain : R.DefendGain));
+		QhiGainAt = Sim->TickCount + R.DefendGainEvery;
+	}
+
+	bool FFighter::FormSafe() const
+	{
+		if (Hitstop > 0 || ThrowVictim >= 0 || ThrownBy >= 0)
+		{
+			return false;
+		}
+		switch (State)
+		{
+		case EState::Idle:
+		case EState::WalkF:
+		case EState::WalkB:
+		case EState::Crouch:
+		case EState::Block:
+		case EState::CrouchBlock:
+		case EState::Run:
+		case EState::Land:
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	void FFighter::QhiTick()
+	{
+		if (!UsesQhi())
+		{
+			return;
+		}
+		const FQhiRules& R = QhiRules();
+		if (Sim->bInfiniteRun)
+		{
+			Qhi = R.Max;
+		}
+		++QhiIdle;
+		switch (Form)
+		{
+		case EForm::Own:
+			// An empty meter does not refill on its own: the body is spent first.
+			if (Qhi <= 0.0)
+			{
+				if (FormSafe() && Sim->Phase == EPhase::Fight)
+				{
+					Exhaust(TEXT("spent"));
+				}
+			}
+			else if (QhiIdle > R.RegenDelay)
+			{
+				Qhi = FMath::Min(R.Max, Qhi + R.Regen);
+			}
+			break;
+		case EForm::Spent:
+			Qhi = FMath::Min(R.Max, Qhi + R.SpentRegen);
+			if (Qhi >= R.RecoverAt && FormSafe())
+			{
+				SetForm(EForm::Own, BaseDef, TEXT("recentred"));
+				if (const FMoveDef* M = Def->Move(TEXT("qhi_recentre")); M && State != EState::Run)
+				{
+					StartMove(*M);
+				}
+			}
+			break;
+		case EForm::Borrowed:
+			if (Sim->Phase == EPhase::Fight)
+			{
+				Qhi = FMath::Max(0.0, Qhi - R.Upkeep);
+			}
+			if (Qhi <= 0.0)
+			{
+				bShapeBreaking = true;
+			}
+			if (FormSafe())
+			{
+				if (bShapeBreaking && Sim->Phase == EPhase::Fight)
+				{
+					Exhaust(TEXT("broken"));
+				}
+				else if (Sim->Phase != EPhase::Fight)
+				{
+					// The fight is decided: the shape is let go, at no cost and with no refund.
+					SetForm(EForm::Own, BaseDef, TEXT("own"));
+				}
+			}
+			break;
+		}
+	}
+
+	void FFighter::Exhaust(FName Kind)
+	{
+		Qhi = 0.0;
+		bShapeBreaking = false;
+		SetForm(EForm::Spent, BaseDef->SpentForm ? BaseDef->SpentForm : BaseDef, Kind);
+		Vel.X = 0.0;
+		if (const FMoveDef* M = Def->Move(TEXT("qhi_spent")))
+		{
+			StartMove(*M);
+		}
+	}
+
+	void FFighter::SetForm(EForm F, const FFighterDef* D, FName Kind)
+	{
+		Form = F;
+		Def = D;
+		QhiIdle = 0;
+		FSimEvent E;
+		E.Type = EEvent::Form;
+		E.Who = Index;
+		E.Kind = Kind;
+		E.Move = D->CopyOf ? D->CopyOf->Id : NAME_None;
+		Sim->Emit(E);
+	}
+
+	const FFighterDef* FFighter::BorrowTarget() const
+	{
+		// A fighter in a borrowed shape is copied from the shape's source, never from the copy.
+		const FFighter& O = Opponent();
+		return O.Def && O.Def->CopyOf ? O.Def->CopyOf : O.BaseDef;
+	}
+
+	FName FFighter::BorrowRefusal() const
+	{
+		const FFighterDef* T = BorrowTarget();
+		if (!T)
+		{
+			return TEXT("shapeless");
+		}
+		if (T->bBoss)
+		{
+			return TEXT("boss");
+		}
+		if (T->Id == BaseDef->Id || T->Resource == EResource::Qhi)
+		{
+			return TEXT("mirror");
+		}
+		return T->bCopyable ? NAME_None : FName(TEXT("shapeless"));
+	}
+
+	void FFighter::Refuse(FName Why)
+	{
+		if (Sim->TickCount - RefusedAt < 30)
+		{
+			return;
+		}
+		RefusedAt = Sim->TickCount;
+		FSimEvent E;
+		E.Type = EEvent::Form;
+		E.Who = Index;
+		E.Kind = TEXT("refused");
+		E.How = Why;
+		Sim->Emit(E);
+	}
+
+	void FFighter::ChangeShape(const FMoveDef& M)
+	{
+		if (M.bShapeshift)
+		{
+			const FName Why = BorrowRefusal();
+			if (Sim->Phase != EPhase::Fight)
+			{
+				// The round ended during the startup: nothing happens, nothing is paid.
+			}
+			else if (!Why.IsNone())
+			{
+				Refuse(Why);
+			}
+			else
+			{
+				SpendQhi(QhiRules().ShapeshiftCost());
+				RunMeter = RunMax;
+				RunIdle = 0;
+				bShapeBreaking = false;
+				SetForm(EForm::Borrowed, Sim->ShapeOf(*BorrowTarget(), *BaseDef), TEXT("borrowed"));
+			}
+		}
+		else if (Form == EForm::Borrowed)
+		{
+			SetForm(EForm::Own, BaseDef, TEXT("own"));
+		}
+		// The move ends on its form frame; the new body steadies itself before it can act.
+		Move = nullptr;
+		MF = 0;
+		Vel = FVector2D::ZeroVector;
+		SetState(EState::Land);
+		LandFramesNow = 10;
+	}
+
+	void FFighter::BreakMove()
+	{
+		if (Move && State == EState::Move && Move->bShapeshift && MF < Move->FormFrame)
+		{
+			SpendQhi(QhiRules().FailCost);
+			FSimEvent E;
+			E.Type = EEvent::Form;
+			E.Who = Index;
+			E.Kind = TEXT("failed");
+			Sim->Emit(E);
+		}
+		Move = nullptr;
+	}
+
+	bool FFighter::CanStartRun() const
+	{
+		switch (Def->Resource)
+		{
+		case EResource::Run: return RunMeter >= RunMinStart;
+		case EResource::Qhi: return Qhi >= QhiRules().GlideMin;
+		default: return false;
+		}
 	}
 
 	void FFighter::GravitySettle()
@@ -425,7 +677,7 @@ namespace Slop
 			SetState(EState::Crouch);
 			return;
 		}
-		if (D == 6 && (HeldNow & BtnRN) && RunMeter >= RunMinStart)
+		if (D == 6 && (HeldNow & BtnRN) && CanStartRun())
 		{
 			SetState(EState::Run);
 			FSimEvent E;
@@ -460,12 +712,18 @@ namespace Slop
 		{
 			return;
 		}
-		if (D != 6 || !(Input.Held() & BtnRN) || RunMeter <= 0.0 || (Input.Held() & BtnBL))
+		// The Grandmaster's own body does not run: it glides on Qhi.
+		const bool bGlide = Def->Resource == EResource::Qhi;
+		if (D != 6 || !(Input.Held() & BtnRN) || (bGlide ? Qhi <= 0.0 : RunMeter <= 0.0) || (Input.Held() & BtnBL) || Def->Resource == EResource::None)
 		{
 			ToNeutral();
 			return;
 		}
-		if (!Sim->bInfiniteRun)
+		if (bGlide)
+		{
+			SpendQhi(QhiRules().GlideDrain);
+		}
+		else if (!Sim->bInfiniteRun)
 		{
 			RunMeter = FMath::Max(0.0, RunMeter - RunDrain);
 		}
@@ -521,7 +779,7 @@ namespace Slop
 
 	// --- Commands and moves ---------------------------------------------------------------------------
 
-	bool FFighter::TryCommands(const TArray<FCommand>& List, int32 MinPriority, bool bSpecialsOnly)
+	bool FFighter::TryCommands(const TArray<FCommand>& List, int32 MinPriority, bool bSpecialsOnly, bool bFeint)
 	{
 		if (Input.PressAge(BtnAll) < 0)
 		{
@@ -535,6 +793,16 @@ namespace Slop
 			}
 			const FMoveDef* M = Def->Move(C.Move);
 			if (!M || (bSpecialsOnly && M->Kind != EMoveKind::Special))
+			{
+				continue;
+			}
+			// A change of shape is only ever started from a standstill, never cancelled into; a
+			// feint never cancels into itself.
+			if ((bSpecialsOnly || bFeint) && (M->bShapeshift || M->bRevert))
+			{
+				continue;
+			}
+			if (bFeint && M == Move)
 			{
 				continue;
 			}
@@ -552,6 +820,12 @@ namespace Slop
 			}
 			if (!CanUse(*M))
 			{
+				if (M->bShapeshift && Form == EForm::Own && Sim->Phase == EPhase::Fight)
+				{
+					// Said aloud, so the player knows why nothing happened.
+					const FName Why = BorrowRefusal();
+					Refuse(Why.IsNone() ? FName(TEXT("qhi")) : Why);
+				}
 				continue;
 			}
 			Input.Consume(C.Mask);
@@ -575,6 +849,18 @@ namespace Slop
 			return false;
 		}
 		if (M.RunCost > 0.0 && RunMeter < M.RunCost && !Sim->bInfiniteRun)
+		{
+			return false;
+		}
+		if (M.QhiCost > 0.0 && (!UsesQhi() || Qhi < M.QhiCost))
+		{
+			return false;
+		}
+		if (M.bShapeshift && (Form != EForm::Own || Sim->Phase != EPhase::Fight || Qhi < QhiRules().ShapeshiftCost() || !BorrowRefusal().IsNone()))
+		{
+			return false;
+		}
+		if (M.bRevert && Form != EForm::Borrowed)
 		{
 			return false;
 		}
@@ -636,6 +922,10 @@ namespace Slop
 		{
 			SpendRun(M.RunCost);
 		}
+		if (M.QhiCost > 0.0)
+		{
+			SpendQhi(M.QhiCost);
+		}
 		if (!M.bAir)
 		{
 			Vel = FVector2D::ZeroVector;
@@ -669,6 +959,10 @@ namespace Slop
 			}
 		}
 		if (bLive && TryChain())
+		{
+			return;
+		}
+		if (bLive && FMoveDef::InRange(Move->Feint, MF) && TryCommands(Def->Commands, -1, false, true))
 		{
 			return;
 		}
@@ -740,7 +1034,11 @@ namespace Slop
 			{
 				continue;
 			}
-			if (RunMeter < L.Cost && !Sim->bInfiniteRun)
+			// Links spend run meter; the Grandmaster's own body pays a share of it in Qhi, and his
+			// spent body, which has neither, pays nothing.
+			const bool bQhiLink = Def->Resource == EResource::Qhi;
+			const double Cost = bQhiLink ? L.Cost * QhiRules().ChainShare : (Def->Resource == EResource::Run ? L.Cost : 0.0);
+			if (!Sim->bInfiniteRun && (bQhiLink ? Qhi < Cost : RunMeter < Cost))
 			{
 				continue;
 			}
@@ -750,9 +1048,13 @@ namespace Slop
 				continue;
 			}
 			Input.Consume(L.Mask);
-			if (!Sim->bInfiniteRun)
+			if (bQhiLink)
 			{
-				SpendRun(L.Cost);
+				SpendQhi(Cost);
+			}
+			else if (!Sim->bInfiniteRun)
+			{
+				SpendRun(Cost);
 			}
 			const FName Contact = MoveContact;
 			StartMove(*M);
@@ -770,6 +1072,11 @@ namespace Slop
 	void FFighter::MoveFrame()
 	{
 		const FMoveDef& M = *Move;
+		if ((M.bShapeshift || M.bRevert) && MF == M.FormFrame)
+		{
+			ChangeShape(M);
+			return;
+		}
 		if (M.Motion.Num() > 0)
 		{
 			const double DX = FMoveDef::CurveAt(M.Motion, MF) - FMoveDef::CurveAt(M.Motion, MF - 1);
@@ -904,14 +1211,14 @@ namespace Slop
 		{
 			Pos.Y = 0.01;
 		}
-		Move = nullptr;
+		BreakMove();
 		SetState(bJuggle ? EState::Juggle : EState::Fall);
 	}
 
 	void FFighter::TakeStun(int32 Frames, EStun Kind)
 	{
 		ReleaseThrow();
-		Move = nullptr;
+		BreakMove();
 		Stun = Frames;
 		StunKind = Kind;
 		bCrouchStun = Kind == EStun::Crouch || Kind == EStun::CrouchGuard;

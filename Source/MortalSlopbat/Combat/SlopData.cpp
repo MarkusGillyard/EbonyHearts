@@ -80,6 +80,7 @@ namespace Slop
 		case EEvent::StrangerEvade: return TEXT("stranger_evade");
 		case EEvent::StrangerStrike: return TEXT("stranger_strike");
 		case EEvent::StrangerCrack: return TEXT("stranger_crack");
+		case EEvent::Form: return TEXT("form");
 		}
 		return TEXT("?");
 	}
@@ -288,6 +289,8 @@ namespace Slop
 		}
 		M.Damage = Int(D, TEXT("damage"), 0);
 		M.Chip = Int(D, TEXT("chip"), 0);
+		M.Magic = FMath::Clamp(Num(D, TEXT("magic"), 0.0), 0.0, 1.0);
+		M.QhiCost = FMath::Max(0.0, Num(D, TEXT("qhi"), 0.0));
 		M.Hitstun = Int(D, TEXT("hitstun"), 18);
 		M.Blockstun = Int(D, TEXT("blockstun"), 12);
 		M.Hitstop = Int(D, TEXT("hitstop"), -1);
@@ -315,6 +318,8 @@ namespace Slop
 		M.Armor = ParseRange(Props, TEXT("armor"));
 		M.LowProfile = ParseRange(Props, TEXT("low_profile"));
 		M.Airborne = ParseRange(Props, TEXT("airborne"));
+		M.Feint = ParseRange(Props, TEXT("feint"));
+		M.Ward = ParseRange(Props, TEXT("ward"));
 		M.bEndsCrouched = Bool(D, TEXT("ends_crouched"), false);
 		if (const TArray<TSharedPtr<FJsonValue>>* Ch = Arr(D, TEXT("chain")))
 		{
@@ -377,6 +382,7 @@ namespace Slop
 			PD.Ground = FName(*Str(P, TEXT("ground"), TEXT("die")));
 			PD.bReturns = Bool(P, TEXT("returns"), false);
 			PD.bTether = Bool(P, TEXT("tether"), false);
+			PD.Magic = FMath::Clamp(Num(P, TEXT("magic"), M.Magic), 0.0, 1.0);
 		}
 		if (const TSharedPtr<FJsonObject> T = Obj(D, TEXT("throw")))
 		{
@@ -445,6 +451,8 @@ namespace Slop
 				M.ParryStun = Int(Pr, TEXT("stun"), 34);
 				M.ParryCounter = FName(*Str(Pr, TEXT("counter")));
 				M.ParryDamage = Int(Pr, TEXT("damage"), 0);
+				M.bParryStagger = Bool(Pr, TEXT("stagger"), false);
+				M.bParryCatch = Bool(Pr, TEXT("catch"), false);
 				if (const TArray<TSharedPtr<FJsonValue>>* Lv = Arr(Pr, TEXT("levels")))
 				{
 					for (const TSharedPtr<FJsonValue>& V : *Lv)
@@ -454,6 +462,16 @@ namespace Slop
 				}
 			}
 			M.bAirKnock = Bool(FX, TEXT("air_knock"), false);
+			if (const TSharedPtr<FJsonObject> Sh = Obj(FX, TEXT("shapeshift")))
+			{
+				M.bShapeshift = true;
+				M.FormFrame = Int(Sh, TEXT("frame"), M.Total);
+			}
+			if (const TSharedPtr<FJsonObject> Rv = Obj(FX, TEXT("revert")))
+			{
+				M.bRevert = true;
+				M.FormFrame = Int(Rv, TEXT("frame"), M.Total);
+			}
 			M.StageInput = Str(FX, TEXT("input"), TEXT("D,D,D+LP"));
 			M.StageId = FName(*Str(FX, TEXT("stage")));
 			M.Sink = ParseRange(FX, TEXT("sink"));
@@ -509,14 +527,34 @@ namespace Slop
 
 	const TArray<FName>& FContent::Roster()
 	{
-		static const TArray<FName> R = {TEXT("ashka"), TEXT("gorm"), TEXT("nix"), TEXT("mirela"), TEXT("bram"), TEXT("hollis")};
+		static const TArray<FName> R = {TEXT("ashka"), TEXT("gorm"), TEXT("nix"), TEXT("mirela"), TEXT("bram"), TEXT("hollis"), TEXT("wren")};
 		return R;
+	}
+
+	const TArray<FName>& FContent::Secret()
+	{
+		static const TArray<FName> S = {TEXT("grandmaster")};
+		return S;
 	}
 
 	const TArray<FName>& FContent::Special()
 	{
 		static const TArray<FName> S = {TEXT("slopbat"), TEXT("daxion")};
 		return S;
+	}
+
+	const TArray<FName>& FContent::Forms()
+	{
+		static const TArray<FName> S = {TEXT("grandmaster_spent")};
+		return S;
+	}
+
+	TArray<FName> FContent::Fighting()
+	{
+		TArray<FName> Out = Roster();
+		Out.Append(Secret());
+		Out.Append(Forms());
+		return Out;
 	}
 
 	TSharedPtr<FJsonObject> FContent::LoadJson(const FString& Path, TArray<FString>* Errors)
@@ -632,7 +670,9 @@ namespace Slop
 			return false;
 		}
 		TArray<FName> Ids = Roster();
+		Ids.Append(Secret());
 		Ids.Append(Special());
+		Ids.Append(Forms());
 		for (const FName& Id : Ids)
 		{
 			const FString Path = DataDir / TEXT("fighters") / (Id.ToString() + TEXT(".json"));
@@ -641,8 +681,10 @@ namespace Slop
 			{
 				continue;
 			}
-			// Appearance and own key poses live apart from how the fighter fights.
-			if (TSharedPtr<FJsonObject> Look = LoadJson(DataDir / TEXT("looks") / (Id.ToString() + TEXT(".json"))))
+			// Appearance and own key poses live apart from how the fighter fights; a form of another
+			// fighter wears that fighter's body and look.
+			const FString BodyId = Str(D, TEXT("body"), Id.ToString());
+			if (TSharedPtr<FJsonObject> Look = LoadJson(DataDir / TEXT("looks") / (BodyId + TEXT(".json"))))
 			{
 				D->SetObjectField(TEXT("look"), Look);
 			}
@@ -683,11 +725,29 @@ namespace Slop
 				Fighters.Add(Id, F.ToSharedRef());
 			}
 		}
-		for (const FName& Id : Roster())
+		TArray<FName> Required = Roster();
+		Required.Append(Secret());
+		for (const FName& Id : Required)
 		{
 			if (!Fighters.Contains(Id))
 			{
 				Errors.Add(TEXT("roster fighter missing: ") + Id.ToString());
+			}
+		}
+		for (auto& KV : Fighters)
+		{
+			FFighterDef& F = KV.Value.Get();
+			if (!F.SpentFormId.IsNone())
+			{
+				F.SpentForm = Fighter(F.SpentFormId);
+				if (!F.SpentForm || F.SpentForm->Resource == EResource::Qhi)
+				{
+					Errors.Add(KV.Key.ToString() + TEXT(": spent form missing or itself a Qhi fighter: ") + F.SpentFormId.ToString());
+				}
+			}
+			else if (F.Resource == EResource::Qhi)
+			{
+				Errors.Add(KV.Key.ToString() + TEXT(": a Qhi fighter needs a spent form"));
 			}
 		}
 		return Errors.Num() == 0;
@@ -707,6 +767,36 @@ namespace Slop
 		F.Blurb = Str(D, TEXT("blurb"));
 		F.bBoss = Bool(D, TEXT("boss"), false);
 		F.bHidden = Bool(D, TEXT("hidden"), F.bBoss);
+		F.bCopyable = Bool(D, TEXT("copyable"), !F.bHidden);
+		F.Body = FName(*Str(D, TEXT("body"), Owner));
+		F.SpentFormId = FName(*Str(D, TEXT("spent_form")));
+		const FString Res = Str(D, TEXT("resource"), TEXT("run"));
+		F.Resource = Res == TEXT("qhi") ? EResource::Qhi : (Res == TEXT("none") ? EResource::None : EResource::Run);
+		if (Res != TEXT("qhi") && Res != TEXT("none") && Res != TEXT("run"))
+		{
+			Errors.Add(Owner + TEXT(": unknown resource ") + Res);
+		}
+		if (const TSharedPtr<FJsonObject> Q = Obj(D, TEXT("qhi")))
+		{
+			FQhiRules& R = F.Qhi;
+			R.Max = Num(Q, TEXT("max"), R.Max);
+			R.Regen = Num(Q, TEXT("regen"), R.Regen);
+			R.RegenDelay = Int(Q, TEXT("regen_delay"), R.RegenDelay);
+			R.SpentRegen = Num(Q, TEXT("spent_regen"), R.SpentRegen);
+			R.RecoverAt = Num(Q, TEXT("recover_at"), R.RecoverAt);
+			R.GlideDrain = Num(Q, TEXT("glide_drain"), R.GlideDrain);
+			R.GlideMin = Num(Q, TEXT("glide_min"), R.GlideMin);
+			R.ChainShare = Num(Q, TEXT("chain_share"), R.ChainShare);
+			R.Upkeep = Num(Q, TEXT("upkeep"), R.Upkeep);
+			R.HitDrain = Num(Q, TEXT("hit_drain"), R.HitDrain);
+			R.DefendGain = Num(Q, TEXT("defend_gain"), R.DefendGain);
+			R.SpentDefendGain = Num(Q, TEXT("spent_defend_gain"), R.SpentDefendGain);
+			R.DefendGainEvery = Int(Q, TEXT("defend_gain_every"), R.DefendGainEvery);
+			R.FailCost = Num(Q, TEXT("fail_cost"), R.FailCost);
+			R.CopyPower = Num(Q, TEXT("copy_power"), R.CopyPower);
+			R.CopyGuard = Num(Q, TEXT("copy_guard"), R.CopyGuard);
+			R.CopySpeed = Num(Q, TEXT("copy_speed"), R.CopySpeed);
+		}
 		if (const TSharedPtr<FJsonObject> Mo = Obj(D, TEXT("motion")))
 		{
 			FMotionStyle& M = F.Motion;
@@ -760,6 +850,10 @@ namespace Slop
 		F.PushW = Num(S, TEXT("push_w"), F.PushW * K);
 		F.ThrowRange = Num(S, TEXT("throw_range"), F.ThrowRange * K);
 		F.bUnthrowable = Bool(S, TEXT("unthrowable"), false);
+		F.PhysDef = Num(S, TEXT("phys_def"), F.PhysDef);
+		F.MagicDef = Num(S, TEXT("magic_def"), F.MagicDef);
+		F.Power = Num(S, TEXT("power"), F.Power);
+		F.Arcana = Num(S, TEXT("arcana"), F.Arcana);
 
 		const TSharedPtr<FJsonObject> BasicMoves = Obj(Basics, TEXT("moves"));
 		TSet<FString> Skip;
@@ -921,9 +1015,21 @@ namespace Slop
 			{
 				Errors.Add(Where + TEXT(": parry counter is unknown"));
 			}
+			if (M.bParryCatch && (!F.Move(M.ParryCounter) || !F.Move(M.ParryCounter)->Throw.bHas))
+			{
+				Errors.Add(Where + TEXT(": a catching parry needs a counter with a throw sequence"));
+			}
 			if (M.IsThrowKind() && M.Kind == EMoveKind::Throw && !M.Throw.bHas)
 			{
 				Errors.Add(Where + TEXT(": throw without a throw sequence"));
+			}
+			if (M.QhiCost > 0.0 && F.Resource != EResource::Qhi)
+			{
+				Errors.Add(Where + TEXT(": costs Qhi, but the fighter has no Qhi meter"));
+			}
+			if ((M.bShapeshift || M.bRevert) && (M.FormFrame < 1 || M.FormFrame > M.Total || M.IsAttack()))
+			{
+				Errors.Add(Where + TEXT(": a change of shape needs a frame within the move and no attack"));
 			}
 			for (const TArray<FAnimKey>* Keys : {&M.AnimKeys, &M.HoldKeys, &M.VictimKeys})
 			{
@@ -942,5 +1048,38 @@ namespace Slop
 				}
 			}
 		}
+	}
+
+	TSharedRef<FFighterDef> MakeBorrowedShape(const FFighterDef& Target, const FFighterDef& Copier)
+	{
+		TSharedRef<FFighterDef> S = MakeShared<FFighterDef>(Target);
+		const FQhiRules& Q = Copier.Qhi;
+		S->CopyOf = &Target;
+		S->Resource = EResource::Run;
+		S->bCopyable = false;
+		S->SpentForm = nullptr;
+		S->SpentFormId = NAME_None;
+		S->Power = Target.Power * Q.CopyPower;
+		S->Arcana = Target.Arcana * Q.CopyPower;
+		S->PhysDef = Target.PhysDef * Q.CopyGuard;
+		S->MagicDef = Target.MagicDef * Q.CopyGuard;
+		S->WalkF = Target.WalkF * Q.CopySpeed;
+		S->WalkB = Target.WalkB * Q.CopySpeed;
+		S->RunSpeed = Target.RunSpeed * Q.CopySpeed;
+		// The fight's end lets the shape go, so it never performs the other fighter's finisher.
+		S->bHasFinisher = false;
+		// The way back: the copier's reversal, on the copier's own input for it, ahead of any of
+		// the target's commands on the same input.
+		for (const FCommand& C : Copier.Commands)
+		{
+			const TSharedRef<FMoveDef>* M = Copier.Moves.Find(C.Move);
+			if (M && (*M)->bRevert)
+			{
+				S->Moves.Add(C.Move, *M);
+				S->Commands.Insert(C, 0);
+			}
+		}
+		S->Commands.StableSort([](const FCommand& A, const FCommand& B) { return A.Priority() > B.Priority(); });
+		return S;
 	}
 }

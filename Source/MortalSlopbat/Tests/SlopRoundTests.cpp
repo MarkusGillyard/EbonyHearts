@@ -476,7 +476,7 @@ bool FSlopContentValid::RunTest(const FString&)
 	{
 		AddError(E);
 	}
-	TestEqual("roster fighters loaded", C.Fighters.Num(), FContent::Roster().Num() + FContent::Special().Num());
+	TestEqual("roster fighters loaded", C.Fighters.Num(), FContent::Roster().Num() + FContent::Secret().Num() + FContent::Special().Num() + FContent::Forms().Num());
 	for (const auto& KV : C.Fighters)
 	{
 		// The stranger in white is not a fighter: he has no ordinary moves by design.

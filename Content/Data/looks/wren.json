@@ -1,0 +1,14 @@
+{
+	"build": {"shoulders": 1.02, "chest": 0.97, "waist": 0.9, "limbs": 1.0, "hips": 1.0},
+	"materials": {
+		"skin": {"color": "#d8b29a"},
+		"hair": {"color": "#6a5236", "roughness": 0.5},
+		"jacket": {"color": "#33373a", "kind": "fabric", "roughness": 0.9},
+		"belt": {"color": "#6e1f1c", "kind": "fabric", "roughness": 0.85},
+		"top": {"color": "#1e2224", "kind": "fabric", "roughness": 0.7},
+		"trousers": {"color": "#23262a", "kind": "fabric", "roughness": 0.85},
+		"shoes": {"color": "#1a1816", "kind": "leather", "roughness": 0.45},
+		"gloves": {"color": "#2a1f19", "kind": "leather", "roughness": 0.4}
+	},
+	"glow": "#5ef2d6"
+}

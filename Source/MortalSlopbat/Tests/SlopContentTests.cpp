@@ -26,6 +26,7 @@ SLOP_TEST(FSlopEveryFighterHasABody, "Content.EveryFighterHasABodyAndPortrait")
 bool FSlopEveryFighterHasABody::RunTest(const FString&)
 {
 	TArray<FName> Ids = FContent::Roster();
+	Ids.Append(FContent::Secret());
 	Ids.Append(FContent::Special());
 	for (const FName& Id : Ids)
 	{

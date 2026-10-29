@@ -39,7 +39,8 @@ FText SSlopHud::NameOf(int32 Side) const
 	{
 		return LOCTEXT("Reflection", "THE REFLECTION");
 	}
-	return FText::FromString(M->Sim.Fighters[Side].Def->Name.ToUpper());
+	// Whoever's shape they wear, the bar names who they are.
+	return FText::FromString(M->Sim.Fighters[Side].BaseDef->Name.ToUpper());
 }
 
 void SSlopHud::Announce(const FText& Text, const FText& Sub, float Life, const FLinearColor& Color, float Size)
@@ -169,6 +170,47 @@ void SSlopHud::OnEvent(const FSimEvent& E)
 		NoticeLine = FText::Format(LOCTEXT("Range", "Wrong distance: {0} range"), FText::FromName(E.Want));
 		NoticeT = 2.0f;
 		break;
+	case EEvent::Form:
+	{
+		const int32 W = FMath::Clamp(E.Who, 0, 1);
+		const FFighterDef* Copied = GetContent().Fighter(E.Move);
+		const FName K = E.Kind;
+		if (K == TEXT("borrowed"))
+		{
+			FormText[W] = FText::Format(LOCTEXT("Borrowed", "BORROWED FACE: {0}"), FText::FromString(Copied ? Copied->Name.ToUpper() : FString()));
+			FormColor[W] = SlopUI::Amber * 1.15f;
+		}
+		else if (K == TEXT("own"))
+		{
+			FormText[W] = LOCTEXT("OwnFace", "OWN FACE");
+			FormColor[W] = SlopUI::Amber;
+		}
+		else if (K == TEXT("spent") || K == TEXT("broken"))
+		{
+			FormText[W] = K == TEXT("broken") ? LOCTEXT("ShapeBreaks", "THE SHAPE BREAKS: QHI SPENT") : LOCTEXT("QhiSpent", "QHI SPENT");
+			FormColor[W] = SlopUI::Rust * 1.4f;
+		}
+		else if (K == TEXT("recentred"))
+		{
+			FormText[W] = LOCTEXT("Recentred", "QHI RECENTRED");
+			FormColor[W] = SlopUI::Amber;
+		}
+		else if (K == TEXT("failed"))
+		{
+			FormText[W] = LOCTEXT("Failed", "SHAPESHIFT BROKEN");
+			FormColor[W] = SlopUI::Rust * 1.2f;
+		}
+		else if (K == TEXT("refused"))
+		{
+			FormText[W] = E.How == TEXT("qhi") ? LOCTEXT("NeedQhi", "NOT ENOUGH QHI (HALF NEEDED)")
+				: E.How == TEXT("boss") ? LOCTEXT("NoBoss", "ITS SHAPE CANNOT BE HELD")
+				: E.How == TEXT("mirror") ? LOCTEXT("NoMirror", "A MIRROR SHOWS ONLY ITSELF")
+				: LOCTEXT("NoShape", "NO SHAPE TO BORROW");
+			FormColor[W] = SlopUI::Dim;
+		}
+		FormT[W] = 1.8f;
+		break;
+	}
 	default:
 		break;
 	}
@@ -188,6 +230,12 @@ void SSlopHud::Tick(const FGeometry& AllottedGeometry, const double InCurrentTim
 	for (int32 I = 0; I < 2; ++I)
 	{
 		ComboT[I] = FMath::Max(0.f, ComboT[I] - Dt);
+		FormT[I] = FMath::Max(0.f, FormT[I] - Dt);
+		if (M->Sim.Fighters[I].UsesQhi())
+		{
+			const float Q = (float)(M->Sim.Fighters[I].Qhi / M->Sim.Fighters[I].QhiRules().Max);
+			QhiTrail[I] = Q > QhiTrail[I] ? Q : FMath::Max(Q, QhiTrail[I] - Dt * 0.6f);
+		}
 		ComboPop[I] = FMath::Max(0.f, ComboPop[I] - Dt * 6.f);
 		const FFighter& F = M->Sim.Fighters[I];
 		const float H = (float)F.Health / FMath::Max(1, F.MaxHealth());
@@ -269,12 +317,49 @@ void SSlopHud::PaintBars(FSlateWindowElementList& Out, const FGeometry& G, int32
 		const FLinearColor HC = H > 0.25f ? SlopUI::Accent * 0.85f : SlopUI::Rust * 1.3f;
 		Rect(I == 0 ? X : X + BarW - HW, Top, HW, BarH, HC, Layer + 3);
 		PaintText(Out, G, Layer + 4, NameOf(I), SlopUI::Body(26.f), FVector2D(I == 0 ? X + 12 : X + BarW - 12, Top - 1), FLinearColor(0.02f, 0.03f, 0.02f, 1.f), I == 0 ? 0 : 2);
-		// The run meter.
-		const float RunW = 360.f * (float)(F.RunMeter / FFighter::RunMax);
+		// The run meter, which the Grandmaster has only in a borrowed shape: his own body's bar is
+		// Qhi (gold, with a mark at the half a shapeshift costs), and a borrowed shape shows its
+		// run meter with the Qhi that holds it running down beneath.
 		const float RY = Top + BarH + 10.f;
-		Rect(I == 0 ? X : X + BarW - 360.f, RY, 360.f, 9.f, FLinearColor(0, 0, 0, 0.7f), Layer + 1);
-		Rect(I == 0 ? X : X + BarW - RunW, RY, RunW, 9.f, FLinearColor(0.25f, 0.5f, 1.f, 0.95f), Layer + 2);
-		PaintText(Out, G, Layer + 3, LOCTEXT("Run", "RUN"), SlopUI::Body(18.f), FVector2D(I == 0 ? X + 370.f : X + BarW - 370.f, RY - 7.f), SlopUI::Dim, I == 0 ? 0 : 2);
+		const float MeterX = I == 0 ? X : X + BarW - 360.f;
+		auto Meter = [&](float Y, float H, float Fill, float TrailFill, const FLinearColor& C)
+		{
+			Rect(MeterX, Y, 360.f, H, FLinearColor(0, 0, 0, 0.7f), Layer + 1);
+			if (TrailFill > Fill)
+			{
+				const float TW = 360.f * TrailFill;
+				Rect(I == 0 ? X : X + BarW - TW, Y, TW, H, FLinearColor(1.f, 1.f, 1.f, 0.35f), Layer + 2);
+			}
+			const float FW = 360.f * Fill;
+			Rect(I == 0 ? X : X + BarW - FW, Y, FW, H, C, Layer + 3);
+		};
+		const FVector2D LabelAt(I == 0 ? X + 370.f : X + BarW - 370.f, RY - 7.f);
+		const FLinearColor QhiGold(1.f, 0.78f, 0.3f, 0.95f);
+		if (F.HasRunMeter())
+		{
+			Meter(RY, 9.f, (float)(F.RunMeter / FFighter::RunMax), 0.f, FLinearColor(0.25f, 0.5f, 1.f, 0.95f));
+			PaintText(Out, G, Layer + 4, LOCTEXT("Run", "RUN"), SlopUI::Body(18.f), LabelAt, SlopUI::Dim, I == 0 ? 0 : 2);
+			if (F.UsesQhi())
+			{
+				const float Q = (float)(F.Qhi / F.QhiRules().Max);
+				Meter(RY + 13.f, 5.f, Q, QhiTrail[I], QhiGold);
+				PaintText(Out, G, Layer + 4, FText::Format(LOCTEXT("QhiHolds", "QHI  ·  AS {0}"), FText::FromString(F.Def->Name.ToUpper())), SlopUI::Body(16.f),
+					FVector2D(LabelAt.X, RY + 12.f), FLinearColor(1.f, 0.82f, 0.45f), I == 0 ? 0 : 2);
+			}
+		}
+		else if (F.UsesQhi())
+		{
+			const bool bSpent = F.Form == EForm::Spent;
+			const float Q = (float)(F.Qhi / F.QhiRules().Max);
+			// Spent: a dull rust bar refilling toward the mark where the Qhi recentres, pulsing.
+			const float Pulse = bSpent ? 0.65f + 0.35f * FMath::Sin((float)Sim.TickCount * 0.25f) : 1.f;
+			Meter(RY, 9.f, Q, QhiTrail[I], bSpent ? SlopUI::Rust * (1.2f * Pulse) : QhiGold);
+			const double Mark = bSpent ? F.QhiRules().RecoverAt / F.QhiRules().Max : FQhiRules::ShapeshiftShare;
+			const float MX = I == 0 ? X + 360.f * (float)Mark : X + BarW - 360.f * (float)Mark;
+			Rect(MX - 1.f, RY - 3.f, 2.f, 15.f, FLinearColor(1.f, 1.f, 1.f, 0.8f), Layer + 4);
+			PaintText(Out, G, Layer + 4, bSpent ? LOCTEXT("QhiSpentLabel", "QHI SPENT") : LOCTEXT("Qhi", "QHI"), SlopUI::Body(18.f), LabelAt,
+				bSpent ? SlopUI::Rust * 1.4f : FLinearColor(1.f, 0.82f, 0.45f), I == 0 ? 0 : 2);
+		}
 		// Round wins.
 		for (int32 R = 0; R < Sim.RoundsToWin; ++R)
 		{
@@ -371,6 +456,12 @@ int32 SSlopHud::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometr
 	}
 	for (int32 I = 0; I < 2; ++I)
 	{
+		if (FormT[I] > 0.f)
+		{
+			FLinearColor C = FormColor[I];
+			C.A = FMath::Clamp(FormT[I] / 0.4f, 0.f, 1.f);
+			PaintText(OutDrawElements, G, L, FormText[I], SlopUI::Display(34.f), FVector2D(I == 0 ? 70.f : 1850.f, 196.f), C, I == 0 ? 0 : 2);
+		}
 		if (ComboT[I] > 0.f)
 		{
 			FLinearColor C = ComboColor[I];
@@ -432,6 +523,10 @@ int32 SSlopHud::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometr
 			if (bShowStates)
 			{
 				S += FString::Printf(TEXT("%s  sf %d  hitstop %d  stun %d\nhp %d  run %d  combo %d\n"), StateName(F.State), F.SF, F.Hitstop, F.Stun, F.Health, (int32)F.RunMeter, F.ComboHits);
+				if (F.UsesQhi())
+				{
+					S += FString::Printf(TEXT("qhi %.1f  %s\n"), F.Qhi, FormName(F.Form));
+				}
 			}
 			if (bShowFrames && F.Move)
 			{

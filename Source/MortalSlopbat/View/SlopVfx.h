@@ -32,7 +32,8 @@ public:
 	FString Gore = TEXT("full");
 
 private:
-	enum class EKind : uint8 { Spark, Ember, Blood, Dust, Slop, Ring, Disc, Pale, Count };
+	// Qhi: the Grandmaster's gold; Wisp: Wren's fen-light teal.
+	enum class EKind : uint8 { Spark, Ember, Blood, Dust, Slop, Ring, Disc, Pale, Qhi, Wisp, Count };
 	struct FParticle { FVector P; FVector V; double Life; double Age; double Size; double Grow; double Drag; double Gravity; FRotator R; };
 	void Spawn(EKind K, const FVector& P, const FVector& V, double Life, double Size, double Grow = 0, double Drag = 2.0, double Gravity = 9.8);
 	void Burst(EKind K, const FVector& P, int32 N, double Speed, double Life, double Size, const FVector& Bias = FVector::ZeroVector);
@@ -76,6 +77,11 @@ private:
 	// A chain whipped out to a move's reach (moves with a "whip" range: Nix's Undertow), as the
 	// original drew it: from the hand to the far end of the hitbox, paid out over three frames.
 	void WhipStep();
+	// Qhi held in a body: motes rising off a borrowed shape, and off the Grandmaster as he glides.
+	void QhiStep(double Delta);
+	double QhiT[2] = {0, 0};
+	// The colour family a fighter's magic shows in (its look's glow).
+	EKind MagicKind(int32 Who) const;
 	UPROPERTY()
 	TObjectPtr<UStaticMeshComponent> WhipChain[2];
 	UPROPERTY()

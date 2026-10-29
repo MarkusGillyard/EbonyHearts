@@ -88,6 +88,12 @@ namespace Slop
 		int32 AddArcadeScore(const FMatchResult& R);
 		// After a won arcade match: advances the ladder; false when the run is complete.
 		bool ArcadeAdvance(bool bFlawless, double NowSeconds);
+		// The Grandmaster's secret challenge: a run that beat the Slopbat without a continue meets him
+		// on the still water of the Drowned Chapel, at Master, as one more rung ("secret").
+		static FName SecretFighter() { return TEXT("grandmaster"); }
+		bool SecretEarned() const;
+		void AddSecretRung();
+		bool OnSecretRung() const { const FRung* R = CurrentRung(); return R && R->Kind == TEXT("secret"); }
 		void ArcadeRetry();
 		// Back to the current rung after a detour (the stranger), without counting a continue.
 		void ResumeArcade() { if (InArcade()) ConfigureRung(); }

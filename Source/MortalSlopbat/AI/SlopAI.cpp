@@ -95,10 +95,91 @@ namespace Slop
 	}
 
 	FCpuBrain::FCpuBrain(FFightSim& InSim, int32 InIndex, int32 Difficulty, int32 Seed)
-		: Sim(InSim), Index(InIndex), L(Level(Difficulty))
+		: Sim(InSim), Index(InIndex), Diff(FMath::Clamp(Difficulty, 0, 2)), L(Level(Difficulty))
 	{
 		Rng.Initialize(Seed != 0 ? Seed : 9001 + InIndex * 31 + Difficulty * 7);
 		Ai = Me().Def->AI;
+		AiDef = Me().Def;
+	}
+
+	void FCpuBrain::SyncForm()
+	{
+		if (Me().Def == AiDef)
+		{
+			return;
+		}
+		AiDef = Me().Def;
+		Ai = AiDef->AI;
+		ReachCache.Reset();
+		Recent.Reset();
+		Intent.Clear();
+		AaAt = -1;
+	}
+
+	double FCpuBrain::QhiSetting(const TCHAR* Key, double Default) const
+	{
+		const TSharedPtr<FJsonObject> Q = Json::Obj(Me().BaseDef->AI, TEXT("qhi"));
+		if (const TArray<TSharedPtr<FJsonValue>>* A = Json::Arr(Q, Key))
+		{
+			return A->Num() > 0 ? (*A)[FMath::Min(Diff, A->Num() - 1)]->AsNumber() : Default;
+		}
+		return Json::Num(Q, Key, Default);
+	}
+
+	bool FCpuBrain::Affordable(const FMoveDef& Mv) const
+	{
+		const FFighter& M = Me();
+		return Mv.QhiCost <= 0.0 || (M.UsesQhi() && M.Qhi - Mv.QhiCost >= QhiSetting(TEXT("keep"), 0.0));
+	}
+
+	bool FCpuBrain::QhiPlan(const FFighter& M, const FSeen& Seen, double Dist)
+	{
+		if (!M.UsesQhi() || !M.IsActionable())
+		{
+			return false;
+		}
+		const TSharedPtr<FJsonObject> Q = Json::Obj(M.BaseDef->AI, TEXT("qhi"));
+		const bool bOppBusy = Seen.State == EState::Move || Seen.bAir;
+		if (M.Form == EForm::Own)
+		{
+			// Borrow the shape with the meter well above the price, and only where its long
+			// startup is safe: while the opponent (as seen) is down or getting up, or from far off
+			// and not into an attack already coming. A better CPU waits for the knockdown.
+			const bool bDown = Seen.State == EState::Down || Seen.State == EState::WakeUp || Seen.State == EState::Fall;
+			const bool bFar = Dist > 2.8 && !bOppBusy;
+			if (M.Qhi >= QhiSetting(TEXT("shapeshift_from"), 90.0) && M.BorrowRefusal().IsNone()
+				&& ((bDown && Dist > 0.9 && Rng.FRand() < 0.3 + 0.3 * Diff) || (bFar && Rng.FRand() < 0.05 - 0.015 * Diff)))
+			{
+				Intent.Command(Json::Str(Q, TEXT("shapeshift")));
+				return true;
+			}
+		}
+		else if (M.Form == EForm::Borrowed)
+		{
+			// Give the shape back before the Qhi runs out (a novice holds on until it breaks).
+			const double Below = QhiSetting(TEXT("revert_below"), 10.0);
+			if (Below > 0.0 && M.Qhi < Below && !bOppBusy && Dist > 1.3 && Rng.FRand() < 0.5)
+			{
+				Intent.Command(Json::Str(Q, TEXT("revert")));
+				return true;
+			}
+		}
+		else if (M.Form == EForm::Spent)
+		{
+			// Spent, the old man survives: out of reach when pressed, and guarding otherwise.
+			if (Dist < 1.5 && Seen.bActionable && Rng.FRand() < 0.05 + 0.05 * Diff)
+			{
+				if (const TArray<TSharedPtr<FJsonValue>>* R = AiArr(TEXT("retreat")))
+				{
+					if (R->Num() > 0)
+					{
+						Intent.Command((*R)[Rng.RandRange(0, R->Num() - 1)]->AsString());
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	const TArray<TSharedPtr<FJsonValue>>* FCpuBrain::AiArr(const TCHAR* Key) const { return Json::Arr(Ai, Key); }
@@ -140,6 +221,7 @@ namespace Slop
 	FPadState FCpuBrain::Think()
 	{
 		FFighter& M = Me();
+		SyncForm();
 		const FSeen Seen = Perceive();
 		if (!Sim.CanAct())
 		{
@@ -235,6 +317,10 @@ namespace Slop
 						Aa = FName(*(*A)[Rng.RandRange(0, A->Num() - 1)]->AsString());
 					}
 				}
+				if (const FMoveDef* AaDef = M.Def->Move(Aa); AaDef && !Affordable(*AaDef))
+				{
+					Aa = TEXT("uppercut");
+				}
 				Intent.Command(Notation(Aa));
 				return Intent.Next(M.Facing);
 			}
@@ -243,6 +329,17 @@ namespace Slop
 		{
 			if (P.Owner != Index && P.Age > L.React && FMath::Abs(P.Pos.X - M.Pos.X) < 3.0 && FMath::Sign(M.Pos.X - P.Pos.X) == FMath::Sign(P.Vel.X))
 			{
+				// A fighter with a ward (the Grandmaster's) breaks the shot on it when it can spare the Qhi.
+				if (const TArray<TSharedPtr<FJsonValue>>* W = AiArr(TEXT("wards")))
+				{
+					const FName WardMove = W->Num() > 0 ? FName(*(*W)[0]->AsString()) : NAME_None;
+					const FMoveDef* WM = M.Def->Move(WardMove);
+					if (WM && Affordable(*WM) && M.CanUse(*WM) && Rng.FRand() < 0.3 + 0.2 * Diff)
+					{
+						Intent.Command(Notation(WardMove));
+						return Intent.Next(M.Facing);
+					}
+				}
 				const double Roll = Rng.FRand();
 				if (P.Def().Level == ELevel::High && Roll < 0.4)
 				{
@@ -289,6 +386,10 @@ namespace Slop
 			bBlockLow = true;
 			return FPadIntent::Pad(2, M.Facing, 0, BtnBL);
 		}
+		if (QhiPlan(M, Seen, Dist))
+		{
+			return Intent.Next(M.Facing);
+		}
 		// --- Plans ---
 		if (--ThinkT <= 0)
 		{
@@ -329,8 +430,27 @@ namespace Slop
 			WalkT = 10;
 			return;
 		}
+		// A zoner fires from its own range (fighter AI "zone_from"); the others only from afar.
+		if (Dist > Json::Num(Ai, TEXT("zone_from"), 3.4) && Dist <= 3.4)
+		{
+			const TArray<FName> Zoner = MovesTagged(TEXT("projectile"));
+			if (Zoner.Num() > 0 && Rng.FRand() < Json::Num(Ai, TEXT("zoning"), 0.2))
+			{
+				Intent.Command(Notation(Zoner[Rng.RandRange(0, Zoner.Num() - 1)]));
+				return;
+			}
+		}
 		if (Dist > 3.4)
 		{
+			// A fighter with a way in (Wren's Flicker Step, through projectiles) takes it now and then.
+			if (const TArray<TSharedPtr<FJsonValue>>* In = AiArr(TEXT("approach")))
+			{
+				if (In->Num() > 0 && Rng.FRand() < 0.25 * Aggr)
+				{
+					Intent.Command((*In)[Rng.RandRange(0, In->Num() - 1)]->AsString());
+					return;
+				}
+			}
 			const TArray<FName> Zoner = MovesTagged(TEXT("projectile"));
 			if (Zoner.Num() > 0 && Rng.FRand() < 0.3 + Json::Num(Ai, TEXT("zoning"), 0.2))
 			{
@@ -483,6 +603,12 @@ namespace Slop
 			}
 		}
 		const FMoveDef* Mv = M.Def->Move(AaMove);
+		if (Mv && !Affordable(*Mv))
+		{
+			// A Qhi anti-air the meter cannot spare: the plain uppercut instead.
+			AaMove = TEXT("uppercut");
+			Mv = M.Def->Move(AaMove);
+		}
 		const int32 Startup = Mv ? Mv->Startup : 8;
 		const int32 TicksLeft = (int32)(T * 60.0) - (Sim.TickCount - Seen.Tick);
 		AaAt = Sim.TickCount + FMath::Max(0, TicksLeft - Startup + 1);
@@ -645,7 +771,7 @@ namespace Slop
 		{
 			const FMoveDef& Mv = *P.Value;
 			if (!Mv.IsAttack() || Mv.bAir || Mv.IsThrowKind() || Mv.bParry || Mv.Projectile.bHas || Mv.Kind == EMoveKind::Chain || Mv.Kind == EMoveKind::Finisher
-				|| M.Def->NotationOf(P.Key).IsEmpty() || !M.CanUse(Mv))
+				|| M.Def->NotationOf(P.Key).IsEmpty() || !M.CanUse(Mv) || !Affordable(Mv))
 			{
 				continue;
 			}
@@ -796,7 +922,7 @@ namespace Slop
 			{
 				continue;
 			}
-			if (Mv->Kind == EMoveKind::Special && !bSpecialsOk)
+			if ((Mv->Kind == EMoveKind::Special && !bSpecialsOk) || !Affordable(*Mv))
 			{
 				continue;
 			}
@@ -840,7 +966,7 @@ namespace Slop
 		for (const FCommand& C : Me().Def->Commands)
 		{
 			const FMoveDef* Mv = Me().Def->Move(C.Move);
-			if (Mv && Mv->HasTag(Tag))
+			if (Mv && Mv->HasTag(Tag) && Affordable(*Mv))
 			{
 				Out.Add(C.Move);
 			}

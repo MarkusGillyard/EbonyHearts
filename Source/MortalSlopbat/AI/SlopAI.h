@@ -108,6 +108,15 @@ namespace Slop
 		// Ticks from now until a move started now first hits: its inputs and a tick, then its startup.
 		int32 TicksToHit(FName MoveId) const;
 		void StartCombo(bool bPunish);
+		// The fighter took another shape (the Grandmaster): its moves and AI notes are that shape's.
+		void SyncForm();
+		// The Grandmaster's Qhi: when to borrow the opponent's shape, when to give it back before
+		// the meter runs dry, and how far to back off while spent (fighter AI "qhi", by
+		// difficulty). True when a command was started.
+		bool QhiPlan(const FFighter& M, const FSeen& Seen, double Dist);
+		// Whether a move leaves the Qhi the CPU means to keep (always, for moves that cost none).
+		bool Affordable(const FMoveDef& Mv) const;
+		double QhiSetting(const TCHAR* Key, double Default) const;
 		FPadState Finish();
 		double Reach(FName MoveId);
 		FString AttackFor(double Dist);
@@ -118,10 +127,12 @@ namespace Slop
 
 		FFightSim& Sim;
 		int32 Index;
+		int32 Diff = 1;
 		FCpuLevel L;
 		FRandomStream Rng;
 		FPadIntent Intent;
 		TSharedPtr<FJsonObject> Ai;
+		const FFighterDef* AiDef = nullptr;
 		TArray<FSeen> SeenHistory;
 		int32 ThinkT = 0;
 		int32 BlockT = 0;

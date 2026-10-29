@@ -537,6 +537,17 @@ namespace Slop
 		Save();
 	}
 
+	void FSlopProgress::RaiseArcadeScore(FName Fighter, int32 Difficulty, int32 Score)
+	{
+		const TSharedPtr<FJsonObject> A = Sub(Data, TEXT("arcade"));
+		const TSharedPtr<FJsonObject> Rec = Json::Obj(A, *FString::Printf(TEXT("%s:%d"), *Fighter.ToString(), Difficulty));
+		if (Rec.IsValid() && Score > Json::Int(Rec, TEXT("score"), 0))
+		{
+			Rec->SetNumberField(TEXT("score"), Score);
+		}
+		Save();
+	}
+
 	bool FSlopProgress::RecordSurvival(FName Fighter, int32 Waves)
 	{
 		const TSharedPtr<FJsonObject> S = Sub(Data, TEXT("survival"));

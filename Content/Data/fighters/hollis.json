@@ -313,6 +313,7 @@
 		},
 		"bubble": {
 			"name": "Bubble",
+			"magic": 0.6,
 			"kind": "special",
 			"startup": 16,
 			"active": 0,
@@ -373,6 +374,7 @@
 		},
 		"vent": {
 			"name": "Vent",
+			"magic": 0.3,
 			"startup": 6,
 			"active": 7,
 			"recovery": 30,

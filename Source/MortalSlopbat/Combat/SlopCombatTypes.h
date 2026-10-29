@@ -89,7 +89,11 @@ namespace Slop
 		Projectile, ProjectileEnd, Clash, Teleport, Buff, BuffEnd, ComboEnd, KO, FinishPrompt,
 		FinishTimeout, FinisherRange, Finisher, FinisherEnd, Timeout, RoundEnd, WinPose, MatchEnd,
 		// The stranger encounter: a spoken line (Text; bHint for instructions), his evade, palm and strike.
-		Line, StrangerEvade, StrangerStrike, StrangerCrack
+		Line, StrangerEvade, StrangerStrike, StrangerCrack,
+		// The Grandmaster changes shape (Kind: "borrowed", "own", "spent", "broken", "recentred"),
+		// fails to (Kind "failed": broken in its startup; "refused": How says why), Move names the
+		// fighter whose shape was borrowed.
+		Form
 	};
 	const TCHAR* EventName(EEvent E);
 
