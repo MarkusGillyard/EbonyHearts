@@ -145,7 +145,7 @@
    "vertices": 13380,
    "faces": 13378,
    "triangles": 26756,
-   "max_influences": 6,
+   "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_slopbat_skin",
    "surface": "body",
@@ -228,7 +228,7 @@
    "vertices": 1950,
    "faces": 2064,
    "triangles": 3896,
-   "max_influences": 6,
+   "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_slopbat_membrane",
    "surface": "membrane",
@@ -728,14 +728,14 @@
  },
  "timings_s": {
   "enable_mpfb": 0.18,
-  "mpfb_body": 0.93,
+  "mpfb_body": 0.92,
   "bake_body": 0.02,
   "outfit": 0.29,
-  "textures": 15.83,
+  "textures": 15.38,
   "finalize": 0.11,
-  "save_blend": 0.01,
-  "export_fbx": 0.39
+  "save_blend": 0.02,
+  "export_fbx": 0.38
  },
- "script_wall_s": 17.8,
- "peak_rss_mb": 1814.4
+ "script_wall_s": 17.3,
+ "peak_rss_mb": 1821.4
 }

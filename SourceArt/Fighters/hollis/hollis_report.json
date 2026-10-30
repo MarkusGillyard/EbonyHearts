@@ -138,7 +138,7 @@
    "vertices": 4475,
    "faces": 4332,
    "triangles": 8664,
-   "max_influences": 5,
+   "max_influences": 6,
    "unweighted_vertices": 0,
    "material": "M_hollis_skin",
    "surface": "body",
@@ -148,6 +148,7 @@
     "calf_r",
     "clavicle_l",
     "clavicle_r",
+    "foot_l",
     "hand_l",
     "hand_r",
     "head",
@@ -159,6 +160,8 @@
     "shoulder_half_l",
     "shoulder_half_r",
     "spine_03",
+    "upperarm_l",
+    "upperarm_r",
     "wrist_half_l",
     "wrist_half_r"
    ]
@@ -249,7 +252,7 @@
    "vertices": 7132,
    "faces": 7194,
    "triangles": 14276,
-   "max_influences": 6,
+   "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_hollis_suit",
    "surface": "suit",
@@ -389,7 +392,7 @@
    "vertices": 2090,
    "faces": 2285,
    "triangles": 4180,
-   "max_influences": 6,
+   "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_hollis_metal",
    "surface": "brass",
@@ -636,14 +639,14 @@
  },
  "timings_s": {
   "enable_mpfb": 0.18,
-  "mpfb_body": 1.08,
+  "mpfb_body": 1.02,
   "bake_body": 0.02,
-  "outfit": 2.12,
-  "textures": 17.66,
+  "outfit": 2.07,
+  "textures": 17.4,
   "finalize": 0.17,
   "save_blend": 0.02,
   "export_fbx": 0.35
  },
- "script_wall_s": 21.6,
- "peak_rss_mb": 1938.0
+ "script_wall_s": 21.2,
+ "peak_rss_mb": 1926.8
 }

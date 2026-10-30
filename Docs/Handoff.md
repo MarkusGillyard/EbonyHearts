@@ -101,7 +101,7 @@ the archive.
 
 ## Open
 
-- **2.7.1 and 2.7.2, from Markus's play (30 October 2026).** Done: raised feet no longer twist about the shin
+- **2.7.1 to 2.7.3, from Markus's play (30 October 2026).** Done: raised feet no longer twist about the shin
   (every raised foot on every fighter had its ankle wrung to a thin point: the mesh rig gave the
   foot no bind frame); captured kicks take the ankle's true angle (the converter measured it
   against the floor, the rig reads it against the shin); limbs swing instead of teleporting (a
@@ -112,11 +112,15 @@ the archive.
   2.7.2 adds: CPUs answer zoning (they had no answer: Mirela firing from 1.6 m won 98% at Master, and
   it had flattered the Grandmaster, 58% at Master becoming 25%; every CPU now reads a throw and goes
   over or through it, and closes under fire), Mirela and the Grandmaster retuned on those honest
-  numbers, and a heavier Gorm (more belly, waist, hips and thigh; finer canvas weave). Still to do:
-  deformation at the shoulders, hips and knees, more mass on Gorm if he still reads thin, CPU balance
-  (192 pairings: Bram 39, Ashka 30, Gorm 25, Nix 24, Mirela 23, Hollis 21, Grandmaster 17, Wren 13),
-  and a human opinion: none of this has been played yet. `Anim.LimbsDoNotTeleportThroughStrikes` and
-  `Content.RaisedFeetDoNotTwistAboutTheShin` hold the two main fixes.
+  numbers, and a heavier Gorm (more belly, waist, hips and thigh; finer canvas weave). 2.7.3 adds half
+  joints: a helper bone on each shoulder, elbow, wrist, hip, knee and ankle takes the middle of the
+  joint's skin blend and turns half way between the bones either side, so bent and twisted limbs keep
+  their width (`Tools/blender/fighter_joints.py`, `FMeshRig::Pose`); hems and robes stay out of it, as
+  a share fades with distance from the joint. Still to do: more mass on Gorm if he still reads thin,
+  and a human opinion: none of this has been played yet. CPU balance stays uneven and was left so on
+  purpose: the gap sits in the moves, not the CPU's settings, and frame data waits for a human
+  (`Docs/Validation.md`, 2.7.3). `Anim.LimbsDoNotTeleportThroughStrikes`,
+  `Content.RaisedFeetDoNotTwistAboutTheShin` and `Anim.HalfTurnStaysContinuous` hold the main fixes.
 - **Markus's play of 2.7.0 (29 Oct 2026): the next priority.** He played Wren and the Grandmaster
   on his PS4 pad: combat "pretty decent", everything else as intended. What he wants next is polish
   of the character models and animation so combat flows: the moves are improving but still feel

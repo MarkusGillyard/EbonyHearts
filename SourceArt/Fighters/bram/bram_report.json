@@ -152,7 +152,7 @@
    "vertices": 7764,
    "faces": 7686,
    "triangles": 15372,
-   "max_influences": 5,
+   "max_influences": 6,
    "unweighted_vertices": 0,
    "material": "M_bram_skin",
    "surface": "body",
@@ -205,6 +205,8 @@
     "thumb_02_r",
     "thumb_03_l",
     "thumb_03_r",
+    "upperarm_l",
+    "upperarm_r",
     "wrist_half_l",
     "wrist_half_r"
    ]
@@ -274,6 +276,7 @@
     "ankle_half_r",
     "calf_l",
     "calf_r",
+    "foot_l",
     "hip_half_l",
     "hip_half_r",
     "knee_half_l",
@@ -290,7 +293,7 @@
    "vertices": 1344,
    "faces": 1368,
    "triangles": 2684,
-   "max_influences": 2,
+   "max_influences": 3,
    "unweighted_vertices": 0,
    "material": "M_bram_leather",
    "surface": "boots",
@@ -348,7 +351,7 @@
    "vertices": 5478,
    "faces": 5564,
    "triangles": 10964,
-   "max_influences": 6,
+   "max_influences": 8,
    "unweighted_vertices": 0,
    "material": "M_bram_coat",
    "surface": "coat",
@@ -381,7 +384,7 @@
    "vertices": 1496,
    "faces": 1494,
    "triangles": 2988,
-   "max_influences": 5,
+   "max_influences": 6,
    "unweighted_vertices": 0,
    "material": "M_bram_coat",
    "surface": "coat",
@@ -400,7 +403,7 @@
    "vertices": 300,
    "faces": 314,
    "triangles": 600,
-   "max_influences": 6,
+   "max_influences": 8,
    "unweighted_vertices": 0,
    "material": "M_bram_leather",
    "surface": "belt",
@@ -527,7 +530,7 @@
    "vertices": 120,
    "faces": 120,
    "triangles": 240,
-   "max_influences": 5,
+   "max_influences": 6,
    "unweighted_vertices": 0,
    "material": "M_bram_coat",
    "surface": "coat_dark",
@@ -538,7 +541,9 @@
     "neck_01",
     "shoulder_half_l",
     "shoulder_half_r",
-    "spine_03"
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
    ]
   },
   "bram_epaulette_l": {
@@ -746,11 +751,11 @@
   "mpfb_body": 1.5,
   "bake_body": 0.02,
   "outfit": 1.78,
-  "textures": 19.23,
-  "finalize": 0.17,
+  "textures": 19.1,
+  "finalize": 0.18,
   "save_blend": 0.02,
   "export_fbx": 0.4
  },
- "script_wall_s": 23.3,
- "peak_rss_mb": 1858.3
+ "script_wall_s": 23.2,
+ "peak_rss_mb": 1790.2
 }

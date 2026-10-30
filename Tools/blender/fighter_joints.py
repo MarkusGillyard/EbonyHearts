@@ -21,6 +21,7 @@ import fighter_geo as geo
 JOINTS = (("shoulder", "clavicle", "upperarm", "upperarm"), ("elbow", "upperarm", "lowerarm", "lowerarm"),
           ("wrist", "lowerarm", "hand", "lowerarm"), ("hip", "pelvis", "thigh", "thigh"),
           ("knee", "thigh", "calf", "calf"), ("ankle", "calf", "foot", "calf"))
+NEAR, FAR = 0.45, 0.8
 
 
 def half_joints():
@@ -47,11 +48,14 @@ def add_bones(rig):
         bpy.ops.object.mode_set(mode="OBJECT")
 
 
-def split_weights(ob):
-    """Moves the middle of each joint's blend onto its helper. Returns the vertices moved."""
+def split_weights(ob, rig):
+    """Moves the middle of each joint's blend onto its helper. Returns the vertices moved. The share
+    fades with distance from the joint (fractions of the limb bone's length): a skirt's hem blends
+    between hip and thigh too, but turned rigidly about a joint a metre away it would swing far wide."""
     W = geo.weights(ob)
+    V = geo.co(ob)
     moved = 0
-    for name, upper, lower, _ in half_joints():
+    for name, upper, lower, along in half_joints():
         if upper not in W or lower not in W:
             continue
         s = W[upper] + W[lower]
@@ -59,9 +63,13 @@ def split_weights(ob):
         if not both.any():
             continue
         t = np.where(both, W[lower] / np.maximum(s, 1e-9), 0.0)
-        W[name] = np.where(both, s * (1 - np.abs(2 * t - 1)), 0.0)
-        W[upper] = np.where(both, s * np.maximum(1 - 2 * t, 0), W[upper])
-        W[lower] = np.where(both, s * np.maximum(2 * t - 1, 0), W[lower])
+        near = np.array(rig.data.bones[lower].head_local)
+        reach = (np.linalg.norm(V - near, axis=1) / rig.data.bones[along].length - NEAR) / (FAR - NEAR)
+        k = np.clip(reach, 0.0, 1.0)
+        k = 1 - k * k * (3 - 2 * k)
+        W[name] = np.where(both, s * k * (1 - np.abs(2 * t - 1)), 0.0)
+        W[upper] = np.where(both, s * ((1 - k) * (1 - t) + k * np.maximum(1 - 2 * t, 0)), W[upper])
+        W[lower] = np.where(both, s * ((1 - k) * t + k * np.maximum(2 * t - 1, 0)), W[lower])
         moved += int(both.sum())
     if moved:
         geo.set_weights(ob, W)
@@ -71,7 +79,7 @@ def split_weights(ob):
 
 def add_half_joints(rig, objects):
     add_bones(rig)
-    return {ob.name: split_weights(ob) for ob in objects if ob.type == "MESH" and ob.vertex_groups}
+    return {ob.name: split_weights(ob, rig) for ob in objects if ob.type == "MESH" and ob.vertex_groups}
 
 
 def half_turn(turn, axis):

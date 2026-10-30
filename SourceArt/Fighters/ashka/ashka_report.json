@@ -112,7 +112,7 @@
    "vertices": 12457,
    "faces": 12210,
    "triangles": 24420,
-   "max_influences": 6,
+   "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_ashka_skin",
    "surface": "body",
@@ -292,7 +292,7 @@
    "vertices": 1542,
    "faces": 1724,
    "triangles": 3076,
-   "max_influences": 6,
+   "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_ashka_leather",
    "surface": "vest",
@@ -367,7 +367,7 @@
    "vertices": 746,
    "faces": 754,
    "triangles": 1492,
-   "max_influences": 2,
+   "max_influences": 3,
    "unweighted_vertices": 0,
    "material": "M_ashka_cloth",
    "surface": "wraps",
@@ -433,7 +433,7 @@
    "vertices": 125,
    "faces": 120,
    "triangles": 240,
-   "max_influences": 5,
+   "max_influences": 6,
    "unweighted_vertices": 0,
    "material": "M_ashka_leather",
    "surface": "cord",
@@ -445,7 +445,9 @@
     "shoulder_half_l",
     "shoulder_half_r",
     "spine_02",
-    "spine_03"
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
    ]
   }
  },
@@ -471,15 +473,15 @@
   "targets_applied": 32
  },
  "timings_s": {
-  "enable_mpfb": 0.2,
-  "mpfb_body": 1.17,
+  "enable_mpfb": 0.27,
+  "mpfb_body": 1.29,
   "bake_body": 0.02,
-  "outfit": 1.46,
-  "textures": 16.65,
+  "outfit": 1.45,
+  "textures": 16.07,
   "finalize": 0.14,
-  "save_blend": 0.03,
-  "export_fbx": 0.3
+  "save_blend": 0.02,
+  "export_fbx": 0.28
  },
- "script_wall_s": 20.0,
- "peak_rss_mb": 1724.6
+ "script_wall_s": 19.6,
+ "peak_rss_mb": 1726.7
 }

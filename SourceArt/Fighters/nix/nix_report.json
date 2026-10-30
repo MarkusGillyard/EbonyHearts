@@ -235,7 +235,7 @@
    "vertices": 5584,
    "faces": 5648,
    "triangles": 11176,
-   "max_influences": 6,
+   "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_nix_cloth",
    "surface": "wrap",
@@ -276,6 +276,7 @@
     "ankle_half_l",
     "calf_l",
     "calf_r",
+    "foot_l",
     "hip_half_l",
     "hip_half_r",
     "knee_half_l",
@@ -292,7 +293,7 @@
    "vertices": 502,
    "faces": 526,
    "triangles": 1004,
-   "max_influences": 2,
+   "max_influences": 3,
    "unweighted_vertices": 0,
    "material": "M_nix_cloth",
    "surface": "wrap_dark",
@@ -307,13 +308,14 @@
    "vertices": 120,
    "faces": 120,
    "triangles": 240,
-   "max_influences": 2,
+   "max_influences": 3,
    "unweighted_vertices": 0,
    "material": "M_nix_cloth",
    "surface": "wrap",
    "bones": [
     "ankle_half_l",
-    "calf_l"
+    "calf_l",
+    "foot_l"
    ]
   },
   "nix_shinband2_l": {
@@ -516,7 +518,7 @@
   },
   "nix_hood": {
    "vertices": 2064,
-   "faces": 2928,
+   "faces": 2966,
    "triangles": 4132,
    "max_influences": 6,
    "unweighted_vertices": 0,
@@ -537,7 +539,7 @@
   },
   "nix_mask": {
    "vertices": 1188,
-   "faces": 1727,
+   "faces": 1731,
    "triangles": 2376,
    "max_influences": 2,
    "unweighted_vertices": 0,
@@ -552,7 +554,7 @@
    "vertices": 56,
    "faces": 54,
    "triangles": 108,
-   "max_influences": 5,
+   "max_influences": 6,
    "unweighted_vertices": 0,
    "material": "M_nix_cloth",
    "surface": "wrap_dark",
@@ -716,15 +718,15 @@
   "targets_applied": 12
  },
  "timings_s": {
-  "enable_mpfb": 0.19,
-  "mpfb_body": 1.15,
+  "enable_mpfb": 0.18,
+  "mpfb_body": 1.12,
   "bake_body": 0.02,
   "outfit": 4.02,
-  "textures": 16.74,
-  "finalize": 0.18,
+  "textures": 16.78,
+  "finalize": 0.19,
   "save_blend": 0.02,
-  "export_fbx": 0.4
+  "export_fbx": 0.39
  },
  "script_wall_s": 22.7,
- "peak_rss_mb": 1752.9
+ "peak_rss_mb": 1742.5
 }

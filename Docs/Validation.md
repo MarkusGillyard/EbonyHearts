@@ -67,6 +67,25 @@ he wins 18-27%, 27%, 29% and 55-64% (Novice, Warrior, Master, challenge tier; 8-
 Hollis 21, the Grandmaster 17, Wren 13. His Master bound in `AI.NewFightersMatchups` was lowered to
 15% on that evidence; the challenge tier, where players meet him, still has to beat 50%.
 
+**2.7.3: where the gap between the CPUs comes from.** The tally above is one match a pairing, too few to
+rank anyone. At 12 seeds a pairing (72 matches a level, each fighter against the other six):
+
+| Level | Standings |
+|---|---|
+| Novice | Gorm 67, Bram 61, Mirela 54, Nix 50, Ashka 44, Wren 36, Hollis 25 |
+| Warrior | Nix 72, Gorm 64, Bram 61, Mirela 50, Hollis 46, Ashka 39, Wren 24 |
+| Master | Bram 72, Ashka 71, Hollis 67, Wren 44, Nix 42, Gorm 29, Mirela 26 |
+
+Tried on the CPU's notes alone, then put back: Wren closer in (range 1.05 to 0.9) with Turning Light
+half as often, 32/25/38, no better; Bram less aggressive (0.75 to 0.6), 50/64/81, stronger at Master;
+Mirela and Gorm more aggressive (Mirela 60/54/26, Gorm 69/53/28), no real change; Bram's Stand Down
+out of CPU hands altogether, 57/69/79, no weaker. Neither aggression nor the parry carries him. The
+difference is in the moves: normals are nearly the same across the roster, Bram's HP has the fastest
+startup in the game (4 frames, shared with Nix's) at full damage (50 to Nix's 45), and Wren has the
+shortest reach (0.65 to 0.92 m) on the same frames and damage as everyone else. Frame data was left
+alone: these are CPU mirrors, not players, Markus cleared all three towers with Wren, and a change of
+that kind is for a human to judge in play.
+
 Found and fixed while checking: the CPU pairing test kept six win counters (a seventh fighter wrote
 past them); a body put on over another kept the old body's materials; the pose library rebuilt for
 a new form kept its old poses; a gold rim at four times a fighter's own washed a borrowed shape
