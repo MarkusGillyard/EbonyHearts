@@ -246,7 +246,8 @@ the owner's where he set them and coherent extensions where he asked for them; t
   fighter's own AI notes) and for a long string of their own; changes of shape on confirmed hits;
   Two Fingers only with 75 Qhi in hand; Find the Crack as a read on an opponent standing guard;
   Heart Stop whenever a combo allows it, cancelled into from the blow that set it up; a boxer's
-  guard and retreat when spent; and zoning with his palms from 1.6 m, his strength. Development
+  guard and retreat when spent; and heavy zoning with his palms from 1.6 m (since 2.7.2 CPUs jump it, so
+  it is no longer a free win). Development
   builds count how he used his meter (`FCpuBrain::FQhiTelemetry`: Qhi spent and gained, time,
   damage dealt and taken in each form, shapes taken, changes inside combos, combos by length, each
   kill's chances, tries and kills, the meter left unused, rounds lost by form), logged by the AI

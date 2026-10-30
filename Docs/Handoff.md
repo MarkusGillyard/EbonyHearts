@@ -101,7 +101,7 @@ the archive.
 
 ## Open
 
-- **2.7.1, from Markus's play (30 October 2026).** Done: raised feet no longer twist about the shin
+- **2.7.1 and 2.7.2, from Markus's play (30 October 2026).** Done: raised feet no longer twist about the shin
   (every raised foot on every fighter had its ankle wrung to a thin point: the mesh rig gave the
   foot no bind frame); captured kicks take the ankle's true angle (the converter measured it
   against the floor, the rig reads it against the shin); limbs swing instead of teleporting (a
@@ -109,9 +109,13 @@ the archive.
   by distance along the limb's path; knees and raised feet got the follow-through springs they
   lacked; a striking limb now ramps onto its pose by the frame before contact); Gorm has four new
   specials; cloth wear no longer paints camouflage. Frame data of existing moves is unchanged.
-  Still to do from the items below: more transitions between moves, deformation at the shoulders,
-  hips and knees, Gorm's body itself (the mesh was not rebuilt), and a human opinion: none of this
-  has been played yet. `Anim.LimbsDoNotTeleportThroughStrikes` and
+  2.7.2 adds: CPUs answer zoning (they had no answer: Mirela firing from 1.6 m won 98% at Master, and
+  it had flattered the Grandmaster, 58% at Master becoming 25%; every CPU now reads a throw and goes
+  over or through it, and closes under fire), Mirela and the Grandmaster retuned on those honest
+  numbers, and a heavier Gorm (more belly, waist, hips and thigh; finer canvas weave). Still to do:
+  deformation at the shoulders, hips and knees, more mass on Gorm if he still reads thin, CPU balance
+  (192 pairings: Bram 39, Ashka 30, Gorm 25, Nix 24, Mirela 23, Hollis 21, Grandmaster 17, Wren 13),
+  and a human opinion: none of this has been played yet. `Anim.LimbsDoNotTeleportThroughStrikes` and
   `Content.RaisedFeetDoNotTwistAboutTheShin` hold the two main fixes.
 - **Markus's play of 2.7.0 (29 Oct 2026): the next priority.** He played Wren and the Grandmaster
   on his PS4 pad: combat "pretty decent", everything else as intended. What he wants next is polish

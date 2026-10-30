@@ -60,6 +60,13 @@ Heart Stop rare (its combos seldom reach five hits). Wren unchanged: 40%, 21%, 5
 all 192 pairings (three levels, both sides): Ashka 33, Gorm 24, Nix 28, Mirela 10, Bram 34,
 Hollis 19, Wren 18, the Grandmaster 26 match wins (17 before the pass).
 
+**2.7.2 changed these numbers.** CPUs had no answer to zoning (Mirela firing from 1.6 m won 98% at
+Master), which had flattered the Grandmaster's palms. With CPUs that go over or through a thrown shot,
+he wins 18-27%, 27%, 29% and 55-64% (Novice, Warrior, Master, challenge tier; 8-16 seeds), Wren 38%,
+19%, 44%, Mirela about 60%, 48%, 29%. The 192 pairings: Bram 39, Ashka 30, Gorm 25, Nix 24, Mirela 23,
+Hollis 21, the Grandmaster 17, Wren 13. His Master bound in `AI.NewFightersMatchups` was lowered to
+15% on that evidence; the challenge tier, where players meet him, still has to beat 50%.
+
 Found and fixed while checking: the CPU pairing test kept six win counters (a seventh fighter wrote
 past them); a body put on over another kept the old body's materials; the pose library rebuilt for
 a new form kept its old poses; a gold rim at four times a fighter's own washed a borrowed shape

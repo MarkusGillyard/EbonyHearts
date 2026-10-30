@@ -148,7 +148,7 @@ bool FSlopAnimatorRuns::RunTest(const FString&)
 
 // A limb swings through a blow, it does not teleport. Strikes are short, so a limb that waits and then
 // crosses its whole path in a frame or two reads as robotic (a roundhouse's foot once reached 52 m/s,
-// and a real one is 15 to 25). Every fighter's basic strikes, each shown limb, frame by frame.
+// and a real one is 15 to 25). Every fighter's basic strikes and strings, each limb, frame by frame.
 SLOP_TEST(FSlopLimbsSwing, "Anim.LimbsDoNotTeleportThroughStrikes")
 bool FSlopLimbsSwing::RunTest(const FString&)
 {
@@ -207,6 +207,32 @@ bool FSlopLimbsSwing::RunTest(const FString&)
 			Pads[0].Held = Pads[0].Pressed = Step[1];
 			Tick(Pads);
 			Watch();
+			for (int32 T = 0; T < 200 && !F.IsActionable(); ++T)
+			{
+				Tick(Idle);
+				Watch();
+			}
+			for (int32 T = 0; T < 30; ++T)
+			{
+				Tick(Idle);
+				Watch();
+			}
+		}
+		// And from one blow into the next: each link pressed as soon as the last has come out.
+		for (const int32 Button : {BtnHP, BtnLP})
+		{
+			for (int32 Link = 0; Link < 3; ++Link)
+			{
+				FPadState Pads[2];
+				Pads[0].Held = Pads[0].Pressed = Button;
+				Tick(Pads);
+				Watch();
+				for (int32 T = 0; T < 9; ++T)
+				{
+					Tick(Idle);
+					Watch();
+				}
+			}
 			for (int32 T = 0; T < 200 && !F.IsActionable(); ++T)
 			{
 				Tick(Idle);
