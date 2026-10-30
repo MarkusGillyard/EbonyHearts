@@ -679,6 +679,491 @@
 					]
 				]
 			}
+		},
+		"tallow_slaps": {
+			"name": "Tallow Slaps",
+			"kind": "special",
+			"startup": 10,
+			"active": 3,
+			"recovery": 18,
+			"level": "mid",
+			"damage": 55,
+			"chip": 8,
+			"hitstun": 20,
+			"blockstun": 12,
+			"push_hit": 0.35,
+			"push_block": 0.5,
+			"motion": [
+				[
+					3,
+					0.0
+				],
+				[
+					10,
+					0.7
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.25,
+						1.0,
+						0.8,
+						0.6
+					]
+				}
+			],
+			"chain": [
+				{
+					"input": "HP",
+					"move": "gorm_thrust2",
+					"window": [
+						8,
+						18
+					],
+					"cost": 8
+				}
+			],
+			"tags": [
+				"rush"
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						5,
+						"gorm_thrust_load",
+						"out"
+					],
+					[
+						10,
+						"gorm_thrust_r",
+						"snap"
+					],
+					[
+						13,
+						"gorm_thrust_r",
+						"linear"
+					],
+					[
+						30,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "medium"
+			}
+		},
+		"gorm_thrust2": {
+			"name": "Tallow Slaps: second",
+			"kind": "chain",
+			"startup": 6,
+			"active": 3,
+			"recovery": 16,
+			"level": "mid",
+			"damage": 50,
+			"hitstun": 20,
+			"blockstun": 12,
+			"push_hit": 0.35,
+			"push_block": 0.5,
+			"motion": [
+				[
+					6,
+					0.4
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.25,
+						1.0,
+						0.8,
+						0.6
+					]
+				}
+			],
+			"chain": [
+				{
+					"input": "HP",
+					"move": "gorm_thrust3",
+					"window": [
+						6,
+						16
+					],
+					"cost": 10
+				}
+			],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						6,
+						"gorm_thrust_l",
+						"snap"
+					],
+					[
+						9,
+						"gorm_thrust_l",
+						"linear"
+					],
+					[
+						24,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "medium"
+			}
+		},
+		"gorm_thrust3": {
+			"name": "Tallow Slaps: shove",
+			"kind": "chain",
+			"startup": 8,
+			"active": 3,
+			"recovery": 24,
+			"level": "mid",
+			"damage": 70,
+			"hitstun": 26,
+			"blockstun": 14,
+			"effect": "knockdown",
+			"launch": [
+				3.0,
+				2.6
+			],
+			"hitstop": 11,
+			"push_block": 1.1,
+			"motion": [
+				[
+					8,
+					0.5
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.25,
+						0.95,
+						0.85,
+						0.7
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						3,
+						"gorm_thrust_load",
+						"out"
+					],
+					[
+						8,
+						"gorm_thrust_both",
+						"snap"
+					],
+					[
+						11,
+						"gorm_thrust_both",
+						"linear"
+					],
+					[
+						34,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"rising_belly": {
+			"name": "Rising Belly",
+			"kind": "special",
+			"startup": 7,
+			"active": 5,
+			"recovery": 28,
+			"level": "mid",
+			"damage": 110,
+			"hitstun": 28,
+			"blockstun": 14,
+			"effect": "knockdown",
+			"launch": [
+				2.2,
+				4.6
+			],
+			"hitstop": 11,
+			"motion": [
+				[
+					7,
+					0.25
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.1,
+						1.2,
+						0.75,
+						1.1
+					]
+				}
+			],
+			"props": {
+				"armor": [
+					2,
+					7
+				]
+			},
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						3,
+						"gorm_rise_load",
+						"out"
+					],
+					[
+						7,
+						"gorm_rise",
+						"snap"
+					],
+					[
+						12,
+						"gorm_rise",
+						"linear"
+					],
+					[
+						39,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"belly_slide": {
+			"name": "Belly Slide",
+			"kind": "special",
+			"startup": 11,
+			"active": 11,
+			"recovery": 20,
+			"level": "low",
+			"damage": 70,
+			"chip": 6,
+			"hitstun": 24,
+			"blockstun": 14,
+			"effect": "sweep",
+			"launch": [
+				0.8,
+				3.0
+			],
+			"hitstop": 9,
+			"push_block": 0.7,
+			"motion": [
+				[
+					3,
+					0.0
+				],
+				[
+					20,
+					2.3
+				],
+				[
+					26,
+					2.4
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.15,
+						0.0,
+						0.9,
+						0.75
+					]
+				}
+			],
+			"props": {
+				"low_profile": [
+					3,
+					24
+				]
+			},
+			"tags": [
+				"rush"
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						5,
+						"gorm_rise_load",
+						"out"
+					],
+					[
+						11,
+						"gorm_slide",
+						"inout"
+					],
+					[
+						22,
+						"gorm_slide",
+						"linear"
+					],
+					[
+						41,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"belly_to_belly": {
+			"name": "Belly-to-Belly",
+			"kind": "grab",
+			"startup": 9,
+			"active": 3,
+			"recovery": 34,
+			"level": "throw",
+			"requires": "",
+			"throw": {
+				"frames": 60,
+				"damage_frame": 46,
+				"damage": 165,
+				"release": [
+					1.6,
+					2.4
+				],
+				"recover": 6,
+				"swap": true,
+				"breakable": true,
+				"path": [
+					[
+						0,
+						0.72,
+						0.1
+					],
+					[
+						14,
+						0.5,
+						0.8
+					],
+					[
+						26,
+						0.0,
+						1.9
+					],
+					[
+						38,
+						-1.05,
+						1.3
+					],
+					[
+						46,
+						-1.25,
+						0.25
+					],
+					[
+						60,
+						-1.3,
+						0.0
+					]
+				]
+			},
+			"hitboxes": [
+				{
+					"rect": [
+						0.15,
+						0.4,
+						0.8,
+						1.4
+					]
+				}
+			],
+			"tags": [
+				"grab"
+			],
+			"anim": {
+				"keys": [
+					[
+						5,
+						"grab_reach",
+						"snap"
+					],
+					[
+						12,
+						"grab_reach",
+						"linear"
+					],
+					[
+						45,
+						"stance",
+						"inout"
+					]
+				],
+				"hold": [
+					[
+						8,
+						"grab_hold",
+						"out"
+					],
+					[
+						20,
+						"gorm_lift",
+						"inout"
+					],
+					[
+						32,
+						"throw_over",
+						"linear"
+					],
+					[
+						46,
+						"gorm_slam",
+						"snap"
+					],
+					[
+						60,
+						"stance",
+						"inout"
+					]
+				],
+				"victim": [
+					[
+						6,
+						"thrown_hold",
+						"out"
+					],
+					[
+						20,
+						"thrown_lift",
+						"inout"
+					],
+					[
+						38,
+						"thrown_lift",
+						"linear"
+					],
+					[
+						46,
+						"air_fall",
+						"snap"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "grab"
+			}
 		}
 	},
 	"commands": [
@@ -697,6 +1182,22 @@
 		[
 			"D,D+HP",
 			"ground_slap"
+		],
+		[
+			"F,F+HP",
+			"tallow_slaps"
+		],
+		[
+			"D,U+HK",
+			"rising_belly"
+		],
+		[
+			"D,F+LK",
+			"belly_slide"
+		],
+		[
+			"F,B+LP",
+			"belly_to_belly"
 		]
 	],
 	"finisher": {
@@ -709,6 +1210,7 @@
 		"aggression": 0.6,
 		"zoning": 0.1,
 		"anti_air": [
+			"rising_belly",
 			"uppercut"
 		],
 		"grab": "B,F+LP",
@@ -721,8 +1223,20 @@
 			[
 				"LK",
 				"HK"
+			],
+			[
+				"F,F+HP",
+				"HP",
+				"HP"
 			]
 		],
-		"weights": {}
+		"weights": {
+			"tallow_slaps": 1.1,
+			"belly_slide": 0.5,
+			"rising_belly": 0.2
+		},
+		"approach": [
+			"D,F+LK"
+		]
 	}
 }

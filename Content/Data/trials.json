@@ -123,6 +123,26 @@
 			"moves": [
 				"ground_slap"
 			]
+		},
+		{
+			"name": "Tallow Slaps",
+			"steps": ["F,F+HP", "HP", "HP"],
+			"moves": ["tallow_slaps", "gorm_thrust2", "gorm_thrust3"]
+		},
+		{
+			"name": "Belly Slide",
+			"steps": ["D,F+LK"],
+			"moves": ["belly_slide"]
+		},
+		{
+			"name": "Rising Belly",
+			"steps": ["D,U+HK"],
+			"moves": ["rising_belly"]
+		},
+		{
+			"name": "Belly-to-Belly",
+			"steps": ["F,B+LP"],
+			"moves": ["belly_to_belly"]
 		}
 	],
 	"nix": [
