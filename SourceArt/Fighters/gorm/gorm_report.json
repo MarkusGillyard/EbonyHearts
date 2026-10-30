@@ -74,7 +74,7 @@
  },
  "texture_notes": {
   "skin": [
-   "tinted young_lightskinned_male_diffuse.png -> #d39a84 (per-channel gain [0.904, 0.877, 1.011])",
+   "tinted young_lightskinned_male_diffuse.png -> #d39a84 (per-channel gain [0.904, 0.878, 1.012])",
    "painted scalp hair replaced by forehead skin tone",
    "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #d39a84"
   ],
@@ -93,7 +93,7 @@
    "gorm_neckstrap: Leather021 tinted #1f1915, 25 cm tiles, roughness 0.45, metallic 0"
   ],
   "canvas": [
-   "gorm_trousers: Fabric066 tinted #77694c, 7 cm tiles, roughness 0.92, metallic 0"
+   "gorm_trousers: Fabric066 tinted #77694c, 4 cm tiles, roughness 0.92, metallic 0"
   ],
   "iron": [
    "gorm_buckle: Metal055A tinted #5a5855, 25 cm tiles, roughness 0.48, metallic 1",
@@ -104,9 +104,9 @@
  },
  "parts": {
   "gorm_body": {
-   "vertices": 10106,
-   "faces": 9998,
-   "triangles": 19996,
+   "vertices": 10103,
+   "faces": 9994,
+   "triangles": 19988,
    "max_influences": 6,
    "unweighted_vertices": 0,
    "material": "M_gorm_skin",
@@ -200,9 +200,9 @@
    ]
   },
   "gorm_trousers": {
-   "vertices": 2284,
-   "faces": 2320,
-   "triangles": 4572,
+   "vertices": 2298,
+   "faces": 2336,
+   "triangles": 4600,
    "max_influences": 6,
    "unweighted_vertices": 0,
    "material": "M_gorm_canvas",
@@ -295,9 +295,9 @@
    ]
   },
   "gorm_belt": {
-   "vertices": 320,
-   "faces": 368,
-   "triangles": 640,
+   "vertices": 310,
+   "faces": 369,
+   "triangles": 620,
    "max_influences": 6,
    "unweighted_vertices": 0,
    "material": "M_gorm_leather",
@@ -379,6 +379,7 @@
   }
  },
  "triangles_total": 37336,
+ "top_of_everything_cm": 212.0,
  "standing_height_cm": 212.0,
  "lowest_point_cm": 0.0,
  "bones": 53,
@@ -399,15 +400,15 @@
   "targets_applied": 60
  },
  "timings_s": {
-  "enable_mpfb": 0.19,
-  "mpfb_body": 1.25,
+  "enable_mpfb": 0.32,
+  "mpfb_body": 1.22,
   "bake_body": 0.02,
-  "outfit": 1.14,
-  "textures": 21.37,
-  "finalize": 0.02,
-  "save_blend": 0.01,
-  "export_fbx": 0.24
+  "outfit": 1.09,
+  "textures": 19.44,
+  "finalize": 0.01,
+  "save_blend": 0.02,
+  "export_fbx": 0.22
  },
- "script_wall_s": 24.3,
- "peak_rss_mb": 2248.5
+ "script_wall_s": 22.4,
+ "peak_rss_mb": 2285.5
 }
