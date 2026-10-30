@@ -110,6 +110,10 @@ namespace Slop::Anim
 		FVector Bend[4];
 		// How closed each hand is: 1 a fist, 0 an open palm.
 		double Fist[2] = {1.0, 1.0};
+		// The shin's frame in the pose the skin was bound in (left, right; identity on the original's
+		// rig). A foot off the floor follows the shin, and a skinned foot's rest is flat, so the shin's
+		// own rest turn must come out or the foot twists about the shin and pinches the ankle.
+		FQuat ShinBind[2] = {FQuat::Identity, FQuat::Identity};
 
 		// Proportions as the original game built them from height and the look's build.
 		void Build(const FFighterDef& Def);

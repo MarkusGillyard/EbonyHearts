@@ -492,7 +492,7 @@ namespace Slop::Anim
 		SetGlobal(Thigh, FXf(AimBasis(Knee - Hip, Axis), Hip));
 		SetGlobal(Shin, FXf(ShinB, Knee));
 		const FQuat Flat = AxisAngle(FVector(0, 1, 0), Yaw);
-		const FQuat Pointed = ShinB * AxisAngle(FVector(1, 0, 0), FMath::DegreesToRadians(-ToeDeg));
+		const FQuat Pointed = ShinB * AxisAngle(FVector(1, 0, 0), FMath::DegreesToRadians(-ToeDeg)) * ShinBind[Side].Inverse();
 		SetGlobal(Foot, FXf(FQuat::Slerp(Flat, Pointed, FMath::Clamp(Free, 0.0, 1.0)), Ankle));
 	}
 

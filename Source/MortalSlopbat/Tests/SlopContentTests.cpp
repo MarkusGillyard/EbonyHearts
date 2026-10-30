@@ -55,6 +55,58 @@ bool FSlopEveryFighterHasABody::RunTest(const FString&)
 	return true;
 }
 
+// A foot off the floor follows the shin. It may point, a turn about the ankle, but it must not turn
+// about the shin itself: on a skinned body that wrings the ankle to a thin point (every raised foot
+// did, on every fighter, until the shin's bind frame was taken out of it).
+SLOP_TEST(FSlopRaisedFeetDoNotTwist, "Content.RaisedFeetDoNotTwistAboutTheShin")
+bool FSlopRaisedFeetDoNotTwist::RunTest(const FString&)
+{
+	TArray<FName> Ids = FContent::Roster();
+	Ids.Append(FContent::Secret());
+	Ids.Append(FContent::Special());
+	for (const FName& Id : Ids)
+	{
+		const FFighterDef* Def = GetContent().Fighter(Id);
+		USkeletalMesh* Mesh = Def ? LoadObject<USkeletalMesh>(nullptr, *USlopGameInstance::MeshFor(Id)) : nullptr;
+		Anim::FMeshRig MeshRig;
+		FString Error;
+		if (!TestTrue(Id.ToString() + TEXT(" rig"), Mesh && MeshRig.Init(Mesh->GetRefSkeleton(), Def->Height, Error)))
+		{
+			continue;
+		}
+		Anim::FRig Rig;
+		MeshRig.ConfigureRig(Rig);
+		Anim::FPoseLibrary Lib;
+		Lib.Build(*Def, GetContent().CommonPoses);
+		FQuat Extra[(int32)Anim::EJoint::Count];
+		for (FQuat& Q : Extra)
+		{
+			Q = FQuat::Identity;
+		}
+		for (const TCHAR* Name : {TEXT("mc_hk_09"), TEXT("mc_lk_07"), TEXT("mc_roundhouse_13"), TEXT("rh_hit"), TEXT("c_hk_hit")})
+		{
+			const Anim::FPose& P = Lib.Get(FName(Name));
+			const FVector Feet[2] = {P.P(Anim::EPos::FootL) + FVector(0, Rig.AnkleH, 0), P.P(Anim::EPos::FootR) + FVector(0, Rig.AnkleH, 0)};
+			const double Yaws[2] = {FMath::DegreesToRadians(P.V(Anim::EVal::YawL)), FMath::DegreesToRadians(P.V(Anim::EVal::YawR))};
+			Rig.Apply(P, Feet, Yaws, Extra);
+			for (int32 Side = 0; Side < 2; ++Side)
+			{
+				if (P.V(Side == 0 ? Anim::EVal::FreeL : Anim::EVal::FreeR) < 1.0)
+				{
+					continue;
+				}
+				const FQuat Shin = Rig.J(Side == 0 ? Anim::EJoint::ShinL : Anim::EJoint::ShinR).Q * Rig.ShinBind[Side].Inverse();
+				const FQuat Foot = Rig.J(Side == 0 ? Anim::EJoint::FootL : Anim::EJoint::FootR).Q;
+				const FQuat Rel = (Shin.Inverse() * Foot).GetNormalized();
+				const FVector Along = Rig.ShinBind[Side].RotateVector(FVector(0, 1, 0));
+				const double Twist = 2.0 * FMath::RadiansToDegrees(FMath::Atan2(FMath::Abs(FVector::DotProduct(FVector(Rel.X, Rel.Y, Rel.Z), Along)), FMath::Abs(Rel.W)));
+				TestTrue(FString::Printf(TEXT("%s %s side %d: turned %.1f degrees about the shin"), *Id.ToString(), Name, Side, Twist), Twist < 3.0);
+			}
+		}
+	}
+	return true;
+}
+
 // Every piece a stage's data places exists, and none of its slots is empty or left with an
 // importer placeholder; every surface texture a stage material uses is present.
 SLOP_TEST(FSlopEveryStagePieceIsMade, "Content.EveryStagePieceHasItsMaterials")

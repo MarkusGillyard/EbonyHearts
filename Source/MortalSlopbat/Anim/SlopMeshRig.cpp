@@ -165,6 +165,8 @@ namespace Slop::Anim
 		Rig.ThighLen = Lens[2];
 		Rig.ShinLen = Lens[3];
 		Rig.AnkleH = AnkleH;
+		Rig.ShinBind[0] = BindFrame[(int32)EJoint::ShinL];
+		Rig.ShinBind[1] = BindFrame[(int32)EJoint::ShinR];
 		for (int32 J = 0; J < (int32)EJoint::Count; ++J)
 		{
 			const EJoint Par = JointParent((EJoint)J);

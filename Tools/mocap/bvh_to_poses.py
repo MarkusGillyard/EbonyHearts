@@ -35,6 +35,12 @@ DATA = os.path.join(ROOT, "Content", "Data")
 H = 1.8
 REST_HIPS = 0.53 * H
 ANKLE_H = 0.042 * H
+# A foot is free of the floor over this rise (m), and points (degrees from standing) within these.
+FREE_FROM = 0.015
+FREE_RANGE = 0.09
+FOOT_REST = 18.0
+TOE_MIN = -15.0
+TOE_MAX = 70.0
 
 # move -> (take, striking joint, frames: startup, active, recovery, fist values, where the keys go)
 CLIPS = {
@@ -274,10 +280,14 @@ def pose(take, t, origin, fwd, fists):
         out["knee_" + side] = r3(data(w[knee]))
         tv = sub(w[toe], w[foot])
         out["yaw_" + side] = round(math.degrees(math.atan2(-dot(tv, right), dot(tv, fwd))) - rest["yaw_" + side], 1)
-        lifted = a[1] > ANKLE_H + 0.05
-        out["free_" + side] = 1 if lifted else 0
-        flat = math.sqrt(dot(tv, fwd) ** 2 + dot(tv, right) ** 2)
-        out["toe_" + side] = round(max(0.0, math.degrees(math.atan2(-tv[1], flat)) - 18.0), 1) if lifted else 0
+        # How far the foot has left the floor, eased so it does not snap from flat to free in a frame.
+        lift = max(0.0, min(1.0, (a[1] - (ANKLE_H + FREE_FROM)) / FREE_RANGE))
+        out["free_" + side] = round(lift * lift * (3.0 - 2.0 * lift), 3)
+        # The ankle's own angle, as the rig reads it: the foot against the shin, not against the floor
+        # (a pointed foot at the end of a level shin lies flat, which measured as no point at all).
+        shin = norm(sub(w[foot], w[knee]))
+        point = math.degrees(math.asin(max(-1.0, min(1.0, dot(norm(tv), shin))))) - FOOT_REST
+        out["toe_" + side] = round(max(TOE_MIN, min(TOE_MAX, point)), 1) if lift > 0.0 else 0
     out.update(fists)
     return out
 
