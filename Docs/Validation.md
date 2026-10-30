@@ -7,7 +7,7 @@ for sessions, `Saved/Logs/tests.log` for the last test run.
 
 ## Automated tests
 
-`run_tests` (Unreal automation, headless): **132 tests, all passing** on the source of 2.7.0 (101 on 2.6.7).
+`run_tests` (Unreal automation, headless): **135 tests, all passing** on the source of 2.7.1 (133 on 2.7.0, 101 on 2.6.7).
 
 | Area | What the tests hold |
 |---|---|
@@ -53,10 +53,10 @@ expansion's AI pass 9%, 16%, 32%, 68% (8 seeds) and 13%, 17%, 28%, 63% (24 seeds
 50%, 58%, 90% (24 seeds; 39%, 52%, 61%, 89% at 8). The sweep that found it: remembered shapes
 taken from a standstill lost matches (switching them off alone gave 32% and 71% at the top two
 levels), and his zoning won them (palms from 1.6 m at zoning 0.7: 65% and 87%). His telemetry
-at Master over those 168 matches: 89% of the time in his own body (dealing 23 a second, taking
-20), 10% in a shape (21 and 19), 1% spent; 128 changes of shape inside combos; the Fragment's
-shape 30 times; Find the Crack tried and always answered; One Strike landing at the challenge's
-tier; Heart Stop rare (its combos seldom reach five hits). Wren unchanged: 40%, 21%, 50%. Across
+at Master over the final 168 matches: 91% of the time in his own body (dealing 23 a second, taking
+20), 8% in a shape (23 and 20), 1% spent; 76 changes of shape inside combos; the Fragment's shape 39
+times; Find the Crack tried 3 times and always answered; One Strike never triggered at Master;
+Heart Stop rare (its combos seldom reach five hits). Wren unchanged: 40%, 21%, 50%. Across
 all 192 pairings (three levels, both sides): Ashka 33, Gorm 24, Nix 28, Mirela 10, Bram 34,
 Hollis 19, Wren 18, the Grandmaster 26 match wins (17 before the pass).
 

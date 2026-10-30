@@ -101,6 +101,18 @@ the archive.
 
 ## Open
 
+- **2.7.1, from Markus's play (30 October 2026).** Done: raised feet no longer twist about the shin
+  (every raised foot on every fighter had its ankle wrung to a thin point: the mesh rig gave the
+  foot no bind frame); captured kicks take the ankle's true angle (the converter measured it
+  against the floor, the rig reads it against the shin); limbs swing instead of teleporting (a
+  roundhouse's foot went from 52 to about 26 m/s: captures fill most of the startup and are timed
+  by distance along the limb's path; knees and raised feet got the follow-through springs they
+  lacked; a striking limb now ramps onto its pose by the frame before contact); Gorm has four new
+  specials; cloth wear no longer paints camouflage. Frame data of existing moves is unchanged.
+  Still to do from the items below: more transitions between moves, deformation at the shoulders,
+  hips and knees, Gorm's body itself (the mesh was not rebuilt), and a human opinion: none of this
+  has been played yet. `Anim.LimbsDoNotTeleportThroughStrikes` and
+  `Content.RaisedFeetDoNotTwistAboutTheShin` hold the two main fixes.
 - **Markus's play of 2.7.0 (29 Oct 2026): the next priority.** He played Wren and the Grandmaster
   on his PS4 pad: combat "pretty decent", everything else as intended. What he wants next is polish
   of the character models and animation so combat flows: the moves are improving but still feel

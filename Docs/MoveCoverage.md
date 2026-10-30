@@ -2,7 +2,7 @@
 
 Written by the automation test `Slop.Fighters.Grandmaster.EveryMoveIsCovered` from the loaded data (Source/MortalSlopbat/Combat/SlopCoverage.cpp). Every move of every fighter in Ebony Hearts, and how the Grandmaster reaches it: **own** (his own body), **spent** (his body with no Qhi), **form** (the shape from his form library, its input, then the move's own input), **carried** (a technique of a fighter no longer in the game, now his). Each fighter he can face can also be copied with Borrowed Face (D,B,F+Block), Qhi-enhanced. **excluded** rows are not counted: finishers (the fight's end lets a shape go, so a shape never performs its source's finisher) and moves the game starts itself.
 
-**247 of 247 counted moves covered** (17 excluded).
+**253 of 253 counted moves covered** (17 excluded).
 
 | Fighter | Move | Name | Via | How |
 |---|---|---|---|---|
@@ -96,11 +96,15 @@ Written by the automation test `Slop.Fighters.Grandmaster.EveryMoveIsCovered` fr
 | ashka | `throw_f` | Throw | form | RN+LP, then F+LP |
 | ashka | `uppercut` | Uppercut | form | RN+LP, then D+HP |
 | ashka | `wick_knee` | Wick Knee | form | RN+LP, then B,F+HK |
+| gorm | `belly_slide` | Belly Slide | form | RN+HK, then D,F+LK |
+| gorm | `belly_to_belly` | Belly-to-Belly | form | RN+HK, then F,B+LP |
 | gorm | `crouch_hk` | Crouching High Kick | form | RN+HK, then D+HK |
 | gorm | `crouch_lk` | Crouching Low Kick | form | RN+HK, then D+LK |
 | gorm | `crouch_lp` | Crouching Punch | form | RN+HK, then D+LP |
 | gorm | `gorm_belly` | Vat Stir: belly | form | RN+HK, then  |
 | gorm | `gorm_hammer` | Tallow Mill: hammer | form | RN+HK, then  |
+| gorm | `gorm_thrust2` | Tallow Slaps: second | form | RN+HK, then  |
+| gorm | `gorm_thrust3` | Tallow Slaps: shove | form | RN+HK, then  |
 | gorm | `ground_slap` | Ground Slap | form | RN+HK, then D,D+HP |
 | gorm | `hk` | High Kick | form | RN+HK, then HK |
 | gorm | `hp` | High Punch | form | RN+HK, then HP |
@@ -113,10 +117,12 @@ Written by the automation test `Slop.Fighters.Grandmaster.EveryMoveIsCovered` fr
 | gorm | `lp2` | Low Punch (second) | form | RN+HK, then  |
 | gorm | `rendered_down` | Rendered Down | excluded | a finisher: the fight's end lets the shape go |
 | gorm | `rendering_charge` | Rendering Charge | form | RN+HK, then B,F+HK |
+| gorm | `rising_belly` | Rising Belly | form | RN+HK, then D,U+HK |
 | gorm | `roundhouse` | Roundhouse | form | RN+HK, then B+HK |
 | gorm | `stage_vat` | Into the Vat | excluded | a finisher: the fight's end lets the shape go |
 | gorm | `sweep` | Sweep | form | RN+HK, then B+LK |
 | gorm | `tallow_hide` | Tallow Hide | form | RN+HK, then D,D+BL |
+| gorm | `tallow_slaps` | Tallow Slaps | form | RN+HK, then F,F+HP |
 | gorm | `throw_b` | Back Throw | form | RN+HK, then B+LP |
 | gorm | `throw_f` | Throw | form | RN+HK, then F+LP |
 | gorm | `uppercut` | Uppercut | form | RN+HK, then D+HP |
