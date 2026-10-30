@@ -569,6 +569,7 @@
 		"range": 2.0,
 		"aggression": 0.5,
 		"zoning": 0.75,
+		"zone_from": 2.7,
 		"anti_air": [
 			"keen",
 			"uppercut"

@@ -218,6 +218,14 @@ namespace Slop
 		EForm LastForm = EForm::Own;
 		// The start tick (as seen) of the last unblockable blow judged, so it is answered once.
 		int32 UnblockJudged = -1;
+		// Being zoned: the last projectile throw judged, when it was seen, and how many in a row.
+		int32 ThrowJudged = -1;
+		int32 ZonedAt = -1000;
+		int32 Zoned = 0;
+		// Shots came recently, so standing and guarding is losing: go in.
+		bool BeingZoned() const { return Zoned >= 2 && Sim.TickCount - ZonedAt < 180; }
+		// A throw seen: go over or through it while the thrower is stuck in it. True when started.
+		bool AnswerThrow(FFighter& M, const FSeen& Seen, double Dist);
 	};
 
 	// The Slopbat's mind: readable patterns rather than reflexes. Claws up close and now and then a

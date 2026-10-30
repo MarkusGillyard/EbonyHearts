@@ -1235,7 +1235,8 @@
 	"ai": {
 		"range": 2.4,
 		"aggression": 0.4,
-		"zoning": 0.7,
+		"zoning": 0.9,
+		"guard": 0.1,
 		"weights": {
 			"hp": 1.0,
 			"lp": 1.0,
@@ -1282,7 +1283,7 @@
 			"revert_below": [0, 10, 16, 18],
 			"keep": [10, 15, 15, 12],
 			"crack_from": 95,
-			"crack_chance": [0, 0.004, 0.01, 0.02],
+			"crack_chance": [0, 0.006, 0.02, 0.04],
 			"kills": {"combo": "heart_stop", "standing": "find_the_crack"}
 		},
 		"zone_from": 1.6,

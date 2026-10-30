@@ -498,8 +498,8 @@ namespace Slop
 			// startup is safe: while the opponent (as seen) is down or getting up, or from far off
 			// and not into an attack already coming. A better CPU waits for the knockdown.
 			const bool bDown = Seen.State == EState::Down || Seen.State == EState::WakeUp || Seen.State == EState::Fall;
-			const bool bFar = Dist > 2.8 && !bOppBusy;
-			if ((bDown && Dist > 0.9 && Rng.FRand() < 0.3 + 0.3 * Diff) || (bFar && Rng.FRand() < 0.03))
+			const bool bFar = Dist > QhiSetting(TEXT("far_from"), 2.8) && !bOppBusy;
+			if ((bDown && Dist > 0.9 && Rng.FRand() < 0.3 + 0.3 * Diff) || (bFar && Rng.FRand() < QhiSetting(TEXT("far_shift"), 0.03)))
 			{
 				// Which shape: the opponent's, a remembered one for the matchup, or the Fragment's.
 				const FName Form = PickForm(M, false);
@@ -735,6 +735,10 @@ namespace Slop
 				return Intent.Next(M.Facing);
 			}
 		}
+		if (AnswerThrow(M, Seen, Dist))
+		{
+			return Intent.Next(M.Facing);
+		}
 		for (const FProjectile& P : Sim.Projectiles)
 		{
 			if (P.Owner != Index && P.Age > L.React && FMath::Abs(P.Pos.X - M.Pos.X) < 3.0 && FMath::Sign(M.Pos.X - P.Pos.X) == FMath::Sign(P.Vel.X))
@@ -885,6 +889,14 @@ namespace Slop
 			WalkT = 20;
 			return;
 		}
+		// Under fire at range, guarding on the spot only loses: use the gaps between shots to close.
+		if (BeingZoned() && Dist > 1.4)
+		{
+			Walk = 6;
+			WalkT = Rng.RandRange(14, 26);
+			RunT = M.Def->Resource == EResource::Run && M.RunMeter > 30.0 ? WalkT : 0;
+			return;
+		}
 		if (Dist > Want + 0.9)
 		{
 			const double Roll = Rng.FRand();
@@ -969,6 +981,40 @@ namespace Slop
 			Walk = 4;
 			WalkT = Rng.RandRange(8, 18);
 		}
+	}
+
+	bool FCpuBrain::AnswerThrow(FFighter& M, const FSeen& Seen, double Dist)
+	{
+		const FMoveDef* SM = Seen.Move;
+		if (!SM || !SM->Projectile.bHas || Seen.State != EState::Move || SM->bAir || Seen.Tick - Seen.MF == ThrowJudged)
+		{
+			return false;
+		}
+		ThrowJudged = Seen.Tick - Seen.MF;
+		Zoned = Sim.TickCount - ZonedAt < 240 ? Zoned + 1 : 1;
+		ZonedAt = Sim.TickCount;
+		if (!M.IsActionable() || Dist < 1.2 || Dist > 3.6)
+		{
+			return false;
+		}
+		// The more shots have come, the surer the read: guarding each one only loses the round.
+		if (Rng.FRand() >= L.AntiAir * 0.55 + FMath::Min(0.3, 0.1 * Zoned))
+		{
+			return false;
+		}
+		// A low shot rolls under nobody's jump; a high one can also be passed by a way in of one's own.
+		if (const TArray<TSharedPtr<FJsonValue>>* In = AiArr(TEXT("approach")))
+		{
+			if (In->Num() > 0 && Rng.FRand() < 0.4)
+			{
+				Intent.Command((*In)[Rng.RandRange(0, In->Num() - 1)]->AsString());
+				return true;
+			}
+		}
+		Intent.Hold(9, 3);
+		Intent.Hold(5, 18);
+		Intent.Press(5, BtnHK);
+		return true;
 	}
 
 	void FCpuBrain::PlanAntiAir(FFighter& M, const FSeen& Seen)
