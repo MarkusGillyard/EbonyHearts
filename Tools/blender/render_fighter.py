@@ -23,6 +23,7 @@ from mathutils import Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fighter_core as core      # noqa: E402
+import fighter_joints as joints  # noqa: E402
 import fighter_render as fr      # noqa: E402
 import fighter_tex as tex        # noqa: E402
 
@@ -128,6 +129,7 @@ def main():
         if only and pose not in only:
             continue
         fr.apply_pose(arm, pose)
+        joints.drive_half_joints(arm)
         fr.ground(arm, meshes)
         sc.render.resolution_x, sc.render.resolution_y = 512, 1024
         tmp = []

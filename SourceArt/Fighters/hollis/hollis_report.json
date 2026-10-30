@@ -143,22 +143,24 @@
    "material": "M_hollis_skin",
    "surface": "body",
    "bones": [
+    "ankle_half_l",
     "calf_l",
     "calf_r",
     "clavicle_l",
     "clavicle_r",
-    "foot_l",
     "hand_l",
     "hand_r",
     "head",
+    "knee_half_l",
+    "knee_half_r",
     "lowerarm_l",
     "lowerarm_r",
     "neck_01",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_03",
-    "thigh_l",
-    "thigh_r",
-    "upperarm_l",
-    "upperarm_r"
+    "wrist_half_l",
+    "wrist_half_r"
    ]
   },
   "hollis_eyes": {
@@ -194,10 +196,11 @@
    "material": "M_hollis_leather",
    "surface": "boot",
    "bones": [
+    "ankle_half_l",
     "ball_l",
     "calf_l",
     "foot_l",
-    "thigh_l"
+    "knee_half_l"
    ]
   },
   "hollis_sole_l": {
@@ -222,10 +225,11 @@
    "material": "M_hollis_leather",
    "surface": "boot",
    "bones": [
+    "ankle_half_r",
     "ball_r",
     "calf_r",
     "foot_r",
-    "thigh_r"
+    "knee_half_r"
    ]
   },
   "hollis_sole_r": {
@@ -254,20 +258,28 @@
     "calf_r",
     "clavicle_l",
     "clavicle_r",
-    "hand_l",
-    "hand_r",
+    "elbow_half_l",
+    "elbow_half_r",
     "head",
+    "hip_half_l",
+    "hip_half_r",
+    "knee_half_l",
+    "knee_half_r",
     "lowerarm_l",
     "lowerarm_r",
     "neck_01",
     "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
     "thigh_l",
     "thigh_r",
     "upperarm_l",
-    "upperarm_r"
+    "upperarm_r",
+    "wrist_half_l",
+    "wrist_half_r"
    ]
   },
   "hollis_glove_l": {
@@ -295,7 +307,8 @@
     "ring_03_l",
     "thumb_01_l",
     "thumb_02_l",
-    "thumb_03_l"
+    "thumb_03_l",
+    "wrist_half_l"
    ]
   },
   "hollis_glove_r": {
@@ -323,7 +336,8 @@
     "ring_03_r",
     "thumb_01_r",
     "thumb_02_r",
-    "thumb_03_r"
+    "thumb_03_r",
+    "wrist_half_r"
    ]
   },
   "hollis_cuff_l": {
@@ -335,8 +349,8 @@
    "material": "M_hollis_suit",
    "surface": "rubber",
    "bones": [
-    "hand_l",
-    "lowerarm_l"
+    "lowerarm_l",
+    "wrist_half_l"
    ]
   },
   "hollis_cuff_r": {
@@ -348,8 +362,8 @@
    "material": "M_hollis_suit",
    "surface": "rubber",
    "bones": [
-    "hand_r",
-    "lowerarm_r"
+    "lowerarm_r",
+    "wrist_half_r"
    ]
   },
   "hollis_belt": {
@@ -361,6 +375,8 @@
    "material": "M_hollis_leather",
    "surface": "belt",
    "bones": [
+    "hip_half_l",
+    "hip_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -383,6 +399,8 @@
     "head",
     "neck_01",
     "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
@@ -599,7 +617,7 @@
  "top_of_everything_cm": 207.62,
  "standing_height_cm": 195.0,
  "lowest_point_cm": -0.0,
- "bones": 53,
+ "bones": 65,
  "root_bone": [
   "root"
  ],
@@ -617,15 +635,15 @@
   "targets_applied": 4
  },
  "timings_s": {
-  "enable_mpfb": 0.19,
-  "mpfb_body": 1.03,
+  "enable_mpfb": 0.18,
+  "mpfb_body": 1.08,
   "bake_body": 0.02,
   "outfit": 2.12,
-  "textures": 17.94,
-  "finalize": 0.01,
-  "save_blend": 0.03,
-  "export_fbx": 0.33
+  "textures": 17.66,
+  "finalize": 0.17,
+  "save_blend": 0.02,
+  "export_fbx": 0.35
  },
- "script_wall_s": 21.7,
- "peak_rss_mb": 1936.1
+ "script_wall_s": 21.6,
+ "peak_rss_mb": 1938.0
 }

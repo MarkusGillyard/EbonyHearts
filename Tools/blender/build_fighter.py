@@ -20,6 +20,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fighter_core as core      # noqa: E402
 import fighter_geo as geo        # noqa: E402
+import fighter_joints as joints  # noqa: E402
 import fighter_outfits as outfits  # noqa: E402
 import fighter_outfits2  # noqa: E402,F401  (registers the rest of the roster)
 import fighter_outfits3  # noqa: E402,F401  (Wren and the Grandmaster)
@@ -85,6 +86,7 @@ def main():
     report = tex.texture_and_materials(a.id, cfg, built, out_dir)
     t = step("textures", t)
     outfits.finalize(a.id, cfg, rig, built)
+    joints.add_half_joints(rig, built["objects"].values())
     t = step("finalize", t)
     bpy.ops.wm.save_as_mainfile(filepath=base + ".blend", compress=True)
     t = step("save_blend", t)

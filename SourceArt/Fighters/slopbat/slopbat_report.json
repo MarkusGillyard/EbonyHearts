@@ -150,23 +150,31 @@
    "material": "M_slopbat_skin",
    "surface": "body",
    "bones": [
+    "ankle_half_l",
+    "ankle_half_r",
     "ball_l",
     "ball_r",
     "calf_l",
     "calf_r",
     "clavicle_l",
     "clavicle_r",
+    "elbow_half_l",
+    "elbow_half_r",
     "foot_l",
     "foot_r",
     "hand_l",
     "hand_r",
     "head",
+    "hip_half_l",
+    "hip_half_r",
     "index_01_l",
     "index_01_r",
     "index_02_l",
     "index_02_r",
     "index_03_l",
     "index_03_r",
+    "knee_half_l",
+    "knee_half_r",
     "lowerarm_l",
     "lowerarm_r",
     "middle_01_l",
@@ -189,6 +197,8 @@
     "ring_02_r",
     "ring_03_l",
     "ring_03_r",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
@@ -199,9 +209,7 @@
     "thumb_02_l",
     "thumb_02_r",
     "thumb_03_l",
-    "thumb_03_r",
-    "upperarm_l",
-    "upperarm_r"
+    "thumb_03_r"
    ]
   },
   "slopbat_eyes": {
@@ -227,8 +235,12 @@
    "bones": [
     "clavicle_l",
     "clavicle_r",
+    "hip_half_l",
+    "hip_half_r",
     "neck_01",
     "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
@@ -697,7 +709,7 @@
  "top_of_everything_cm": 284.9,
  "standing_height_cm": 265.0,
  "lowest_point_cm": -0.0,
- "bones": 59,
+ "bones": 71,
  "root_bone": [
   "root"
  ],
@@ -719,11 +731,11 @@
   "mpfb_body": 0.93,
   "bake_body": 0.02,
   "outfit": 0.29,
-  "textures": 15.71,
-  "finalize": 0.0,
-  "save_blend": 0.03,
-  "export_fbx": 0.35
+  "textures": 15.83,
+  "finalize": 0.11,
+  "save_blend": 0.01,
+  "export_fbx": 0.39
  },
- "script_wall_s": 17.5,
- "peak_rss_mb": 1832.4
+ "script_wall_s": 17.8,
+ "peak_rss_mb": 1814.4
 }

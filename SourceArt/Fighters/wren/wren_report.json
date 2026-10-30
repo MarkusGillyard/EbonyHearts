@@ -157,10 +157,13 @@
    "material": "M_wren_skin",
    "surface": "body",
    "bones": [
+    "ankle_half_l",
+    "ankle_half_r",
     "calf_l",
     "calf_r",
     "clavicle_l",
     "clavicle_r",
+    "elbow_half_r",
     "foot_l",
     "foot_r",
     "hand_l",
@@ -193,6 +196,8 @@
     "ring_02_r",
     "ring_03_l",
     "ring_03_r",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_03",
     "thumb_01_l",
     "thumb_01_r",
@@ -200,8 +205,8 @@
     "thumb_02_r",
     "thumb_03_l",
     "thumb_03_r",
-    "upperarm_l",
-    "upperarm_r"
+    "wrist_half_l",
+    "wrist_half_r"
    ]
   },
   "wren_eyes": {
@@ -249,10 +254,14 @@
    "material": "M_wren_cloth",
    "surface": "trousers",
    "bones": [
+    "ankle_half_l",
+    "ankle_half_r",
     "calf_l",
     "calf_r",
-    "foot_l",
-    "foot_r",
+    "hip_half_l",
+    "hip_half_r",
+    "knee_half_l",
+    "knee_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -270,6 +279,7 @@
    "material": "M_wren_leather",
    "surface": "shoes",
    "bones": [
+    "ankle_half_l",
     "ball_l",
     "calf_l",
     "foot_l"
@@ -297,6 +307,7 @@
    "material": "M_wren_leather",
    "surface": "shoes",
    "bones": [
+    "ankle_half_r",
     "ball_r",
     "calf_r",
     "foot_r"
@@ -324,6 +335,7 @@
    "material": "M_wren_leather",
    "surface": "laces",
    "bones": [
+    "ankle_half_l",
     "calf_l",
     "foot_l"
    ]
@@ -337,6 +349,7 @@
    "material": "M_wren_leather",
    "surface": "laces",
    "bones": [
+    "ankle_half_r",
     "calf_r",
     "foot_r"
    ]
@@ -352,11 +365,17 @@
    "bones": [
     "clavicle_l",
     "clavicle_r",
+    "elbow_half_l",
+    "elbow_half_r",
     "head",
+    "hip_half_l",
+    "hip_half_r",
     "lowerarm_l",
     "lowerarm_r",
     "neck_01",
     "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
@@ -377,11 +396,17 @@
    "bones": [
     "clavicle_l",
     "clavicle_r",
+    "elbow_half_l",
+    "elbow_half_r",
     "head",
+    "hip_half_l",
+    "hip_half_r",
     "lowerarm_l",
     "lowerarm_r",
     "neck_01",
     "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
@@ -412,8 +437,8 @@
    "material": "M_wren_jacket",
    "surface": "lapel",
    "bones": [
-    "lowerarm_r",
-    "upperarm_r"
+    "elbow_half_r",
+    "lowerarm_r"
    ]
   },
   "wren_jacket_skirt0": {
@@ -425,6 +450,8 @@
    "material": "M_wren_jacket",
    "surface": "jacket",
    "bones": [
+    "hip_half_l",
+    "hip_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -442,6 +469,8 @@
    "material": "M_wren_jacket",
    "surface": "jacket",
    "bones": [
+    "hip_half_l",
+    "hip_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -462,14 +491,14 @@
     "clavicle_l",
     "clavicle_r",
     "head",
+    "hip_half_r",
     "neck_01",
     "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
-    "spine_03",
-    "thigh_r",
-    "upperarm_l",
-    "upperarm_r"
+    "spine_03"
    ]
   },
   "wren_belt": {
@@ -481,6 +510,8 @@
    "material": "M_wren_belt",
    "surface": "belt",
    "bones": [
+    "hip_half_l",
+    "hip_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -510,6 +541,7 @@
    "material": "M_wren_belt",
    "surface": "belt",
    "bones": [
+    "hip_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -526,6 +558,7 @@
    "material": "M_wren_belt",
    "surface": "belt",
    "bones": [
+    "hip_half_l",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -542,7 +575,7 @@
    "material": "M_wren_belt",
    "surface": "bead",
    "bones": [
-    "pelvis",
+    "hip_half_l",
     "thigh_l"
    ]
   },
@@ -567,7 +600,8 @@
     "ring_01_l",
     "ring_02_l",
     "thumb_01_l",
-    "thumb_02_l"
+    "thumb_02_l",
+    "wrist_half_l"
    ]
   },
   "wren_glovestrap_l": {
@@ -581,7 +615,8 @@
    "bones": [
     "hand_l",
     "lowerarm_l",
-    "thumb_01_l"
+    "thumb_01_l",
+    "wrist_half_l"
    ]
   },
   "wren_glove_r": {
@@ -605,7 +640,8 @@
     "ring_01_r",
     "ring_02_r",
     "thumb_01_r",
-    "thumb_02_r"
+    "thumb_02_r",
+    "wrist_half_r"
    ]
   },
   "wren_glovestrap_r": {
@@ -619,7 +655,8 @@
    "bones": [
     "hand_r",
     "lowerarm_r",
-    "thumb_01_r"
+    "thumb_01_r",
+    "wrist_half_r"
    ]
   },
   "wren_hair_cap": {
@@ -648,6 +685,8 @@
     "clavicle_r",
     "head",
     "neck_01",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_03",
     "upperarm_l",
     "upperarm_r"
@@ -658,7 +697,7 @@
  "top_of_everything_cm": 169.3,
  "standing_height_cm": 168.0,
  "lowest_point_cm": -0.0,
- "bones": 53,
+ "bones": 65,
  "root_bone": [
   "root"
  ],
@@ -676,15 +715,15 @@
   "targets_applied": 43
  },
  "timings_s": {
-  "enable_mpfb": 0.27,
-  "mpfb_body": 1.74,
+  "enable_mpfb": 0.18,
+  "mpfb_body": 1.66,
   "bake_body": 0.02,
-  "outfit": 3.46,
-  "textures": 31.8,
-  "finalize": 0.02,
-  "save_blend": 0.04,
-  "export_fbx": 0.5
+  "outfit": 3.37,
+  "textures": 30.46,
+  "finalize": 0.28,
+  "save_blend": 0.02,
+  "export_fbx": 0.42
  },
- "script_wall_s": 37.9,
- "peak_rss_mb": 2084.6
+ "script_wall_s": 36.4,
+ "peak_rss_mb": 2068.2
 }

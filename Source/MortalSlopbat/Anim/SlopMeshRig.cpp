@@ -23,6 +23,22 @@ namespace Slop::Anim
 		{EJoint::ThighR, TEXT("thigh_r")}, {EJoint::ShinR, TEXT("calf_r")}, {EJoint::FootR, TEXT("foot_r")},
 	};
 
+	struct FHalfJointName
+	{
+		const TCHAR* Name;
+		EJoint Upper, Lower;
+		// A twist at this joint runs along the bone between Lower and Tip.
+		EJoint Tip;
+	};
+
+	// Tools/blender/fighter_joints.py builds these.
+	static const FHalfJointName HalfJointNames[] = {
+		{TEXT("shoulder_half_l"), EJoint::ClavL, EJoint::UpperArmL, EJoint::ForearmL}, {TEXT("elbow_half_l"), EJoint::UpperArmL, EJoint::ForearmL, EJoint::HandL}, {TEXT("wrist_half_l"), EJoint::ForearmL, EJoint::HandL, EJoint::ForearmL},
+		{TEXT("shoulder_half_r"), EJoint::ClavR, EJoint::UpperArmR, EJoint::ForearmR}, {TEXT("elbow_half_r"), EJoint::UpperArmR, EJoint::ForearmR, EJoint::HandR}, {TEXT("wrist_half_r"), EJoint::ForearmR, EJoint::HandR, EJoint::ForearmR},
+		{TEXT("hip_half_l"), EJoint::Hips, EJoint::ThighL, EJoint::ShinL}, {TEXT("knee_half_l"), EJoint::ThighL, EJoint::ShinL, EJoint::FootL}, {TEXT("ankle_half_l"), EJoint::ShinL, EJoint::FootL, EJoint::ShinL},
+		{TEXT("hip_half_r"), EJoint::Hips, EJoint::ThighR, EJoint::ShinR}, {TEXT("knee_half_r"), EJoint::ThighR, EJoint::ShinR, EJoint::FootR}, {TEXT("ankle_half_r"), EJoint::ShinR, EJoint::FootR, EJoint::ShinR},
+	};
+
 	bool FMeshRig::Init(const FReferenceSkeleton& Ref, double Height, FString& Error)
 	{
 		H = Height;
@@ -49,6 +65,16 @@ namespace Slop::Anim
 			{
 				Error = FString::Printf(TEXT("bone %s missing"), BN.Name);
 				return false;
+			}
+		}
+		HalfJoints.Reset();
+		for (const FHalfJointName& HN : HalfJointNames)
+		{
+			const int32 Bone = Find(HN.Name);
+			if (Bone != INDEX_NONE)
+			{
+				const FVector Along = RefCS[BoneOf[(int32)HN.Tip]].GetLocation() - RefCS[BoneOf[(int32)HN.Lower]].GetLocation();
+				HalfJoints.Add({Bone, HN.Upper, HN.Lower, Along.GetSafeNormal()});
 			}
 		}
 		auto CS = [&](EJoint J) { return RefCS[BoneOf[(int32)J]].GetLocation(); };
@@ -186,6 +212,42 @@ namespace Slop::Anim
 		return FromAxes(X, Y, Z);
 	}
 
+	FQuat FMeshRig::HalfTurn(const FQuat& Turn, const FVector& TwistAxis)
+	{
+		FQuat Swing, Twist;
+		Turn.ToSwingTwist(TwistAxis, Swing, Twist);
+		if (Twist.W < 0.0)
+		{
+			Twist = -1.0 * Twist;
+		}
+		// A half turn of a twist flips sides as the twist passes 180 degrees, so the share eases to
+		// nothing before it gets there: the joint then wrings a little instead of popping.
+		const double Angle = 2.0 * FMath::Atan2(FVector::DotProduct(FVector(Twist.X, Twist.Y, Twist.Z), TwistAxis), Twist.W);
+		const double Share = 0.5 * (1.0 - FMath::SmoothStep(FMath::DegreesToRadians(110.0), UE_DOUBLE_PI, FMath::Abs(Angle)));
+		return FQuat::Slerp(FQuat::Identity, Swing, 0.5) * FQuat(TwistAxis, Angle * Share);
+	}
+
+	void FMeshRig::HalfJointSpread(const FRig& Rig, int32 Index, double& OutSwing, double& OutTwist) const
+	{
+		const FHalfJoint& Half = HalfJoints[Index];
+		const FQuat TurnU = RigToMesh(Rig.J(Half.Upper).Q * BindFrame[(int32)Half.Upper].Inverse());
+		const FQuat TurnL = RigToMesh(Rig.J(Half.Lower).Q * BindFrame[(int32)Half.Lower].Inverse());
+		FQuat Swing, Twist;
+		(TurnU.Inverse() * TurnL).GetNormalized().ToSwingTwist(Half.TwistAxis, Swing, Twist);
+		OutSwing = FMath::RadiansToDegrees(Swing.GetAngle());
+		OutTwist = FMath::RadiansToDegrees(Twist.GetAngle());
+		OutSwing = OutSwing > 180.0 ? 360.0 - OutSwing : OutSwing;
+		OutTwist = OutTwist > 180.0 ? 360.0 - OutTwist : OutTwist;
+	}
+
+	void FMeshRig::HalfJointBones(int32 Index, int32& OutBone, int32& OutUpper, int32& OutLower) const
+	{
+		const FHalfJoint& Half = HalfJoints[Index];
+		OutBone = Half.Bone;
+		OutUpper = BoneOf[(int32)Half.Upper];
+		OutLower = BoneOf[(int32)Half.Lower];
+	}
+
 	FTransform FMeshRig::ComponentTransform(const FXf& Root, const FVector& WorldScale) const
 	{
 		const FVector X = DirToUE(Root.Q.RotateVector(UnmapV(FVector(1, 0, 0))));
@@ -226,6 +288,14 @@ namespace Slop::Anim
 				L.SetRotation(L.GetRotation() * Curl[B]);
 				CS[B] = Parent[B] >= 0 ? L * CS[Parent[B]] : L;
 			}
+		}
+		for (const FHalfJoint& Half : HalfJoints)
+		{
+			const int32 U = BoneOf[(int32)Half.Upper], L = BoneOf[(int32)Half.Lower];
+			const FQuat TurnU = CS[U].GetRotation() * RefCS[U].GetRotation().Inverse();
+			const FQuat TurnL = CS[L].GetRotation() * RefCS[L].GetRotation().Inverse();
+			const FQuat Turn = TurnU * HalfTurn((TurnU.Inverse() * TurnL).GetNormalized(), Half.TwistAxis);
+			CS[Half.Bone] = FTransform(Turn * RefCS[Half.Bone].GetRotation(), CS[L].GetLocation());
 		}
 		OutLocal.SetNum(N);
 		for (int32 B = 0; B < N; ++B)

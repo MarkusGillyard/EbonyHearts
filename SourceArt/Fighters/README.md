@@ -7,7 +7,7 @@ folder holds:
 
 | File | What it is |
 |---|---|
-| `<id>.fbx` | The fighter for Unreal: body, costume, hair and props as separate meshes, all skinned to one 53-bone `game_engine` skeleton. Textures are **not** embedded. |
+| `<id>.fbx` | The fighter for Unreal: body, costume, hair and props as separate meshes, all skinned to one `game_engine` skeleton, 65 bones with the half joints. Textures are **not** embedded. |
 | `<id>_<slot>_basecolor.png` | sRGB base colour. RGBA for the face/hair slot: alpha is the opacity mask. |
 | `<id>_<slot>_normal.png` | Tangent-space normal, **DirectX convention (green down)**, as Unreal expects. |
 | `<id>_<slot>_orm.png` | R = ambient occlusion, G = roughness, B = metallic. Linear data. |
@@ -64,7 +64,8 @@ Tools/blender/run_blender.sh Tools/blender/render_fighter.py -- gorm
 - The armature node is named `Armature`, which Unreal's FBX importer drops for Blender files. The first bone is `root`, at the floor.
 - No leaf bones, deform bones only, face smoothing groups, tangents and binormals.
 - The bone names are the UE4 mannequin's, without its twist and IK bones (`game_engine` rig from MPFB, root renamed `root`).
-- The only extra bones are the Slopbat's wing bones: `wing_l_01` (parent `clavicle_l`) → `wing_l_02` → `wing_l_03`, and the same on the right. The 53 standard bones keep their names and hierarchy.
+- Twelve helper bones sit on the limb joints, `shoulder_half_l`, `elbow_half_l`, `wrist_half_l`, `hip_half_l`, `knee_half_l`, `ankle_half_l` and the same on the right. Each takes the middle of its joint's skin blend and turns half way between the bones either side, so a bent or twisted joint keeps its width (`Tools/blender/fighter_joints.py`; `FMeshRig::Pose` turns them in the game).
+- The only other extra bones are the Slopbat's wing bones: `wing_l_01` (parent `clavicle_l`) → `wing_l_02` → `wing_l_03`, and the same on the right. The 53 standard bones keep their names and hierarchy.
 - The wings rest folded at the back. The membrane is weighted from the spar bones (outer edge) to `spine_03`/`spine_02`/`pelvis` (inner edge), so rotating `wing_*_01` opens the wing.
 - Standing height is floor to the top of the skull, boots included:
 

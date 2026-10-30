@@ -112,20 +112,26 @@
    "material": "M_gorm_skin",
    "surface": "body",
    "bones": [
+    "ankle_half_l",
     "calf_l",
     "calf_r",
     "clavicle_l",
     "clavicle_r",
-    "foot_l",
+    "elbow_half_l",
+    "elbow_half_r",
     "hand_l",
     "hand_r",
     "head",
+    "hip_half_l",
+    "hip_half_r",
     "index_01_l",
     "index_01_r",
     "index_02_l",
     "index_02_r",
     "index_03_l",
     "index_03_r",
+    "knee_half_l",
+    "knee_half_r",
     "lowerarm_l",
     "lowerarm_r",
     "middle_01_l",
@@ -148,6 +154,8 @@
     "ring_02_r",
     "ring_03_l",
     "ring_03_r",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
@@ -160,7 +168,9 @@
     "thumb_03_l",
     "thumb_03_r",
     "upperarm_l",
-    "upperarm_r"
+    "upperarm_r",
+    "wrist_half_l",
+    "wrist_half_r"
    ]
   },
   "gorm_eyes": {
@@ -208,9 +218,13 @@
    "material": "M_gorm_canvas",
    "surface": "trousers",
    "bones": [
+    "ankle_half_l",
     "calf_l",
     "calf_r",
-    "foot_l",
+    "hip_half_l",
+    "hip_half_r",
+    "knee_half_l",
+    "knee_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -228,6 +242,7 @@
    "material": "M_gorm_leather",
    "surface": "boots",
    "bones": [
+    "ankle_half_l",
     "ball_l",
     "calf_l",
     "foot_l"
@@ -255,6 +270,7 @@
    "material": "M_gorm_leather",
    "surface": "boots",
    "bones": [
+    "ankle_half_r",
     "ball_r",
     "calf_r",
     "foot_r"
@@ -284,7 +300,11 @@
    "bones": [
     "clavicle_l",
     "clavicle_r",
+    "hip_half_l",
+    "hip_half_r",
     "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
@@ -303,6 +323,8 @@
    "material": "M_gorm_leather",
    "surface": "strap",
    "bones": [
+    "hip_half_l",
+    "hip_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -336,6 +358,8 @@
     "clavicle_r",
     "head",
     "neck_01",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_03",
     "upperarm_l",
     "upperarm_r"
@@ -382,7 +406,7 @@
  "top_of_everything_cm": 212.0,
  "standing_height_cm": 212.0,
  "lowest_point_cm": 0.0,
- "bones": 53,
+ "bones": 65,
  "root_bone": [
   "root"
  ],
@@ -400,15 +424,15 @@
   "targets_applied": 60
  },
  "timings_s": {
-  "enable_mpfb": 0.32,
-  "mpfb_body": 1.22,
+  "enable_mpfb": 0.2,
+  "mpfb_body": 1.19,
   "bake_body": 0.02,
   "outfit": 1.09,
-  "textures": 19.44,
-  "finalize": 0.01,
+  "textures": 20.0,
+  "finalize": 0.12,
   "save_blend": 0.02,
-  "export_fbx": 0.22
+  "export_fbx": 0.24
  },
- "script_wall_s": 22.4,
- "peak_rss_mb": 2285.5
+ "script_wall_s": 22.9,
+ "peak_rss_mb": 2281.0
 }

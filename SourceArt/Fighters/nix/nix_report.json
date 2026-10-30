@@ -136,6 +136,8 @@
    "material": "M_nix_skin",
    "surface": "body",
    "bones": [
+    "ankle_half_l",
+    "ankle_half_r",
     "ball_l",
     "ball_r",
     "calf_l",
@@ -147,12 +149,16 @@
     "hand_l",
     "hand_r",
     "head",
+    "hip_half_l",
+    "hip_half_r",
     "index_01_l",
     "index_01_r",
     "index_02_l",
     "index_02_r",
     "index_03_l",
     "index_03_r",
+    "knee_half_l",
+    "knee_half_r",
     "lowerarm_l",
     "lowerarm_r",
     "middle_01_l",
@@ -184,7 +190,9 @@
     "thumb_02_l",
     "thumb_02_r",
     "thumb_03_l",
-    "thumb_03_r"
+    "thumb_03_r",
+    "wrist_half_l",
+    "wrist_half_r"
    ]
   },
   "nix_eyes": {
@@ -234,20 +242,26 @@
    "bones": [
     "clavicle_l",
     "clavicle_r",
-    "hand_l",
-    "hand_r",
+    "elbow_half_l",
+    "elbow_half_r",
     "head",
+    "hip_half_l",
+    "hip_half_r",
     "lowerarm_l",
     "lowerarm_r",
     "neck_01",
     "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
     "thigh_l",
     "thigh_r",
     "upperarm_l",
-    "upperarm_r"
+    "upperarm_r",
+    "wrist_half_l",
+    "wrist_half_r"
    ]
   },
   "nix_trousers": {
@@ -259,9 +273,13 @@
    "material": "M_nix_cloth",
    "surface": "trousers",
    "bones": [
+    "ankle_half_l",
     "calf_l",
     "calf_r",
-    "foot_l",
+    "hip_half_l",
+    "hip_half_r",
+    "knee_half_l",
+    "knee_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -279,9 +297,10 @@
    "material": "M_nix_cloth",
    "surface": "wrap_dark",
    "bones": [
+    "ankle_half_l",
     "calf_l",
     "foot_l",
-    "thigh_l"
+    "knee_half_l"
    ]
   },
   "nix_shinband_l": {
@@ -293,8 +312,8 @@
    "material": "M_nix_cloth",
    "surface": "wrap",
    "bones": [
-    "calf_l",
-    "foot_l"
+    "ankle_half_l",
+    "calf_l"
    ]
   },
   "nix_shinband2_l": {
@@ -306,8 +325,8 @@
    "material": "M_nix_cloth",
    "surface": "wrap",
    "bones": [
-    "calf_l",
-    "foot_l"
+    "ankle_half_l",
+    "calf_l"
    ]
   },
   "nix_tabi_l": {
@@ -319,6 +338,7 @@
    "material": "M_nix_cloth",
    "surface": "feet",
    "bones": [
+    "ankle_half_l",
     "ball_l",
     "ball_r",
     "calf_l",
@@ -334,9 +354,10 @@
    "material": "M_nix_cloth",
    "surface": "wrap_dark",
    "bones": [
+    "ankle_half_r",
     "calf_r",
     "foot_r",
-    "thigh_r"
+    "knee_half_r"
    ]
   },
   "nix_shinband_r": {
@@ -360,8 +381,8 @@
    "material": "M_nix_cloth",
    "surface": "wrap",
    "bones": [
-    "calf_r",
-    "foot_r"
+    "ankle_half_r",
+    "calf_r"
    ]
   },
   "nix_tabi_r": {
@@ -373,6 +394,7 @@
    "material": "M_nix_cloth",
    "surface": "feet",
    "bones": [
+    "ankle_half_r",
     "ball_l",
     "ball_r",
     "calf_r",
@@ -395,7 +417,8 @@
     "pinky_01_l",
     "ring_01_l",
     "thumb_01_l",
-    "thumb_02_l"
+    "thumb_02_l",
+    "wrist_half_l"
    ]
   },
   "nix_handwrap_r": {
@@ -414,7 +437,8 @@
     "pinky_01_r",
     "ring_01_r",
     "thumb_01_r",
-    "thumb_02_r"
+    "thumb_02_r",
+    "wrist_half_r"
    ]
   },
   "nix_armband0_l": {
@@ -462,8 +486,8 @@
    "material": "M_nix_cloth",
    "surface": "wrap_dark",
    "bones": [
-    "lowerarm_r",
-    "upperarm_r"
+    "elbow_half_r",
+    "lowerarm_r"
    ]
   },
   "nix_armband1_r": {
@@ -491,9 +515,9 @@
    ]
   },
   "nix_hood": {
-   "vertices": 2068,
-   "faces": 2927,
-   "triangles": 4140,
+   "vertices": 2064,
+   "faces": 2928,
+   "triangles": 4132,
    "max_influences": 6,
    "unweighted_vertices": 0,
    "material": "M_nix_cloth",
@@ -503,6 +527,8 @@
     "clavicle_r",
     "head",
     "neck_01",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_02",
     "spine_03",
     "upperarm_l",
@@ -511,7 +537,7 @@
   },
   "nix_mask": {
    "vertices": 1188,
-   "faces": 1723,
+   "faces": 1727,
    "triangles": 2376,
    "max_influences": 2,
    "unweighted_vertices": 0,
@@ -532,8 +558,10 @@
    "surface": "wrap_dark",
    "bones": [
     "clavicle_l",
+    "hip_half_r",
     "neck_01",
     "pelvis",
+    "shoulder_half_l",
     "spine_01",
     "spine_02",
     "spine_03",
@@ -551,11 +579,12 @@
    "surface": "wrap_dark",
    "bones": [
     "clavicle_l",
+    "hip_half_r",
     "pelvis",
+    "shoulder_half_l",
     "spine_01",
     "spine_02",
     "spine_03",
-    "thigh_r",
     "upperarm_l"
    ]
   },
@@ -568,6 +597,8 @@
    "material": "M_nix_cloth",
    "surface": "sash",
    "bones": [
+    "hip_half_l",
+    "hip_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -597,8 +628,8 @@
    "material": "M_nix_cloth",
    "surface": "sash",
    "bones": [
-    "pelvis",
-    "thigh_l"
+    "hip_half_l",
+    "pelvis"
    ]
   },
   "nix_sashtail1": {
@@ -610,8 +641,8 @@
    "material": "M_nix_cloth",
    "surface": "sash",
    "bones": [
-    "pelvis",
-    "thigh_l"
+    "hip_half_l",
+    "pelvis"
    ]
   },
   "nix_sickle_handle": {
@@ -663,11 +694,11 @@
    ]
   }
  },
- "triangles_total": 53378,
+ "triangles_total": 53370,
  "top_of_everything_cm": 179.21,
  "standing_height_cm": 178.0,
  "lowest_point_cm": 0.0,
- "bones": 53,
+ "bones": 65,
  "root_bone": [
   "root"
  ],
@@ -686,14 +717,14 @@
  },
  "timings_s": {
   "enable_mpfb": 0.19,
-  "mpfb_body": 1.17,
+  "mpfb_body": 1.15,
   "bake_body": 0.02,
-  "outfit": 4.17,
-  "textures": 17.5,
-  "finalize": 0.0,
-  "save_blend": 0.03,
-  "export_fbx": 0.38
+  "outfit": 4.02,
+  "textures": 16.74,
+  "finalize": 0.18,
+  "save_blend": 0.02,
+  "export_fbx": 0.4
  },
- "script_wall_s": 23.5,
- "peak_rss_mb": 1764.5
+ "script_wall_s": 22.7,
+ "peak_rss_mb": 1752.9
 }

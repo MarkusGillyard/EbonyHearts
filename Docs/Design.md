@@ -326,7 +326,7 @@ The design above is unchanged: same roster, stages, modes and rules, the same da
 changes is how it is drawn.
 
 - **Bodies.** Real anatomy instead of signed-distance sculpts: MakeHuman base meshes (CC0, all-quad
-  topology, UV-mapped skin, eyes, brows, lashes) shaped per fighter, on one 53-bone game skeleton.
+  topology, UV-mapped skin, eyes, brows, lashes) shaped per fighter, on one game skeleton of 65 bones (twelve of them half joints, which keep a bent limb's width).
   Proportions follow each fighter's height and build: Gorm a 2.12 m heavyweight, Ashka lean and
   athletic, Mirela tall and slender, Bram broad, Hollis bulked by his suit, Nix slim.
 - **Costumes.** Modelled garments with their own material slots (leather, silk, canvas, wool,

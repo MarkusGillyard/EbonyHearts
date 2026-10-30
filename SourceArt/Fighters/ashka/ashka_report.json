@@ -117,23 +117,31 @@
    "material": "M_ashka_skin",
    "surface": "body",
    "bones": [
+    "ankle_half_l",
+    "ankle_half_r",
     "ball_l",
     "ball_r",
     "calf_l",
     "calf_r",
     "clavicle_l",
     "clavicle_r",
+    "elbow_half_l",
+    "elbow_half_r",
     "foot_l",
     "foot_r",
     "hand_l",
     "hand_r",
     "head",
+    "hip_half_l",
+    "hip_half_r",
     "index_01_l",
     "index_01_r",
     "index_02_l",
     "index_02_r",
     "index_03_l",
     "index_03_r",
+    "knee_half_l",
+    "knee_half_r",
     "lowerarm_l",
     "lowerarm_r",
     "middle_01_l",
@@ -156,6 +164,8 @@
     "ring_02_r",
     "ring_03_l",
     "ring_03_r",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
@@ -166,9 +176,7 @@
     "thumb_02_l",
     "thumb_02_r",
     "thumb_03_l",
-    "thumb_03_r",
-    "upperarm_l",
-    "upperarm_r"
+    "thumb_03_r"
    ]
   },
   "ashka_eyes": {
@@ -234,6 +242,8 @@
    "material": "M_ashka_cloth",
    "surface": "shorts",
    "bones": [
+    "hip_half_l",
+    "hip_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -251,9 +261,10 @@
    "material": "M_ashka_cloth",
    "surface": "trim",
    "bones": [
-    "calf_l",
-    "calf_r",
-    "pelvis",
+    "hip_half_l",
+    "hip_half_r",
+    "knee_half_l",
+    "knee_half_r",
     "thigh_l",
     "thigh_r"
    ]
@@ -267,6 +278,8 @@
    "material": "M_ashka_cloth",
    "surface": "trim",
    "bones": [
+    "hip_half_l",
+    "hip_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -289,6 +302,8 @@
     "head",
     "neck_01",
     "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
@@ -324,7 +339,8 @@
     "pinky_01_l",
     "ring_01_l",
     "thumb_01_l",
-    "thumb_02_l"
+    "thumb_02_l",
+    "wrist_half_l"
    ]
   },
   "ashka_handwrap_r": {
@@ -343,7 +359,8 @@
     "pinky_01_r",
     "ring_01_r",
     "thumb_01_r",
-    "thumb_02_r"
+    "thumb_02_r",
+    "wrist_half_r"
    ]
   },
   "ashka_shinwrap_l": {
@@ -355,6 +372,7 @@
    "material": "M_ashka_cloth",
    "surface": "wraps",
    "bones": [
+    "ankle_half_l",
     "ball_l",
     "calf_l",
     "foot_l"
@@ -369,6 +387,7 @@
    "material": "M_ashka_cloth",
    "surface": "wraps",
    "bones": [
+    "ankle_half_r",
     "ball_r",
     "calf_r",
     "foot_r"
@@ -423,17 +442,18 @@
     "clavicle_r",
     "head",
     "neck_01",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_02",
-    "spine_03",
-    "upperarm_l",
-    "upperarm_r"
+    "spine_03"
    ]
   }
  },
  "triangles_total": 46428,
+ "top_of_everything_cm": 174.76,
  "standing_height_cm": 174.0,
  "lowest_point_cm": 0.0,
- "bones": 53,
+ "bones": 65,
  "root_bone": [
   "root"
  ],
@@ -452,14 +472,14 @@
  },
  "timings_s": {
   "enable_mpfb": 0.2,
-  "mpfb_body": 1.19,
+  "mpfb_body": 1.17,
   "bake_body": 0.02,
-  "outfit": 1.48,
-  "textures": 16.79,
-  "finalize": 0.0,
-  "save_blend": 0.02,
-  "export_fbx": 0.28
+  "outfit": 1.46,
+  "textures": 16.65,
+  "finalize": 0.14,
+  "save_blend": 0.03,
+  "export_fbx": 0.3
  },
  "script_wall_s": 20.0,
- "peak_rss_mb": 1734.2
+ "peak_rss_mb": 1724.6
 }

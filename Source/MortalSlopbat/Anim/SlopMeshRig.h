@@ -32,6 +32,14 @@ namespace Slop::Anim
 		void Pose(const FRig& Rig, TArray<FTransform>& OutLocal) const;
 		int32 NumBones() const { return RefLocal.Num(); }
 		bool IsValid() const { return bValid; }
+		int32 NumHalfJoints() const { return HalfJoints.Num(); }
+		// Half of Turn, the turn from the bone above a half joint to the bone below it: half its bend
+		// and half its twist about TwistAxis (a unit vector along the limb).
+		static FQuat HalfTurn(const FQuat& Turn, const FVector& TwistAxis);
+		// Degrees of bend and of twist between the bones either side of a half joint.
+		void HalfJointSpread(const FRig& Rig, int32 Index, double& OutSwing, double& OutTwist) const;
+		// The half joint's bone, and the bones either side of it.
+		void HalfJointBones(int32 Index, int32& OutBone, int32& OutUpper, int32& OutLower) const;
 
 	private:
 		FVector MapV(const FVector& V) const { return Right * V.X + Up * V.Y - Fwd * V.Z; }
@@ -53,5 +61,10 @@ namespace Slop::Anim
 		double AnkleH = 0.08;
 		struct FFinger { int32 Bone; int32 Side; FVector AxisLocal; double FistRad; };
 		TArray<FFinger> Fingers;
+		// A helper bone on a limb joint: it sits on the joint and turns half way between the bones
+		// either side, which keeps the joint's width where skin blended straight between the two
+		// would pinch it.
+		struct FHalfJoint { int32 Bone; EJoint Upper; EJoint Lower; FVector TwistAxis; };
+		TArray<FHalfJoint> HalfJoints;
 	};
 }

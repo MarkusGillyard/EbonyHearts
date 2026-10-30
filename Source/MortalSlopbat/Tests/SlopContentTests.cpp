@@ -107,6 +107,112 @@ bool FSlopRaisedFeetDoNotTwist::RunTest(const FString&)
 	return true;
 }
 
+// The half joints keep a bent limb's width (Tools/blender/fighter_joints.py): half way through a bend,
+// half way through a twist, with no jump as a twist passes 180 degrees.
+SLOP_TEST(FSlopHalfTurn, "Anim.HalfTurnStaysContinuous")
+bool FSlopHalfTurn::RunTest(const FString&)
+{
+	const FVector Along(0, 0, 1);
+	auto Degrees = [](const FQuat& A, const FQuat& B) { return FMath::RadiansToDegrees(A.AngularDistance(B)); };
+	const FQuat Bend(FVector(1, 0, 0), FMath::DegreesToRadians(120.0));
+	TestTrue("half of a bend", Degrees(Anim::FMeshRig::HalfTurn(Bend, Along), FQuat(FVector(1, 0, 0), FMath::DegreesToRadians(60.0))) < 0.01);
+	const FQuat Twist(Along, FMath::DegreesToRadians(60.0));
+	TestTrue("half of a twist", Degrees(Anim::FMeshRig::HalfTurn(Twist, Along), FQuat(Along, FMath::DegreesToRadians(30.0))) < 0.01);
+	FQuat Last = Anim::FMeshRig::HalfTurn(FQuat(Along, FMath::DegreesToRadians(-200.0)) * FQuat::Identity, Along);
+	for (double A = -199.0; A <= 200.0; A += 1.0)
+	{
+		const FQuat Now = Anim::FMeshRig::HalfTurn(FQuat(Along, FMath::DegreesToRadians(A)), Along);
+		TestTrue(FString::Printf(TEXT("a twist of %.0f degrees moves its half by %.1f"), A, Degrees(Now, Last)), Degrees(Now, Last) < 3.0);
+		Last = Now;
+	}
+	return true;
+}
+
+// Each fighter has its twelve half joints, sitting on their joints between the bones either side, and
+// no pose bends a joint so far that the short way round could flip from one frame to the next.
+SLOP_TEST(FSlopHalfJoints, "Content.HalfJointsSitBetweenTheirBones")
+bool FSlopHalfJoints::RunTest(const FString&)
+{
+	TArray<FName> Ids = FContent::Roster();
+	Ids.Append(FContent::Secret());
+	Ids.Append(FContent::Special());
+	for (const FName& Id : Ids)
+	{
+		const FFighterDef* Def = GetContent().Fighter(Id);
+		USkeletalMesh* Mesh = Def ? LoadObject<USkeletalMesh>(nullptr, *USlopGameInstance::MeshFor(Id)) : nullptr;
+		Anim::FMeshRig MeshRig;
+		FString Error;
+		if (!TestTrue(Id.ToString() + TEXT(" rig"), Mesh && MeshRig.Init(Mesh->GetRefSkeleton(), Def->Height, Error)))
+		{
+			continue;
+		}
+		if (!TestEqual(Id.ToString() + TEXT(" half joints"), MeshRig.NumHalfJoints(), 12))
+		{
+			continue;
+		}
+		Anim::FRig Rig;
+		MeshRig.ConfigureRig(Rig);
+		Anim::FPoseLibrary Lib;
+		Lib.Build(*Def, GetContent().CommonPoses);
+		FQuat Extra[(int32)Anim::EJoint::Count];
+		for (FQuat& Q : Extra)
+		{
+			Q = FQuat::Identity;
+		}
+		auto Solve = [&](const Anim::FPose& P)
+		{
+			const FVector Feet[2] = {P.P(Anim::EPos::FootL) + FVector(0, Rig.AnkleH, 0), P.P(Anim::EPos::FootR) + FVector(0, Rig.AnkleH, 0)};
+			const double Yaws[2] = {FMath::DegreesToRadians(P.V(Anim::EVal::YawL)), FMath::DegreesToRadians(P.V(Anim::EVal::YawR))};
+			Rig.Apply(P, Feet, Yaws, Extra);
+		};
+		TArray<FName> Names;
+		Lib.Names(Names);
+		double MaxSwing[12] = {}, MaxTwist[12] = {};
+		FName SwingPose[12], TwistPose[12];
+		for (const FName& Name : Names)
+		{
+			Solve(Lib.Get(Name));
+			for (int32 I = 0; I < 12; ++I)
+			{
+				double Swing, Twist;
+				MeshRig.HalfJointSpread(Rig, I, Swing, Twist);
+				if (Swing > MaxSwing[I])
+				{
+					MaxSwing[I] = Swing;
+					SwingPose[I] = Name;
+				}
+				if (Twist > MaxTwist[I])
+				{
+					MaxTwist[I] = Twist;
+					TwistPose[I] = Name;
+				}
+			}
+		}
+		const FReferenceSkeleton& Ref = Mesh->GetRefSkeleton();
+		const int32 N = Ref.GetNum();
+		Solve(Lib.Get(TEXT("mc_hk_09")));
+		TArray<FTransform> Locals;
+		MeshRig.Pose(Rig, Locals);
+		TArray<FTransform> Posed;
+		Posed.SetNum(N);
+		for (int32 B = 0; B < N; ++B)
+		{
+			const int32 Par = Ref.GetParentIndex(B);
+			Posed[B] = Par >= 0 ? Locals[B] * Posed[Par] : Locals[B];
+		}
+		for (int32 I = 0; I < 12; ++I)
+		{
+			int32 Bone, Upper, Lower;
+			MeshRig.HalfJointBones(I, Bone, Upper, Lower);
+			const FString Name = FString::Printf(TEXT("%s %s"), *Id.ToString(), *Ref.GetBoneName(Bone).ToString());
+			TestTrue(Name + TEXT(" sits on its joint"), FVector::Dist(Posed[Bone].GetLocation(), Posed[Lower].GetLocation()) < 0.01);
+			AddInfo(FString::Printf(TEXT("%s widest: bend %.0f (%s), twist %.0f (%s)"), *Name, MaxSwing[I], *SwingPose[I].ToString(), MaxTwist[I], *TwistPose[I].ToString()));
+			TestTrue(FString::Printf(TEXT("%s bends %.0f degrees in %s"), *Name, MaxSwing[I], *SwingPose[I].ToString()), MaxSwing[I] < 170.0);
+		}
+	}
+	return true;
+}
+
 // Every piece a stage's data places exists, and none of its slots is empty or left with an
 // importer placeholder; every surface texture a stage material uses is present.
 SLOP_TEST(FSlopEveryStagePieceIsMade, "Content.EveryStagePieceHasItsMaterials")

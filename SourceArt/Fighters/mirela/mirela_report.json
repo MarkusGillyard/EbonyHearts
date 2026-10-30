@@ -128,25 +128,27 @@
    "material": "M_mirela_skin",
    "surface": "body",
    "bones": [
+    "ankle_half_l",
+    "ankle_half_r",
     "calf_l",
     "calf_r",
     "clavicle_l",
     "clavicle_r",
-    "foot_l",
-    "foot_r",
-    "hand_l",
-    "hand_r",
     "head",
+    "hip_half_l",
+    "hip_half_r",
     "lowerarm_l",
     "lowerarm_r",
     "neck_01",
     "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_03",
     "thigh_l",
     "thigh_r",
-    "upperarm_l",
-    "upperarm_r"
+    "wrist_half_l",
+    "wrist_half_r"
    ]
   },
   "mirela_eyes": {
@@ -197,13 +199,15 @@
     "clavicle_l",
     "clavicle_r",
     "head",
+    "hip_half_l",
+    "hip_half_r",
     "neck_01",
     "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
-    "thigh_l",
-    "thigh_r",
     "upperarm_l",
     "upperarm_r"
    ]
@@ -219,20 +223,26 @@
    "bones": [
     "clavicle_l",
     "clavicle_r",
-    "hand_l",
-    "hand_r",
+    "elbow_half_l",
+    "elbow_half_r",
     "head",
+    "hip_half_l",
+    "hip_half_r",
     "lowerarm_l",
     "lowerarm_r",
     "neck_01",
     "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
     "thigh_l",
     "thigh_r",
     "upperarm_l",
-    "upperarm_r"
+    "upperarm_r",
+    "wrist_half_l",
+    "wrist_half_r"
    ]
   },
   "mirela_glove_l": {
@@ -260,7 +270,8 @@
     "ring_03_l",
     "thumb_01_l",
     "thumb_02_l",
-    "thumb_03_l"
+    "thumb_03_l",
+    "wrist_half_l"
    ]
   },
   "mirela_glove_r": {
@@ -288,7 +299,8 @@
     "ring_03_r",
     "thumb_01_r",
     "thumb_02_r",
-    "thumb_03_r"
+    "thumb_03_r",
+    "wrist_half_r"
    ]
   },
   "mirela_leggings": {
@@ -300,10 +312,14 @@
    "material": "M_mirela_gown",
    "surface": "underdress",
    "bones": [
+    "ankle_half_l",
+    "ankle_half_r",
     "calf_l",
     "calf_r",
-    "foot_l",
-    "foot_r",
+    "hip_half_l",
+    "hip_half_r",
+    "knee_half_l",
+    "knee_half_r",
     "pelvis",
     "spine_01",
     "thigh_l",
@@ -319,6 +335,7 @@
    "material": "M_mirela_leather",
    "surface": "boots",
    "bones": [
+    "ankle_half_l",
     "ball_l",
     "calf_l",
     "foot_l"
@@ -346,6 +363,7 @@
    "material": "M_mirela_leather",
    "surface": "boots",
    "bones": [
+    "ankle_half_r",
     "ball_r",
     "calf_r",
     "foot_r"
@@ -373,8 +391,8 @@
    "material": "M_mirela_gown",
    "surface": "lace",
    "bones": [
-    "hand_l",
-    "lowerarm_l"
+    "lowerarm_l",
+    "wrist_half_l"
    ]
   },
   "mirela_cuff_r": {
@@ -386,8 +404,8 @@
    "material": "M_mirela_gown",
    "surface": "lace",
    "bones": [
-    "hand_r",
-    "lowerarm_r"
+    "lowerarm_r",
+    "wrist_half_r"
    ]
   },
   "mirela_choker": {
@@ -403,9 +421,9 @@
     "clavicle_r",
     "head",
     "neck_01",
-    "spine_03",
-    "upperarm_l",
-    "upperarm_r"
+    "shoulder_half_l",
+    "shoulder_half_r",
+    "spine_03"
    ]
   },
   "mirela_skirt_l": {
@@ -419,6 +437,10 @@
    "bones": [
     "calf_l",
     "calf_r",
+    "hip_half_l",
+    "hip_half_r",
+    "knee_half_l",
+    "knee_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -438,6 +460,10 @@
    "bones": [
     "calf_l",
     "calf_r",
+    "hip_half_l",
+    "hip_half_r",
+    "knee_half_l",
+    "knee_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -457,7 +483,11 @@
    "bones": [
     "clavicle_l",
     "clavicle_r",
+    "hip_half_l",
+    "hip_half_r",
     "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
@@ -478,6 +508,8 @@
    "bones": [
     "clavicle_l",
     "clavicle_r",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
@@ -494,6 +526,8 @@
    "material": "M_mirela_gown",
    "surface": "trim",
    "bones": [
+    "hip_half_l",
+    "hip_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -511,6 +545,8 @@
    "material": "M_mirela_gown",
    "surface": "trim",
    "bones": [
+    "hip_half_l",
+    "hip_half_r",
     "pelvis",
     "spine_01",
     "spine_02",
@@ -534,6 +570,8 @@
     "clavicle_r",
     "head",
     "neck_01",
+    "shoulder_half_l",
+    "shoulder_half_r",
     "spine_02",
     "spine_03",
     "upperarm_l",
@@ -553,9 +591,9 @@
     "clavicle_r",
     "head",
     "neck_01",
-    "spine_03",
-    "upperarm_l",
-    "upperarm_r"
+    "shoulder_half_l",
+    "shoulder_half_r",
+    "spine_03"
    ]
   }
  },
@@ -563,7 +601,7 @@
  "top_of_everything_cm": 182.89,
  "standing_height_cm": 182.0,
  "lowest_point_cm": 0.0,
- "bones": 53,
+ "bones": 65,
  "root_bone": [
   "root"
  ],
@@ -581,15 +619,15 @@
   "targets_applied": 16
  },
  "timings_s": {
-  "enable_mpfb": 0.19,
-  "mpfb_body": 1.41,
+  "enable_mpfb": 0.18,
+  "mpfb_body": 1.36,
   "bake_body": 0.02,
-  "outfit": 3.15,
-  "textures": 20.09,
-  "finalize": 0.01,
-  "save_blend": 0.03,
+  "outfit": 3.01,
+  "textures": 19.34,
+  "finalize": 0.25,
+  "save_blend": 0.02,
   "export_fbx": 0.38
  },
- "script_wall_s": 25.3,
- "peak_rss_mb": 1733.8
+ "script_wall_s": 24.6,
+ "peak_rss_mb": 1731.7
 }
