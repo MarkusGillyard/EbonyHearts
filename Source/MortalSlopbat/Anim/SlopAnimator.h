@@ -80,7 +80,7 @@ namespace Slop::Anim
 		void FollowThrough(double Delta, bool bFrozen);
 		void DriveThrough(double T);
 		bool StrikeKeys(EPos& OutTip, int32& OutHit) const;
-		bool ArmExempt(int32 AuthoredSide) const;
+		double LimbHold(FName Limb, bool bArm) const;
 		bool CanTurn() const;
 		void Life(double Delta, bool bFrozen, double X, FPose& Pose, FQuat Extra[(int32)EJoint::Count]);
 		void CarryArms(const FXf& From, const FXf& To, FPose& Pose) const;

@@ -291,34 +291,39 @@ namespace Slop::Anim
 		case EPos::Hips: return 48.0;
 		case EPos::HandL: case EPos::HandR: return 34.0;
 		case EPos::ElbowL: case EPos::ElbowR: return 30.0;
+		case EPos::FootL: case EPos::FootR: return 56.0;
+		case EPos::KneeL: case EPos::KneeR: return 46.0;
 		default: return 0.0;
 		}
 	}
 
-	// The arm that carries an attack stays exactly on its authored pose until the blow is over
-	// (the hitbox is where the pose puts it), and so do both arms in a throw. `AuthoredSide` is 0
-	// for the pose's left arm.
-	bool FAnimator::ArmExempt(int32 AuthoredSide) const
+	// The limb that carries an attack comes onto its authored pose as the blow nears and stays exactly
+	// on it until the blow is over (the hitbox is where the pose puts it); earlier it swings like the
+	// rest, so the blow does not start with a jolt. Both arms stay on the pose in a throw. Returns 0
+	// (free) to 1 (exactly on the pose). `Limb` is a move's tip name; `bArm` says it is an arm.
+	double FAnimator::LimbHold(FName Limb, bool bArm) const
 	{
 		const FFighter& F = *Fighter;
 		if (F.State == EState::Thrown || ((F.State == EState::Move || F.State == EState::Finisher) && F.ThrowVictim >= 0))
 		{
-			return true;
+			return bArm ? 1.0 : 0.0;
 		}
 		if (F.State != EState::Move || !F.Move)
 		{
-			return false;
+			return 0.0;
 		}
 		const FMoveDef& M = *F.Move;
 		if (F.MF > (M.Active > 0 ? M.LastActive() : M.Startup + 6))
 		{
-			return false;
+			return 0.0;
 		}
-		if (M.Tip.IsNone())
+		// A move with no named limb is held by the arms, as a strike with both hands is.
+		if (M.Tip.IsNone() ? !bArm : M.Tip != Limb)
 		{
-			return true;
+			return 0.0;
 		}
-		return M.Tip == (AuthoredSide == 0 ? FName(TEXT("hand_l")) : FName(TEXT("hand_r")));
+		constexpr int32 RampFrames = 3;
+		return FMath::Clamp(double(F.MF - (M.Startup - 1 - RampFrames)) / RampFrames, 0.0, 1.0);
 	}
 
 	void FAnimator::FollowThrough(double Delta, bool bFrozen)
@@ -337,7 +342,8 @@ namespace Slop::Anim
 			bLagValid = true;
 			return;
 		}
-		const bool bExempt[2] = {ArmExempt(0), ArmExempt(1)};
+		const double ArmHeld[2] = {LimbHold(TEXT("hand_l"), true), LimbHold(TEXT("hand_r"), true)};
+		const double LegHeld[2] = {LimbHold(TEXT("foot_l"), false), LimbHold(TEXT("foot_r"), false)};
 		const auto ArmOf = [](int32 K, bool bRot) -> int32
 		{
 			if (bRot)
@@ -345,6 +351,10 @@ namespace Slop::Anim
 				return K == (int32)ERot::WristL ? 0 : K == (int32)ERot::WristR ? 1 : -1;
 			}
 			return K == (int32)EPos::HandL || K == (int32)EPos::ElbowL ? 0 : K == (int32)EPos::HandR || K == (int32)EPos::ElbowR ? 1 : -1;
+		};
+		const auto LegOf = [](int32 K) -> int32
+		{
+			return K == (int32)EPos::FootL || K == (int32)EPos::KneeL ? 0 : K == (int32)EPos::FootR || K == (int32)EPos::KneeR ? 1 : -1;
 		};
 		// Stuns and the start of an attack commit faster; the rest settles at the usual pace.
 		const FFighter& F = *Fighter;
@@ -365,7 +375,8 @@ namespace Slop::Anim
 		{
 			const int32 Arm = ArmOf(K, true);
 			const double Rate = RotRate(K) * Stiff;
-			if (Arm >= 0 && bExempt[Arm])
+			const double Held = Arm >= 0 ? ArmHeld[Arm] : 0.0;
+			if (Held >= 1.0)
 			{
 				Lagged.Rot[K] = Out.Rot[K];
 				LagW[K] = FVector::ZeroVector;
@@ -389,12 +400,19 @@ namespace Slop::Anim
 					Lagged.Rot[K] = (FQuat(LagW[K].GetSafeNormal(), Turn) * Lagged.Rot[K]).GetNormalized();
 				}
 			}
+			if (Held > 0.0 && Steps > 0)
+			{
+				Lagged.Rot[K] = FQuat::Slerp(Lagged.Rot[K], Out.Rot[K], Held).GetNormalized();
+				LagW[K] *= 1.0 - Held;
+			}
 		}
 		for (int32 K = 0; K < (int32)EPos::Count; ++K)
 		{
 			const int32 Arm = ArmOf(K, false);
+			const int32 Leg = LegOf(K);
 			const double Rate = PosRate(K) * Stiff;
-			if (Rate <= 0.0 || (Arm >= 0 && bExempt[Arm]))
+			const double Held = Arm >= 0 ? ArmHeld[Arm] : (Leg >= 0 ? LegHeld[Leg] : 0.0);
+			if (Rate <= 0.0 || Held >= 1.0)
 			{
 				Lagged.Pos[K] = Out.Pos[K];
 				LagV[K] = FVector::ZeroVector;
@@ -404,6 +422,17 @@ namespace Slop::Anim
 			{
 				LagV[K] += ((Out.Pos[K] - Lagged.Pos[K]) * Rate * Rate - LagV[K] * 2.0 * Zeta * Rate) * H;
 				Lagged.Pos[K] += LagV[K] * H;
+			}
+			// A foot lags only as far as it is off the floor: a planted one stays exactly where it is.
+			double Keep = 1.0 - Held;
+			if (K == (int32)EPos::FootL || K == (int32)EPos::FootR)
+			{
+				Keep *= FMath::Clamp(Out.V(K == (int32)EPos::FootL ? EVal::FreeL : EVal::FreeR), 0.0, 1.0);
+			}
+			if (Steps > 0 && Keep < 1.0)
+			{
+				Lagged.Pos[K] = FMath::Lerp(Out.Pos[K], Lagged.Pos[K], Keep);
+				LagV[K] *= Keep;
 			}
 		}
 		for (int32 K = 0; K < (int32)EVal::Count; ++K)
@@ -512,7 +541,7 @@ namespace Slop::Anim
 		for (int32 S = 0; S < 2; ++S)
 		{
 			// Display sides are mirrored when facing left.
-			if (ArmExempt(Facing < 0 ? 1 - S : S))
+			if (LimbHold((Facing < 0 ? 1 - S : S) == 0 ? FName(TEXT("hand_l")) : FName(TEXT("hand_r")), true) >= 1.0)
 			{
 				continue;
 			}

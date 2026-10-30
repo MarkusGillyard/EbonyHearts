@@ -332,6 +332,16 @@
 			"tip": "foot_r",
 			"keys": [
 				[
+					2,
+					"mc_lk_02",
+					"linear"
+				],
+				[
+					3,
+					"mc_lk_03",
+					"linear"
+				],
+				[
 					4,
 					"mc_lk_04",
 					"linear"
@@ -418,6 +428,31 @@
 		"anim": {
 			"tip": "foot_r",
 			"keys": [
+				[
+					5,
+					"mc_roundhouse_05",
+					"linear"
+				],
+				[
+					6,
+					"mc_roundhouse_06",
+					"linear"
+				],
+				[
+					7,
+					"mc_roundhouse_07",
+					"linear"
+				],
+				[
+					8,
+					"mc_roundhouse_08",
+					"linear"
+				],
+				[
+					9,
+					"mc_roundhouse_09",
+					"linear"
+				],
 				[
 					10,
 					"mc_roundhouse_10",
@@ -560,6 +595,21 @@
 		"anim": {
 			"tip": "foot_l",
 			"keys": [
+				[
+					3,
+					"mc_hk_03",
+					"linear"
+				],
+				[
+					4,
+					"mc_hk_04",
+					"linear"
+				],
+				[
+					5,
+					"mc_hk_05",
+					"linear"
+				],
 				[
 					6,
 					"mc_hk_06",

@@ -39,6 +39,8 @@ ANKLE_H = 0.042 * H
 FREE_FROM = 0.015
 FREE_RANGE = 0.09
 FOOT_REST = 18.0
+FIRST_SHARE = 0.35
+STRIKE_RISE = 1.5
 TOE_MIN = -15.0
 TOE_MAX = 70.0
 
@@ -292,6 +294,30 @@ def pose(take, t, origin, fwd, fists):
     return out
 
 
+def path_warp(take, joint, start, contact, steps=48):
+    """Time in the take for a share of the startup. In a capture nearly all of a limb's travel comes
+    in the last instant, so compressed by the clock it crosses a metre in a frame; taken by distance
+    along its path, gathering speed into contact (STRIKE_RISE), it arrives fast but stays a limb."""
+    ts = [start + (contact - start) * i / steps for i in range(steps + 1)]
+    ps = [take.at(t)[joint] for t in ts]
+    run = [0.0]
+    for a, b in zip(ps, ps[1:]):
+        d = sub(b, a)
+        run.append(run[-1] + math.sqrt(dot(d, d)))
+    total = run[-1]
+    if total < 1e-6:
+        return lambda u: start + (contact - start) * u
+
+    def at(u):
+        want = total * u ** STRIKE_RISE
+        for i in range(steps):
+            if run[i + 1] >= want:
+                span = run[i + 1] - run[i]
+                return ts[i] + (ts[i + 1] - ts[i]) * ((want - run[i]) / span if span > 0 else 0.0)
+        return contact
+    return at
+
+
 def convert(move, spec):
     name, joint, (startup, active, recovery), fists, dest = spec
     take = Take(name)
@@ -306,11 +332,14 @@ def convert(move, spec):
     origin = (take.at(start)["Hips"][0], 0.0, take.at(start)["Hips"][2])
     total = startup + active + recovery
     hold = 0.5  # take frames per game frame across the active frames (the blow drives on)
-    first = max(2, startup - 3)
+    # The take fills most of the startup: squeezed into its last frames, the limb waits and then
+    # teleports (a roundhouse's foot reached 52 m/s). The first frames crossfade out of the stance.
+    first = max(2, int(round(startup * FIRST_SHARE)))
     poses, keys = {}, []
+    arrive = path_warp(take, joint, start, contact)
     for g in range(first, total - 3):
         if g <= startup:
-            t = start + (contact - start) * (g - first + 1) / (startup - first + 1)
+            t = arrive((g - first + 1) / (startup - first + 1))
         elif g <= startup + active:
             t = contact + (g - startup) * hold
         else:
@@ -415,6 +444,20 @@ def write_poses(path, poses):
         f.write("{\n" + ",\n".join('\t"%s": %s' % (k, json.dumps(v)) for k, v in poses.items()) + "\n}\n")
 
 
+def replace_keys(text, move, keys):
+    """Swaps one move's animation keys in a fighter's JSON text, leaving the rest as it is written."""
+    at = text.index('"%s": {' % move)
+    at = text.index('"keys":', text.index('"anim":', at))
+    start = text.index("[", at)
+    depth, i = 0, start
+    while True:
+        depth += {"[": 1, "]": -1}.get(text[i], 0)
+        i += 1
+        if depth == 0:
+            break
+    return text[:start] + json.dumps(keys) + text[i:]
+
+
 def main():
     if len(sys.argv) > 2 and sys.argv[1] == "--inspect":
         take = Take(sys.argv[2])
@@ -452,10 +495,11 @@ def main():
         f.write("\n")
     for fighter, moves in fighter_keys.items():
         p = os.path.join(DATA, "fighters", fighter + ".json")
-        d = json.load(open(p))
+        text = open(p).read()
         for move, keys in moves.items():
-            d["moves"][move]["anim"]["keys"] = keys
-        open(p, "w").write(json.dumps(d, indent="\t", ensure_ascii=False) + "\n")
+            text = replace_keys(text, move, keys)
+        json.loads(text)
+        open(p, "w").write(text)
     # The intro and win performances, laid over each fighter's data at load (one line a fighter).
     with open(os.path.join(DATA, "fighters_mocap.json"), "w") as f:
         f.write("{\n" + ",\n".join('\t"%s": %s' % (k, json.dumps({"state_anim": v})) for k, v in sorted(states.items())) + "\n}\n")

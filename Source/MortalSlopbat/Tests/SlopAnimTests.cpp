@@ -146,11 +146,91 @@ bool FSlopAnimatorRuns::RunTest(const FString&)
 	return true;
 }
 
+// A limb swings through a blow, it does not teleport. Strikes are short, so a limb that waits and then
+// crosses its whole path in a frame or two reads as robotic (a roundhouse's foot once reached 52 m/s,
+// and a real one is 15 to 25). Every fighter's basic strikes, each shown limb, frame by frame.
+SLOP_TEST(FSlopLimbsSwing, "Anim.LimbsDoNotTeleportThroughStrikes")
+bool FSlopLimbsSwing::RunTest(const FString&)
+{
+	constexpr double Limit = 40.0;
+	const EJoint Limbs[] = {EJoint::HandL, EJoint::HandR, EJoint::FootL, EJoint::FootR};
+	TArray<FName> Ids = FContent::Roster();
+	Ids.Append(FContent::Secret());
+	double Worst = 0.0;
+	FString WorstAt;
+	for (const FName& Id : Ids)
+	{
+		FFightSim Sim;
+		Sim.bIntro = false;
+		Sim.bTraining = true;
+		Sim.Setup(GetContent().Fighter(Id), GetContent().Fighter(TEXT("bram")));
+		FAnimator A;
+		A.Setup(Sim.Fighters[0], GetContent().CommonPoses);
+		FPadState Idle[2];
+		const auto Tick = [&](FPadState* Pads)
+		{
+			Sim.Step(Pads);
+			A.SyncFromSim();
+			A.Update(1.0, 1.0 / 60.0);
+		};
+		for (int32 T = 0; T < 600 && (Sim.Phase != EPhase::Fight || T < 30); ++T)
+		{
+			Tick(Idle);
+		}
+		FFighter& F = Sim.Fighters[0];
+		Sim.Fighters[1].Pos = FVector2D(6.0, 0.0);
+		F.Pos = FVector2D(-3.0, 0.0);
+		FVector Was[4];
+		for (int32 L = 0; L < 4; ++L)
+		{
+			Was[L] = A.WorldPoint(A.Rig.J(Limbs[L]).P);
+		}
+		const auto Watch = [&]()
+		{
+			for (int32 L = 0; L < 4; ++L)
+			{
+				const FVector Now = A.WorldPoint(A.Rig.J(Limbs[L]).P);
+				const double Speed = (Now - Was[L]).Size() * 60.0;
+				Was[L] = Now;
+				if (Speed > Worst)
+				{
+					Worst = Speed;
+					WorstAt = FString::Printf(TEXT("%s limb %d, %s frame %d"), *Id.ToString(), L, F.Move ? *F.Move->Id.ToString() : TEXT("no move"), F.MF);
+				}
+			}
+		};
+		const int32 Steps[][2] = {{0, BtnHP}, {0, BtnLP}, {0, BtnLK}, {0, BtnHK}, {PadLeft, BtnLK}, {PadLeft, BtnHK}, {PadDown, BtnHP}};
+		for (const int32* Step : Steps)
+		{
+			FPadState Pads[2];
+			Pads[0].Dirs = Step[0];
+			Pads[0].Held = Pads[0].Pressed = Step[1];
+			Tick(Pads);
+			Watch();
+			for (int32 T = 0; T < 200 && !F.IsActionable(); ++T)
+			{
+				Tick(Idle);
+				Watch();
+			}
+			for (int32 T = 0; T < 30; ++T)
+			{
+				Tick(Idle);
+				Watch();
+			}
+		}
+	}
+	AddInfo(FString::Printf(TEXT("fastest limb %.1f m/s (%s)"), Worst, *WorstAt));
+	UE_LOG(LogTemp, Display, TEXT("Fastest limb %.1f m/s (%s)"), Worst, *WorstAt);
+	TestTrue(FString::Printf(TEXT("fastest limb %.1f m/s (%s)"), Worst, *WorstAt), Worst < Limit);
+	return true;
+}
+
 SLOP_TEST(FSlopAttackingArmOnPose, "Anim.AttackingArmStaysOnItsPose")
 bool FSlopAttackingArmOnPose::RunTest(const FString&)
 {
-	// The body follows through on springs, but the arm that carries a blow must be exactly where
-	// the authored pose puts it until the blow is over: the hitbox is there.
+	// The body follows through on springs, and the arm that carries a blow swings with it at first,
+	// but from the frame before contact it must be exactly where the authored pose puts it until
+	// the blow is over: the hitbox is there.
 	int32 Checked = 0;
 	int32 Off = 0;
 	for (const FName P1 : {FName(TEXT("ashka")), FName(TEXT("nix")), FName(TEXT("hollis"))})
@@ -171,7 +251,7 @@ bool FSlopAttackingArmOnPose::RunTest(const FString&)
 			A.SyncFromSim();
 			A.Update(1.0, 1.0 / 60.0);
 			const FFighter& F = Sim.Fighters[0];
-			if (F.State != EState::Move || !F.Move || F.ThrowVictim >= 0 || F.Move->Active <= 0 || F.MF > F.Move->LastActive()
+			if (F.State != EState::Move || !F.Move || F.ThrowVictim >= 0 || F.Move->Active <= 0 || F.MF < F.Move->Startup - 1 || F.MF > F.Move->LastActive()
 				|| (F.Move->Tip != FName(TEXT("hand_l")) && F.Move->Tip != FName(TEXT("hand_r"))))
 			{
 				continue;
