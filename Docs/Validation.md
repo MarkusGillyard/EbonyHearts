@@ -692,6 +692,16 @@ mix. The default output is still the monitor: `Digital Stereo (HDMI 2)` must be 
 showed its buttons (`✕ ○ △ □`, `R1`, `R3`, `Share`), and `Button prompts` cycled Automatic, PlayStation, Xbox and PC with the page's prompts changing live.
 The move list read `↓ → + △`, `Y` and `U` in the three styles. `Input.ButtonPromptsFollowTheChoice` and `Ui.MoveNotationShowsTheButtonsInUse` hold it.
 
+**The release.** `v2.17.0` on the repository's Releases page: `EbonyHearts-2.17.0-linux-x86_64.tar.gz`, SHA-256
+`cc053fc77aa5635a786f0e38ce21e72a2264855daf763138ba197f27c6597e8f`, Shipping build of commit `e14d41f`. The 167 tests passed on that
+branch's tree, packaged from it, before a last pass over documents and one comment that changed nothing under `Source`, `Config` or
+`Content`. Every file in the archive matched its `SHA256SUMS`. Unpacked fresh and started through `EbonyHearts.sh` on an empty save
+folder, it went from the title through the menu into a CPU fight for 70 s: frame median and 99th percentile 16.67 ms, exit 0. That run was
+offscreen, so it saw no pads or sound. Then from GitHub with no credentials: a fresh clone of `ue5` fetched all 1253 LFS files, fsck clean, and
+the downloaded archive was byte-identical to the local one.
+
+The public branch carries 2.8.0 to 2.17.0 as one commit, so commits named from 2.8.0 on, here and in `Docs/Evidence`, are not in its history.
+
 ## Not verified
 
 - DualSense, USB connection, rumble and reconnection on a real pad, two physical pads (above).
