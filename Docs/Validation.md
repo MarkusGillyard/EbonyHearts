@@ -710,6 +710,16 @@ The public branch carries 2.8.0 to 2.17.0 as one commit, so commits named from 2
 fight for 50 s (frame median and 99th percentile 16.67 ms, exit 0); then from GitHub with no credentials, a fresh clone with all 1253 LFS files, fsck clean, and an
 archive byte-identical to the local one.
 
+## 2.17.2: videos, streams and mods
+
+`LICENSE` now also lets anyone record, publish and stream the game and make and share free mods; nothing else changed in the game. `v2.17.2`:
+`EbonyHearts-2.17.2-linux-x86_64.tar.gz`, SHA-256 `a0a533661fe1aa034f1e59f1a2a78763b5a1b8125b04a67e7972f5d5b4feb67d`, Shipping build of commit `7bd3efc`.
+167 tests pass. Checked as 2.17.1 was, with the same results: every file against `SHA256SUMS`, a fresh unpack into a CPU fight for 50 s, a clone with no credentials, and an
+archive byte-identical to the local one.
+
+**Mods do not load yet.** On the 2.17.1 package, a `ModTest_P.pak` from `UnrealPak` in `Content/Paks` replaced `fighters/wren.json` with text that is not JSON. The
+Shipping game started and played `wren v bram` as usual, so it never read that file. Pak signing and encryption are off. What it would take to load a mod was not looked into.
+
 ## Not verified
 
 - DualSense, USB connection, rumble and reconnection on a real pad, two physical pads (above).
