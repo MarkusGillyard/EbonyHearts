@@ -9,11 +9,11 @@ evidence behind every claim here.
 |---|---|
 | Source | `~/Documents/Unreal Projects/MortalSlopbat`, branch `ue5`, public as the default branch of `MarkusGillyard/EbonyHearts` (`main` there is the Godot original, version 1.1.0, unchanged at `~/Documents/Mortal Slopbat`). |
 | Engine | Unreal Engine 5.8.4 at `/media/cinqic/Cinqic Storage/UnrealEngine/UE_5.8.4`; Vulkan SM6; Linux x86_64. |
-| Game | Ebony Hearts 2.17.1, complete: six starters, the Grandmaster unlocked by a secret challenge, Hollis Fathom and the Ebony Heart Fragment as bosses; six stages; Story, Arcade, Survival, Versus, Versus CPU, Training, Tutorial, Trials, Extras, Settings; saves and settings; controllers and keyboard. |
+| Game | Ebony Hearts 2.17.2, complete: six starters, the Grandmaster unlocked by a secret challenge, Hollis Fathom and the Ebony Heart Fragment as bosses; six stages; Story, Arcade, Survival, Versus, Versus CPU, Training, Tutorial, Trials, Extras, Settings; saves and settings; controllers and keyboard. |
 | Art | Every fighter built from CC0 MakeHuman bodies with scripted costumes (`Tools/blender`), the Fragment by `Tools/blender/build_fragment.py`; six stage sets built in Blender (`Tools/blender/stages`); CC0 surfaces, props, skies and sounds. |
 | Tests | Automation tests (`run_tests`), scripted flows for every mode (`Tools/playtest`), unattended packaged sessions (`Tools/perf/soak.sh`). |
 | Combat feel | 2.2.0 applies the presentation changes ranked by the study in `Docs/Martial-arts.md` (strikes, hit-stop, reactions, styles, sound) and one rule change (counter-hit freeze on the victim); frame data otherwise unchanged. 2.3.0 to 2.5.0 bring in motion capture: strikes, footwork, the block, Daxion's evade, intros and wins. |
-| Package | `EbonyHearts-2.17.1-linux-x86_64.tar.gz` and its checksum, on the repository's Releases page as `v2.17.1`; `Docs/Validation.md` has the record. Local copies are in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`. Do not use the 2.14.2 archive there (its Hollis is wrong; `Docs/Validation.md`). Unpack and run `./EbonyHearts.sh`. If the engine path is missing after a reboot, the drive is unmounted: `udisksctl mount -b /dev/sda1`. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
+| Package | `EbonyHearts-2.17.2-linux-x86_64.tar.gz` and its checksum, on the repository's Releases page as `v2.17.2`; `Docs/Validation.md` has the record. Local copies are in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`. Do not use the 2.14.2 archive there (its Hollis is wrong; `Docs/Validation.md`). Unpack and run `./EbonyHearts.sh`. If the engine path is missing after a reboot, the drive is unmounted: `udisksctl mount -b /dev/sda1`. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
 | Interface | Rebuilt in 2.16.0 on Markus's title card: `Docs/UI.md` is the design system and how to change it, `Docs/Evidence/UI-2.16.0` the before and after. |
 | Saves | Markus's own settings and progress from playing 2.1.0 are in `~/.local/share/MortalSlopbat/UE5/` (settings version 1: its default cap of 60 becomes Match the display when 2.2.0 loads it). Test runs used separate profiles, cleared afterwards. The Godot game's own files in `~/.local/share/MortalSlopbat/` are untouched. |
 
@@ -102,6 +102,11 @@ the archive.
   balance numbers are CPU against CPU only; nobody has played the expansion yet.
 
 ## Open
+
+- **2.17.2 (1 November 2026), videos, streams and mods (Markus's order).** `LICENSE` now also lets anyone record, publish
+  and stream the game, with money from ads, subscriptions or donations, and make and share free mods. The game itself is
+  2.17.0's, and it cannot load mods yet: a plain `ModTest_P.pak` in `Content/Paks` had no effect on a Shipping build, not even
+  with a deliberately broken `fighters/wren.json` in it. Nothing is signed or encrypted, and the data is JSON under `Content/Data`.
 
 - **2.17.1 (1 November 2026), the licence (Markus's order).** `LICENSE` now lets anyone download an official release
   build and play it for personal, non-commercial use, and permits nothing else. The game itself is 2.17.0's.

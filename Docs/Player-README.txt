@@ -47,6 +47,10 @@ MODES
   (dummy settings, frame data, hitboxes), Tutorial, Trials (every fighter's combos), Extras
   (endings, records, move lists, credits) and Settings.
 
+VIDEOS, STREAMS AND MODS
+  You may record and stream the game, and make and share free mods for it. LICENSE.txt
+  beside this file has the terms.
+
 CREDITS AND LICENCES
   See the Credits screen in Extras, and the Licenses folder beside this file.
   Ebony Hearts uses the Unreal(R) Engine. Unreal(R) is a trademark or registered trademark of

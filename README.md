@@ -6,9 +6,9 @@
 >
 > **Not open source.** Everything here (code, data, characters, story, art, models, animation, audio
 > and documentation) is proprietary and all rights are reserved by Markus Gillyard. The repository
-> is public so people can follow development. The one permission given is to download official
-> release builds and play them for personal, non-commercial use (see `LICENSE`). Third-party assets
-> keep their own licences
+> is public so people can follow development. Anyone may play official release builds, record and
+> stream the game, and make and share free mods, on the terms in `LICENSE`; nothing else is
+> permitted. Third-party assets keep their own licences
 > (`Docs/Assets.md`).
 
 A bog-gothic arcade fighting game by Markus Gillyard, in the line of Mortal Kombat 3 (the project,
@@ -73,7 +73,7 @@ Tools/make_release.sh Shipping    # archive with readme, licences, version and c
 ## Ownership
 
 © 2026 Markus Gillyard, all rights reserved: `LICENSE` is the original game's licence, unchanged
-but for where it points for third-party notices and its permission to play official release builds. Third-party assets keep their own licences
+but for where it points for third-party notices and its permissions to play, record, stream and mod. Third-party assets keep their own licences
 (`Docs/Assets.md`). Unreal® Engine, Copyright 1998 – 2026, Epic
 Games, Inc. All rights reserved; Unreal® is a trademark or registered trademark of Epic Games,
 Inc. in the United States of America and elsewhere.
