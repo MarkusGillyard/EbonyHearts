@@ -1,9 +1,9 @@
 {
 	"id": "slopbat",
-	"name": "Ebony Heart Fragment",
-	"title": "The Slopbat",
+	"name": "The Ebony Heart Fragment",
+	"title": "Final Boss of the Ebony Heart Tournament",
 	"pronoun": "it",
-	"style": "Tar, wing and storm",
+	"style": "Ebony Heart",
 	"boss": true,
 	"copyable": true,
 	"shape_upkeep": 2.0,
@@ -20,7 +20,7 @@
 	},
 	"moves": {
 		"claw": {
-			"name": "Claw",
+			"name": "Pseudopod",
 			"startup": 9,
 			"active": 4,
 			"recovery": 14,
@@ -79,7 +79,7 @@
 			}
 		},
 		"claw2": {
-			"name": "Raking Claw",
+			"name": "Pseudopod",
 			"startup": 9,
 			"active": 4,
 			"recovery": 20,
@@ -133,7 +133,7 @@
 			}
 		},
 		"low_claw": {
-			"name": "Low Rake",
+			"name": "Undertow",
 			"startup": 10,
 			"active": 4,
 			"recovery": 18,
@@ -192,7 +192,7 @@
 			}
 		},
 		"rising_claw": {
-			"name": "Rising Talon",
+			"name": "Rising Flow",
 			"startup": 9,
 			"active": 5,
 			"recovery": 26,
@@ -249,52 +249,58 @@
 			}
 		},
 		"tar_spit": {
-			"name": "Tar Spit",
-			"magic": 0.6,
+			"name": "Ebony Orb",
+			"magic": 1.0,
 			"kind": "special",
-			"startup": 16,
+			"startup": 30,
 			"active": 0,
-			"recovery": 22,
+			"recovery": 28,
 			"level": "none",
 			"projectile": {
-				"frame": 16,
-				"kind": "tar",
+				"frame": 30,
+				"kind": "ebony_orb",
 				"offset": [
-					0.7,
-					2.15
+					1.0,
+					1.5
 				],
-				"speed": 6.5,
-				"vy": -0.6,
+				"speed": 3.0,
 				"size": [
-					0.38,
-					0.32
+					1.5,
+					1.5
 				],
-				"life": 110,
-				"level": "high",
-				"damage": 75,
-				"chip": 12,
-				"hitstun": 26,
-				"blockstun": 16
+				"life": 210,
+				"level": "mid",
+				"damage": 110,
+				"chip": 34,
+				"hitstun": 28,
+				"blockstun": 20,
+				"effect": "knockdown",
+				"launch": [
+					2.5,
+					3.5
+				],
+				"magic": 1.0
 			},
 			"anim": {
+				"tip": "chest",
 				"keys": [
 					[
-						8,
+						12,
 						"bat_spit_load",
 						"out"
 					],
 					[
-						16,
+						30,
 						"bat_spit",
 						"snap"
 					],
 					[
-						26,
+						40,
 						"bat_spit",
 						"linear"
 					],
 					[
-						38,
+						58,
 						"stance",
 						"inout"
 					]
@@ -304,57 +310,58 @@
 				"projectile"
 			],
 			"sfx": {
-				"swing": "cast_tar"
+				"swing": "cast_orb"
 			}
 		},
 		"wing_gust": {
-			"name": "Wing Gust",
+			"name": "The Tide",
 			"kind": "special",
-			"startup": 20,
+			"startup": 22,
 			"active": 0,
-			"recovery": 24,
+			"recovery": 26,
 			"level": "none",
 			"projectile": {
-				"frame": 20,
-				"kind": "gust",
+				"frame": 22,
+				"kind": "wave",
 				"offset": [
-					0.8,
-					1.2
+					1.1,
+					0.32
 				],
-				"speed": 7.0,
+				"speed": 6.0,
 				"size": [
-					0.8,
-					2.2
+					1.1,
+					0.62
 				],
-				"life": 60,
-				"strength": 3,
-				"level": "mid",
-				"damage": 0,
-				"chip": 0,
-				"hitstun": 14,
-				"blockstun": 10,
-				"push_hit": 2.2,
-				"push_block": 2.0
+				"life": 110,
+				"level": "low",
+				"damage": 75,
+				"chip": 12,
+				"hitstun": 24,
+				"blockstun": 14,
+				"push_hit": 1.6,
+				"push_block": 1.0,
+				"magic": 0.5
 			},
 			"anim": {
+				"tip": "chest",
 				"keys": [
 					[
-						10,
+						11,
 						"bat_gust_load",
 						"out"
 					],
 					[
-						20,
+						22,
 						"bat_gust",
 						"snap"
 					],
 					[
-						32,
+						34,
 						"bat_gust",
 						"linear"
 					],
 					[
-						44,
+						48,
 						"stance",
 						"inout"
 					]
@@ -364,15 +371,15 @@
 				"projectile"
 			],
 			"sfx": {
-				"swing": "wing"
+				"swing": "cast_wave"
 			}
 		},
 		"dive": {
-			"name": "The Dive",
-			"startup": 86,
+			"name": "Swim",
+			"startup": 74,
 			"active": 10,
-			"recovery": 50,
-			"level": "overhead",
+			"recovery": 44,
+			"level": "mid",
 			"damage": 140,
 			"hitboxes": [
 				{
@@ -393,37 +400,27 @@
 						"out"
 					],
 					[
-						25,
-						"bat_fly",
-						"inout"
+						22,
+						"bat_rise",
+						"linear"
 					],
 					[
-						80,
-						"bat_fly",
+						62,
+						"bat_rise",
 						"linear"
+					],
+					[
+						74,
+						"bat_storm",
+						"snap"
 					],
 					[
 						86,
-						"bat_dive",
-						"snap"
-					],
-					[
-						95,
-						"bat_dive",
-						"linear"
-					],
-					[
-						110,
 						"bat_stuck",
 						"snap"
 					],
 					[
-						146,
-						"bat_stuck",
-						"linear"
-					],
-					[
-						150,
+						118,
 						"stance",
 						"inout"
 					]
@@ -440,62 +437,55 @@
 			"hitstop": 14,
 			"lift": [
 				[
-					4,
+					64,
 					0.0
 				],
 				[
-					25,
-					7.0
+					74,
+					1.4
 				],
 				[
-					80,
-					7.0
-				],
-				[
-					90,
+					84,
 					0.0
 				]
 			],
 			"track": [
-				26,
-				80,
-				3.2
+				20,
+				64,
+				3.6
 			],
 			"props": {
 				"invuln": [
 					5,
-					84
+					72
 				],
 				"airborne": [
-					5,
-					90
+					64,
+					84
 				]
 			},
 			"tags": [
 				"dive"
 			],
 			"sfx": {
-				"swing": "wing"
+				"swing": "cast_wave"
+			},
+			"effects": {
+				"sink": [
+					6,
+					72
+				]
 			}
 		},
 		"storm_shroud": {
-			"name": "Storm Shroud",
+			"name": "Ebony Cross",
 			"magic": 1.0,
-			"startup": 50,
-			"active": 14,
-			"recovery": 40,
-			"level": "unblockable",
-			"damage": 150,
-			"hitboxes": [
-				{
-					"rect": [
-						-2.6,
-						0.0,
-						5.2,
-						3.3
-					]
-				}
-			],
+			"startup": 26,
+			"active": 0,
+			"recovery": 44,
+			"level": "none",
+			"damage": 0,
+			"hitboxes": [],
 			"anim": {
 				"tip": "chest",
 				"keys": [
@@ -505,22 +495,22 @@
 						"out"
 					],
 					[
-						50,
+						26,
 						"bat_storm_load",
 						"linear"
 					],
 					[
-						52,
+						28,
 						"bat_storm",
 						"snap"
 					],
 					[
-						64,
+						60,
 						"bat_storm",
 						"linear"
 					],
 					[
-						103,
+						70,
 						"stance",
 						"inout"
 					]
@@ -537,14 +527,44 @@
 				"health_below": 0.5
 			},
 			"tags": [
-				"storm"
+				"storm",
+				"projectile"
 			],
 			"sfx": {
 				"swing": "charge"
+			},
+			"projectile": {
+				"frame": 26,
+				"kind": "ebony_cross",
+				"at_opponent": [
+					0.8,
+					7.0
+				],
+				"offset": [
+					0.0,
+					2.7
+				],
+				"speed": 0.0,
+				"size": [
+					1.7,
+					5.4
+				],
+				"life": 62,
+				"arm": 44,
+				"level": "unblockable",
+				"damage": 150,
+				"chip": 0,
+				"hitstun": 30,
+				"effect": "knockdown",
+				"launch": [
+					2.5,
+					4.5
+				],
+				"magic": 1.0
 			}
 		},
 		"bite": {
-			"name": "Bite",
+			"name": "Engulf",
 			"kind": "grab",
 			"startup": 11,
 			"active": 3,
@@ -662,6 +682,146 @@
 			"sfx": {
 				"swing": "screech"
 			}
+		},
+		"ebony_seal": {
+			"name": "Ebony Seal",
+			"magic": 1.0,
+			"kind": "special",
+			"startup": 20,
+			"active": 0,
+			"recovery": 34,
+			"level": "none",
+			"projectile": {
+				"frame": 20,
+				"kind": "ebony_seal",
+				"at_opponent": [
+					0.8,
+					7.0
+				],
+				"offset": [
+					0.0,
+					1.6
+				],
+				"speed": 0.0,
+				"size": [
+					1.9,
+					3.2
+				],
+				"life": 58,
+				"arm": 40,
+				"level": "unblockable",
+				"damage": 120,
+				"chip": 0,
+				"hitstun": 28,
+				"effect": "knockdown",
+				"launch": [
+					2.0,
+					4.0
+				],
+				"magic": 1.0
+			},
+			"anim": {
+				"tip": "chest",
+				"keys": [
+					[
+						10,
+						"bat_storm_load",
+						"out"
+					],
+					[
+						20,
+						"bat_storm",
+						"snap"
+					],
+					[
+						40,
+						"bat_storm",
+						"linear"
+					],
+					[
+						54,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"tags": [
+				"projectile"
+			],
+			"sfx": {
+				"swing": "cast_orb"
+			}
+		},
+		"ebony_beam": {
+			"name": "Ebony Lance",
+			"magic": 1.0,
+			"kind": "special",
+			"startup": 14,
+			"active": 0,
+			"recovery": 70,
+			"level": "none",
+			"projectile": {
+				"frame": 14,
+				"kind": "ebony_beam",
+				"offset": [
+					5.0,
+					1.5
+				],
+				"speed": 0.0,
+				"size": [
+					9.0,
+					0.6
+				],
+				"life": 62,
+				"arm": 46,
+				"level": "high",
+				"damage": 120,
+				"chip": 30,
+				"hitstun": 28,
+				"blockstun": 22,
+				"effect": "knockdown",
+				"launch": [
+					3.0,
+					3.0
+				],
+				"magic": 1.0
+			},
+			"anim": {
+				"tip": "chest",
+				"keys": [
+					[
+						8,
+						"bat_spit_load",
+						"out"
+					],
+					[
+						46,
+						"bat_spit_load",
+						"linear"
+					],
+					[
+						50,
+						"bat_spit",
+						"snap"
+					],
+					[
+						70,
+						"bat_spit",
+						"linear"
+					],
+					[
+						84,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"tags": [
+				"projectile"
+			],
+			"sfx": {
+				"swing": "charge"
+			}
 		}
 	},
 	"commands": [
@@ -680,6 +840,14 @@
 		[
 			"B,F+HK",
 			"wing_gust"
+		],
+		[
+			"D,D+HP",
+			"ebony_seal"
+		],
+		[
+			"F,B+HP",
+			"ebony_beam"
 		],
 		[
 			"F,F+LP",
@@ -703,8 +871,119 @@
 		"range": 1.5,
 		"aggression": 0.6,
 		"zoning": 0.4,
-		"weights": {"claw": 1.2, "low_claw": 1.0, "rising_claw": 0.6, "bite": 0.5},
-		"anti_air": ["rising_claw"],
-		"combos": [["HP", "HP"]]
+		"weights": {
+			"claw": 1.2,
+			"low_claw": 1.0,
+			"rising_claw": 0.6,
+			"bite": 0.5
+		},
+		"anti_air": [
+			"rising_claw"
+		],
+		"combos": [
+			[
+				"HP",
+				"HP"
+			]
+		]
+	},
+	"spirit_holder": "wren",
+	"observers": {
+		"default": {
+			"a": [
+				0.3,
+				0.08,
+				0.75
+			],
+			"b": [
+				0.05,
+				0.25,
+				0.65
+			]
+		},
+		"wren": {
+			"a": [
+				0.34,
+				0.06,
+				0.85
+			],
+			"b": [
+				0.03,
+				0.3,
+				0.75
+			]
+		},
+		"ashka": {
+			"a": [
+				0.85,
+				0.28,
+				0.05
+			],
+			"b": [
+				0.45,
+				0.05,
+				0.55
+			]
+		},
+		"gorm": {
+			"a": [
+				0.75,
+				0.45,
+				0.1
+			],
+			"b": [
+				0.3,
+				0.05,
+				0.25
+			]
+		},
+		"nix": {
+			"a": [
+				0.03,
+				0.45,
+				0.42
+			],
+			"b": [
+				0.02,
+				0.1,
+				0.4
+			]
+		},
+		"mirela": {
+			"a": [
+				0.65,
+				0.68,
+				0.82
+			],
+			"b": [
+				0.2,
+				0.12,
+				0.45
+			]
+		},
+		"bram": {
+			"a": [
+				0.1,
+				0.35,
+				0.9
+			],
+			"b": [
+				0.7,
+				0.55,
+				0.2
+			]
+		},
+		"grandmaster": {
+			"a": [
+				0.55,
+				0.52,
+				0.42
+			],
+			"b": [
+				0.25,
+				0.05,
+				0.3
+			]
+		}
 	}
 }

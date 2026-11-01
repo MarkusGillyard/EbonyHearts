@@ -141,7 +141,7 @@
    ],
    "source_radius_m": 1.0,
    "specular_scale": 0.25,
-   "note": "the slop lake glowing up onto the ledge's lip"
+   "note": "the lake glowing up onto the ledge's lip"
   },
   {
    "name": "lake_glow_2",
@@ -168,7 +168,7 @@
    ],
    "source_radius_m": 1.0,
    "specular_scale": 0.25,
-   "note": "the slop lake glowing up onto the ledge's lip"
+   "note": "the lake glowing up onto the ledge's lip"
   },
   {
    "name": "lake_glow_3",
@@ -195,7 +195,7 @@
    ],
    "source_radius_m": 1.0,
    "specular_scale": 0.25,
-   "note": "the slop lake glowing up onto the ledge's lip"
+   "note": "the lake glowing up onto the ledge's lip"
   },
   {
    "name": "lake_deep",
@@ -325,7 +325,7 @@
     "ripple": 0.02,
     "ripple_scale": 0.004
    },
-   "note": "the slop lake: slow churning noise with dark crusted patches, bubbles, pulses with the lake lights"
+   "note": "the lake: slow churning noise with dark crusted patches, bubbles, pulses with the lake lights"
   },
   {
    "material": "GLOW_crack",
@@ -335,7 +335,7 @@
     0.12
    ],
    "strength": 2.2,
-   "note": "slop glowing through cracks in the ledge (good candidates for decals)"
+   "note": "green glow through cracks in the ledge (good candidates for decals)"
   },
   {
    "material": "GLOW_lightning",
@@ -815,7 +815,7 @@
   },
   {
    "kind": "motes",
-   "note": "spores over the slop",
+   "note": "spores over the lake",
    "box_center": [
     0,
     9.0,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Turns motion capture (BVH) into Slopbat key poses, retimed onto a move's frame data.
+"""Turns motion capture (BVH) into Fragment key poses, retimed onto a move's frame data.
 
     python3 -I Tools/mocap/bvh_to_poses.py                 writes the files below from CLIPS
     python3 -I Tools/mocap/bvh_to_poses.py --inspect FILE  prints a take's contact frames

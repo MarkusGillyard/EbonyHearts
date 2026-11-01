@@ -4,7 +4,12 @@
 
 #include "Tests/SlopGmHarness.h"
 #include "AI/SlopAI.h"
+#include "Combat/SlopCoverage.h"
 #include "Core/SlopFlow.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Engine/SkeletalMesh.h"
+#include "Core/SlopGameInstance.h"
 #include "Core/SlopSave.h"
 #include "Serialization/JsonSerializer.h"
 
@@ -21,18 +26,21 @@ using namespace Slop::Test;
 
 #define SLOP_TEST(Name, Path) IMPLEMENT_SIMPLE_AUTOMATION_TEST(Name, "Slop." Path, EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::ProductFilter)
 
-SLOP_TEST(FSlopRosterSevenAndSecret, "Fighters.RosterOfSevenAndTheSecretGrandmaster")
-bool FSlopRosterSevenAndSecret::RunTest(const FString&)
+SLOP_TEST(FSlopRosterSixAndSecret, "Fighters.RosterOfSixTheSecretGrandmasterAndTwoBosses")
+bool FSlopRosterSixAndSecret::RunTest(const FString&)
 {
 	const TArray<FName>& R = FContent::Roster();
-	TestEqual("seven starting fighters", R.Num(), 7);
-	for (const TCHAR* Id : {TEXT("ashka"), TEXT("bram"), TEXT("gorm"), TEXT("hollis"), TEXT("mirela"), TEXT("nix"), TEXT("wren")})
+	TestEqual("six starting fighters", R.Num(), 6);
+	for (const TCHAR* Id : {TEXT("ashka"), TEXT("wren"), TEXT("gorm"), TEXT("nix"), TEXT("mirela"), TEXT("bram")})
 	{
 		TestTrue(FString::Printf(TEXT("%s starts selectable"), Id), R.Contains(FName(Id)) && Fighter(Id) != nullptr);
 	}
 	TestFalse("the Grandmaster is not a starting fighter", R.Contains(FName(TEXT("grandmaster"))));
 	TestTrue("the Grandmaster is the secret fighter", FContent::Secret().Contains(FName(TEXT("grandmaster"))) && Fighter(TEXT("grandmaster")));
-	TestTrue("the Ebony Heart Fragment (the Slopbat) is still the boss", Fighter(TEXT("slopbat")) && Fighter(TEXT("slopbat"))->bBoss);
+	TestTrue("the Ebony Heart Fragment is the final boss", Fighter(TEXT("slopbat")) && Fighter(TEXT("slopbat"))->bBoss);
+	TestFalse("Hollis cannot be picked", R.Contains(FName(TEXT("hollis"))) || USlopGameInstance::SelectOrder().Contains(FName(TEXT("hollis"))));
+	TestTrue("Hollis is kept, and fights as a boss", FContent::Special().Contains(FName(TEXT("hollis"))) && Fighter(TEXT("hollis")));
+	TestTrue("the Grandmaster keeps Hollis's shape", Fighter(TEXT("grandmaster")) && Fighter(TEXT("grandmaster"))->FormSources.Contains(FName(TEXT("hollis"))));
 	TestNull("Daxion is not in Ebony Hearts", Fighter(TEXT("daxion")));
 	TestEqual("no data errors", GetContent().Errors.Num(), 0);
 	return true;
@@ -133,6 +141,363 @@ bool FSlopGmNotEnoughQhi::RunTest(const FString&)
 	const FSimEvent* E = H.FormEvent(TEXT("refused"));
 	TestTrue("refused aloud, for want of Qhi", E && E->How == FName(TEXT("qhi")));
 	TestTrue("nothing paid", H.Gm().Qhi >= 49.9);
+	return true;
+}
+
+// Gorm Tallow to his sheet, a refinement: the Renderer at 2.12 m, the slowest of the six, his techniques kept, and
+// more grapples and strikes in the same sumo and catch wrestling.
+SLOP_TEST(FSlopGormSheet, "Fighters.Gorm.KeepsHisArtsAndGainsGrapples")
+bool FSlopGormSheet::RunTest(const FString&)
+{
+	const FFighterDef* Gorm = Fighter(TEXT("gorm"));
+	TestEqual("2.12 m", Gorm->Height, 2.12);
+	TestEqual("his title", Gorm->Title, FString(TEXT("The Renderer")));
+	for (const TCHAR* Id : {TEXT("vat_press"), TEXT("tallow_hide"), TEXT("rendering_charge"), TEXT("ground_slap"), TEXT("gorm_hammer"), TEXT("gorm_belly"), TEXT("rendered_down"),
+		TEXT("overarm_throw"), TEXT("double_wristlock"), TEXT("forearm_smash"), TEXT("gorm_headbutt")})
+	{
+		TestTrue(FString::Printf(TEXT("%s exists"), Id), Gorm->Move(Id) != nullptr);
+	}
+	TestTrue("the Forearm Smash is armoured", Gorm->Move(TEXT("forearm_smash"))->Armor.Y > Gorm->Move(TEXT("forearm_smash"))->Armor.X);
+	for (const FName Other : FContent::Roster())
+	{
+		if (Other != TEXT("gorm"))
+		{
+			TestTrue(FString::Printf(TEXT("slower than %s"), *Other.ToString()), Gorm->WalkF < GetContent().Fighter(Other)->WalkF);
+		}
+	}
+	// Each new technique lands in a real fight, and both fighters are back on their feet after it.
+	for (const TCHAR* Id : {TEXT("overarm_throw"), TEXT("double_wristlock"), TEXT("forearm_smash"), TEXT("gorm_headbutt")})
+	{
+		FSimHarness H(Gorm, Fighter(TEXT("bram")));
+		H.Place(0.8);
+		H.F(0).StartMove(*Gorm->Move(Id));
+		H.Idle(180);
+		TestTrue(FString::Printf(TEXT("%s lands"), Id), H.F(1).Health < 1000);
+		TestTrue(FString::Printf(TEXT("%s: both recover"), Id), H.F(0).IsActionable() && H.F(1).IsActionable());
+	}
+	FString Story;
+	FFileHelper::LoadFileToString(Story, *(FPaths::ProjectContentDir() / TEXT("Data/story.json")));
+	TestTrue("the Outer Gods arranged his arrest", Story.Contains(TEXT("saw to it that Captain Ketch arrested him")));
+	TestFalse("and nothing says Bram knew", Story.Contains(TEXT("Ketch knew")));
+	return true;
+}
+
+// Bram Ketch to his sheet: Officer Knuckles at 6'3", his moveset and his limits kept, and an outfit with his coat
+// off, the only way to see the tattoo on his right shoulder.
+SLOP_TEST(FSlopBramSheet, "Fighters.Bram.KeepsHisMovesAndHisTattooCanBeSeen")
+bool FSlopBramSheet::RunTest(const FString&)
+{
+	const FFighterDef* Bram = Fighter(TEXT("bram"));
+	TestEqual("6'3\"", Bram->Height, 1.91);
+	TestEqual("his title", Bram->Title, FString(TEXT("Officer Knuckles")));
+	for (const TCHAR* Id : {TEXT("bram_hook"), TEXT("bram_body"), TEXT("bram_drive"), TEXT("bull_rush"), TEXT("flare_high"), TEXT("flare_low"), TEXT("baton_trip"), TEXT("stand_down"), TEXT("bram_baton"), TEXT("lights_out")})
+	{
+		TestTrue(FString::Printf(TEXT("%s is kept"), Id), Bram->Move(Id) != nullptr);
+	}
+	TestTrue("his flares are still slow", Bram->Move(TEXT("flare_high"))->Startup == 13 && Bram->Move(TEXT("flare_low"))->Startup == 13);
+	USlopGameInstance* GI = NewObject<USlopGameInstance>();
+	TestEqual("two outfits", GI->OutfitsOf(TEXT("bram")).Num(), 2);
+	TestNotNull("his coat comes off", LoadObject<USkeletalMesh>(nullptr, *USlopGameInstance::MeshFor(FName(TEXT("bram_coat_off")))));
+	FString Story;
+	FFileHelper::LoadFileToString(Story, *(FPaths::ProjectContentDir() / TEXT("Data/story.json")));
+	TestTrue("he could not say which law", Story.Contains(TEXT("He could not say which law.")));
+	return true;
+}
+
+// Mirela Sorrow to her sheet, a refinement: the Keening Nun at 5'5", her signature moves and slow startups kept,
+// and she prays before a fight and after one.
+SLOP_TEST(FSlopMirelaSheet, "Fighters.Mirela.KeepsHerArtsAndPrays")
+bool FSlopMirelaSheet::RunTest(const FString&)
+{
+	const FFighterDef* Mirela = Fighter(TEXT("mirela"));
+	TestEqual("5'5\"", Mirela->Height, 1.65);
+	TestEqual("her blows keep the reach they were tuned for", Mirela->Move(TEXT("hp"))->Hitboxes[0].Rect.EndX(), 0.74 * 1.82 / 1.8);
+	TestEqual("her title", Mirela->Title, FString(TEXT("The Keening Nun")));
+	for (const TCHAR* Id : {TEXT("lament"), TEXT("keen"), TEXT("grave_float"), TEXT("veil_step"), TEXT("mirela_double"), TEXT("mirela_crescent"), TEXT("last_note")})
+	{
+		TestTrue(FString::Printf(TEXT("%s is kept"), Id), Mirela->Move(Id) != nullptr);
+	}
+	TestTrue("her voice is still slow to start", Mirela->Move(TEXT("lament"))->Startup >= 13 && Mirela->Move(TEXT("keen"))->Startup >= 14);
+	for (const FName State : {FName(TEXT("intro")), FName(TEXT("win"))})
+	{
+		const TArray<FAnimKey>* Keys = Mirela->StateAnims.Find(State);
+		TestTrue(State.ToString() + TEXT(": she prays"), Keys && Keys->Num() > 0);
+	}
+	FString Story;
+	FFileHelper::LoadFileToString(Story, *(FPaths::ProjectContentDir() / TEXT("Data/story.json")));
+	TestTrue("she has said what she thinks of the Outer Gods", Story.Contains(TEXT("uncouth and childish")));
+	return true;
+}
+
+// Ashka Rook to her sheet: Muay Thai and a crimson flame, and Wren's friend, so never her opponent in the story.
+SLOP_TEST(FSlopAshkaSheet, "Fighters.Ashka.HerSheetMovesExistAndHerFlameIsCrimson")
+bool FSlopAshkaSheet::RunTest(const FString&)
+{
+	const FFighterDef* Ashka = Fighter(TEXT("ashka"));
+	TestEqual("5'7\"", Ashka->Height, 1.70);
+	TestEqual("her style", Ashka->Style, FString(TEXT("Muay Thai & Flame Style")));
+	for (const TCHAR* Id : {TEXT("ember_shot"), TEXT("elbow_rush"), TEXT("wick_knee"), TEXT("ashka_teep"), TEXT("front_kick")})
+	{
+		TestTrue(FString::Printf(TEXT("%s can be reached"), Id), ReachableMoves(*Ashka).Contains(FName(Id)));
+	}
+	TestEqual("the flame's kind", Ashka->Move(TEXT("ember_shot"))->Projectile.Kind, FName(TEXT("lamplighter")));
+	FString Story;
+	FFileHelper::LoadFileToString(Story, *(FPaths::ProjectContentDir() / TEXT("Data/story.json")));
+	TestFalse("no answer to her people's disappearance, or an origin", Story.Contains(TEXT("Ninefathom")));
+	return true;
+}
+
+// Wren Ku to her sheet. Spirit Enhanced Strikes strengthen her blows and turn energy aside, then must be
+// earned back; her signature moves are in her list; her outfits are bodies of their own.
+SLOP_TEST(FSlopWrenSheet, "Fighters.Wren.SpiritStrikesHarderAndHerSheetMovesExist")
+bool FSlopWrenSheet::RunTest(const FString&)
+{
+	const FFighterDef* Wren = Fighter(TEXT("wren"));
+	TestEqual("her name", Wren->Name, FString(TEXT("Wren Ku")));
+	TestEqual("5'10\"", Wren->Height, 1.78);
+	for (const TCHAR* Id : {TEXT("hook_720"), TEXT("spinning_back_kick"), TEXT("turning_light"), TEXT("flying_cross"), TEXT("lifting_light"), TEXT("wren_backfist"), TEXT("spirit_strikes")})
+	{
+		TestTrue(FString::Printf(TEXT("%s can be reached"), Id), ReachableMoves(*Wren).Contains(FName(Id)));
+	}
+	for (const auto& KV : Wren->Moves)
+	{
+		TestFalse(KV.Key.ToString() + TEXT(" keeps no marsh-light"), KV.Value->Name.Contains(TEXT("Light")) || KV.Value->Name.Contains(TEXT("Wisp")) || KV.Value->Name.Contains(TEXT("Flicker")));
+	}
+	const auto Jab = [](bool bSpirit)
+	{
+		FGmMatch H(TEXT("ashka"), TEXT("wren"));
+		H.Place(0.8);
+		if (bSpirit)
+		{
+			H.F(0).Buff = TEXT("spirit");
+			H.F(0).BuffTicks = 300;
+			H.F(0).BuffHits = 999;
+		}
+		const int32 Was = H.F(1).Health;
+		H.Step(0, HP);
+		H.Idle(14);
+		return Was - H.F(1).Health;
+	};
+	const int32 Plain = Jab(false), Spirit = Jab(true);
+	TestTrue(FString::Printf(TEXT("the aura strikes harder: %d against %d"), Spirit, Plain), Spirit > Plain);
+	FGmMatch H(TEXT("ashka"), TEXT("wren"));
+	FFighter& W = H.F(0);
+	const FMoveDef* Strikes = Wren->Move(TEXT("spirit_strikes"));
+	TestTrue("she can call it", W.CanUse(*Strikes));
+	W.Buff = TEXT("spirit");
+	W.BuffTicks = 2;
+	W.BuffHits = 999;
+	TestFalse("not while it burns", W.CanUse(*Strikes));
+	H.Idle(4);
+	TestFalse("nor just after", W.CanUse(*Strikes));
+	H.Idle(490);
+	TestTrue("then again", W.CanUse(*Strikes));
+	for (const TCHAR* Body : {TEXT("wren_mma"), TEXT("wren_muay_thai"), TEXT("wren_gi"), TEXT("wren_uniform")})
+	{
+		TestNotNull(FString::Printf(TEXT("%s exists"), Body), LoadObject<USkeletalMesh>(nullptr, *USlopGameInstance::MeshFor(FName(Body))));
+	}
+	return true;
+}
+
+// Hollis as a boss: high defence, punishable combinations, and from half his health the Fragmented
+// Vessel, a long charge that kills outright unless it is broken, which leaves him open.
+SLOP_TEST(FSlopHollisGuardian, "Fighters.Hollis.VesselCanBeBrokenAndKillsIfNot")
+bool FSlopHollisGuardian::RunTest(const FString&)
+{
+	const auto Jab = [](bool bBoss)
+	{
+		FGmMatch H(TEXT("hollis"), TEXT("ashka"));
+		H.F(1).bGuardian = bBoss;
+		H.F(1).bNoVessel = true;
+		H.Place(0.8);
+		const int32 Was = H.F(1).Health;
+		H.Step(0, HP);
+		H.Idle(14);
+		return Was - H.F(1).Health;
+	};
+	const int32 Plain = Jab(false), Guarded = Jab(true);
+	TestTrue(FString::Printf(TEXT("high defence: %d against %d"), Guarded, Plain), Guarded > 0 && Guarded < Plain);
+	const FFighterDef* Def = Fighter(TEXT("hollis"));
+	const FFighterDef* Six = Fighter(TEXT("ashka"));
+	for (int32 Tower = 0; Tower < 3; ++Tower)
+	{
+		const double Lasts = FGameFlow::ServantHealth[Tower] / FFighter::GuardianDefence;
+		TestTrue("low health, in the fights he is in", FGameFlow::ServantHealth[Tower] <= Six->Health);
+		TestTrue("which his defence carries above the six", Lasts > Six->Health * 1.3);
+		TestTrue("and below the Fragment", Lasts < FGameFlow::BossHealth[Tower]);
+	}
+	for (const FName Last : {FName(TEXT("gs_execution")), FName(TEXT("anchor_fall")), FName(TEXT("reckoning4"))})
+	{
+		TestTrue(Last.ToString() + TEXT(" leaves a punish window"), Def->Move(Last) && Def->Move(Last)->Recovery >= 40);
+	}
+	{
+		FGmMatch H(TEXT("hollis"), TEXT("ashka"));
+		FFighter& Boss = H.F(1);
+		Boss.bGuardian = true;
+		Boss.Health = (int32)(Boss.MaxHealth() * 0.45);
+		H.Idle(3);
+		TestTrue("below half, the Vessel", Boss.bVessel);
+		H.Place(0.8);
+		Boss.NextCharge = 1;
+		H.Idle(3);
+		TestTrue("he charges", Boss.IsChargingVessel());
+		int32 Hits = 0;
+		for (; Hits < 12 && Boss.IsChargingVessel(); ++Hits)
+		{
+			H.F(0).Pos.X = Boss.Pos.X - 0.8;
+			H.Step(0, HK);
+			H.Idle(34);
+			TestEqual("he does not flinch", Boss.State, Boss.IsChargingVessel() ? EState::Move : EState::HitStun);
+		}
+		TestFalse("enough damage breaks it", Boss.IsChargingVessel());
+		TestTrue("in clear time", Hits <= 6);
+		TestTrue("and leaves him open", Boss.VentT > 0 || Boss.State == EState::HitStun);
+	}
+	{
+		FGmMatch H(TEXT("hollis"), TEXT("ashka"));
+		FFighter& Boss = H.F(1);
+		Boss.bGuardian = true;
+		Boss.bVessel = true;
+		Boss.NextCharge = 1;
+		H.Place(4.0);
+		for (int32 T = 0; T < 440; ++T)
+		{
+			H.Step(0, BL);
+		}
+		TestTrue("left alone it kills, guarded or not", H.F(0).Health <= 0);
+	}
+	TestFalse("the Grandmaster's shape of him cannot charge it", ReachableMoves(*Def).Contains(FName(TEXT("fragmented_vessel"))));
+	return true;
+}
+
+// Nix Hollow from his sheet, and from Markus: the fastest fighter, with the easiest combos, and for that
+// the lowest damage of anyone who can be picked.
+SLOP_TEST(FSlopNixFastestWeakest, "Fighters.Nix.FastestAndHitsLightest")
+bool FSlopNixFastestWeakest::RunTest(const FString&)
+{
+	const FFighterDef* Nix = Fighter(TEXT("nix"));
+	TestEqual("6'4\"", Nix->Height, 1.93);
+	TArray<FName> Others = FContent::Roster();
+	Others.Append(FContent::Secret());
+	Others.Remove(FName(TEXT("nix")));
+	for (const FName& Id : Others)
+	{
+		const FFighterDef* O = GetContent().Fighter(Id);
+		TestTrue(Id.ToString() + TEXT(" walks slower"), Nix->WalkF > O->WalkF && Nix->WalkB > O->WalkB);
+		TestTrue(Id.ToString() + TEXT(" runs slower"), Nix->RunSpeed > O->RunSpeed);
+		for (const TCHAR* B : {TEXT("lp"), TEXT("hp"), TEXT("lk"), TEXT("hk")})
+		{
+			TestTrue(FString::Printf(TEXT("%s's %s starts no sooner"), *Id.ToString(), B), Nix->Move(B)->Startup <= O->Move(B)->Startup);
+		}
+		for (const TCHAR* B : {TEXT("lp"), TEXT("lp2"), TEXT("hp"), TEXT("hp2"), TEXT("lk"), TEXT("hk"), TEXT("crouch_lp"), TEXT("crouch_lk"), TEXT("crouch_hk"), TEXT("uppercut"), TEXT("roundhouse"), TEXT("sweep")})
+		{
+			TestTrue(FString::Printf(TEXT("%s's %s hits harder"), *Id.ToString(), B), Nix->Move(B)->Damage * Nix->Power < O->Move(B)->Damage * O->Power);
+		}
+	}
+	TestTrue("every button goes on by itself", Nix->Move(TEXT("lp2")) && Nix->Move(TEXT("hp2")) && Nix->Move(TEXT("hp2"))->Chain.Num() == 2);
+	return true;
+}
+
+// Hollis in whole boss matches against the six, as the game sets him up: his sheet's low health must
+// leave a fight. -SlopSeeds=<n> for a closer look.
+SLOP_TEST(FSlopHollisHolds, "AI.HollisIsAFightForTheSix")
+bool FSlopHollisHolds::RunTest(const FString&)
+{
+	int32 Seeds = 4;
+	FParse::Value(FCommandLine::Get(), TEXT("SlopSeeds="), Seeds);
+	for (int32 Level = 0; Level < 3; ++Level)
+	{
+		int32 Won = 0, Played = 0, Vessels = 0;
+		int64 Ticks = 0;
+		double Left = 0.0;
+		FString Line;
+		for (const FName& Who : FContent::Roster())
+		{
+			int32 W = 0, N = 0;
+			for (int32 Seed = 0; Seed < Seeds; ++Seed)
+			{
+				FFightSim Sim;
+				Sim.bIntro = false;
+				Sim.RoundsToWin = 1;
+				Sim.Setup(GetContent().Fighter(Who), Fighter(TEXT("hollis")));
+				Sim.Fighters[1].bGuardian = true;
+				Sim.Fighters[1].HealthMax = Sim.Fighters[1].Health = FGameFlow::ServantHealth[Level];
+				FCpuBrain Player(Sim, 0, Level, 1000 + Seed * 13 + Level);
+				FGuardianBrain Boss(Sim, 1, Level);
+				bool bVessel = false;
+				int32 T = 0;
+				for (; T < 60 * 60 * 6 && Sim.Phase != EPhase::MatchEnd; ++T)
+				{
+					FPadState Pads[2] = {Player.Think(), Boss.Think()};
+					Sim.Step(Pads);
+					bVessel |= Sim.Fighters[1].bVessel;
+				}
+				if (Sim.MatchWinner >= 0)
+				{
+					++N;
+					W += Sim.MatchWinner == 0 ? 1 : 0;
+					Vessels += bVessel ? 1 : 0;
+					Ticks += T;
+					Left += double(Sim.Fighters[0].Health) / Sim.Fighters[0].MaxHealth();
+				}
+			}
+			Won += W;
+			Played += N;
+			Line += FString::Printf(TEXT("%s %d/%d  "), *Who.ToString(), W, N);
+		}
+		const double Rate = Played > 0 ? double(Won) / Played : 0.0;
+		UE_LOG(LogTemp, Display, TEXT("Hollis level %d: the six win %.0f%%, %.0f s a match, %.0f%% health left, Vessel in %d of %d  (%s)"), Level, Rate * 100.0,
+			Played > 0 ? double(Ticks) / Played / 60.0 : 0.0, Played > 0 ? Left / Played * 100.0 : 0.0, Vessels, Played, *Line);
+		TestTrue(FString::Printf(TEXT("level %d finished its matches"), Level), Played > 0);
+		TestTrue(FString::Printf(TEXT("level %d: he can be beaten"), Level), Won > 0);
+		TestTrue(FString::Printf(TEXT("level %d: he reaches his second phase"), Level), Vessels > 0);
+	}
+	return true;
+}
+
+// The Fragment's Ebony Energy shows itself before it can hurt, so there is always a chance to move; its
+// forms come with its wounds; and it is vulnerable to the Fighting Spirit of Humanity, Wren's.
+SLOP_TEST(FSlopFragmentRules, "Fighters.Fragment.EnergyWarnsFormsFlowAndWrenHurtsItMost")
+bool FSlopFragmentRules::RunTest(const FString&)
+{
+	const FFighterDef* Fragment = Fighter(TEXT("slopbat"));
+	for (const FName Id : {FName(TEXT("ebony_seal")), FName(TEXT("ebony_beam")), FName(TEXT("storm_shroud"))})
+	{
+		TestTrue(Id.ToString() + TEXT(" warns for over half a second"), Fragment->Move(Id) && Fragment->Move(Id)->Projectile.Arm >= 36);
+	}
+	{
+		FGmMatch H(TEXT("slopbat"), TEXT("ashka"));
+		H.Place(3.0);
+		FFighter& Boss = H.F(1);
+		const int32 Was = H.F(0).Health;
+		H.Sim.SpawnProjectile(Boss, *Fragment->Move(TEXT("ebony_seal")));
+		H.Idle(35);
+		TestEqual("the seal cannot hurt while it warns", H.F(0).Health, Was);
+		H.Idle(12);
+		TestTrue("then it does", H.F(0).Health < Was);
+	}
+	{
+		FGmMatch H(TEXT("slopbat"), TEXT("ashka"));
+		FFighter& Boss = H.F(1);
+		Boss.Health = (int32)(Boss.MaxHealth() * 0.5);
+		H.Idle(2);
+		TestEqual("wounded, it flows into its second form", Boss.BossForm, 1);
+		Boss.Health = (int32)(Boss.MaxHealth() * 0.2);
+		H.Idle(2);
+		TestEqual("and its third", Boss.BossForm, 2);
+		TestTrue("untouchable as it flows", Boss.IsInvulnerable());
+	}
+	auto Jab = [&](const TCHAR* Who)
+	{
+		FGmMatch H(TEXT("slopbat"), Who);
+		H.Place(0.9);
+		const int32 Was = H.F(1).Health;
+		H.Step(0, HP);
+		H.Idle(12);
+		return Was - H.F(1).Health;
+	};
+	const int32 Ashka = Jab(TEXT("ashka")), Wren = Jab(TEXT("wren"));
+	TestTrue(FString::Printf(TEXT("the same jab: Ashka %d, Wren %d"), Ashka, Wren), Wren > Ashka && Ashka > 0);
 	return true;
 }
 
@@ -506,7 +871,7 @@ bool FSlopSecretChallenge::RunTest(const FString&)
 	while (F.ArcadeAdvance(false, 0.0))
 	{
 	}
-	TestEqual("at the Slopbat, the run complete", F.CurrentRung()->Kind, FName(TEXT("boss")));
+	TestEqual("at the Fragment, the run complete", F.CurrentRung()->Kind, FName(TEXT("boss")));
 	TestTrue("earned without a continue", F.SecretEarned());
 	F.AddSecretRung();
 	TestTrue("the old master is one more rung", F.OnSecretRung() && F.Config.P2 == FName(TEXT("grandmaster")));
@@ -580,8 +945,10 @@ bool FSlopGmCpuFair::RunTest(const FString&)
 					{
 						++Borrows;
 						// (A tick's recovery may fall between the last reading and the payment.)
-						TestTrue(FString::Printf(TEXT("borrowed with the price in hand (%.1f before)"), Prev), Prev >= G.QhiRules().ShapeshiftCost() - 0.1);
-						TestTrue("and paid it", G.Qhi <= Prev - G.QhiRules().ShapeshiftCost() + 0.1);
+						// A copy of the opponent is the dearest; a shape from memory costs less.
+						const double Price = E.How == TEXT("copied") ? G.QhiRules().ShapeshiftCost() : 30.0;
+						TestTrue(FString::Printf(TEXT("borrowed with the price in hand (%.1f before)"), Prev), Prev >= Price - 0.5);
+						TestTrue("and paid it", G.Qhi <= Prev - Price + 0.1);
 						TestEqual("in the fight only", H.Sim.Phase, EPhase::Fight);
 					}
 					Breaks += E.Kind == TEXT("broken") ? 1 : 0;

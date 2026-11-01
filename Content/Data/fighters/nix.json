@@ -1,15 +1,19 @@
 {
 	"id": "nix",
 	"name": "Nix Hollow",
-	"title": "Hand of the Drowned",
+	"title": "Shinobi of the Code Sea",
 	"pronoun": "him",
 	"style": "Ninjutsu and kusarigama",
 	"stats": {
-		"height": 1.78,
+		"height": 1.93,
+		"push_w": 0.2769,
+		"throw_range": 0.9394,
 		"health": 1000,
-		"walk_f": 2.7,
-		"walk_b": 2.3,
-		"run_speed": 5.8
+		"walk_f": 2.8,
+		"walk_b": 2.4,
+		"run_speed": 6.0,
+		"power": 0.88,
+		"arcana": 0.88
 	},
 	"motion": {
 		"bounce": 0.4,
@@ -31,34 +35,73 @@
 					"move": "nix_slash",
 					"window": [
 						4,
-						14
+						20
 					],
-					"cost": 12
+					"cost": 4
 				},
 				{
 					"input": "HP",
-					"move": "hp",
+					"move": "nix_slash",
 					"window": [
 						4,
-						14
+						20
 					],
-					"cost": 6
+					"cost": 4
 				}
 			]
 		},
 		"hk": {
-			"damage": 70
+			"damage": 70,
+			"startup": 8,
+			"chain": [
+				{
+					"input": "HK",
+					"move": "nix_spin",
+					"window": [
+						8,
+						24
+					],
+					"cost": 4
+				}
+			]
 		},
 		"lk": {
+			"startup": 6,
 			"chain": [
 				{
 					"input": "HK",
 					"move": "nix_spin",
 					"window": [
 						6,
-						16
+						22
 					],
-					"cost": 12
+					"cost": 4
+				},
+				{
+					"input": "LK",
+					"move": "nix_low",
+					"window": [
+						6,
+						22
+					],
+					"cost": 4
+				}
+			]
+		},
+		"lp": {
+			"startup": 4
+		},
+		"lp2": {
+			"startup": 4,
+			"chain": [
+				{
+					"input": "LP",
+					"move": "nix_kunai",
+					"window": [
+						4,
+						20
+					],
+					"cost": 4
 				}
 			]
 		}
@@ -116,9 +159,18 @@
 					"move": "nix_low",
 					"window": [
 						6,
-						17
+						22
 					],
-					"cost": 12
+					"cost": 4
+				},
+				{
+					"input": "HP",
+					"move": "code_sea_cut",
+					"window": [
+						6,
+						22
+					],
+					"cost": 4
 				}
 			],
 			"cancel": [
@@ -242,9 +294,9 @@
 					"move": "nix_axe",
 					"window": [
 						8,
-						19
+						24
 					],
-					"cost": 12
+					"cost": 4
 				}
 			],
 			"sfx": {
@@ -439,7 +491,7 @@
 			"effects": {
 				"teleport": {
 					"frame": 22,
-					"dist": 0.95
+					"dist": 0.876
 				},
 				"sink": [
 					4,
@@ -496,7 +548,7 @@
 				]
 			},
 			"kind": "special",
-			"hitstun": 52,
+			"hitstun": 46,
 			"blockstun": 14,
 			"effect": "pull",
 			"chip": 8,
@@ -610,6 +662,425 @@
 					]
 				]
 			}
+		},
+		"nix_kunai": {
+			"name": "Hidden Weapon: kunai",
+			"startup": 6,
+			"active": 3,
+			"recovery": 12,
+			"level": "mid",
+			"damage": 35,
+			"hitboxes": [
+				{
+					"rect": [
+						0.25,
+						0.9,
+						0.72,
+						0.5
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						3,
+						"nix_kunai_load",
+						"out"
+					],
+					[
+						6,
+						"nix_kunai_hit",
+						"snap"
+					],
+					[
+						9,
+						"nix_kunai_hit",
+						"linear"
+					],
+					[
+						21,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"kind": "chain",
+			"hitstun": 20,
+			"blockstun": 11,
+			"push_hit": 0.2,
+			"chain": [
+				{
+					"input": "LP",
+					"move": "nix_shuriken",
+					"window": [
+						6,
+						20
+					],
+					"cost": 4
+				}
+			],
+			"sfx": {
+				"swing": "light",
+				"hit": "blade"
+			}
+		},
+		"nix_shuriken": {
+			"name": "Hidden Weapon: shuriken",
+			"kind": "chain",
+			"startup": 8,
+			"active": 0,
+			"recovery": 16,
+			"level": "none",
+			"projectile": {
+				"frame": 8,
+				"kind": "shuriken",
+				"offset": [
+					0.5,
+					1.25
+				],
+				"speed": 14.0,
+				"size": [
+					0.28,
+					0.28
+				],
+				"life": 26,
+				"level": "mid",
+				"damage": 40,
+				"chip": 5,
+				"hitstun": 24,
+				"blockstun": 12
+			},
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						4,
+						"nix_kunai_load",
+						"out"
+					],
+					[
+						8,
+						"nix_shuriken_throw",
+						"snap"
+					],
+					[
+						14,
+						"nix_shuriken_throw",
+						"linear"
+					],
+					[
+						24,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"tags": [
+				"projectile"
+			],
+			"sfx": {
+				"swing": "light",
+				"hit": "blade"
+			}
+		},
+		"code_sea_draw": {
+			"name": "Code Sea",
+			"kind": "special",
+			"startup": 12,
+			"active": 3,
+			"recovery": 20,
+			"level": "mid",
+			"damage": 65,
+			"hitboxes": [
+				{
+					"rect": [
+						0.3,
+						0.85,
+						1.0,
+						0.6
+					]
+				}
+			],
+			"form": "form_code_sea",
+			"form_hand": "l",
+			"motion": [
+				[
+					10,
+					0.9
+				]
+			],
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						8,
+						"nix_draw_load",
+						"out"
+					],
+					[
+						12,
+						"nix_draw_hit",
+						"snap"
+					],
+					[
+						15,
+						"nix_draw_hit",
+						"linear"
+					],
+					[
+						35,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 24,
+			"blockstun": 13,
+			"chip": 8,
+			"chain": [
+				{
+					"input": "HP",
+					"move": "code_sea_cut",
+					"window": [
+						12,
+						30
+					],
+					"cost": 4
+				}
+			],
+			"sfx": {
+				"swing": "heavy",
+				"hit": "blade"
+			}
+		},
+		"code_sea_cut": {
+			"name": "Code Sea: cut",
+			"kind": "chain",
+			"startup": 7,
+			"active": 3,
+			"recovery": 14,
+			"level": "mid",
+			"damage": 45,
+			"hitboxes": [
+				{
+					"rect": [
+						0.3,
+						0.6,
+						1.0,
+						0.55
+					]
+				}
+			],
+			"form": "form_code_sea",
+			"form_hand": "l",
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						4,
+						"nix_draw_load",
+						"out"
+					],
+					[
+						7,
+						"nix_cut_low",
+						"snap"
+					],
+					[
+						10,
+						"nix_cut_low",
+						"linear"
+					],
+					[
+						24,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 22,
+			"blockstun": 12,
+			"push_hit": 0.2,
+			"chain": [
+				{
+					"input": "HP",
+					"move": "code_sea_rise",
+					"window": [
+						7,
+						22
+					],
+					"cost": 4
+				}
+			],
+			"sfx": {
+				"swing": "medium",
+				"hit": "blade"
+			}
+		},
+		"code_sea_rise": {
+			"name": "Code Sea: rising cut",
+			"kind": "chain",
+			"startup": 8,
+			"active": 3,
+			"recovery": 20,
+			"level": "mid",
+			"damage": 60,
+			"hitboxes": [
+				{
+					"rect": [
+						0.25,
+						0.9,
+						0.85,
+						1.0
+					]
+				}
+			],
+			"form": "form_code_sea",
+			"form_hand": "l",
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						4,
+						"nix_cut_low",
+						"out"
+					],
+					[
+						8,
+						"nix_cut_high",
+						"snap"
+					],
+					[
+						11,
+						"nix_cut_high",
+						"linear"
+					],
+					[
+						31,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 24,
+			"blockstun": 13,
+			"effect": "launch",
+			"launch": [
+				0.8,
+				6.5
+			],
+			"juggle_cost": 2,
+			"hitstop": 8,
+			"sfx": {
+				"swing": "heavy",
+				"hit": "blade"
+			}
+		},
+		"code_sea_hypnosis": {
+			"name": "Code Sea: Hypnosis",
+			"magic": 1.0,
+			"kind": "special",
+			"startup": 18,
+			"active": 8,
+			"recovery": 26,
+			"level": "mid",
+			"damage": 30,
+			"hitboxes": [
+				{
+					"rect": [
+						0.35,
+						0.8,
+						1.6,
+						1.0
+					]
+				}
+			],
+			"form": "form_code_sea",
+			"form_hand": "l",
+			"anim": {
+				"tip": "hand_l",
+				"keys": [
+					[
+						10,
+						"nix_draw_load",
+						"out"
+					],
+					[
+						18,
+						"nix_hypno",
+						"inout"
+					],
+					[
+						26,
+						"nix_hypno",
+						"linear"
+					],
+					[
+						52,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 64,
+			"blockstun": 14,
+			"effect": "daze",
+			"chip": 4,
+			"tags": [
+				"far"
+			],
+			"sfx": {
+				"swing": "sink"
+			}
+		},
+		"code_sea_illusion": {
+			"name": "Code Sea: Illusion",
+			"magic": 1.0,
+			"kind": "special",
+			"startup": 1,
+			"active": 0,
+			"recovery": 0,
+			"total": 32,
+			"level": "none",
+			"anim": {
+				"tip": "prop",
+				"keys": [
+					[
+						6,
+						"nix_sink",
+						"in"
+					],
+					[
+						18,
+						"nix_sink",
+						"linear"
+					],
+					[
+						30,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"props": {
+				"feint": [
+					20,
+					30
+				]
+			},
+			"effects": {
+				"sink": [
+					4,
+					18
+				]
+			},
+			"tags": [
+				"feint"
+			],
+			"sfx": {
+				"swing": "sink"
+			}
 		}
 	},
 	"commands": [
@@ -624,6 +1095,18 @@
 		[
 			"B,B+HP",
 			"undertow"
+		],
+		[
+			"D,F+HP",
+			"code_sea_draw"
+		],
+		[
+			"D,F+LP",
+			"code_sea_hypnosis"
+		],
+		[
+			"D,D+LK",
+			"code_sea_illusion"
 		]
 	],
 	"air_commands": [
@@ -655,6 +1138,19 @@
 				"LK",
 				"HK",
 				"HK"
+			],
+			[
+				"HP",
+				"HP",
+				"HP",
+				"HP",
+				"HP"
+			],
+			[
+				"LP",
+				"LP",
+				"LP",
+				"LP"
 			]
 		],
 		"weights": {}

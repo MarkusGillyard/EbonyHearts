@@ -7,13 +7,14 @@ evidence behind every claim here.
 
 | Area | State |
 |---|---|
-| Source | `~/Documents/Unreal Projects/MortalSlopbat`, branch `ue5` (2.7.0 merged from `ue5-grandmaster-wren`); pushed to the private `MarkusGillyard/Slopbat` as branch `ue5` (its own history; `main` untouched). The Godot original at `~/Documents/Mortal Slopbat` is unchanged. |
+| Source | `~/Documents/Unreal Projects/MortalSlopbat`, branch `ue5`, public as the default branch of `MarkusGillyard/EbonyHearts` (`main` there is the Godot original, version 1.1.0, unchanged at `~/Documents/Mortal Slopbat`). |
 | Engine | Unreal Engine 5.8.4 at `/media/cinqic/Cinqic Storage/UnrealEngine/UE_5.8.4`; Vulkan SM6; Linux x86_64. |
-| Game | Ebony Hearts (formerly Mortal Slopbat), complete: eight fighters (seven to start, the Grandmaster unlocked by a secret challenge) and the Ebony Heart Fragment in the Slopbat's shape; four stages; Arcade, Survival, Versus, Versus CPU, Training, Tutorial, Trials, Extras, Settings; saves and settings; controllers and keyboard. |
-| Art | All eight fighters built from CC0 MakeHuman bodies with scripted costumes (`Tools/blender`); four stage sets built in Blender (`Tools/blender/stages`); CC0 surfaces, props, skies and sounds. |
+| Game | Ebony Hearts 2.17.0, complete: six starters, the Grandmaster unlocked by a secret challenge, Hollis Fathom and the Ebony Heart Fragment as bosses; six stages; Story, Arcade, Survival, Versus, Versus CPU, Training, Tutorial, Trials, Extras, Settings; saves and settings; controllers and keyboard. |
+| Art | Every fighter built from CC0 MakeHuman bodies with scripted costumes (`Tools/blender`), the Fragment by `Tools/blender/build_fragment.py`; six stage sets built in Blender (`Tools/blender/stages`); CC0 surfaces, props, skies and sounds. |
 | Tests | Automation tests (`run_tests`), scripted flows for every mode (`Tools/playtest`), unattended packaged sessions (`Tools/perf/soak.sh`). |
 | Combat feel | 2.2.0 applies the presentation changes ranked by the study in `Docs/Martial-arts.md` (strikes, hit-stop, reactions, styles, sound) and one rule change (counter-hit freeze on the victim); frame data otherwise unchanged. 2.3.0 to 2.5.0 bring in motion capture: strikes, footwork, the block, Daxion's evade, intros and wins. |
-| Package | `EbonyHearts-2.7.3-linux-x86_64.tar.gz` (522 MiB, SHA-256 `296d9ec58d8b90238ba95f14871e973e67e6baa6a999a59ca228b49c2927d5ac`) in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`, Shipping build of 2.7.2 (commit `a1c23c7`; its `VERSION.txt` says `d35140b`, the same content before a local history split). Unpack and run `./EbonyHearts.sh`. Checked unpacked from the archive: checksums, then Gorm against Mirela on the real display at 82.5 fps, no hitches, 1.56 GB. Earlier archives are kept beside it. If the engine path is missing after a reboot, the drive is unmounted: `udisksctl mount -b /dev/sda1`. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
+| Package | `EbonyHearts-2.17.0-linux-x86_64.tar.gz` and its checksum, on the repository's Releases page as `v2.17.0`; `Docs/Validation.md` has the record. Local copies are in `/media/cinqic/Cinqic Storage/UnrealEngine/Builds/MortalSlopbat/release/`. Do not use the 2.14.2 archive there (its Hollis is wrong; `Docs/Validation.md`). Unpack and run `./EbonyHearts.sh`. If the engine path is missing after a reboot, the drive is unmounted: `udisksctl mount -b /dev/sda1`. Rebuild with `package_linux Shipping` then `Tools/make_release.sh Shipping`. |
+| Interface | Rebuilt in 2.16.0 on Markus's title card: `Docs/UI.md` is the design system and how to change it, `Docs/Evidence/UI-2.16.0` the before and after. |
 | Saves | Markus's own settings and progress from playing 2.1.0 are in `~/.local/share/MortalSlopbat/UE5/` (settings version 1: its default cap of 60 becomes Match the display when 2.2.0 loads it). Test runs used separate profiles, cleared afterwards. The Godot game's own files in `~/.local/share/MortalSlopbat/` are untouched. |
 
 ## Picking it up
@@ -44,15 +45,15 @@ with the owner's visual directions: the Grandmaster inspired by Cary-Hiroyuki Ta
 Valentina Shevchenko and Ronda Rousey), the rename to **Ebony Hearts**, and the continuity and
 Grandmaster expansion
 (`~/Documents/Ebony_Hearts_Claude_Opus_Continuity_Grandmaster_Expansion_Directive_2026-10-29.md`).
-`Docs/Design.md` has the canon and every rule; `Docs/Architecture.md` how shapes, the form library,
+`Docs/Design.md` has every rule; `Docs/Architecture.md` how shapes, the form library,
 kills, coverage and the CPU's telemetry work in code; `Docs/Assets.md` the likeness question and
 the archive.
 
 - **The game and its canon.** Ebony Hearts: the Ebony Heart, lost exactly five hundred years; the
-  bored Outer Gods' tournament for one worthy mortal; a Fragment of the Heart in the Slopbat's shape
+  bored Outer Gods' tournament for one worthy mortal; a Fragment of the Heart
   as the final boss ("Ebony Heart Fragment" on its bar). Ashka is Pure Good, the Grandmaster
-  Neutral; the protagonist (Ashka or Wren), the others' alignments and Wren's and the
-  Grandmaster's motives are undecided and stated nowhere. Names are **Wren** and **Grandmaster**.
+  Neutral; Wren is the story's protagonist;
+  the others' alignments and Wren's and the Grandmaster's motives are undecided and stated nowhere. Names are **Wren** and **Grandmaster**.
   The project, module, executable inside the package and save folder keep the old name; the
   release archive and its launcher are `EbonyHearts`.
 - **Wren** (`wren.json`): the seventh starting fighter, the All-Rounder; unchanged by the
@@ -91,15 +92,42 @@ the archive.
 - **Tuning.** Every number is data: `qhi` in `grandmaster.json` (the 50% copy price is fixed in
   code, `FQhiRules::ShapeshiftShare`, as the owner set it), `forms` for the library's prices,
   `shape_upkeep` on a fighter (the Fragment's 2), `stats` for defences and power, `ai.qhi` for his
-  CPU.
+  CPU. `stats.height` also sizes the shared basic moves; `stats.strike_height` holds them at another
+  height when a sheet resizes a body (Mirela's 1.82 m blows on her 1.65 m frame; `Docs/Validation.md`, 2.14.0).
 - **Open questions for Markus.** Likeness clearance for both new fighters before any commercial
   release (`Docs/Assets.md`). The six original fighters' bios and endings still speak of asking the
-  Slopbat for something (the original's text, left as it is under the new canon). Wren and the
+  Fragment for something (the original's text, left as it is under the new canon). Wren and the
   Grandmaster have no rival (none decided), so their towers have no rival rung. Heart Stop is
   rare in CPU hands (its combos seldom reach five hits); a player can reach it (the trial). The
   balance numbers are CPU against CPU only; nobody has played the expansion yet.
 
 ## Open
+
+- **2.17.0 (31 October 2026), his 4K TV, every kind of speaker, a controller's own buttons (Markus's orders).** The game moves to a chosen display and goes back
+  by itself, holds 60 at 4K on his Hisense 58R6+, and has a screen margin. Sound takes a clean stereo mix below four channels and a surround mix from four up;
+  `Docs/Architecture.md`, "Sound output". `Settings > Controls > Button prompts`: Automatic, PlayStation, Xbox or PC. The top difficulty reads Grandmaster; the code
+  and older records keep `Master`. Open: nobody has heard the surround mix on real speakers; his TV takes stereo PCM only, so surround needs a receiver or soundbar that
+  takes multichannel PCM from the PC; `Docs/Validation.md` has the rest. Dynamic resolution stays at the 45% floor with about 3 ms spare; why is not known.
+
+- **2.16.1 (31 October 2026), the retired names (Markus's order).** The finisher is **Hearted**. "Mortal Slopbat", "Slopbat"
+  and "slop" no longer reach the player: the game is Ebony Hearts, the old boss is the Fragment, and "slop" as a substance
+  was reworded without adding lore. `Slop.Content.NoRetiredNamesReachThePlayer` keeps it so. What keeps the old names on
+  purpose is listed in `Docs/Architecture.md`, "Names". `Slopperfall` is Markus's other game and is not one of them.
+
+- **2.16.0 (31 October 2026), the interface overhaul, built and validated but not yet played by hand.** Every screen
+  and the HUD are on one design system from the title card, a hall stands behind the menus, and the face-off is now
+  staged on the real stage with the real fighters, flowing straight into round one. Combat rules, AI, saves, unlocks
+  and canon are unchanged. What was not verified is at the end
+  of `Docs/Validation.md`: chiefly audio by ear, physical pads, and full screen on his 3440 x 1440 display. A Short pre-fight intro is in
+  Settings > Comfort if the full one feels long over an arcade ladder.
+
+- **2.15.0 (31 October 2026), every character rebuilt and checked in the game.** Six starters, the
+  Grandmaster secret and rebuilt, Hollis and the Fragment as bosses, Wren Ku with five outfits, Ashka Rook,
+  Mirela Sorrow, Bram Ketch, Gorm Tallow and Nix Hollow, and Wren's Story mode. Still to do: a human opinion
+  on all of it; CPU balance among the six (`Docs/Validation.md`, 2.15.0: Bram leads
+  at Warrior and Master, Mirela at Novice; Nix is last at Novice, Wren at Warrior, Gorm at Master). Hollis's boss numbers have only met CPU fighters. His health is
+  `FGameFlow::ServantHealth`, not his data's `health`. In a fight Ashka's lit tattoo shows only as a sliver past her arm
+  (`Docs/Validation.md`, 2.14.2 and 2.14.3).
 
 - **2.7.1 to 2.7.3, from Markus's play (30 October 2026).** Done: raised feet no longer twist about the shin
   (every raised foot on every fighter had its ankle wrung to a thin point: the mesh rig gave the
@@ -153,7 +181,7 @@ the archive.
   foot, elbow, knee or the head within 12 cm of its hitbox on its first active frame; the crouching
   head now sits within 15 cm of the crouch hurtbox (it stood 25-29 cm above, so high attacks passed
   through it). Still off, and left because the boxes are rules: standing, Gorm's sumo stance, Nix,
-  Mirela and the Slopbat sit 16-39 cm under a hurtbox drawn for upright fighters, so a high attack
+  Mirela and the Fragment sit 16-39 cm under a hurtbox drawn for upright fighters, so a high attack
   passing just over those heads still hits.
 - **Bodies against the floor and each other (2.5.3 tests).** Knocked down, the spine now rests
   9-11 cm up (it floated at 15-18); thrown, the two bodies' spines and heads stay 11 cm or more
@@ -192,10 +220,10 @@ the archive.
   advantages are now a frame lower than the original's, matching what is measured.
 - **Realism of the art.** Skin has subsurface scattering and sweat, cloth has folds and wear, hair
   is matte (`M_Character`, `M_CharacterSkin`); standing water ripples faintly so reflections waver,
-  the Roost's slop lake is a lit liquid over its glow, and contact shadows ground feet and hands
+  the Roost's glowing lake is a lit liquid over its glow, and contact shadows ground feet and hands
   (`M_Water`, `ASlopArena`). The meshes and textures are the original CC0 builds. Real hair
   (grooms), cloth simulation and new props are not done.
-- **The Slopbat after Markus's play (2.5.1).** He found it spammy, with too many unblockables: tar
+- **The Fragment after Markus's play (2.5.1).** He found it spammy, with too many unblockables: tar
   and wind now wait between uses, and the bite can be broken, comes slower and less often. The Storm
   Shroud is still unblockable (telegraphed again since 2.5.5, broken by a blow); if it still feels
   unfair in play, the change is to make it blockable with heavy chip. Not yet played since.
@@ -210,7 +238,7 @@ the archive.
   speed unchanged, as the study advised for leg damage. `-SlopMarks=0.8` (development) starts a
   match with both fighters marked, to look at it.
 - **Markus's playthrough of 2.6.1 (2.6.2).** He cleared the Easy tower as Ashka in four
-  minutes, the Slopbat flawless in 24 s, on an Elbow Rush loop: it cancelled into itself inside
+  minutes, the Fragment flawless in 24 s, on an Elbow Rush loop: it cancelled into itself inside
   its own hitstun (29 hits for all of Nix's health). Closed, with Mirela's Keen dazing into
   itself, and tested for every special (`Docs/Design.md`, "Loops closed"). He wants that string
   on another fighter: since 2.6.7 it is Bram's Prize Ring Drive (forward, forward + high
@@ -220,7 +248,7 @@ the archive.
   button"), and a back there quit the game. Two 29-30 ms frames mid-fight had the game, render
   and GPU all at their usual times, so the stall was outside the game. The session's frame
   record is `Saved/Perf/play-2.6.1-markus/`. Not yet played since: the Easy tower and the
-  Slopbat without the loop.
+  Fragment without the loop.
   The arcade ending again shows the champion in the light beside their story (the original's
   layout; the port had shown the text alone); `-SlopEnding=<fighter>` (development) opens one.
 - **The menus against the original (2.6.3).** A line-by-line comparison of the original's UI
@@ -228,7 +256,7 @@ the archive.
   and your own bar against the stranger, the title's premise lines, erasing progress, the
   records' clears, best times, trials and unlocks, every ending listed with how to earn it, the
   "???" clue, real-fights-only stats with Versus wins counted, Quit Arcade/Survival, the paused
-  move list switching fighter, the stage Sloptality, running and direction in the move list,
+  move list switching fighter, the stage Hearted, running and direction in the move list,
   Confirm on the device screen, the locked sound on colours, trials done on select, tower
   records with left and right, a Random ground, the states readout's health, meter and combo,
   and wrapping volume. Since 2.6.4 the stage screen shows each ground (renders of the rebuilt sets:

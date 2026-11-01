@@ -96,9 +96,10 @@
  },
  "texture_notes": {
   "skin": [
-   "tinted middleage_lightskinned_male_diffuse.png -> #b5806a (per-channel gain [0.812, 0.775, 0.86])",
+   "toned middleage_lightskinned_male_diffuse.png to #b5806a, broad tones flattened",
    "blended 60% of old_lightskinned_male_diffuse.png",
    "weathered flush #b8503c on cheeks, nose, ears and brow",
+   "tattoo not painted: the clothes cover that skin",
    "scalp under the hair painted #6e6256",
    "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #b5806a"
   ],
@@ -107,8 +108,8 @@
    "eyes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyes/materials/grey_eye.png -> tile (0.0, 0.0, 0.5, 0.5)",
    "brows: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyebrows/eyebrow005/eyebrow005.png -> tile (0.5, 0.25, 0.25, 0.25)",
    "lashes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyelashes/eyelashes01/eyelashes01.png -> tile (0.75, 0.25, 0.25, 0.25)",
-   "beard: generated fur strands #5f5449, alpha edges -> tile (0.5, 0.0, 0.25, 0.25)",
-   "beard_outer: generated fur strands #5f5449, alpha edges -> tile (0.75, 0.0, 0.25, 0.25)"
+   "beard: generated fur strands #857869, alpha edges -> tile (0.5, 0.0, 0.25, 0.25)",
+   "beard_outer: generated fur strands #857869, alpha edges -> tile (0.75, 0.0, 0.25, 0.25)"
   ],
   "coat": [
    "bram_trousers: Fabric066 tinted #2c2d33, 8 cm tiles, roughness 0.88, metallic 0",
@@ -149,9 +150,9 @@
  },
  "parts": {
   "bram_body": {
-   "vertices": 7764,
-   "faces": 7686,
-   "triangles": 15372,
+   "vertices": 7736,
+   "faces": 7662,
+   "triangles": 15324,
    "max_influences": 6,
    "unweighted_vertices": 0,
    "material": "M_bram_skin",
@@ -195,7 +196,6 @@
     "shoulder_half_l",
     "shoulder_half_r",
     "spine_01",
-    "spine_02",
     "spine_03",
     "thigh_l",
     "thigh_r",
@@ -264,9 +264,9 @@
    ]
   },
   "bram_trousers": {
-   "vertices": 2410,
-   "faces": 2432,
-   "triangles": 4824,
+   "vertices": 2406,
+   "faces": 2428,
+   "triangles": 4816,
    "max_influences": 5,
    "unweighted_vertices": 0,
    "material": "M_bram_coat",
@@ -348,10 +348,10 @@
    ]
   },
   "bram_coat": {
-   "vertices": 5478,
-   "faces": 5564,
-   "triangles": 10964,
-   "max_influences": 8,
+   "vertices": 5520,
+   "faces": 5590,
+   "triangles": 11048,
+   "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_bram_coat",
    "surface": "coat",
@@ -384,7 +384,7 @@
    "vertices": 1496,
    "faces": 1494,
    "triangles": 2988,
-   "max_influences": 6,
+   "max_influences": 5,
    "unweighted_vertices": 0,
    "material": "M_bram_coat",
    "surface": "coat",
@@ -400,9 +400,9 @@
    ]
   },
   "bram_belt": {
-   "vertices": 300,
-   "faces": 314,
-   "triangles": 600,
+   "vertices": 304,
+   "faces": 318,
+   "triangles": 608,
    "max_influences": 8,
    "unweighted_vertices": 0,
    "material": "M_bram_leather",
@@ -633,9 +633,9 @@
    ]
   },
   "bram_beard": {
-   "vertices": 663,
-   "faces": 610,
-   "triangles": 1126,
+   "vertices": 653,
+   "faces": 602,
+   "triangles": 1108,
    "max_influences": 4,
    "unweighted_vertices": 0,
    "material": "M_bram_hairface",
@@ -649,9 +649,9 @@
    ]
   },
   "bram_beard_outer": {
-   "vertices": 617,
-   "faces": 594,
-   "triangles": 1040,
+   "vertices": 603,
+   "faces": 580,
+   "triangles": 1016,
    "max_influences": 4,
    "unweighted_vertices": 0,
    "material": "M_bram_hairface",
@@ -725,9 +725,9 @@
    ]
   }
  },
- "triangles_total": 50950,
- "top_of_everything_cm": 189.5,
- "standing_height_cm": 186.0,
+ "triangles_total": 50944,
+ "top_of_everything_cm": 194.58,
+ "standing_height_cm": 191.0,
  "lowest_point_cm": -0.0,
  "bones": 65,
  "root_bone": [
@@ -737,25 +737,25 @@
  "name": "Bram Ketch",
  "height": {
   "macro_range_m": [
-   1.4084,
-   2.4409
+   1.3859,
+   2.4376
   ],
-  "height_macro": 0.581665,
-  "height_before_scale_m": 1.83506,
-  "uniform_scale": 0.999967,
-  "body_height_m": 1.835,
+  "height_macro": 0.615723,
+  "height_before_scale_m": 1.88483,
+  "uniform_scale": 1.000091,
+  "body_height_m": 1.885,
   "targets_applied": 28
  },
  "timings_s": {
   "enable_mpfb": 0.18,
-  "mpfb_body": 1.5,
+  "mpfb_body": 1.18,
   "bake_body": 0.02,
-  "outfit": 1.78,
-  "textures": 19.1,
+  "outfit": 1.79,
+  "textures": 20.36,
   "finalize": 0.18,
   "save_blend": 0.02,
-  "export_fbx": 0.4
+  "export_fbx": 0.39
  },
- "script_wall_s": 23.2,
- "peak_rss_mb": 1790.2
+ "script_wall_s": 24.1,
+ "peak_rss_mb": 1957.6
 }

@@ -77,6 +77,7 @@ namespace Slop
 		case EEvent::WinPose: return TEXT("win_pose");
 		case EEvent::MatchEnd: return TEXT("match_end");
 		case EEvent::Form: return TEXT("form");
+		case EEvent::BossCue: return TEXT("boss_cue");
 		}
 		return TEXT("?");
 	}
@@ -314,6 +315,9 @@ namespace Slop
 		M.Invuln = ParseRange(Props, TEXT("invuln"));
 		M.ProjInvuln = ParseRange(Props, TEXT("proj_invuln"));
 		M.Armor = ParseRange(Props, TEXT("armor"));
+		M.FormMesh = FName(*Str(D, TEXT("form")));
+		M.bHideBody = Bool(D, TEXT("form_replaces_body"), false);
+		M.bFormLeft = Str(D, TEXT("form_hand")) == TEXT("l");
 		M.LowProfile = ParseRange(Props, TEXT("low_profile"));
 		M.Airborne = ParseRange(Props, TEXT("airborne"));
 		M.Feint = ParseRange(Props, TEXT("feint"));
@@ -364,6 +368,7 @@ namespace Slop
 			PD.MinSpeed = Num(P, TEXT("min_speed"), 0.0);
 			PD.Size = Vec2(P, TEXT("size"), FVector2D(0.3, 0.3));
 			PD.Life = Int(P, TEXT("life"), 90);
+			PD.Arm = Int(P, TEXT("arm"), 0);
 			PD.Hits = Int(P, TEXT("hits"), 1);
 			PD.Strength = Int(P, TEXT("strength"), 1);
 			PD.Level = ParseLevel(Str(P, TEXT("level"), TEXT("high")));
@@ -535,7 +540,7 @@ namespace Slop
 
 	const TArray<FName>& FContent::Roster()
 	{
-		static const TArray<FName> R = {TEXT("ashka"), TEXT("gorm"), TEXT("nix"), TEXT("mirela"), TEXT("bram"), TEXT("hollis"), TEXT("wren")};
+		static const TArray<FName> R = {TEXT("ashka"), TEXT("wren"), TEXT("gorm"), TEXT("nix"), TEXT("mirela"), TEXT("bram")};
 		return R;
 	}
 
@@ -547,7 +552,7 @@ namespace Slop
 
 	const TArray<FName>& FContent::Special()
 	{
-		static const TArray<FName> S = {TEXT("slopbat")};
+		static const TArray<FName> S = {TEXT("hollis"), TEXT("slopbat")};
 		return S;
 	}
 
@@ -560,6 +565,7 @@ namespace Slop
 	TArray<FName> FContent::Fighting()
 	{
 		TArray<FName> Out = Roster();
+		Out.Add(TEXT("hollis"));
 		Out.Append(Secret());
 		Out.Append(Forms());
 		return Out;
@@ -788,6 +794,7 @@ namespace Slop
 		F.Style = Str(D, TEXT("style"));
 		F.Blurb = Str(D, TEXT("blurb"));
 		F.bBoss = Bool(D, TEXT("boss"), false);
+		F.SpiritHolder = FName(*Str(D, TEXT("spirit_holder")));
 		F.bHidden = Bool(D, TEXT("hidden"), F.bBoss);
 		F.bCopyable = Bool(D, TEXT("copyable"), !F.bHidden);
 		F.ShapeUpkeep = Num(D, TEXT("shape_upkeep"), 1.0);
@@ -905,6 +912,7 @@ namespace Slop
 		}
 		const TSharedPtr<FJsonObject> S = Obj(D, TEXT("stats"));
 		F.Height = Num(S, TEXT("height"), F.Height);
+		F.StrikeHeight = Num(S, TEXT("strike_height"), F.Height);
 		F.Health = Int(S, TEXT("health"), F.Health);
 		F.WalkF = Num(S, TEXT("walk_f"), F.WalkF);
 		F.WalkB = Num(S, TEXT("walk_b"), F.WalkB);
@@ -963,7 +971,7 @@ namespace Slop
 					}
 					Src = Merged;
 				}
-				F.Moves.Add(FName(*KV.Key), ParseMove(FName(*KV.Key), Src, K, Errors, Owner));
+				F.Moves.Add(FName(*KV.Key), ParseMove(FName(*KV.Key), Src, F.StrikeScale(), Errors, Owner));
 			}
 		}
 		if (Own.IsValid())

@@ -228,7 +228,7 @@ namespace Slop
 		bool AnswerThrow(FFighter& M, const FSeen& Seen, double Dist);
 	};
 
-	// The Slopbat's mind: readable patterns rather than reflexes. Claws up close and now and then a
+	// The Fragment's mind: readable patterns rather than reflexes. Claws up close and now and then a
 	// bite, tar and wind from afar (each followed by a wait, never the same twice running), the Dive
 	// on a cooldown, and below half health the Storm Shroud.
 	class FBossBrain : public IBrain
@@ -254,6 +254,28 @@ namespace Slop
 		FString LastCommand;
 		int32 Walk = 5;
 		int32 WalkT = 0;
+	};
+
+	// Hollis's mind, Hollism: long combinations, each ending in a recovery a player can punish, and then a
+	// rest to do it in. Patterns to learn, not reflexes. On his feet between them he guards as often as
+	// his difficulty allows, so a blow lands in the recovery and is not free all through the rest.
+	class FGuardianBrain : public IBrain
+	{
+	public:
+		FGuardianBrain(FFightSim& InSim, int32 InIndex, int32 Difficulty);
+		virtual FPadState Think() override;
+
+	private:
+		void Sequence(std::initializer_list<const TCHAR*> Commands, int32 Gap);
+		FFightSim& Sim;
+		int32 Index;
+		int32 RestBase = 60;
+		int32 Rest = 90;
+		double GuardChance = 0.5;
+		const FMoveDef* Seen = nullptr;      // the blow he has already decided about
+		bool bGuarding = false;
+		FRandomStream Rng;
+		FPadIntent Intent;
 	};
 
 	// The training partner: stands, crouches, blocks (all, random height, low only), jumps in

@@ -1,23 +1,29 @@
-# Controller-only: title to an arcade fight and back out, with a cable pulled mid-fight.
+# Controller-only: title to an arcade fight, the staging skipped from the pad, a cable pulled
+# mid-fight, reconnected, out through the pause menu, and quit.
 waitlog Screen: Title 400
 wait 8
 focus MortalSlopbat
 wait 1
 tap cross
 waitlog Screen: MainMenu 10
+wait 0.8
+dpad down
 wait 0.6
 tap cross
 waitlog Screen: Select 10
-wait 0.8
+wait 1.2
 dpad right
-wait 0.4
+wait 0.8
 tap cross
 waitlog Screen: Tower 10
-wait 0.8
-dpad up
-wait 0.3
+wait 1.5
+dpad left
+wait 0.5
 tap cross
-waitlog Screen: Match 60
+waitlog Screen: FaceOff 30
+wait 1.5
+tap cross
+waitlog Screen: Match 10
 wait 6
 stick 1 0 700
 tap square
@@ -43,6 +49,8 @@ wait 0.3
 tap cross
 waitlog Screen: MainMenu 10
 wait 1.0
+dpad up
+wait 0.4
 dpad up
 wait 0.4
 tap cross

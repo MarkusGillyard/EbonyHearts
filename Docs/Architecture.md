@@ -13,7 +13,7 @@ types beyond containers and maths, so they run headless in tests exactly as they
 | `Anim/` | The original's pose library, IK rig and animator, ported and checked joint by joint against a dump from the Godot build (`Tools/reference`). On top of the port: follow-through (each part chases the pose on its own spring; the arm carrying a blow is exempt), strikes that arrive at speed and drive through, hit-stop that lingers instead of freezing, reactions shaped by the blow's direction, a stance and walk with each style's rhythm, hands carried with the chest, and a turn-round on cross-over. Style refinements to the original's poses are kept apart, in `poses/<id>_style.json` and `poses_common_style.json`, laid over them at load, and so are the poses converted from motion capture (`poses_mocap.json`) and the basics' animation that uses them (`basics_style.json`, written by the converter), with hand-made changes to the basics in `basics_tweaks.json` laid on last; the port test builds without them. `SlopMeshRig` maps the solved rig onto the 53-bone skeleton the fighters are skinned to. |
 | `Core/` | Game instance (screens, matches, settings, saves), the input router (keyboard halves and pads, menus and fights, rebinding, device assignment, unplug), audio, the arcade and survival flow, save files, the frame-time recorder. |
 | `View/` | What is drawn: the match actor (clock, events, presentation), fighters, the fight camera, stages, effects, finisher choreography, tutorial and trials guides, the menu showroom. |
-| `UI/` | Slate screens and the HUD, drawn on a 1920 x 1080 canvas scaled to the window. Menus are driven by the input router, never by Slate focus. |
+| `UI/` | Slate screens and the HUD on a design canvas of at least 1920 x 1080 units (`Docs/UI.md`). Menus are driven by the input router, never by Slate focus. |
 | `Tests/` | Automation tests (`run_tests`), grouped as combat, rounds, AI, animation and game flow. |
 
 **Shapes.** A fighter fights with a definition (`FFighter::Def`) and is someone
@@ -77,6 +77,19 @@ on heavy blows and counters and shake only on knockdowns and launches, impact ef
 scenes. Stages
 are data: `Content/Data/Stages/<id>.json` places the imported meshes and lights and drives fog,
 flicker, sway, glows and weather.
+
+**Sound output.** The engine's Linux mixer always renders 5.1 and hands the sound server a six-channel
+stream, whatever is plugged in, so SDL's report of the device is only an echo of that. `USlopAudio` asks
+the server (`pactl`, on its own thread, never during a fight) how many channels the default output has:
+under four it plays the original 2D stereo mix, four or more a surround mix. There, fight sounds are placed
+across the front by where they happen on screen (`PlayAt`), which fills the centre speaker; 15% goes to the
+subwoofer (`Bleed`, a sound class registered at run time); and the music plays again from behind (`MusicRear`),
+two voices at 150 degrees, offset so they do not collapse into one. The sound server folds any of this down
+for what is connected, and `Tools/playtest/speaker_check.sh` measures it on virtual outputs. A hard limiter
+at -3 dB sits on the master, added once a world exists (the mixer is reached through one): `Docs/Validation.md`
+has why its knee and analog mode are off, and why it is that low. The music's fade-in level multiplies
+its own volume, so the music slider has always worked as its square; left alone, because that is the balance
+everyone has heard.
 
 **Rendering.** Deferred, Vulkan SM6, no Lumen, no Nanite, no virtual shadow maps, no ray tracing,
 no static lighting (all lights are dynamic and few cast shadows), TSR, screen-space reflections,
@@ -155,3 +168,22 @@ Settings and progress live in `~/.local/share/MortalSlopbat/UE5/` (`$XDG_DATA_HO
 `settings.json` and `progress.json`, written atomically, versioned, validated on load; a corrupt
 file is set aside as `.bad` and replaced with defaults. On first launch the original game's
 `~/.local/share/MortalSlopbat/progress.json` is read once and imported; it is never written.
+
+## Names
+
+The game is Ebony Hearts, its finisher is Hearted and its final boss is the Fragment, and nothing a
+player reads says otherwise (`Slop.Content.NoRetiredNamesReachThePlayer` holds that). These internal
+names keep the old words on purpose, because renaming them would risk far more than it could gain:
+
+| Name | Why it stays |
+|---|---|
+| `MortalSlopbat`: project, module, `.uproject`, target, package folder and binary (a player sees these only inside the unpacked folder; the launcher is `EbonyHearts.sh`) | Renaming breaks every asset reference, cooked path and build rule |
+| `~/.local/share/MortalSlopbat/UE5`: the save folder | Moving it would strand players' saves and settings |
+| `Slop` prefixes: classes, `SlopUI`, `LogSlop`, `-Slop*` flags, `Slop.*` tests, `/Game/Slop` | Identifiers and asset paths, never shown; UE's generated code and every saved asset depend on them |
+| `slopbat`: the Fragment's fighter id, its data and body files; `shape_slopbat`, `slopbat_worm` | Saved, cooked and cross-referenced by id; its display name is the Fragment's |
+| `Master`: the top CPU difficulty, in comments, test names and older records | It reads Grandmaster to the player, by Markus's order; the code holds the level as a number, so saves are untouched. It is a difficulty, not the fighter |
+| `sloptality`: the finisher's sound | An imported asset's name; the sound itself is drums and brass, with no voice |
+| `GLOW_slop*`, `rendering_yards_slop`, `rendering_yards_vat_slop`: stage materials and objects | Must match the imported meshes (`SlopArena` keys glow on the name) |
+
+`Slopperfall` is a different game of Markus's. `Archive/` holds retired work as it was. The real paths of
+the Godot original and of older release archives stay as they are, because they are true.

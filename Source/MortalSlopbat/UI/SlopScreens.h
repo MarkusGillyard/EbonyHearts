@@ -13,12 +13,13 @@ namespace SlopScreens
 	// Training views and the dummy, from the pause menu.
 	TSharedPtr<FSlopScreen> TrainingOptions();
 	TSharedPtr<FSlopScreen> Results(const Slop::FMatchResult& R);
+	// The staging before a fight, played over the match on its own stage.
+	TSharedPtr<FSlopScreen> FaceOff();
 	TSharedPtr<FSlopScreen> DataError();
 	// Fighter select for a mode; Versus asks both sides.
 	TSharedPtr<FSlopScreen> Select(Slop::EMode Mode);
 	TSharedPtr<FSlopScreen> Stage();
 	TSharedPtr<FSlopScreen> Tower(FName Fighter);
-	TSharedPtr<FSlopScreen> FaceOff();
 	TSharedPtr<FSlopScreen> Devices();
 	TSharedPtr<FSlopScreen> Settings(bool bFromPause);
 	TSharedPtr<FSlopScreen> MoveList(FName Fighter, bool bOverlay);

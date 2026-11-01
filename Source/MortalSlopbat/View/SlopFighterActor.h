@@ -59,6 +59,18 @@ private:
 	TArray<FTransform> Locals;
 	UPROPERTY()
 	TArray<TObjectPtr<UMaterialInstanceDynamic>> Mats;
+	// What the fighter has summoned or become this move (FMoveDef::FormMesh).
+	UPROPERTY()
+	TObjectPtr<UStaticMeshComponent> Form;
+	FName ShownForm;
+	bool bBodyHidden = false;
+	void UpdateForm(const FTransform& World);
+	bool bFragment = false;
+	bool bMarksGlow = false;
+	int32 HiltSlot = INDEX_NONE;       // a body's sheathed hilt, put away while its blade is out
+	bool bHiltDrawn = false;
+	int32 FragmentForm = -1;
+	void FragmentColours(const Slop::FFighter& Fighter);
 	TArray<bool> IsSkin;
 	float LastFlash = -1.f;
 	double Exertion = 0.0;

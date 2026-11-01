@@ -92,7 +92,9 @@ namespace Slop
 		// "spent", "broken", "recentred"),
 		// fails to (Kind "failed": broken in its startup; "refused": How says why), Move names the
 		// fighter whose shape was borrowed.
-		Form
+		Form,
+		// A boss's cue for sight and sound (Kind names it: Hollis's "pressure_warn" and "blowdown").
+		BossCue
 	};
 	const TCHAR* EventName(EEvent E);
 

@@ -142,31 +142,45 @@ namespace Slop
 		return N;
 	}
 
-	EGlyphs FSlopInputRouter::Glyphs() const
+	int32 FSlopInputRouter::ShownPad() const
 	{
-		// Before anything is pressed a connected pad decides, so the title asks for its button
-		// rather than Enter (Markus waited on "Press Enter" holding a PS4 pad).
-		int32 From = LastUsed;
-		if (!bAnyPressed)
+		if (LastUsed >= (int32)EDevice::FirstPad && LastUsed < NumDevices && Devices[LastUsed].bConnected)
 		{
-			for (int32 D = (int32)EDevice::FirstPad; D < NumDevices; ++D)
+			return LastUsed;
+		}
+		for (int32 D = (int32)EDevice::FirstPad; D < NumDevices; ++D)
+		{
+			if (Devices[D].bConnected)
 			{
-				if (Devices[D].bConnected)
-				{
-					From = D;
-					break;
-				}
+				return D;
 			}
 		}
-		if (From < (int32)EDevice::FirstPad)
+		return INDEX_NONE;
+	}
+
+	EGlyphs FSlopInputRouter::Glyphs() const
+	{
+		// A connected pad decides, so the title asks for its button rather than Enter (Markus waited
+		// on "Press Enter" holding a PS4 pad), and so does a key pressed with one still connected.
+		if (Settings.Glyphs == TEXT("pc") || (Settings.Glyphs == TEXT("auto") && ShownPad() == INDEX_NONE))
 		{
 			return EGlyphs::Keyboard;
 		}
+		return PadGlyphs();
+	}
+
+	EGlyphs FSlopInputRouter::PadGlyphs() const
+	{
 		if (Settings.Glyphs == TEXT("playstation"))
 		{
 			return EGlyphs::PlayStation;
 		}
 		if (Settings.Glyphs == TEXT("xbox"))
+		{
+			return EGlyphs::Xbox;
+		}
+		const int32 From = ShownPad();
+		if (From == INDEX_NONE)
 		{
 			return EGlyphs::Xbox;
 		}
@@ -179,6 +193,17 @@ namespace Slop
 			}
 		}
 		return EGlyphs::Xbox;
+	}
+
+	bool FSlopInputRouter::NameSaysShare(const FString& PadName)
+	{
+		return PadName.Contains(TEXT("PS4")) || PadName.Contains(TEXT("DualShock"));
+	}
+
+	bool FSlopInputRouter::PadSaysShare() const
+	{
+		const int32 From = ShownPad();
+		return From != INDEX_NONE && NameSaysShare(Devices[From].Name);
 	}
 
 	int32 FSlopInputRouter::DeviceForKey(const FKeyEvent& E, const FKey& K) const

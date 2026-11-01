@@ -1,11 +1,12 @@
-"""Outfits for Wren Sallow and the Grandmaster (see fighter_outfits for Ashka and
+"""Outfits for Wren Ku and the Grandmaster (see fighter_outfits for Ashka and
 Gorm, fighter_outfits2 for the rest of the roster). Registered into fighter_outfits.BUILDERS.
 
 Both wear a crossed front: Wren a heavy-weave judo-style jacket, the Grandmaster a jiaoling robe over a
-bone-grey inner robe. The crossing is built once here (Cross): the wearer's left panel lies over
+black inner robe. The crossing is built once here (Cross): the wearer's left panel lies over
 the right, so seen from the front the collar makes the traditional 'y'."""
 import math
 
+import bpy
 import numpy as np
 from mathutils import Vector
 
@@ -14,7 +15,7 @@ import fighter_geo as geo
 import fighter_outfits as fo
 import fighter_wardrobe as wd
 from fighter_outfits import smoothstep, src_coords, convex_hull
-from fighter_outfits2 import hand_w, side_mask, side_mask_pts, leg_shell, palm_frame
+from fighter_outfits2 import boots, flush_mask, hand_w, side_mask, side_mask_pts, leg_shell, palm_frame, top_with_sleeves
 
 
 # ----------------------------------------------------------------------------- small helpers
@@ -345,6 +346,40 @@ def girdle(ctx, key, surface, z0, z1, offset, over, gap=0.008, thickness=0.006):
                           collider=coll)
 
 
+def belt_ring(ctx, key, surface, z0, z1, over, gap=0.006, n=72):
+    """A belt that lies smooth over what it closes: a ring round the outermost layer at each angle, eased
+    over the panels' edges, where a shell of those layers takes every fold and step they have."""
+    s = ctx.s
+    coll = geo.Collider(ctx.colliders + list(over), outer_only=True)
+    cx, cy = ctx.head("pelvis")[:2]
+    ang = np.linspace(0.0, 2.0 * math.pi, n, endpoint=False)
+
+    def outline(heights):
+        r = np.zeros(n)
+        for i, a in enumerate(ang):
+            d = np.array([math.cos(a), math.sin(a), 0.0])
+            for z in heights:
+                loc, _ = hit_from(coll, (cx + d[0] * 0.3 * s, cy + d[1] * 0.3 * s, z), -d)        # (from inside the hands)
+                if loc is not None:
+                    r[i] = max(r[i], math.hypot(loc[0] - cx, loc[1] - cy))
+        r[r == 0.0] = float(np.median(r[r > 0.0]))
+        for _ in range(12):
+            r = np.maximum(r, (np.roll(r, 1) + 2.0 * r + np.roll(r, -1)) / 4.0)
+        for _ in range(6):
+            r = (np.roll(r, 1) + 2.0 * r + np.roll(r, -1)) / 4.0
+        return r + gap * s
+
+    lo, hi = outline((z0, 0.5 * (z0 + z1))), outline((z1,))         # it follows the waist in, as a belt does
+    rows = [(z0 - 0.002 * s, lo - 0.012 * s), (z0, lo), (z0 + 0.006 * s, lo + 0.003 * s), (z1 - 0.006 * s, hi + 0.003 * s), (z1, hi), (z1 + 0.002 * s, hi - 0.012 * s)]
+    verts = [(cx + r[i] * math.cos(ang[i]), cy + r[i] * math.sin(ang[i]), z) for z, r in rows for i in range(n)]
+    faces = [(j * n + i, j * n + (i + 1) % n, (j + 1) * n + (i + 1) % n, (j + 1) * n + i) for j in range(len(rows) - 1) for i in range(n)]
+    ob = geo.new_mesh_object(key, verts, faces, ctx.rig)
+    geo.recalc_normals(ob)
+    geo.transfer_weights(ctx.body, ob)
+    ctx.add(key, ob, surface, collide=False)
+    return ob
+
+
 def ring_emb(ob, a, b, t0, t1, width):
     """emb_u / emb_v for a band round a limb axis a->b between parameters t0..t1."""
     c = geo.co(ob)
@@ -593,18 +628,19 @@ def braided_hair(ctx, hf, width=0.026, hang=0.19, cap_off=0.0035):
     ear_c = np.array([half[0], hc[1] + 0.012 * s, ez - 0.016 * s])
 
     def ear_field(c):                      # an oval just round the root of each ear
-        dy = (c[:, 1] - ear_c[1]) / (0.024 * s)
-        dz = (c[:, 2] - ear_c[2]) / (0.035 * s)
+        dy = (c[:, 1] - ear_c[1]) / (0.016 * s)
+        dz = (c[:, 2] - ear_c[2]) / (0.028 * s)
         side = np.abs(c[:, 0] - hc[0]) > 0.6 * half[0]
-        return np.where(side, (np.hypot(dy, dz) - 1.0) * 0.024 * s, 1.0)
+        return np.where(side, (np.hypot(dy, dz) - 1.0) * 0.016 * s, 1.0)
 
     def cap_field(c):
         return np.minimum(c[:, 2] - hl(c), ear_field(c))
 
     head = ctx.w("head")
     ear_v = ((np.abs(V[:, 0] - hc[0]) > 0.6 * half[0])
-             & (np.hypot((V[:, 1] - ear_c[1]) / (0.024 * s), (V[:, 2] - ear_c[2]) / (0.035 * s)) < 1.15))
-    sel = (head > 0.5) & (cap_field(V) > -0.025 * s) & ~ear_v
+             & (np.hypot((V[:, 1] - ear_c[1]) / (0.016 * s), (V[:, 2] - ear_c[2]) / (0.028 * s)) < 1.15))
+    # (the head's weight gives out above the nape: the neck's carries the hair the rest of the way down)
+    sel = (head + ctx.w("neck_01") > 0.5) & (cap_field(V) > -0.025 * s) & ~ear_v
     body_only = geo.Collider([ctx.body])
     cap = wd.field_shell(ctx, "hair_cap", "hair_cap", sel, cap_off * s, cap_field, smooth=6, gap=cap_off * 0.8,
                          thickness=0.0, collider=body_only, hide_margin=0.008)
@@ -782,34 +818,50 @@ def knee_panels(ctx, ob, rx=0.055, rz=0.072, pad=0.0035):
 
 
 def wren(ctx):
-    """Elite mixed martial artist: fitted spats with reinforced knees, laced wrestling shoes, a dark
-    rash guard under a cropped heavy-weave judo-style jacket (crossed lapels, sleeves rolled to
+    """Elite mixed martial artist. Her attire: fitted spats with reinforced knees, laced wrestling shoes,
+    a dark rash guard under a cropped heavy-weave judo-style jacket (crossed lapels, sleeves rolled to
     the forearm, hem at the hip), a faded red belt knotted at the front, open-finger gloves, and a
-    small teal glass bead on the belt."""
+    small teal glass bead on the belt. Her other outfits, from her sheet, are cut from the same pieces
+    (fighters.json "outfits"): MMA gear, Muay Thai gear, a BJJ gi, a jet-black uniform."""
     H, s, V = ctx.H, ctx.s, ctx.V
     nb = ctx.head("neck_01")
     sole = ctx.cfg.get("sole_m", 0.012)
-    # ---- spats, knees, shoes
-    leg_shell(ctx, "trousers", "trousers", 0.60 * H, 0.052 * H, 0.0045, folds=0.0012, gather=0.002, smooth=14,
+    wardrobe = ctx.cfg.get("wardrobe", "attire")
+    # ---- legs: (bottom, offset, folds, gather)
+    bottom, offset, folds, gather = {"attire": (0.052, 0.0045, 0.0012, 0.002), "mma": (0.42, 0.008, 0.002, None),
+                                     "muay_thai": (0.45, 0.03, 0.006, None), "gi": (0.052, 0.022, 0.008, 0.012),
+                                     "uniform": (0.09, 0.012, 0.005, 0.006)}[wardrobe]
+    leg_shell(ctx, "trousers", "trousers", 0.60 * H, bottom * H, offset, folds=folds, gather=gather, smooth=14,
               medial=0.7, gap=0.0035, thickness=0.003)
-    knee_panels(ctx, ctx.parts["trousers"])
-    z_shoe = 0.082 * H
-    shoes(ctx, "shoe", "shoes", "sole", z_shoe, sole)
-    laces(ctx, "laces", "laces", "shoe", 0.040 * H, z_shoe - 0.008 * s)
+    if wardrobe == "attire":
+        knee_panels(ctx, ctx.parts["trousers"])
+    if wardrobe in ("attire", "uniform"):
+        z_shoe = (0.082 if wardrobe == "attire" else 0.14) * H
+        shoes(ctx, "shoe", "shoes", "sole", z_shoe, sole)
+        laces(ctx, "laces", "laces", "shoe", 0.040 * H, z_shoe - 0.008 * s)
+    if wardrobe in ("mma", "muay_thai"):
+        # a fitted top, long enough for the cage or cut short for the ring, and gloves; bare feet
+        mma = wardrobe == "mma"
+        crossed_top(ctx, "rashguard", "rashguard", (0.6 if mma else 0.66) * H, 0.22, 0.0035, neck_top=nb[2] + 0.022 * s,
+                    smooth=12, gap=0.003, thickness=0.0025, chest=6)
+        mma_gloves(ctx, "gloves", "strap")
+        braided_hair(ctx, wd.head_frame(ctx), hang=0.36)
+        return
     # ---- rash guard under everything above the waist
     crossed_top(ctx, "rashguard", "rashguard", 0.53 * H, 0.22, 0.0035, neck_top=nb[2] + 0.022 * s,
                 smooth=12, gap=0.003, thickness=0.0025, chest=6)
     # ---- jacket: crossed lapels, wide sleeves rolled to mid-forearm
     R = neck_radius(ctx)
     cross = Cross(R + 0.008 * s, nb[2] + 0.004 * s, 0.075 * s, 0.585 * H, -0.012 * s, over=1)
-    crossed_top(ctx, "jacket", "jacket", 0.545 * H, 0.36, 0.013, cross=cross, flare=0.016, under=0.008,
-                taper=False, folds=0.003, smooth=12, gap=0.009, thickness=0.004, chest=12,
+    crossed_top(ctx, "jacket", "jacket", 0.545 * H, {"attire": 0.36, "gi": 0.78, "uniform": 0.93}[wardrobe], 0.013, cross=cross,
+                flare=0.016, under=0.008, taper=False, folds=0.003, smooth=12, gap=0.009, thickness=0.004, chest=12,
                 collider=geo.Collider(ctx.colliders, outer_only=True))
-    for side in ("l", "r"):
-        el, wr = ctx.head("lowerarm_" + side), ctx.head("hand_" + side)
-        am = (ctx.w("lowerarm_" + side) > 0.3) & side_mask(ctx, side)
-        wd.ring_band(ctx, "cuff_" + side, "lapel", am, el, wr, [0.25, 0.30, 0.35, 0.40],
-                     [0.030, 0.037, 0.038, 0.032])
+    if wardrobe == "attire":
+        for side in ("l", "r"):
+            el, wr = ctx.head("lowerarm_" + side), ctx.head("hand_" + side)
+            am = (ctx.w("lowerarm_" + side) > 0.3) & side_mask(ctx, side)
+            wd.ring_band(ctx, "cuff_" + side, "lapel", am, el, wr, [0.25, 0.30, 0.35, 0.40],
+                         [0.030, 0.037, 0.038, 0.032])
     # skirt below the belt: two wrap-over panels, the left (outer) one ending right of centre
     yc = float(ctx.head("pelvis")[1])
     for k, (arc, gap) in enumerate((((-math.pi - 0.15, 0.30), 0.011), ((-0.55, math.pi + 0.15), 0.018))):
@@ -851,6 +903,9 @@ def wren(ctx):
     ends = [kc + np.array([-0.05 * s, 0.0, -0.24 * s]), kc + np.array([0.045 * s, 0.0, -0.205 * s])]
     tails = hanging_tails(ctx, "belt_tail", "belt", starts, ends, 0.040, 0.006, tail_coll, ("thigh_r", "thigh_l"),
                           gap=0.006, emb=True, share=0.85)
+    if wardrobe != "attire":
+        braided_hair(ctx, wd.head_frame(ctx), hang=0.36)
+        return
     # bead: a little teal glass sphere tied near the end of the left tail
     tl = tails[1]
     ct = geo.co(tl)
@@ -860,7 +915,7 @@ def wren(ctx):
     geo.transfer_weights(tl, bead)
     # ---- gloves
     mma_gloves(ctx, "gloves", "strap")
-    braided_hair(ctx, wd.head_frame(ctx))
+    braided_hair(ctx, wd.head_frame(ctx), hang=0.36)
 
 
 # ============================================================================ The Grandmaster
@@ -992,12 +1047,68 @@ def tuft(ctx, beard, hf, z_ch, z_lo, z_hi, a_max, length=0.058, radius=0.019):
         bpy.ops.object.join()
 
 
+def flowing_hair(ctx, hf, length=2.6, chains=3, links=5):
+    """Lengthens the hair down the back and hangs it on chains of bones (hair_<c>_<n>, parent head)
+    that the game swings (FMeshRig::SwingChains), so it flows with the fighter."""
+    hair = ctx.parts["hair"]
+    V = geo.co(hair)
+    nape = float(ctx.head("neck_01")[2])
+    below = V[:, 2] < nape
+    V[below, 2] = nape - (nape - V[below, 2]) * length
+    geo.set_co(hair, V)
+    tip = float(V[:, 2].min())
+    span = nape - tip
+    # the sheet's width at the back, chains spread across it
+    back = V[V[:, 1] > float(ctx.head("neck_01")[1]) - 0.02 * ctx.s]
+    half = max(float(np.percentile(np.abs(back[:, 0]), 92)), 0.04 * ctx.s)
+    xs = np.linspace(-half, half, chains + 2)[1:-1]
+    y0 = float(np.median(back[:, 1]))
+    names = {}
+    with bpy.context.temp_override(active_object=ctx.rig, object=ctx.rig, selected_objects=[ctx.rig]):
+        bpy.context.view_layer.objects.active = ctx.rig
+        bpy.ops.object.mode_set(mode="EDIT")
+        eb = ctx.rig.data.edit_bones
+        for c, x in enumerate(xs):
+            parent = eb["head"]
+            for n in range(links):
+                b = eb.new("hair_%d_%d" % (c, n))
+                b.head = (x, y0, nape - span * n / links)
+                b.tail = (x, y0, nape - span * (n + 1) / links)
+                b.parent = parent
+                b.use_connect = n > 0
+                b.use_deform = True
+                parent = b
+                names[(c, n)] = b.name
+        bpy.ops.object.mode_set(mode="OBJECT")
+    W = {k: v for k, v in geo.weights(hair).items()}
+    below = V[:, 2] < nape
+    u = np.clip((nape - V[:, 2]) / span, 0.0, 1.0) * links
+    across = np.clip((V[:, 0] - xs[0]) / max(xs[-1] - xs[0], 1e-6), 0.0, 1.0) * (chains - 1)
+    new = {nm: np.zeros(len(V)) for nm in names.values()}
+    # a short ramp from the head into the chains, so the crown stays on the skull
+    onto = np.clip((nape - V[:, 2]) / (0.06 * ctx.s), 0.0, 1.0)
+    for i in np.nonzero(below)[0]:
+        n0 = min(int(u[i]), links - 1)
+        fn = min(u[i] - n0, 1.0)
+        n1 = min(n0 + 1, links - 1)
+        c0 = min(int(across[i]), chains - 1)
+        fc = across[i] - c0
+        c1 = min(c0 + 1, chains - 1)
+        for c, wc in ((c0, 1 - fc), (c1, fc)):
+            for n, wn in ((n0, 1 - fn), (n1, fn)):
+                new[names[(c, n)]][i] += wc * wn * onto[i]
+    for k in W:
+        W[k] = W[k] * (1 - np.where(below, onto, 0.0))
+    W.update(new)
+    geo.set_weights(hair, W)
+
+
 def grandmaster(ctx):
-    """The Grandmaster: a long ink-blue jiaoling robe (left over right) over a bone-grey inner robe whose
-    collar shows at the neck; moderately wide sleeves tapering to the cuffs; a broad black sash
-    knotted at the left; edge bands with pale-gold cloud embroidery at the collar, cuffs, front
-    edge and hem; side slits from the hip; dark wide trousers gathered at the ankle; black cloth
-    shoes on pale soles; a jade disc on a cord at the right hip; a grey-white goatee."""
+    """The Grandmaster: a jet-black jiaoling robe of midnight (left over right) over a black inner robe
+    whose collar shows at the neck; moderately wide sleeves tapering to the cuffs; a broad black sash
+    knotted at the left; edge bands with tone-on-tone cloud embroidery at the collar, cuffs, front
+    edge and hem; side slits from the hip; black wide trousers gathered at the ankle; black cloth
+    shoes; and extraordinarily long black hair, flowing free (flowing_hair)."""
     H, s, V = ctx.H, ctx.s, ctx.V
     hf = wd.head_frame(ctx)
     nb = ctx.head("neck_01")
@@ -1077,26 +1188,210 @@ def grandmaster(ctx):
     ends = [kc + np.array([-0.035 * s, 0.0, -0.30 * s]), kc + np.array([0.035 * s, 0.0, -0.24 * s])]
     hanging_tails(ctx, "sash_tail", "sash", starts, ends, 0.05, 0.004, tail_coll, ("thigh_l", "thigh_l"), gap=0.008,
                   share=0.7, flare=0.5)
-    # ---- jade disc on a cord from the sash at the right hip, under a bronze bead
-    px = -0.135 * s
-    loc, n = hit_from(coll, (px, -3.0, zs0 + 0.004 * s), (0, 1, 0))
-    top = loc + np.array([0, -0.006 * s, 0])
-    bead_c = top + np.array([0, -0.004 * s, -0.07 * s])
-    wd.tube_part(ctx, "jade_cord", "cord", [top, top + np.array([0, -0.002 * s, -0.035 * s]), bead_c], 0.0016 * s, 5,
-                 rigid="pelvis")
-    wd.lathe_part(ctx, "jade_bead", "bronze", [(0, -0.008 * s), (0.006 * s, -0.006 * s), (0.0075 * s, 0.0),
-                                               (0.006 * s, 0.006 * s), (0, 0.008 * s)], bead_c, (0, 0, 1), 10, rigid="pelvis")
-    dc = bead_c + np.array([0, 0, -0.008 * s - 0.026 * s])
-    ring = [dc + np.array([0.0165 * s * math.cos(a), 0.0, 0.0165 * s * math.sin(a)]) for a in np.linspace(0, 2 * math.pi, 25)]
-    v, f = geo.tube(ring, 0.0078 * s, 10)
-    v = np.array(v)
-    v[:, 1] = dc[1] + (v[:, 1] - dc[1]) * 0.42          # a flat bi disc facing forward
-    jade = geo.new_mesh_object("jade", [tuple(p) for p in v], f, ctx.rig)
-    geo.recalc_normals(jade)
-    geo.set_rigid(jade, "pelvis")
-    ctx.add("jade", jade, "jade", collide=False)
-    # ---- face: goatee and moustache
-    goatee(ctx, hf)
+    flowing_hair(ctx, hf)
 
 
-fo.BUILDERS.update({"wren": wren, "grandmaster": grandmaster})
+def ashka_coat(ctx):
+    """Ashka Rook, from her sheet: a white long-sleeved shirt, black tie, black trousers and brown loafers
+    under a long black trench coat, belted, which hides all of it but the tie. The crimson cross-shaped lamp
+    on her chest lies over her clothes in the coat's own black, its crimson emissive showing only as she
+    calls the Lamplighter Flame ("marks_glow" in her look, ASlopFighterActor)."""
+    H, s = ctx.H, ctx.s
+    nb = ctx.head("neck_01")
+    sole = ctx.cfg.get("sole_m", 0.02)
+    leg_shell(ctx, "trousers", "trousers", 0.60 * H, 0.06 * H, 0.014, folds=0.004, gather=0.012, smooth=12, medial=0.6,
+              gap=0.006, thickness=0.003)
+    shoes(ctx, "shoe", "shoes", "sole", 0.052 * H, sole, wall=0.0055, toe=0.003)
+    R = neck_radius(ctx)
+    crossed_top(ctx, "shirt", "shirt", 0.56 * H, 0.5, 0.005, neck_top=nb[2] + 0.03 * s, smooth=12, gap=0.004, thickness=0.003, chest=6)
+    shirt = geo.Collider([ctx.parts["shirt"]], outer_only=True)
+    # ---- the tie, from the collar down the middle of the shirt, and its knot
+    z0, z1 = nb[2] - 0.012 * s, 0.61 * H
+    path = []
+    for z in np.linspace(z0, z1, 24):
+        loc, n = hit_from(shirt, (0.0, -3.0, z), (0, 1, 0))
+        if loc is not None:
+            path.append(loc + np.array([0.0, -0.004 * s, 0.0]))
+    ribbon_part(ctx, "tie", "tie", path, 0.042 * s, 0.003 * s, shirt)
+    wd.lathe_part(ctx, "tie_knot", "tie", [(0, -0.018 * s), (0.016 * s, -0.016 * s), (0.022 * s, -0.002 * s), (0.016 * s, 0.014 * s), (0, 0.016 * s)],
+                  path[0] + np.array([0.0, -0.006 * s, 0.006 * s]), (0, 0, 1), 10, rigid="spine_03")
+    # ---- the coat: crossed high over the shirt, sleeves to the wrist, open to the tie above the belt
+    outer = Cross(R + 0.014 * s, nb[2] + 0.002 * s, 0.11 * s, 0.60 * H, -0.006 * s, over=1)
+    crossed_top(ctx, "coat", "coat", 0.57 * H, 0.95, 0.014, cross=outer, flare=0.01, under=0.006, taper=False, folds=0.004, smooth=12,
+                gap=0.01, thickness=0.004, body_ease=0.012, loose_front=True, collider=geo.Collider(ctx.colliders, outer_only=True))
+    yc = float(ctx.head("pelvis")[1])
+    z_top, z_hem = 0.60 * H, 0.2 * H
+    r_w = 0.15 * s
+    phi_e = -math.asin(min(0.95, (0.11 * s) / r_w))
+    panels = (("coat_skirt_under", (-math.pi / 2, 0.40), 0.006, (0.8, 0.7, 0.6)),
+              ("coat_skirt_back", (math.pi / 2, 3 * math.pi / 2), 0.006, (0.3, 0.3, 0.2)),
+              ("coat_skirt_outer", (phi_e, math.pi / 2), 0.012, (0.8, 0.7, 0.6)))
+    for key, arc, gap, share in panels:
+        ob, _, _, _ = wd.wrap_skirt(ctx, key, "coat", z_top, z_hem, gap=gap, flare=0.012, folds=(0.005, 6), share=share, thickness=0.004,
+                                    row=0.03, arc=arc, nu=30, y_c=yc, calf_share=0.9)
+        panel_uv(ob, yc, arc)
+    skirts = [ctx.parts[k] for k, _, _, _ in panels]
+    coll = geo.Collider(ctx.colliders + skirts, outer_only=True)
+    Wo = 0.06 * s
+    path = outer.collar_path(ctx, coll, Wo, 0.60 * H, outer.zc - 0.9 * Wo, nb[2] + 0.006 * s, ring_lift=0.008 * s, lift_cross=0.007 * s, n_edge=20)
+    ribbon_part(ctx, "lapel", "lapel", path, Wo, 0.005 * s, coll)
+    belt_ring(ctx, "belt", "belt", 0.565 * H, 0.60 * H, skirts + [ctx.parts["lapel"]])
+    # ---- the tattoo: a cross with a little lamp at its heart, on her chest. Laid on the coat in the coat's
+    # own black, it is nothing until the flame lights it. It follows the coat, a flat piece would sink into it.
+    worn = geo.Collider([ctx.parts["coat"], ctx.parts["lapel"]], outer_only=True)
+    cx, cz = 0.098 * s, nb[2] - 0.15 * s
+    arm, thin = 0.036 * s, 0.008 * s
+    quads = [(cx - thin, cz - 1.5 * arm, cx + thin, cz + arm), (cx - arm, cz - thin, cx + arm, cz + thin), (cx - 2.2 * thin, cz - 2.2 * thin, cx + 2.2 * thin, cz + 2.2 * thin)]
+    verts, faces = [], []
+    for x0, z_lo, x1, z_hi in quads:
+        nu, nv = max(2, int((x1 - x0) / (0.006 * s)) + 1), max(2, int((z_hi - z_lo) / (0.006 * s)) + 1)
+        i = len(verts)
+        for z_ in np.linspace(z_lo, z_hi, nv):
+            for x_ in np.linspace(x0, x1, nu):
+                loc, _ = hit_from(worn, (x_, -3.0, z_), (0, 1, 0))
+                verts.append((x_, loc[1] - 0.003 * s, z_))
+        for j in range(nv - 1):
+            for k in range(nu - 1):
+                a_ = i + j * nu + k
+                faces.append((a_, a_ + 1, a_ + nu + 1, a_ + nu))
+    tattoo = geo.new_mesh_object("tattoo", verts, faces, ctx.rig)
+    geo.recalc_normals(tattoo)
+    geo.transfer_weights(ctx.body, tattoo)
+    ctx.add("tattoo", tattoo, "tattoo", collide=False)
+    # ---- the hair: her braid long and loose, on a chain the game swings, and two strands framing her face
+    hf = wd.head_frame(ctx)
+    flowing_hair(ctx, hf, length=1.9, chains=1, links=4)
+    hc, ez = hf["c"], hf["eye_z"]
+    skin = geo.Collider([ctx.body])
+    for sgn in (-1, 1):
+        # from the temple down the side of the face, close to it, thinning to a point at the jaw
+        pts, x = [], None
+        for f in np.linspace(0.0, 1.0, 14):
+            y, z = hc[1] - (0.046 - 0.006 * f) * s, ez + (0.035 - 0.145 * f) * s
+            loc, _ = hit_from(skin, (hc[0] + sgn * 0.5, y, z), (-sgn, 0, 0))
+            x = hc[0] + sgn * 0.075 * s if x is None else x
+            if loc is not None and abs(loc[0] - hc[0]) > 0.05 * s:
+                x = loc[0] + sgn * 0.006 * s
+            pts.append(np.array([x, y, z]))
+        pts = np.array(pts)
+        for _ in range(3):
+            pts[1:-1] = (pts[:-2] + 2 * pts[1:-1] + pts[2:]) / 4
+        strand = wd.tube_part(ctx, "strand_%d" % (sgn + 1), "strand", pts, 0.009 * s, 8, rigid="head")
+        c = geo.co(strand)
+        near = ((c[:, None] - pts[None]) ** 2).sum(2).argmin(1)
+        geo.set_co(strand, pts[near] + (c - pts[near]) * (1.0 - 0.85 * near / (len(pts) - 1))[:, None])
+
+
+def mirela_habit(ctx):
+    """Mirela Sorrow, from her sheet: a simple nun's outfit. A plain black habit high at the throat, cut loose
+    over the chest, the sleeves wide at the wrist, a long skirt of two wrap-over panels, a plain cord at the
+    waist, a white collar, and a black veil edged in white and open at the face, her very long black hair
+    falling free below it. No cross and no insignia: the sheet gives her no order."""
+    H, s, V = ctx.H, ctx.s, ctx.V
+    hf = wd.head_frame(ctx)
+    hc = hf["c"]
+    nb, nt = ctx.head("neck_01"), ctx.head("head")
+    chin = V[(ctx.w("head") > 0.9) & (V[:, 1] < hc[1] - 0.04 * s)]
+    z_chin = float(chin[:, 2].min()) if len(chin) else 0.88 * H
+    z_collar = min(0.888 * H, z_chin - 0.012 * s)
+
+    # the body under the habit, soft at the chest, so the cloth falls over it in one surface; the mesh is dense there
+    idx = np.nonzero((V[:, 1] < ctx.head("spine_03")[1]) & (np.abs(V[:, 0]) < 0.17 * s) & (V[:, 2] > 0.58 * H) & (V[:, 2] < 0.84 * H))[0]
+    p = V[idx].astype(np.float32)
+    d2 = (p[:, None, 0] - p[None, :, 0]) ** 2 + (p[:, None, 2] - p[None, :, 2]) ** 2
+    k = np.exp(-d2 / (2.0 * (0.05 * s) ** 2)) / (d2 < (0.015 * s) ** 2).sum(1)[None, :]
+    w = (1.0 - smoothstep((np.abs(p[:, 0]) - 0.09 * s) / (0.07 * s))) * smoothstep((p[:, 2] - 0.6 * H) / (0.05 * H)) * (1.0 - smoothstep((p[:, 2] - 0.79 * H) / (0.04 * H)))
+    V[idx, 1] = V[idx, 1] * (1.0 - w) + (k * p[:, 1]).sum(1) / k.sum(1) * w
+    geo.set_co(ctx.body, V)
+
+    def fit(c, nrm):
+        across = 1.0 - smoothstep((np.abs(c[:, 0]) - 0.13 * s) / (0.06 * s))
+        up = smoothstep((c[:, 2] - 0.60 * H) / (0.06 * H)) * (1.0 - smoothstep((c[:, 2] - 0.79 * H) / (0.05 * H)))
+        return (0.012 + 0.018 * across * up) * s
+
+    top_with_sleeves(ctx, "gown", "gown", 0.485 * H, 0.92, fit, flare=0.03, flare_from=0.55, neck_top=z_collar, smooth=30, gap=0.010)
+    leg_shell(ctx, "leggings", "underdress", 0.50 * H, 0.07 * H, 0.010, folds=0.002, gap=0.006, smooth=18, medial=0.6, decimate=0.7)
+    boots(ctx, "boots", "boots", 0.08, 0.02)
+    nk = ctx.w("neck_01", "head") > 0.3
+    t_ch = (z_collar - nb[2]) / (nt[2] - nb[2])
+    wd.ring_band(ctx, "collar", "trim", nk, nb, nt, [t_ch - 0.06, t_ch, t_ch + 0.08], [0.02, 0.022, 0.02])
+    objs = [ctx.body, ctx.parts["leggings"], ctx.parts["gown"]]
+    for side, arc, gap in (("l", (-0.30, math.pi + 0.18), 0.005), ("r", (math.pi - 0.18, 2 * math.pi + 0.30), 0.011)):
+        wd.wrap_skirt(ctx, "skirt_" + side, "gown", 0.585 * H, 0.045 * H, gap=gap, flare=0.065, folds=(0.008, 8), share=(0.75, 0.45, 0.2),
+                      thickness=0.004, row=0.02, objs=objs, arc=arc, calf_share=0.9, nu=32, max_slope=0.3)
+    wd.wrap_skirt(ctx, "belt", "cord", 0.594 * H, 0.578 * H, gap=0.003, flare=0.0, folds=(0.0, 1), thickness=0.004, row=0.008,
+                  objs=objs + [ctx.parts["skirt_l"], ctx.parts["skirt_r"]], arc=(0.0, 2 * math.pi), weight_mode="transfer", nu=40)
+    objs = [ctx.body] + [ctx.parts[k] for k in ("hair", "gown") if k in ctx.parts]
+    z_veil = (hf["top"] + 0.004 * s, nb[2] - 0.05 * s)
+    wd.wrap_skirt(ctx, "veil", "veil", z_veil[0], z_veil[1], open_frac=0.36, gap=0.010, flare=0.015, folds=(0.004, 6),
+                  y_c=hc[1] + 0.01 * s, objs=objs, weight_mode="transfer", thickness=0.0, nu=36, row=0.022, snug_rows=1)
+    for side, arc in (("l", (0.335 * math.pi, 0.385 * math.pi)), ("r", (1.615 * math.pi, 1.665 * math.pi))):
+        wd.wrap_skirt(ctx, "coif_" + side, "trim", z_veil[0], z_veil[1], arc=arc, gap=0.0085, flare=0.015, folds=(0.0, 1),
+                      y_c=hc[1] + 0.01 * s, objs=objs, weight_mode="transfer", thickness=0.0, nu=3, row=0.022, snug_rows=1)
+    flowing_hair(ctx, hf, length=1.7, chains=3, links=4)
+    # the fall of her hair widens and arches off her back: the fight camera is side-on, so only its
+    # depth front to back reads, and it fills out below the nape or it is a cord (over a slope, not at
+    # once: a shelf off her back takes the portrait's rim light)
+    hair = ctx.parts["hair"]
+    c = geo.co(hair)
+    nape = float(nb[2])
+    t = np.clip((nape - c[:, 2]) / (0.4 * H), 0.0, 1.0)
+    below = c[:, 2] < nape
+    half = max(float(np.percentile(np.abs(c[below, 0]), 95)), 0.04 * s)
+    c[below, 0] *= 1.0 + 0.5 * t[below]
+    fill = np.clip(t[below] / 0.4, 0.0, 1.0) ** 0.8 * (1.0 - 0.3 * t[below])
+    c[below, 1] += 0.13 * s * fill * (1.0 - np.clip(np.abs(c[below, 0]) / (half * 1.5), 0.0, 1.0) ** 2)
+    geo.set_co(hair, c)
+
+
+def gorm_yard(ctx):
+    """Gorm Tallow, from his sheet: the same rendering apron, trousers, heavy boots and forearm guards, modernised
+    modestly. A reflective stripe on the apron, reinforced knees on the work trousers, steel toe caps, and strapped
+    guards. His face takes the weathering of an outdoor worker."""
+    fo.gorm(ctx)
+    H, s = ctx.H, ctx.s
+    flush_mask(ctx, wd.head_frame(ctx))
+
+    def laid_on(key, surface, base, keep, field, offset):
+        """A piece of `base` (front faces only) laid over it and cut clean by `field`."""
+        c = geo.co(base)
+        m = keep(c)
+        fm = np.array([m[list(p.vertices)].all() and p.normal.y < 0.3 for p in base.data.polygons])
+        ob = geo.shell(base, key, fm, offset * s, ctx.rig, smooth_iters=0)
+        geo.cut_field(ob, field)
+        geo.solidify(ob, 0.002 * s)
+        ctx.add(key, ob, surface, collide=False)
+
+    # the belly bulges past the apron's sheet between its rows: no skin left behind it to show through
+    apron = ctx.parts["apron"]
+    ca = geo.co(apron)
+    bins = np.linspace(ca[:, 2].min(), ca[:, 2].max(), 32)
+    idx = np.digitize(ca[:, 2], bins)
+    width = np.array([np.abs(ca[idx == i, 0]).max() if (idx == i).any() else 0.0 for i in range(1, len(bins))])
+    V, z = ctx.V, ctx.V[:, 2]
+    behind = (V[:, 1] < ctx.head("spine_03")[1]) & (z > ctx.head("thigh_l")[2]) & (z < bins[-1] - 0.01 * s) & (ctx.arm_w < 0.05)
+    behind &= np.abs(V[:, 0]) < np.interp(z, 0.5 * (bins[:-1] + bins[1:]), width) - 0.002 * s
+    ctx.hide_faces(geo.face_mask(ctx.FV, behind), 0)
+    z_hem = float(geo.co(apron)[:, 2].min())
+    z0, z1 = z_hem + 0.05 * s, z_hem + 0.095 * s
+    laid_on("apron_stripe", "stripe", apron, lambda c: (c[:, 2] > z0 - 0.05 * s) & (c[:, 2] < z1 + 0.05 * s),
+            wd.f_and(wd.f_plane((0, 0, z0), (0, 0, 1)), wd.f_plane((0, 0, z1), (0, 0, -1))), 0.003)
+    for side in ("l", "r"):
+        kn = ctx.head("calf_" + side)
+        zk, xk = float(kn[2]), float(kn[0])
+        laid_on("knee_" + side, "patch", ctx.parts["trousers"],
+                lambda c, zk=zk, xk=xk: (np.abs(c[:, 2] - zk) < 0.16 * s) & (np.abs(c[:, 0] - xk) < 0.13 * s),
+                wd.f_and(wd.f_plane((0, 0, zk - 0.11 * s), (0, 0, 1)), wd.f_plane((0, 0, zk + 0.12 * s), (0, 0, -1)),
+                         wd.f_plane((xk - 0.095 * s, 0, 0), (1, 0, 0)), wd.f_plane((xk + 0.095 * s, 0, 0), (-1, 0, 0))), 0.004)
+        boot = ctx.parts["boot_" + side]
+        y_toe = float(geo.co(boot)[:, 1].min())
+        laid_on("toecap_" + side, "iron", boot, lambda c, y_toe=y_toe: c[:, 1] < y_toe + 0.13 * s,
+                wd.f_plane((0, y_toe + 0.095 * s, 0), (0, -1, 0)), 0.003)
+        el, wr = ctx.head("lowerarm_" + side), ctx.head("hand_" + side)
+        am = (ctx.w("lowerarm_" + side) > 0.3) & side_mask(ctx, side)
+        for k, t in enumerate((0.47, 0.70)):
+            wd.ring_band(ctx, "guard_strap_%s%d" % (side, k), "strap", am, el, wr, [t - 0.03, t, t + 0.03], [0.021, 0.024, 0.021],
+                         rigid="lowerarm_" + side)
+
+
+fo.BUILDERS.update({"gorm_yard": gorm_yard, "wren": wren, "grandmaster": grandmaster, "ashka_coat": ashka_coat, "mirela_habit": mirela_habit})

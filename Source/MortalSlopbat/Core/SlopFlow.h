@@ -18,12 +18,18 @@ namespace Slop
 		int32 RoundsToWin = 2;
 		// Seconds on the clock each round (0: no clock).
 		int32 RoundSeconds = 90;
-		// The Reflection: a slop-dark mirror match in the Master tower.
+		// The Reflection: a dark mirror match in the Master tower.
 		bool bMirrorDark = false;
-		// Health overrides: the Slopbat's by tower; survival's carried health (0 for full).
+		// Health overrides: the Fragment's by tower; survival's carried health (0 for full).
 		int32 P2Health = 0;
 		int32 P1Health = 0;
+		// Hollis fights as a boss (FFighter::GuardianTick); GuardianPhase 1 is phase one only, 2 starts
+		// in the Fragmented Vessel (story mode splits the fight between Wren and Ashka), 0 both.
+		bool bGuardian = false;
+		int32 GuardianPhase = 0;
 		bool bCostume[2] = {false, false};
+		// The body each side wears, when it is not the fighter's usual one.
+		FName Outfit[2];
 		bool bFromArcade = false;
 		int32 TrialIndex = 0;
 		// A CPU tier beyond the difficulty for the CPU's fighter (the Grandmaster's challenge: 3,
@@ -48,8 +54,13 @@ namespace Slop
 	{
 		FName Opponent;
 		FName Stage;
-		// "fight", "rival", "mirror" or "boss".
+		// "fight", "rival", "mirror", "servant", "boss" or "secret".
 		FName Kind;
+		// Story mode: what the fighter sees and hears before this fight, and who fights it, when that
+		// is not the run's fighter.
+		TArray<FString> Lines;
+		FName Player;
+		FName Outfit;
 	};
 
 	// Which match comes next, and the arcade and survival runs in progress.
@@ -57,8 +68,11 @@ namespace Slop
 	{
 	public:
 		static const TArray<FName>& Arenas();
-		static FName BossArena() { return TEXT("roost"); }
+		static FName BossArena() { return TEXT("heartwater"); }
 		static constexpr int32 BossHealth[3] = {1400, 1650, 1900};
+		// Hollis Fathom, third in the hierarchy: below the Fragment, above the six.
+		static FName ServantId() { return TEXT("hollis"); }
+		static constexpr int32 ServantHealth[3] = {800, 900, 1000};
 		static constexpr int32 SurvivalBossEvery = 5;
 		static constexpr double SurvivalRefill = 0.3;
 		static constexpr double SurvivalFlawlessRefill = 0.15;
@@ -75,6 +89,12 @@ namespace Slop
 		// Arcade: ordinary opponents, the rival, the Reflection (Master only) and the boss.
 		TArray<FRung> PlanArcade(FName Fighter, int32 TowerIndex, int32 Seed) const;
 		void StartArcade(FName Fighter, int32 TowerIndex, const TArray<FRung>& Rungs);
+		// Story mode: Wren's way through the Ebony Heart Tournament (story.json "story"), the arcade's
+		// ladder with its own cards. The Grandmaster appears once, after the Fragment, however many
+		// continues it took; Wren may walk past him.
+		TArray<FRung> PlanStory() const;
+		void StartStory(int32 TowerIndex);
+		bool InStory() const { return Arcade.bStory; }
 		bool InArcade() const { return Arcade.Rungs.Num() > 0; }
 		const FRung* CurrentRung() const { return InArcade() ? &Arcade.Rungs[Arcade.Rung] : nullptr; }
 		int32 RungIndex() const { return Arcade.Rung; }
@@ -89,12 +109,12 @@ namespace Slop
 		int32 AddArcadeScore(const FMatchResult& R);
 		// After a won arcade match: advances the ladder; false when the run is complete.
 		bool ArcadeAdvance(bool bFlawless, double NowSeconds);
-		// The Grandmaster's secret challenge: a run that beat the Slopbat without a continue meets him
+		// The Grandmaster's secret challenge: a run that beat the Fragment without a continue meets him
 		// on the still water of the Drowned Chapel, at Master, as one more rung ("secret").
 		static FName SecretFighter() { return TEXT("grandmaster"); }
 		bool SecretEarned() const;
 		void AddSecretRung();
-		// Development: a run already at the Slopbat, beaten without a continue (to reach the secret
+		// Development: a run already at the Fragment, beaten without a continue (to reach the secret
 		// challenge without climbing a tower).
 		void SkipToBossCleared(FName Fighter, int32 TowerIndex);
 		bool OnSecretRung() const { const FRung* R = CurrentRung(); return R && R->Kind == TEXT("secret"); }
@@ -124,6 +144,7 @@ namespace Slop
 			TArray<FRung> Rungs;
 			int32 Rung = 0;
 			int32 Continues = 0;
+			bool bStory = false;
 			double StartedAt = 0;
 			double Seconds = 0;
 			int32 Flawless = 0;

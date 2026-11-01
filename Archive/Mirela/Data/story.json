@@ -1,0 +1,14 @@
+{
+	"rival": "hollis",
+	"home": "drowned_chapel",
+	"bio": "A mourner of Lowmere's floating cemetery, paid to weep at drowned men's funerals. Her voice can unmake. She means to sing the Fragment to sleep for good.",
+	"rival_lines": [
+		"I sang for you once. You did not stay buried.",
+		"...still listening."
+	],
+	"ending": [
+		"Mirela did not ask the Fragment for anything. She sat at the edge of its pool and sang the last verse of the funeral song, the one no mourner is paid to finish.",
+		"It closed its eyes. The waters went down further than anyone in Lowmere had ever seen.",
+		"Walking home across the uncovered mud, she heard, far below, the slow toll of a diving bell, keeping time with her."
+	]
+}

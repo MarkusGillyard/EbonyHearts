@@ -4,6 +4,7 @@
 #include "Components/SkyLightComponent.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/PointLightComponent.h"
 #include "Components/PoseableMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/Texture2D.h"
@@ -11,12 +12,15 @@
 #include "GameFramework/PlayerController.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Core/SlopGameInstance.h"
+#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
+#include "UI/SlopStyle.h"
 #include "View/SlopFighterActor.h"
 
 namespace SlopShowroomImpl
 {
 	// The camera: 30 degrees of vertical view at 16:9, level. The figures' depth and the camera's
-	// height place them on screen (SetLayout); the select screen's panels are the default.
+	// height place them on screen (SetLayout).
 	constexpr double VFov = 30.0;
 	constexpr double EyeHeight = 89.0;
 
@@ -57,12 +61,13 @@ ASlopShowroom::ASlopShowroom()
 
 void ASlopShowroom::Open(APlayerController* PC)
 {
-	// A wet dark floor, a low teal haze, and a faint night sky for the ambient.
+	// A wet dark floor, a far sky of the Heart's violet, a low haze, and a faint night for the ambient.
+	UStaticMesh* Plane = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane"));
 	UStaticMeshComponent* Floor = NewObject<UStaticMeshComponent>(this);
 	Floor->SetupAttachment(Root);
-	Floor->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane")));
-	Floor->SetRelativeLocation(FVector(Depth, 0, 0));
-	Floor->SetRelativeScale3D(FVector(60, 60, 1));
+	Floor->SetStaticMesh(Plane);
+	Floor->SetRelativeLocation(FVector(1800, 0, 0));
+	Floor->SetRelativeScale3D(FVector(80, 90, 1));
 	Floor->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	if (UMaterialInterface* Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Slop/Materials/M_Surface.M_Surface")))
 	{
@@ -71,36 +76,61 @@ void ASlopShowroom::Open(APlayerController* PC)
 		if (UTexture2D* T = Tex(TEXT("BaseColor"))) M->SetTextureParameterValue(TEXT("BaseColorTex"), T);
 		if (UTexture2D* T = Tex(TEXT("Normal"))) M->SetTextureParameterValue(TEXT("NormalTex"), T);
 		if (UTexture2D* T = Tex(TEXT("ORM"))) M->SetTextureParameterValue(TEXT("ORMTex"), T);
-		M->SetVectorParameterValue(TEXT("Tint"), FLinearColor(0.22f, 0.24f, 0.23f));
+		M->SetVectorParameterValue(TEXT("Tint"), FLinearColor(0.15f, 0.14f, 0.18f));
 		M->SetScalarParameterValue(TEXT("Tiling"), 0.5f);
-		M->SetScalarParameterValue(TEXT("Roughness"), 0.55f);
+		M->SetScalarParameterValue(TEXT("Roughness"), 0.3f);
 		Floor->SetMaterial(0, M);
 	}
 	Floor->RegisterComponent();
+	if (UMaterialInterface* HallSky = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Slop/Materials/M_Hall.M_Hall"), nullptr, LOAD_Quiet | LOAD_NoWarn))
+	{
+		Wall = NewObject<UStaticMeshComponent>(this);
+		Wall->SetupAttachment(Root);
+		Wall->SetStaticMesh(Plane);
+		Wall->SetRelativeLocation(FVector(5400, 0, 1300));
+		Wall->SetRelativeRotation(FRotator(90, 0, 0));
+		Wall->SetRelativeScale3D(FVector(44, 88, 1));
+		Wall->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Wall->SetCastShadow(false);
+		UMaterialInstanceDynamic* Night = UMaterialInstanceDynamic::Create(HallSky, this);
+		Night->SetScalarParameterValue(TEXT("Intensity"), 0.8f);
+		Wall->SetMaterial(0, Night);
+		Wall->RegisterComponent();
+	}
 	Fog = NewObject<UExponentialHeightFogComponent>(this);
 	Fog->SetupAttachment(Root);
-	Fog->SetFogDensity(0.12f);
-	Fog->SetFogHeightFalloff(0.6f);
-	Fog->SetFogInscatteringColor(FLinearColor(0.02f, 0.035f, 0.03f));
-	Fog->SetStartDistance(300.f);
+	Fog->SetFogDensity(0.05f);
+	Fog->SetFogHeightFalloff(0.9f);
+	Fog->SetFogInscatteringColor(FLinearColor(0.016f, 0.008f, 0.03f));
+	Fog->SetStartDistance(500.f);
 	Fog->RegisterComponent();
 	USkyLightComponent* Sky = NewObject<USkyLightComponent>(this);
 	Sky->SetupAttachment(Root);
 	Sky->SetMobility(EComponentMobility::Movable);
 	Sky->SourceType = ESkyLightSourceType::SLS_SpecifiedCubemap;
 	Sky->SetCubemap(LoadObject<UTextureCube>(nullptr, TEXT("/Game/Slop/Skies/HDR_lakeside_night.HDR_lakeside_night")));
-	Sky->SetLightColor(FLinearColor(0.32f, 0.36f, 0.34f));
-	Sky->SetIntensity(0.45f);
+	Sky->SetLightColor(FLinearColor(0.3f, 0.3f, 0.38f));
+	Sky->SetIntensity(0.4f);
 	Sky->RegisterComponent();
+	// A low violet glow out on the floor, for the sky's light to lie along the wet stone.
+	Pool = NewObject<UPointLightComponent>(this);
+	Pool->SetupAttachment(Root);
+	Pool->SetIntensityUnits(ELightUnits::Candelas);
+	Pool->SetIntensity(800.f);
+	Pool->SetLightColor(FLinearColor(0.42f, 0.16f, 0.9f));
+	Pool->SetAttenuationRadius(3200.f);
+	Pool->SetCastShadows(false);
+	Pool->SetRelativeLocation(FVector(1900, 0, 300));
+	Pool->RegisterComponent();
 	for (int32 S = 0; S < 2; ++S)
 	{
 		FFigure& F = Figures[S];
-		// A warm key from the front and the camera's side, a coloured rim from behind.
+		// A cool key from the front and the camera's side, a coloured rim from behind.
 		F.Key = NewObject<USpotLightComponent>(this);
 		F.Key->SetupAttachment(Root);
 		F.Key->SetIntensityUnits(ELightUnits::Candelas);
-		F.Key->SetIntensity(70.f);
-		F.Key->SetLightColor(FLinearColor(1.f, 0.86f, 0.7f));
+		F.Key->SetIntensity(120.f);
+		F.Key->SetLightColor(FLinearColor(0.84f, 0.82f, 1.f));
 		F.Key->SetOuterConeAngle(32.f);
 		F.Key->SetInnerConeAngle(16.f);
 		F.Key->SetAttenuationRadius(1200.f);
@@ -130,8 +160,30 @@ FVector ASlopShowroom::Spot(int32 Side) const
 	{
 		return FVector(Depth, 0, 0);
 	}
-	const double Half = FMath::Tan(FMath::DegreesToRadians(HFov(VFov) * 0.5));
-	return FVector(Depth, PanelX[Side] * Depth * Half, 0);
+	return FVector(Depth, PanelX[Side] * Depth * TanH, 0);
+}
+
+void ASlopShowroom::FitView()
+{
+	if (bPortrait)
+	{
+		return;
+	}
+	double Aspect = 16.0 / 9.0;
+	if (GEngine && GEngine->GameViewport)
+	{
+		FVector2D Size;
+		GEngine->GameViewport->GetViewportSize(Size);
+		if (Size.Y > 0)
+		{
+			Aspect = Size.X / Size.Y;
+		}
+	}
+	const double Base = FMath::Tan(FMath::DegreesToRadians(VFov * 0.5));
+	const double TanV = Aspect >= 16.0 / 9.0 ? Base : Base * (16.0 / 9.0) / Aspect;
+	TanH = TanV * Aspect;
+	Camera->SetAspectRatio((float)Aspect);
+	Camera->SetFieldOfView((float)(2.0 * FMath::RadiansToDegrees(FMath::Atan(TanH))));
 }
 
 void ASlopShowroom::PlaceLights()
@@ -157,35 +209,32 @@ void ASlopShowroom::SetLayout(double LeftX, double RightX, double FeetY, double 
 	// A 1.8 m figure HeightPx tall: the depth that gives; then the camera height that puts
 	// the floor line at FeetY; then each side's offset to its panel centre.
 	const double TanV = FMath::Tan(FMath::DegreesToRadians(VFov * 0.5));
-	Depth = 180.0 * 1080.0 / (HeightPx * 2.0 * TanV);
+	TargetDepth = 180.0 * 1080.0 / (HeightPx * 2.0 * TanV);
 	const double FeetNdc = 1.0 - 2.0 * FeetY / 1080.0;
-	Camera->SetRelativeLocation(FVector(0, 0, -FeetNdc * Depth * TanV));
-	PanelX[0] = LeftX / 960.0 - 1.0;
-	PanelX[1] = RightX / 960.0 - 1.0;
-	PlaceLights();
-}
-
-void ASlopShowroom::SetMood(const FLinearColor& Haze)
-{
-	if (Fog)
+	TargetCameraZ = -FeetNdc * TargetDepth * TanV;
+	TargetPanelX[0] = LeftX / 960.0 - 1.0;
+	TargetPanelX[1] = RightX / 960.0 - 1.0;
+	if (!bLaidOut)
 	{
-		Fog->SetFogInscatteringColor(Haze);
+		bLaidOut = true;
+		Depth = TargetDepth;
+		CameraZ = TargetCameraZ;
+		PanelX[0] = TargetPanelX[0];
+		PanelX[1] = TargetPanelX[1];
 	}
 }
 
-void ASlopShowroom::SetReflection(int32 Side, bool bOn)
+void ASlopShowroom::Clear()
 {
-	bReflection[Side] = bOn;
-	if (Figures[Side].View)
-	{
-		Figures[Side].View->SetTint(FLinearColor(0.06f, 0.1f, 0.05f), bOn ? 0.72f : 0.f, bOn ? 0.6f : 0.f);
-	}
+	Show(0, NAME_None, false);
+	Show(1, NAME_None, false);
+	SetLayout(-2600.0, 2600.0, 1000.0, 620.0);
 }
 
-void ASlopShowroom::Show(int32 Side, FName Id, bool bCostume)
+void ASlopShowroom::Show(int32 Side, FName Id, bool bCostume, FName Outfit)
 {
 	FFigure& F = Figures[Side];
-	if (F.Id == Id && F.bCostume == bCostume && (F.View || Id.IsNone() || F.bFailed))
+	if (F.Id == Id && F.bCostume == bCostume && F.Outfit == Outfit && (F.View || Id.IsNone() || F.bFailed))
 	{
 		return;
 	}
@@ -197,6 +246,7 @@ void ASlopShowroom::Show(int32 Side, FName Id, bool bCostume)
 	F.Sim.Reset();
 	F.Id = Id;
 	F.bCostume = bCostume;
+	F.Outfit = Outfit;
 	F.Celebrate = 0.0;
 	F.Age = 0.0;
 	F.bFailed = false;
@@ -221,7 +271,7 @@ void ASlopShowroom::Show(int32 Side, FName Id, bool bCostume)
 	FActorSpawnParameters P;
 	P.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	F.View = GetWorld()->SpawnActor<ASlopFighterActor>(P);
-	if (!F.View->Setup(Me, USlopGameInstance::MeshFor(Id)))
+	if (!F.View->Setup(Me, USlopGameInstance::MeshFor(Outfit.IsNone() ? Id : Outfit)))
 	{
 		F.View->Destroy();
 		F.View = nullptr;
@@ -231,10 +281,6 @@ void ASlopShowroom::Show(int32 Side, FName Id, bool bCostume)
 	if (bCostume)
 	{
 		F.View->SetCostume(FLinearColor(0.55f, 0.75f, 1.1f));
-	}
-	if (bReflection[Side])
-	{
-		F.View->SetTint(FLinearColor(0.06f, 0.1f, 0.05f), 0.72f, 0.6f);
 	}
 	F.View->SyncFromSim(true);
 	if (F.Rim)
@@ -266,14 +312,41 @@ void ASlopShowroom::Place(FFigure& F, int32 Side, double Dt)
 	const double A = bPortrait ? 0.0 : FMath::Sin(Time * 0.35 + Side * 1.3) * 0.18 + 0.25 * Facing;
 	UPoseableMeshComponent* Body = F.View->Body;
 	FTransform T = Body->GetComponentTransform();
-	T = T * FTransform(FRotator(0.0, FMath::RadiansToDegrees(A), 0.0), Spot(Side));
+	// A new figure steps in from its own side of the screen.
+	const double In = bPortrait ? 0.0 : 1.0 - SlopUI::EaseOut((float)(F.Age / 0.3));
+	const FVector At = Spot(Side) + FVector(0.0, Facing * -130.0 * In, 0.0);
+	T = T * FTransform(FRotator(0.0, FMath::RadiansToDegrees(A), 0.0), At);
 	Body->SetWorldTransform(T);
+	if (!bPortrait)
+	{
+		// A fighting stance carries the hips half a metre off the mark, more on a big fighter. Screens
+		// compose around the body, so it is centred by its hips; smoothed, to leave its sway in.
+		const double Lean = Body->GetBoneLocation(TEXT("pelvis")).Y - At.Y;
+		F.Lean = F.Age < 0.1 ? Lean : FMath::Lerp(F.Lean, Lean, FMath::Min(Dt * 2.0, 1.0));
+		Body->AddWorldOffset(FVector(0.0, -F.Lean, 0.0));
+	}
 }
 
 void ASlopShowroom::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	Time += DeltaSeconds;
+	if (!bPortrait)
+	{
+		FitView();
+		const bool bStill = SlopUI::ReducedMotion();
+		const double K = bStill ? 1.0 : 1.0 - FMath::Exp(-DeltaSeconds * 4.0);
+		Depth = FMath::Lerp(Depth, TargetDepth, K);
+		CameraZ = FMath::Lerp(CameraZ, TargetCameraZ, K);
+		PanelX[0] = FMath::Lerp(PanelX[0], TargetPanelX[0], K);
+		PanelX[1] = FMath::Lerp(PanelX[1], TargetPanelX[1], K);
+		Camera->SetRelativeLocation(FVector(0.0, bStill ? 0.0 : FMath::Sin(Time * 0.11) * 14.0, CameraZ));
+		if (Pool)
+		{
+			Pool->SetIntensity(bStill ? 800.f : 800.f + 140.f * (float)FMath::Sin(Time * 0.5));
+		}
+		PlaceLights();
+	}
 	const int32 Steps = Clock.Advance(DeltaSeconds);
 	static const Slop::FPadState None[2];
 	for (int32 S = 0; S < 2; ++S)
@@ -302,13 +375,28 @@ void ASlopShowroom::Tick(float DeltaSeconds)
 
 bool ASlopShowroom::Portrait(FName Id)
 {
+	// Portraits are of the fighter alone, on black.
 	bPortrait = true;
+	if (Wall)
+	{
+		Wall->SetVisibility(false);
+	}
+	if (Pool)
+	{
+		Pool->SetVisibility(false);
+	}
 	FFigure& F = Figures[0];
 	if (F.Id != Id)
 	{
 		Show(1, NAME_None, false);
 		Show(0, Id, false);
 		F.Sim->Fighters[0].Facing = 1;
+		// A fighter whose guard hides their face stands easy for it.
+		const Slop::FFighterDef* Def = Slop::GetContent().Fighter(Id);
+		if (F.View && Def && Def->Look.IsValid() && Def->Look->HasField(TEXT("portrait_pose")))
+		{
+			F.View->Anim.PoseOverride = FName(*Def->Look->GetStringField(TEXT("portrait_pose")));
+		}
 		return false;
 	}
 	if (!F.View || F.Age < 1.0)

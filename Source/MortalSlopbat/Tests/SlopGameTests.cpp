@@ -6,6 +6,7 @@
 #include "Core/SlopFlow.h"
 #include "Core/SlopSave.h"
 #include "Core/SlopInputRouter.h"
+#include "Framework/Application/SlateApplication.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -344,6 +345,16 @@ bool FSlopProgressFile::RunTest(const FString&)
 		FFileHelper::LoadFileToString(After, *OldPath);
 		TestEqual("the original file is untouched", After, OldText);
 	}
+	// A trial cleared under its old name stays cleared under the name on the fighter's sheet.
+	FFileHelper::SaveStringToFile(TEXT(R"({"version": 1, "trials": {"wren": ["Turning Light", "One-Two, Head Kick"]}})"), *Path);
+	{
+		FSlopProgress P;
+		P.Load();
+		const TArray<FString> Done = P.TrialsDone(TEXT("wren"));
+		TestTrue("carried to its new name", Done.Contains(TEXT("Spinning Heel Kick")));
+		TestTrue("an unchanged name stays", Done.Contains(TEXT("One-Two, Head Kick")));
+		TestFalse("the old name is gone", Done.Contains(TEXT("Turning Light")));
+	}
 	IFileManager::Get().Delete(*Path);
 	IFileManager::Get().Delete(*(Path + TEXT(".bad")));
 	IFileManager::Get().Delete(*OldPath);
@@ -371,6 +382,49 @@ bool FSlopFlowColours::RunTest(const FString&)
 	return true;
 }
 
+// Story mode: Wren, every established fighter in turn, Hollis, then the Fragment, with cards before each
+// fight; and the Grandmaster meets her once, after the Fragment, however she got there.
+SLOP_TEST(FSlopFlowStory, "Flow.StoryIsWrensWayToTheFragmentAndTheGrandmasterOnce")
+bool FSlopFlowStory::RunTest(const FString&)
+{
+	FGameFlow F;
+	F.StartStory(1);
+	TestTrue("in story", F.InStory());
+	TestEqual("as Wren", F.ArcadeFighter(), FName(TEXT("wren")));
+	const TArray<FRung>& R = F.Rungs();
+	if (!TestTrue("the ladder", R.Num() == 7))
+	{
+		return true;
+	}
+	TSet<FName> Met;
+	for (const FRung& Rung : R)
+	{
+		Met.Add(Rung.Opponent);
+		TestTrue(Rung.Opponent.ToString() + TEXT(" has a card"), Rung.Lines.Num() > 0);
+		TestTrue(Rung.Opponent.ToString() + TEXT(" is in the data"), GetContent().Fighter(Rung.Opponent) != nullptr);
+		TestNotEqual("Wren never meets herself", Rung.Opponent, FName(TEXT("wren")));
+		TestNotEqual("the Grandmaster is not a rung of the ladder", Rung.Opponent, FName(TEXT("grandmaster")));
+	}
+	TestEqual("each of them once", Met.Num(), 6);
+	TestFalse("Ashka stands with her, not against her", Met.Contains(FName(TEXT("ashka"))));
+	TestEqual("Hollis stands before the Fragment", R[4].Opponent, FGameFlow::ServantId());
+	TestEqual("Ashka joins her against him", R[5].Player, FName(TEXT("ashka")));
+	TestEqual("in his second phase", R[5].Kind, FName(TEXT("servant_two")));
+	TestEqual("the Fragment last", R[6].Kind, FName(TEXT("boss")));
+	TestEqual("in the Heartwater", R[6].Stage, FGameFlow::BossArena());
+	for (int32 I = 0; I < 6; ++I)
+	{
+		F.ArcadeAdvance(false, 1.0);
+		F.ArcadeRetry();
+		TestEqual("the fighter for that fight", F.Config.P1, I == 4 ? FName(TEXT("ashka")) : FName(TEXT("wren")));
+	}
+	TestTrue("on the Fragment", F.CurrentRung()->Kind == TEXT("boss"));
+	TestTrue("continues do not keep him away in the story", F.ArcadeContinues() > 0 && F.SecretEarned());
+	F.AddSecretRung();
+	TestTrue("he comes after the Fragment", F.OnSecretRung());
+	return true;
+}
+
 SLOP_TEST(FSlopFlowArcade, "Flow.ArcadeLadderScoringAndEnd")
 bool FSlopFlowArcade::RunTest(const FString&)
 {
@@ -378,10 +432,20 @@ bool FSlopFlowArcade::RunTest(const FString&)
 	for (int32 Tower = 0; Tower < 3; ++Tower)
 	{
 		const TArray<FRung> R = F.PlanArcade(TEXT("ashka"), Tower, 42);
-		const int32 Expected = FGameFlow::Tower(Tower).Fights + 1 + (FGameFlow::Tower(Tower).bMirror ? 1 : 0) + 1;
+		const int32 Expected = FGameFlow::Tower(Tower).Fights + 1 + (FGameFlow::Tower(Tower).bMirror ? 1 : 0) + 2;
 		TestEqual(FString::Printf(TEXT("tower %d length"), Tower), R.Num(), Expected);
-		TestEqual("rival second to last before mirror/boss", R[FGameFlow::Tower(Tower).Fights].Kind, FName(TEXT("rival")));
+		TestEqual("rival after the ordinary fights", R[FGameFlow::Tower(Tower).Fights].Kind, FName(TEXT("rival")));
+		TestEqual("Hollis before the Fragment", R[R.Num() - 2].Opponent, FGameFlow::ServantId());
+		TestEqual("as its servant", R[R.Num() - 2].Kind, FName(TEXT("servant")));
 		TestEqual("boss last", R.Last().Kind, FName(TEXT("boss")));
+		const TArray<FRung> Mirela = F.PlanArcade(TEXT("mirela"), Tower, 42);
+		int32 Hollis = 0;
+		for (const FRung& Rung : Mirela)
+		{
+			Hollis += Rung.Opponent == FGameFlow::ServantId() ? 1 : 0;
+			TestFalse("Hollis is her rival, not a second fight", Rung.Kind == TEXT("servant"));
+		}
+		TestEqual("Mirela meets Hollis once", Hollis, 1);
 		TestEqual("boss in the roost", R.Last().Stage, FGameFlow::BossArena());
 		TSet<FName> Seen;
 		for (int32 I = 0; I < FGameFlow::Tower(Tower).Fights; ++I)
@@ -403,7 +467,7 @@ bool FSlopFlowArcade::RunTest(const FString&)
 	TestEqual("score = win + health + time", Pts, 10000 + 20 * 500 + 100 * 40);
 	Win.bFlawless = true;
 	Win.Finisher = TEXT("last_light");
-	TestEqual("flawless and Sloptality", FGameFlow::FightScore(Win), 10000 + 20 * 500 + 25000 + 15000 + 4000);
+	TestEqual("flawless and Hearted", FGameFlow::FightScore(Win), 10000 + 20 * 500 + 25000 + 15000 + 4000);
 	Win.Finisher = TEXT("stage_vat");
 	TestEqual("stage finisher", FGameFlow::FightScore(Win), 10000 + 20 * 500 + 25000 + 10000 + 4000);
 	int32 Steps = 0;
@@ -440,7 +504,7 @@ bool FSlopFlowSurvival::RunTest(const FString&)
 		TestEqual("difficulty by wave", F.Config.Difficulty, FMath::Clamp(Wave / 3, 0, 2));
 		if (FGameFlow::SurvivalBossWave(Wave))
 		{
-			TestEqual("the Slopbat every fifth wave", F.Config.P2, FName(TEXT("slopbat")));
+			TestEqual("Hollis and the Fragment by turns every fifth wave", F.Config.P2, (Wave + 1) % 10 == 0 ? FName(TEXT("slopbat")) : FGameFlow::ServantId());
 		}
 		else
 		{
@@ -474,6 +538,33 @@ bool FSlopGlyphsBeforeInput::RunTest(const FString&)
 	TestTrue("a pad connected and nothing pressed: the pad's prompts", R->Glyphs() != EGlyphs::Keyboard);
 	R->OnConnectionChanged(FInputDeviceId::CreateFromInternalId(7), false);
 	TestTrue("the pad gone: keyboard prompts again", R->Glyphs() == EGlyphs::Keyboard);
+	return true;
+}
+
+// Automatic shows a connected pad's buttons even after a key was pressed; a choice in Settings holds
+// whatever is plugged in, and a pad's own bindings never read as keys.
+SLOP_TEST(FSlopGlyphsChoice, "Input.ButtonPromptsFollowTheChoice")
+bool FSlopGlyphsChoice::RunTest(const FString&)
+{
+	FSlopSettings S;
+	TSharedRef<FSlopInputRouter> R = MakeShared<FSlopInputRouter>(S);
+	S.Glyphs = TEXT("playstation");
+	TestTrue("PlayStation with no pad", R->Glyphs() == EGlyphs::PlayStation);
+	S.Glyphs = TEXT("xbox");
+	TestTrue("Xbox with no pad", R->Glyphs() == EGlyphs::Xbox);
+	R->OnConnectionChanged(FInputDeviceId::CreateFromInternalId(7), true);
+	S.Glyphs = TEXT("pc");
+	TestTrue("PC with a pad connected", R->Glyphs() == EGlyphs::Keyboard);
+	TestTrue("a pad's bindings are never keys", R->PadGlyphs() != EGlyphs::Keyboard);
+	S.Glyphs = TEXT("auto");
+	if (FSlateApplication::IsInitialized())
+	{
+		R->HandleKeyDownEvent(FSlateApplication::Get(), FKeyEvent(EKeys::W, FModifierKeysState(), 0, false, 0, 0));
+		TestTrue("something was pressed", R->AnyPressed());
+		TestTrue("a key pressed with a pad connected: still the pad's", R->Glyphs() != EGlyphs::Keyboard);
+	}
+	TestTrue("a DualShock says Share", FSlopInputRouter::NameSaysShare(TEXT("PS4 Controller")));
+	TestFalse("a DualSense says Create", FSlopInputRouter::NameSaysShare(TEXT("DualSense Wireless Controller")));
 	return true;
 }
 

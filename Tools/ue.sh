@@ -36,8 +36,9 @@ run_tests() {
 # Runs the game from the editor build in a window. Extra arguments pass through (e.g. -SlopMatch=...).
 # With no monitor attached (display switched off) a window's Vulkan presentation blocks forever;
 # render offscreen instead (screenshots and timings still come from the GPU).
+# SLOP_OFFSCREEN=1 asks for the same on a live desktop, for captures at any resolution with no window.
 offscreen_flag() {
-	if [ "$(xrandr --listmonitors 2>/dev/null | head -1 | awk '{print $2}')" = "0" ]; then echo -RenderOffscreen -ForceRes; fi
+	if [ -n "${SLOP_OFFSCREEN:-}" ] || [ "$(xrandr --listmonitors 2>/dev/null | head -1 | awk '{print $2}')" = "0" ]; then echo -RenderOffscreen -ForceRes; fi
 }
 
 # SDL drops pad events for a window without focus (and an offscreen run has no window); the

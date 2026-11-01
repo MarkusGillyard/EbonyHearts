@@ -16,9 +16,9 @@ The Verified column says how it was checked; an empty cell means it has not been
 | Mirela Sorrow, zoner | `mirela.json` | Same | Same | Trials and CPU pairings in tests; body built, seen in matches |
 | Bram Ketch, rushdown | `bram.json` | Same | Same | Parry test; body built (grey-brown hair, mutton chops as in the look file), seen in matches |
 | Hollis Fathom, heavy zoner | `hollis.json` | Same | Same | Trials and CPU pairings in tests; body built, seen in matches |
-| The Slopbat, boss (1400/1650/1900 health by tower) | `slopbat.json`, `scripts/ai/boss_brain.gd` | Preserve patterns; changes from play (2.5.1), as Markus found the boss fired tar and wind nonstop and had too many unblockables: tar and wind are followed by a wait (150/120/95 ticks by level) and never come twice running; the Bite (a grab) can be broken like a throw, starts in 11 ticks instead of 8, does 130 instead of 170 and waits 300/240/180 ticks between bites. The Storm Shroud stays unblockable (below half health, a 50-tick charge that a blow breaks) | `AI/SlopAI.cpp` FBossBrain | Boss tests (storm gate, unthrowable, fights end at all levels, ranged waits and no repeats against a CPU and a blocker, waits between bites, the bite broken by a punch); body built with wings; fought and beaten in an unattended arcade run |
+| The Fragment, boss (1400/1650/1900 health by tower) | `slopbat.json`, `scripts/ai/boss_brain.gd` | Preserve patterns; changes from play (2.5.1), as Markus found the boss fired tar and wind nonstop and had too many unblockables: tar and wind are followed by a wait (150/120/95 ticks by level) and never come twice running; the Bite (a grab) can be broken like a throw, starts in 11 ticks instead of 8, does 130 instead of 170 and waits 300/240/180 ticks between bites. The Storm Shroud stays unblockable (below half health, a 50-tick charge that a blow breaks) | `AI/SlopAI.cpp` FBossBrain | Boss tests (storm gate, unthrowable, fights end at all levels, ranged waits and no repeats against a CPU and a blocker, waits between bites, the bite broken by a punch); body built with wings; fought and beaten in an unattended arcade run |
 | Daxion, the stranger in white | `daxion.json`, `scripts/ai/stranger_rules.gd`, DESIGN.md | Preserved through 2.6.7 (`FStrangerRules`, memory 0-6, Markus's line verbatim); removed from Ebony Hearts at 2.7.0 by Markus's order and archived whole for Slopperfall (`Archive/Slopperfall/Daxion`), his techniques carried over to the Grandmaster | Archive; code in history up to `59e61c6` | `Content.DaxionIsArchivedNotInTheGame`; the move-coverage report |
-| Alternate colours, mirror-match colours, the Reflection (slop-dark tint) | `fighter_view.gd`, `match.gd` | Preserve | `ASlopFighterActor::SetCostume/SetTint` | Code path; a mirror match played (Survival, Gorm v Gorm); not inspected on screen |
+| Alternate colours, mirror-match colours, the Reflection (dark tint) | `fighter_view.gd`, `match.gd` | Preserve | `ASlopFighterActor::SetCostume/SetTint` | Code path; a mirror match played (Survival, Gorm v Gorm); not inspected on screen |
 
 ## Stages
 
@@ -27,7 +27,7 @@ The Verified column says how it was checked; an empty cell means it has not been
 | The Rendering Yards (+ stage finisher "Into the Vat") | `scripts/view/arenas/yards.gd`, `basics.json` `stage_vat` | Preserve composition; improve with modelled Blender set + CC0 surfaces | `View/SlopArena`, `SourceArt/Stages/rendering_yards` | Built, lit, seen from the fight camera; every piece's materials checked (test) |
 | The Drowned Chapel | `arenas/chapel.gd` | Same | Same | Same |
 | Lowmere Stilt Market | `arenas/market.gd` | Same | Same | Same |
-| The Slopbat's Roost (boss stage; versus once unlocked) | `arenas/roost.gd` | Same | Same | Same |
+| The Roost (boss stage; versus once unlocked) | `arenas/roost.gd` | Same | Same | Same |
 
 ## Modes and flow
 
@@ -57,7 +57,7 @@ The Verified column says how it was checked; an empty cell means it has not been
 | Juggle points (limit 7), damage scaling from the third hit to 40 % | `fight_sim.gd` | Preserve | Tests |
 | Chip only from specials and projectiles; one projectile each; clashes | `fight_sim.gd` | Preserve | Tests |
 | Armour, parry, buff, teleport, pull, crumple, daze, air-to-air knockdown | `fight_sim.gd`, fighter data | Preserve | Parry/armour/teleport tests |
-| KO freeze (14/18 ticks), slow motion, camera punch-in; FINISH dizzy 7 s; Sloptalities by range; stage finisher | `match.gd`, `fight_sim.gd`, `finisher_director.gd` | Preserve | Round tests; seen in screenshots |
+| KO freeze (14/18 ticks), slow motion, camera punch-in; FINISH dizzy 7 s; Hearted finishers by range; stage finisher | `match.gd`, `fight_sim.gd`, `finisher_director.gd` | Preserve | Round tests; seen in screenshots |
 | Post-KO input | `fighter.gd` | Improve: the original let dial-a-combo links keep chaining through the round end; now nothing chains after a knockout | Test |
 | CPU reaction delay | `cpu_brain.gd` | Improve: the original read some opponent states and all distances live; now everything is seen through the delay | Identical-seed test |
 | Impact presentation (hit-stop, body flash, ring, sparks, light, blood by gore setting, dust, camera shake and kick) | `vfx.gd`, `fight_camera.gd`, `fighter_view.gd` | Improve: the victim's shake fades over the freeze (vertical in the air), bodies keep moving slightly through it, the flash only on counters and heavy blows, the camera still on light and medium blows; sound by where a blow lands and the weapon's material | Seen in recordings |

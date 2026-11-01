@@ -1,6 +1,6 @@
 # Assets, rights and notices
 
-Ebony Hearts (formerly Mortal Slopbat) is Markus Gillyard's game. Its design, characters, story, data, code, synthesised
+Ebony Hearts is Markus Gillyard's game. Its design, characters, story, data, code, synthesised
 sound and the stage and fighter builds made for this rebuild are his (© 2026 Markus Gillyard).
 Everything else the game uses is listed here, with where it came from and under what terms.
 
@@ -19,8 +19,10 @@ downloads themselves are not in Git; the ledger is enough to fetch the same file
 | Night skies (lakeside_night, kloppenheim_07) | Poly Haven | CC0 1.0 | Ambient light and reflections; the Market's and Yards' skies |
 | Impact, interface and RPG sounds | Kenney (kenney.nl) | CC0 1.0 | Hits, blocks, footsteps and UI, layered with the original's own sounds |
 | Motion capture: ACCAD mocap Data, Male 2 (BVH) | Open Motion Project by ACCAD / The Ohio State University (accad.osu.edu) | CC BY 3.0 Unported (`Docs/Licenses/CC-BY-3.0.txt`); attribution in the credits | The shared jab, body jab, cross, body cross, low and high kicks and roundhouse, Ashka's teep, Wren's head kick, backfist, spinning back kick (Turning Light) and reverse spinning crescent (Lifting Light), the Grandmaster's weave, the walking and running step cycles, the standing block's guard, Daxion's evade, and the human fighters' intros and wins, converted to key poses and retimed to the moves' frames (`Tools/mocap`) |
-| New Rocker | Pablo Impallari, Brenda Gallo, Rodrigo Fuenzalida | SIL OFL 1.1 (`Docs/Licenses/NewRocker-OFL.txt`) | Titles |
-| Oswald | The Oswald Project Authors | SIL OFL 1.1 (`Docs/Licenses/Oswald-OFL.txt`) | Body text |
+| Ebony Hearts title card | Markus Gillyard, supplied 31 October 2026 as `1000012807.png`; `SourceArt/UI/EbonyHearts_TitleCard.png` is that file unchanged | The owner's own | The game's title; the source of the interface's palette and metal |
+| Interface textures (`SourceArt/UI`, everything but the card) | Generated for this game by `Tools/ui_art.py`, from the card and the design tokens | The owner's own | Frames, rules, marks, gradients, the hall's sky |
+| Cinzel | The Cinzel Project Authors (github.com/NDISCOVER/Cinzel) | SIL OFL 1.1 (`Docs/Licenses/Cinzel-OFL.txt`) | Headings, names, round calls (static SemiBold and Bold instances of the variable font) |
+| Source Sans 3 | Adobe | SIL OFL 1.1 (`Docs/Licenses/SourceSans3-OFL.txt`) | Body text, labels, prompts (static Regular and SemiBold instances) |
 | Droid Sans Fallback | The Android Open Source Project, via the engine's Slate fonts | Apache 2.0 (`Docs/Licenses/DroidSansFallback-Apache-2.0.txt`) | Arrows, ticks and symbols the two typefaces lack |
 | Unreal Engine 5.8.4 | Epic Games | Unreal Engine EULA (proprietary, not open source) | The engine |
 
@@ -59,7 +61,9 @@ old man's heavy brow, high cheekbones and hollow cheeks, a shaved head and grey 
 athlete's conditioned build, braids and composed face), with no photographs, scans, film or
 broadcast material, and nothing implying their involvement or endorsement. Neither is a
 likeness, and neither name, biography nor costume is theirs; the Grandmaster's robe is an
-original design (ink blue, bone grey and pale gold) and not any film character's outfit.
+original design and not any film character's outfit. Since 2.8.0 the Grandmaster is a different
+design, further from that start: fair-skinned and golden-eyed, with very long black hair and a
+jet-black robe.
 
 **Before any commercial release:** the right of publicity protects a recognisable likeness in
 many jurisdictions whether or not it is a copy. If either character is judged, by people who know

@@ -141,7 +141,7 @@
     355.0
    ],
    "source_radius_m": 0.4,
-   "note": "signature: green slop glow spilling over the lip"
+   "note": "signature: green vat glow spilling over the lip"
   },
   {
    "name": "firebox_1",
@@ -192,7 +192,7 @@
     330.0
    ],
    "source_radius_m": 0.4,
-   "note": "signature: green slop glow spilling over the lip"
+   "note": "signature: green vat glow spilling over the lip"
   },
   {
    "name": "firebox_2",
@@ -243,7 +243,7 @@
     345.0
    ],
    "source_radius_m": 0.4,
-   "note": "signature: green slop glow spilling over the lip"
+   "note": "signature: green vat glow spilling over the lip"
   },
   {
    "name": "firebox_3",
@@ -294,7 +294,7 @@
     370.0
    ],
    "source_radius_m": 0.4,
-   "note": "signature: green slop glow spilling over the lip"
+   "note": "signature: green vat glow spilling over the lip"
   },
   {
    "name": "firebox_4",
@@ -345,7 +345,7 @@
     360.0
    ],
    "source_radius_m": 0.4,
-   "note": "signature: green slop glow spilling over the lip"
+   "note": "signature: green vat glow spilling over the lip"
   },
   {
    "name": "firebox_5",
@@ -588,7 +588,7 @@
    "strength": 1.9,
    "pattern": 0.6,
    "pattern_scale": 3.0,
-   "note": "vat slop, spills and the channel: animate (slow scrolling noise, bubbles)"
+   "note": "vat liquid, spills and the channel: animate (slow scrolling noise, bubbles)"
   },
   {
    "material": "GLOW_furnace",
@@ -1642,7 +1642,7 @@
  "strip_check": "clean",
  "notes": [
   "The centre vat (X 0, Y 6.6, r 2.0, lip at Z 3.3) is the one the stage finisher uses.",
-  "Drain grates in the floor are flush (tops at Z 0) with a faint slop glow under them.",
+  "Drain grates in the floor are flush (tops at Z 0) with a faint green glow under them.",
   "Gantry legs at X +-7.55 put their inner faces on X +-7.2: the visual edge of the floor."
  ]
 }

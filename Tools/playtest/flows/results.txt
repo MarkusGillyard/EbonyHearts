@@ -1,0 +1,5 @@
+# Survival with the CPU playing, for the results screen after a fight: the staging, one round, and
+# the wave's result, confirmed on to the next.
+14:confirm,1.5:down,0.4:down,0.5:confirm
+-SlopAutoPlay=2
+110

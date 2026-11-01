@@ -1,4 +1,4 @@
-"""The Slopbat's Roost, beneath the Sump: a broad ledge of rock and tar over a lake of glowing slop.
+"""The Fragment's Roost, beneath the Sump: a broad ledge of rock and tar over a lake of glowing slop.
 The ribs of something colossal rise from the lake on the left, spines of bone-like vertebrae on
 the right beside the mast of a drowned ship; stalactites hang overhead and tar falls pour from the
 dark into the lake. The drowned hoard glints at the ledge's ends and on islands. Green lightning
@@ -17,7 +17,7 @@ import stagelib as S  # noqa: E402
 from mathutils import Vector  # noqa: E402
 
 A = S.args()
-st = S.Stage("roost", "The Slopbat's Roost", seed=23, ev100=1.0)
+st = S.Stage("roost", "The Fragment's Roost", seed=23, ev100=1.0)
 R = st.rng
 st.music = "music_roost"
 st.footstep = "rock"
@@ -35,9 +35,9 @@ GOLD = st.surface("Metal042A", tint=(1.0, 0.78, 0.42), rough=0.7, metal=1.0)
 WOOD = st.surface("Wood051", tint=(0.32, 0.26, 0.21), rough=1.2)
 IRON = st.surface("Metal055A", tint=(0.25, 0.24, 0.22), rough=1.0, metal=1.0)
 LEATHER = st.surface("Leather021", tint=(0.6, 0.5, 0.42), rough=1.0)
-LAKE = st.glow("GLOW_slop_lake", (0.32, 0.9, 0.08), 0.28, "the slop lake: slow churning noise with dark crusted patches, bubbles, pulses with the lake lights", pattern=0.85, scale=0.3,
+LAKE = st.glow("GLOW_slop_lake", (0.32, 0.9, 0.08), 0.28, "the lake: slow churning noise with dark crusted patches, bubbles, pulses with the lake lights", pattern=0.85, scale=0.3,
                liquid=((0.012, 0.03, 0.008), 0.12, 0.02, 0.004))
-CRACK = st.glow("GLOW_crack", (0.42, 0.95, 0.12), 2.2, "slop glowing through cracks in the ledge (good candidates for decals)")
+CRACK = st.glow("GLOW_crack", (0.42, 0.95, 0.12), 2.2, "green glow through cracks in the ledge (good candidates for decals)")
 BOLT = st.glow("GLOW_lightning", (0.7, 1.0, 0.55), 40.0, "lightning bolts far back: visible only during flashes (see fx)")
 TAR = st.water("WATER_tar", (0.008, 0.011, 0.007), 0.08, 1.0, "tar pools on the ledge: black, glossy, a faint green sheen, slow bubbles",
                 ripple=0.01, ripple_scale=0.008)
@@ -317,7 +317,7 @@ st.light("rim_green", "directional", (0, 20, 10), (0.5, 0.95, 0.4), 3.2, directi
 st.light("fill_camera", "directional", (0, -10, 3), (0.75, 0.85, 0.8), 1.4, direction=(-0.136, 0.968, -0.208), affects="fighters_only", specular=0.25)
 for i, lx in enumerate((-8.0, 0.0, 8.0)):
     st.light(f"lake_glow_{i + 1}", "point", (lx, LEDGE_BACK + 1.6, LAKE_Z + 1.0), (0.45, 1.0, 0.2), 30.0, radius=8.5, shadows=False,
-             flicker=0.18, flicker_speed=1.1, source_radius=1.0, specular=0.25, note="the slop lake glowing up onto the ledge's lip")
+             flicker=0.18, flicker_speed=1.1, source_radius=1.0, specular=0.25, note="the lake glowing up onto the ledge's lip")
 st.light("lake_deep", "point", (0.0, 22.0, LAKE_Z + 2.5), (0.45, 1.0, 0.2), 120.0, radius=28.0, flicker=0.2, flicker_speed=0.7, source_radius=3.0,
          specular=0.2)
 for i, sd in enumerate((-1, 1)):
@@ -329,7 +329,7 @@ st.light("storm", "point", (0.0, 30.0, 8.0), (0.6, 1.0, 0.45), 900.0, radius=30.
          "(exclude the ledge and lake). With flashes off: a slow 1.2 s swell to 2/7.")
 st.fx += [
     {"kind": "lightning", "object": "roost_lightning", "note": "three bolts at X -12, 3, 15 (Y 38): show the nearest one during the first and third pulse of each flash; hidden otherwise"},
-    {"kind": "motes", "note": "spores over the slop", "box_center": [0, 9.0, LAKE_Z + 1.6], "box_extent": [16, 6, 1.6], "count": 120,
+    {"kind": "motes", "note": "spores over the lake", "box_center": [0, 9.0, LAKE_Z + 1.6], "box_extent": [16, 6, 1.6], "count": 120,
      "color": [0.55, 1.0, 0.25, 0.9], "size_m": 0.045, "rise_m_s": 0.25},
     {"kind": "mist", "center": [0, 10.0, LAKE_Z + 0.5], "size": [70, 16], "color": [0.22, 0.42, 0.12], "density": 0.3},
     {"kind": "mist", "center": [0, 32.0, LAKE_Z + 1.0], "size": [120, 30], "color": [0.18, 0.36, 0.1], "density": 0.45},

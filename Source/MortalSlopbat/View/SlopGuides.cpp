@@ -23,12 +23,12 @@ namespace Slop
 				{TEXT("strikes"), LOCTEXT("Strikes", "Try all four strikes: High Punch {0}, Low Punch {1}, High Kick {2}, Low Kick {3}.")},
 				{TEXT("block"), LOCTEXT("Block", "Gorm will swing at you. Hold Block {0} to stop his punches (3 blocks).")},
 				{TEXT("block_low"), LOCTEXT("BlockLow", "Sweeps hit low: hold Down {0} and Block {1} together to block them (2 blocks).")},
-				{TEXT("uppercut"), LOCTEXT("Uppercut", "The uppercut: Down + High Punch, up close. Land one on Gorm.")},
-				{TEXT("special"), LOCTEXT("Special", "A special move. Ember Shot: Down, Forward, High Punch, in quick succession.")},
-				{TEXT("chain"), LOCTEXT("Chain", "A dial-a-combo: High Punch, High Punch, Low Punch, then Back + High Kick, quickly. Each link spends run meter.")},
+				{TEXT("uppercut"), LOCTEXT("Uppercut", "The uppercut: Down + High Punch {0}, up close. Land one on Gorm.")},
+				{TEXT("special"), LOCTEXT("Special", "A special move. Lamplighter Flame: Down, Forward, High Punch {0}, in quick succession.")},
+				{TEXT("chain"), LOCTEXT("Chain", "A dial-a-combo: High Punch {0}, High Punch {0}, Low Punch {1}, then Back + High Kick {2}, quickly. Each link spends run meter.")},
 				{TEXT("run"), LOCTEXT("Run", "Run: hold Run {0} and Forward. Running empties the blue meter under your health.")},
-				{TEXT("throw"), LOCTEXT("Throw", "Throw: get right up to Gorm and press Forward + Low Punch.")},
-				{TEXT("finish"), LOCTEXT("Finish", "Knock Gorm out. When FINISH HIM appears, stand a sweep's distance away (about two steps) and enter Forward, Forward, Down + High Punch.")},
+				{TEXT("throw"), LOCTEXT("Throw", "Throw: get right up to Gorm and press Forward + Low Punch {0}.")},
+				{TEXT("finish"), LOCTEXT("Finish", "Knock Gorm out. When FINISH HIM appears, stand a sweep's distance away (about two steps) and enter Forward, Forward, Down + High Punch {0}.")},
 			};
 			return S;
 		}
@@ -69,6 +69,17 @@ namespace Slop
 			}
 			return;
 		}
+		if (FString(Steps[StepIndex].Id) == TEXT("finish"))
+		{
+			ArmFinish();
+		}
+		Word();
+		GI->Audio->Play(TEXT("ui_select"), -4.f, 1.f, ESlopBus::Ui);
+	}
+
+	void FTutorial::Word()
+	{
+		const TArray<FStepDef>& Steps = TutorialSteps();
 		const FStepDef& S = Steps[StepIndex];
 		const FString Id = S.Id;
 		FText Text = S.Text;
@@ -80,10 +91,11 @@ namespace Slop
 		else if (Id == TEXT("block")) Text = FText::Format(S.Text, Keys(EGameAction::BL));
 		else if (Id == TEXT("block_low")) Text = FText::Format(S.Text, Keys(EGameAction::Down), Keys(EGameAction::BL));
 		else if (Id == TEXT("run")) Text = FText::Format(S.Text, Keys(EGameAction::RN));
-		else if (Id == TEXT("finish")) ArmFinish();
-		const EGlyphs G = GI->Router->Glyphs();
-		PromptText = FText::Format(LOCTEXT("StepN", "Step {0} of {1}.  {2}   ({3}: skip)"), StepIndex + 1, Steps.Num(), Text, SlopUI::NextName(G));
-		GI->Audio->Play(TEXT("ui_select"), -4.f, 1.f, ESlopBus::Ui);
+		else if (Id == TEXT("uppercut") || Id == TEXT("special") || Id == TEXT("finish")) Text = FText::Format(S.Text, Keys(EGameAction::HP));
+		else if (Id == TEXT("chain")) Text = FText::Format(S.Text, Keys(EGameAction::HP), Keys(EGameAction::LP), Keys(EGameAction::HK));
+		else if (Id == TEXT("throw")) Text = FText::Format(S.Text, Keys(EGameAction::LP));
+		Words = GI->Router->Glyphs();
+		PromptText = FText::Format(LOCTEXT("StepN", "Step {0} of {1}.  {2}   ({3}: skip)"), StepIndex + 1, Steps.Num(), Text, SlopUI::NextName(Words));
 	}
 
 	void FTutorial::ArmFinish()
@@ -182,6 +194,10 @@ namespace Slop
 		{
 			return;
 		}
+		if (GI->Router->Glyphs() != Words)
+		{
+			Word();
+		}
 		if (RetryAt >= 0 && M->Sim.TickCount >= RetryAt)
 		{
 			RetryAt = -1;
@@ -260,7 +276,7 @@ namespace Slop
 		TArray<FString> Pretty;
 		for (const FString& S : Tr.Steps)
 		{
-			Pretty.Add(FCommand::Pretty(S));
+			Pretty.Add(SlopUI::ButtonsIn(GI, FCommand::Pretty(S)));
 		}
 		FString Ticks;
 		for (int32 I = 0; I < Tr.Moves.Num(); ++I)
@@ -268,10 +284,10 @@ namespace Slop
 			Ticks += I < Check.Progress ? TEXT("●") : TEXT("○");
 		}
 		const bool bDoneBefore = GI->Progress.TrialsDone(Fighter).Contains(Tr.Name);
-		const EGlyphs G = GI->Router->Glyphs();
+		Words = GI->Router->Glyphs();
 		PromptText = FText::FromString(FString::Printf(TEXT("Trial %d of %d:  %s%s\n%s     %s%s   (%s: next trial, %s: reset)"), Index + 1, Trials.Num(), *Tr.Name,
 			bDoneBefore ? TEXT("  ✓") : TEXT(""), *FString::Join(Pretty, TEXT("   ")), *Ticks, Note.IsEmpty() ? TEXT("") : *(TEXT("   ") + Note),
-			*SlopUI::NextName(G).ToString(), *SlopUI::ResetName(G).ToString()));
+			*SlopUI::NextName(Words).ToString(), *SlopUI::ResetName(GI).ToString()));
 	}
 
 	void FTrialsRunner::OnEvent(const FSimEvent& E)
@@ -299,6 +315,10 @@ namespace Slop
 
 	void FTrialsRunner::OnTick()
 	{
+		if (Trials.Num() > 0 && GI->Router->Glyphs() != Words)
+		{
+			Show();
+		}
 		if (BusyUntil >= 0 && M->Sim.TickCount >= BusyUntil)
 		{
 			BusyUntil = -1;

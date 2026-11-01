@@ -1,15 +1,13 @@
 #include "UI/SlopScreens.h"
 #include "UI/SlopStyle.h"
+#include "UI/SlopWidgets.h"
 #include "Core/SlopAudio.h"
 #include "Core/SlopGameInstance.h"
 #include "View/SlopMatch.h"
+#include "View/SlopShowroom.h"
 #include "UI/SlopHud.h"
 #include "Widgets/Images/SImage.h"
-#include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
-#include "Widgets/Layout/SConstraintCanvas.h"
-#include "Widgets/Layout/SScaleBox.h"
-#include "Widgets/Layout/SUniformGridPanel.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/Text/STextBlock.h"
@@ -50,24 +48,6 @@ namespace SlopScreensImpl
 	const FFighterDef* Def(FName Id) { return GetContent().Fighter(Id); }
 	FString Commas(int32 N) { return FText::AsNumber(N).ToString(); }
 
-	FText StageName(FName Id)
-	{
-		if (Id == TEXT("rendering_yards")) return LOCTEXT("Yards", "The Rendering Yards");
-		if (Id == TEXT("drowned_chapel")) return LOCTEXT("Chapel", "The Drowned Chapel");
-		if (Id == TEXT("stilt_market")) return LOCTEXT("Market", "Lowmere Stilt Market");
-		if (Id == TEXT("roost")) return LOCTEXT("Roost", "The Slopbat's Roost");
-		return FText::FromName(Id);
-	}
-
-	FText StageBlurb(FName Id)
-	{
-		if (Id == TEXT("rendering_yards")) return LOCTEXT("YardsB", "Tallowmarket's iron floor between great vats of glowing slop, catwalks and furnace mouths. Gorm's home.");
-		if (Id == TEXT("drowned_chapel")) return LOCTEXT("ChapelB", "Lowmere's sunken church: ankle-deep water on stone flags, broken pews, candles and a rose window full of moonlight. Mirela's home.");
-		if (Id == TEXT("stilt_market")) return LOCTEXT("MarketB", "The market on stilts over the bog at night: planks and rope rails, strings of paper lanterns, mist. Bram's beat.");
-		if (Id == TEXT("roost")) return LOCTEXT("RoostB", "Beneath the Sump: a ledge over a lake of slop, tar falls, bone and the drowned hoard, lit by green storm light.");
-		return FText::GetEmpty();
-	}
-
 	FText StoryLine(const TCHAR* Key)
 	{
 		return FText::FromString(Json::Str(GetContent().Story, Key));
@@ -78,7 +58,8 @@ namespace SlopScreensImpl
 		return Json::Obj(Json::Obj(GetContent().Story, TEXT("fighters")), *Fighter.ToString());
 	}
 
-	// A screen built from a heading, a few lines and a menu: results, pause, offers, prompts.
+	// A screen built from a heading, a few lines and a menu: results, pause, offers, prompts. It sits
+	// at the left with the world in sight beside it, or, for errors, alone in the middle.
 	class FListScreen : public FSlopScreen
 	{
 	public:
@@ -89,7 +70,8 @@ namespace SlopScreensImpl
 			TFunction<bool()> Enabled;
 		};
 		FText Heading;
-		float HeadingSize = 96.f;
+		FText Small;
+		float HeadingSize = 76.f;
 		FLinearColor HeadingColor = SlopUI::Text;
 		struct FLine { TAttribute<FText> Text; float Size; FLinearColor Color; bool bDisplay; };
 		TArray<FLine> Lines;
@@ -100,24 +82,47 @@ namespace SlopScreensImpl
 		// When set, the label of item I as of now (empty: its fixed label); read whenever it builds.
 		TFunction<FText(int32)> LiveLabel;
 		bool bOverlay = false;
-		bool bMatchBehind = false;
-		float Top = 200.f;
+		bool bCentred = false;
+		// Who stands in the hall beside the list, celebrating, in what they fought in.
+		FName Figure;
+		FName FigureOutfit;
+		bool bFigureCostume = false;
 
-		void Line(const TAttribute<FText>& T, float Size = 32.f, const FLinearColor& C = SlopUI::Dim, bool bDisplay = false) { Lines.Add({T, Size, C, bDisplay}); }
+		void Line(const TAttribute<FText>& T, float Size = 30.f, const FLinearColor& C = SlopUI::Dim, bool bDisplay = false) { Lines.Add({T, Size, C, bDisplay}); }
 		void Item(const FText& L, TFunction<void()> A, TFunction<bool()> E = nullptr) { Items.Add({L, MoveTemp(A), MoveTemp(E)}); }
-		virtual bool ShowsMatch() const override { return bMatchBehind || bOverlay; }
+		virtual bool ShowsMatch() const override { return bOverlay; }
+
+		virtual void Enter() override
+		{
+			if (!Figure.IsNone())
+			{
+				if (ASlopShowroom* Room = GI->OpenShowroom())
+				{
+					Room->SetLayout(-2600.0, 1400.0, 1120.0, 900.0);
+					Room->Show(1, Figure, bFigureCostume, FigureOutfit);
+					Room->Celebrate(1);
+				}
+			}
+		}
 
 		virtual TSharedRef<SWidget> Build() override
 		{
+			const EHorizontalAlignment Align = bCentred ? HAlign_Center : HAlign_Left;
+			const ETextJustify::Type Justify = bCentred ? ETextJustify::Center : ETextJustify::Left;
 			TSharedRef<SVerticalBox> Col = SNew(SVerticalBox);
-			Col->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, Top, 0, 24)[SlopUI::Title(Heading, HeadingSize, HeadingColor)];
+			Col->AddSlot().AutoHeight().HAlign(Align)
+			[
+				SNew(STextBlock).Text(Small).Font(SlopUI::Caps(22.f)).ColorAndOpacity(SlopUI::Spark)
+				.Visibility(Small.IsEmpty() ? EVisibility::Collapsed : EVisibility::HitTestInvisible)
+			];
+			Col->AddSlot().AutoHeight().HAlign(Align)[SlopUI::Title(Heading, HeadingSize, HeadingColor, Justify)];
+			Col->AddSlot().AutoHeight().HAlign(Align).Padding(bCentred ? 0.f : -40.f, 14.f, 0.f, 18.f)[SlopUI::Rule(bCentred ? 900.f : 820.f)];
 			for (const FLine& L : Lines)
 			{
-				Col->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 4)
+				Col->AddSlot().AutoHeight().HAlign(Align).Padding(0, 4)
 				[
 					SNew(STextBlock).Text(L.Text).Font(L.bDisplay ? SlopUI::Display(L.Size) : SlopUI::Body(L.Size)).ColorAndOpacity(L.Color)
-					.Justification(ETextJustify::Center).AutoWrapText(true).WrapTextAt(1400.f)
-					.ShadowOffset(FVector2D(2, 2)).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.7f))
+					.Justification(Justify).AutoWrapText(true).ShadowOffset(FVector2D(1, 1)).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.8f))
 				];
 			}
 			TArray<FText> Labels;
@@ -126,27 +131,29 @@ namespace SlopScreensImpl
 				const FText Live = LiveLabel ? LiveLabel(I) : FText();
 				Labels.Add(Live.IsEmpty() ? Items[I].Label : Live);
 			}
-			Col->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 36, 0, 0)
+			SlopUI::FMenuStyle Style;
+			Style.Width = 640.f;
+			Style.Size = 30.f;
+			Col->AddSlot().AutoHeight().HAlign(Align).Padding(0, 30, 0, 0)
 			[
 				SlopUI::Menu(Labels, [this]() { return Sel; }, [this](int32 I) { return !Items[I].Enabled || Items[I].Enabled(); },
-					[this](int32 I) { Sel = I; Choose(); }, 520.f, 34.f, [this](int32 I) { Sel = I; Sound(TEXT("ui_move")); })
+					[this](int32 I) { Sel = I; Choose(); }, [this](int32 I) { Sel = I; Sound(TEXT("ui_move")); }, Style)
 			];
-			TSharedRef<SOverlay> O = SNew(SOverlay);
-			if (bOverlay)
+			TSharedRef<SConstraintCanvas> C = SlopUI::Canvas();
+			if (bCentred)
 			{
-				O->AddSlot()[SNew(SImage).Image(SlopUI::Box()).ColorAndOpacity(FLinearColor(0, 0, 0, 0.62f))];
+				SlopUI::Place(C, SlopUI::Middle, FVector2D::ZeroVector, SNew(SBox).WidthOverride(1400.f)[Col], FVector2D(0.5f, 0.5f));
 			}
-			else if (!bMatchBehind)
+			else
 			{
-				O->AddSlot()[SlopUI::Backdrop()];
+				SlopUI::Place(C, SlopUI::MidLeft, FVector2D(130.f, 0.f), SNew(SBox).WidthOverride(860.f)[Col], FVector2D(0.f, 0.5f));
 			}
-			O->AddSlot()[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SBox).WidthOverride(1920).HeightOverride(1080)[Col]]];
-			O->AddSlot()[SlopUI::Hint([this]()
+			TArray<SlopUI::FPrompt> Prompts = {{SlopUI::EPrompt::UpDown, LOCTEXT("ListMove", "Choose")}, {SlopUI::EPrompt::Confirm, LOCTEXT("ListPick", "Select")}};
+			if (OnBack)
 			{
-				const EGlyphs G = GI->Router->Glyphs();
-				return FText::Format(LOCTEXT("ListHint", "{0} to choose   ·   {1} to go back"), SlopUI::Confirm(G), SlopUI::Back(G));
-			})];
-			return O;
+				Prompts.Add({SlopUI::EPrompt::Back, LOCTEXT("ListBack", "Back")});
+			}
+			return SlopUI::Shell(GI, C, Prompts, bCentred ? SlopUI::EVeil::Full : SlopUI::EVeil::Side);
 		}
 
 		void Choose()
@@ -195,59 +202,97 @@ namespace SlopScreensImpl
 	class FTitle : public FSlopScreen
 	{
 	public:
-		double T = 0;
+		float T = 0.f;
 		virtual TSharedRef<SWidget> Build() override
 		{
-			// The premise, a line at a time, as the original told it (story.json "premise").
+			// The title card itself, at 3:1 and never cropped: 1920 units of canvas always fit it.
+			const float Wide = 1320.f;
+			TSharedRef<SConstraintCanvas> C = SlopUI::Canvas();
+			auto Rise = [this](float From, float To, float Peak)
+			{
+				return [this, From, To, Peak]()
+				{
+					return FLinearColor(1.f, 1.f, 1.f, Peak * SlopUI::EaseOut(SlopUI::Span(T, From, To)));
+				};
+			};
+			SlopUI::Place(C, SlopUI::Middle, FVector2D(0.f, -120.f), SNew(SBox).WidthOverride(Wide * 1.3f).HeightOverride(Wide * 0.75f)
+				[
+					SNew(SImage).Image(SlopUI::Brush(SlopUI::ETex::Glow)).ColorAndOpacity_Lambda([this]()
+					{
+						// Dark letters on a dark field: a low violet light behind the card keeps its
+						// middle word apart from the night.
+						FLinearColor G = SlopUI::Spark;
+						G.A = 0.34f * SlopUI::EaseOut(SlopUI::Span(T, 0.2f, 1.8f));
+						return G;
+					})
+				], FVector2D(0.5f, 0.5f));
+			SlopUI::Place(C, SlopUI::Middle, FVector2D(0.f, -120.f), SNew(SBox).WidthOverride(Wide).HeightOverride(Wide / 3.f)
+				[
+					SNew(SOverlay)
+					+ SOverlay::Slot()
+					[
+						SNew(SImage).Image(SlopUI::Brush(SlopUI::ETex::LogoEnergy)).ColorAndOpacity_Lambda([this]()
+						{
+							const float Breath = SlopUI::ReducedMotion() ? 0.7f : 0.55f + 0.3f * FMath::Sin(T * 0.8f) + 0.15f * FMath::Sin(T * 2.3f + 1.f);
+							return FLinearColor(1.f, 1.f, 1.f, Breath * SlopUI::EaseOut(SlopUI::Span(T, 0.8f, 2.4f)));
+						})
+					]
+					+ SOverlay::Slot()[SNew(SImage).Image(SlopUI::Brush(SlopUI::ETex::Logo)).ColorAndOpacity_Lambda(Rise(0.15f, 1.3f, 1.f))]
+				], FVector2D(0.5f, 0.5f));
+			// The premise, a line at a time (story.json "premise"), quiet under the card.
 			TSharedRef<SVerticalBox> Premise = SNew(SVerticalBox);
 			int32 N = 0;
 			if (const TArray<TSharedPtr<FJsonValue>>* Lines = Json::Arr(GetContent().Story, TEXT("premise")))
 			{
 				for (const TSharedPtr<FJsonValue>& V : *Lines)
 				{
-					const int32 I = N++;
-					Premise->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 4)
+					const float At = 1.6f + N++ * 1.1f;
+					Premise->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 3)
 					[
-						SNew(STextBlock).Font(SlopUI::Body(28.f)).Text(FText::FromString(V->AsString()))
-						.ColorAndOpacity_Lambda([this, I]()
+						SNew(STextBlock).Font(SlopUI::Body(25.f)).Text(FText::FromString(V->AsString())).Justification(ETextJustify::Center)
+						.ShadowOffset(FVector2D(1, 1)).ShadowColorAndOpacity_Lambda([this, At]() { return FLinearColor(0, 0, 0, 0.85f * SlopUI::EaseOut(SlopUI::Span(T, At, At + 1.f))); })
+						.ColorAndOpacity_Lambda([this, At]()
 						{
-							FLinearColor C = SlopUI::Text;
-							C.A = (float)FMath::Clamp((T - 0.6 - I * 1.1) * 0.9, 0.0, 1.0);
-							return FSlateColor(C);
+							FLinearColor L = SlopUI::Dim;
+							L.A = SlopUI::EaseOut(SlopUI::Span(T, At, At + 1.f));
+							return FSlateColor(L);
 						})
 					];
 				}
 			}
-			if (N == 0)
-			{
-				Premise->AddSlot().AutoHeight().HAlign(HAlign_Center)[SlopUI::Label(LOCTEXT("Tag", "Every river in the world ends in the Sump."), 34.f, SlopUI::Dim)];
-			}
+			// The floor shines just here: a band of dark keeps the lines off it.
+			SlopUI::Place(C, SlopUI::Middle, FVector2D(0.f, 196.f), SNew(SImage).Image(SlopUI::Brush(SlopUI::ETex::Band)), FVector2D(0.5f, 0.5f), FVector2D(2000.f, 300.f));
+			SlopUI::Place(C, SlopUI::Middle, FVector2D(0.f, 130.f), SNew(SBox).WidthOverride(1500.f)[Premise], FVector2D(0.5f, 0.f));
+			SlopUI::Place(C, SlopUI::FootCentre, FVector2D(0.f, -112.f),
+				SNew(STextBlock).Font(SlopUI::Caps(27.f))
+				.ColorAndOpacity_Lambda([this]()
+				{
+					FLinearColor L = SlopUI::Text;
+					L.A = SlopUI::Span(T, 1.0f, 1.8f) * (SlopUI::ReducedMotion() ? 1.f : 0.68f + 0.32f * FMath::Sin(T * 2.4f));
+					return FSlateColor(L);
+				})
+				.ShadowOffset(FVector2D(1, 1)).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.85f))
+				// Until something is pressed the game cannot know a pad connected before it started
+				// (it shares the keyboard's device until it sends input), so any button.
+				.Text_Lambda([this]() { return GI->Router->AnyPressed() ? FText::Format(LOCTEXT("Press", "Press {0}"), SlopUI::Confirm(GI->Router->Glyphs())) : LOCTEXT("PressAny", "Press any button"); }),
+				FVector2D(0.5f, 0.5f));
+			SlopUI::Place(C, SlopUI::FootRight, FVector2D(-72.f, -40.f), SlopUI::Label(LOCTEXT("Copy", "© 2026 Markus Gillyard"), 21.f, SlopUI::Faint), FVector2D(1.f, 1.f));
+			TSharedRef<SConstraintCanvas> Under = SlopUI::Canvas();
+			SlopUI::Fill(Under, FAnchors(0.f, 0.f, 1.f, 1.f), FMargin(0.f), SNew(SImage).Image(SlopUI::Brush(SlopUI::ETex::Vignette)));
+			SlopUI::Fill(Under, FAnchors(0.f, 1.f, 1.f, 1.f), FMargin(0.f, -420.f, 0.f, 420.f), SNew(SImage).Image(SlopUI::Brush(SlopUI::ETex::FadeFoot)));
 			return SNew(SOverlay)
-				+ SOverlay::Slot()[SlopUI::Backdrop()]
-				+ SOverlay::Slot()[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SBox).WidthOverride(1920).HeightOverride(1080)
-				[
-					SNew(SVerticalBox)
-					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 230, 0, 0)[SlopUI::Title(LOCTEXT("Name", "EBONY HEARTS"), 150.f, SlopUI::Accent)]
-					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 40, 0, 0)[Premise]
-					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 110, 0, 0)
-					[
-						SNew(STextBlock).Font(SlopUI::Body(40.f)).ColorAndOpacity_Lambda([this]()
-						{
-							FLinearColor C = SlopUI::Text;
-							C.A = 0.55f + 0.45f * FMath::Sin(T * 3.0);
-							return FSlateColor(C);
-						})
-						// Until something is pressed the game cannot know a pad connected before it started
-						// (it shares the keyboard's device until it sends input), so any button.
-						.Text_Lambda([this]() { return GI->Router->AnyPressed() ? FText::Format(LOCTEXT("Press", "Press {0}"), SlopUI::Confirm(GI->Router->Glyphs())) : LOCTEXT("PressAny", "Press any button"); })
-					]
-				]]]
-				+ SOverlay::Slot().VAlign(VAlign_Bottom).HAlign(HAlign_Right).Padding(40, 30)
-				[
-					SlopUI::Label(LOCTEXT("Copy", "© 2026 Markus Gillyard"), 22.f, SlopUI::Dim * 0.8f)
-				];
+				+ SOverlay::Slot()[SNew(SlopUI::SStage).FullBleed(true)[Under]]
+				+ SOverlay::Slot()[SlopUI::Motes()]
+				+ SOverlay::Slot()[SNew(SlopUI::SStage)[C]];
 		}
-		virtual void Enter() override { GI->Audio->PlayMusic(TEXT("music_menu")); }
+		virtual void Enter() override
+		{
+			GI->Audio->PlayMusic(TEXT("music_menu"));
+			if (ASlopShowroom* Room = GI->OpenShowroom())
+			{
+				Room->SetLayout(-2600.0, 2600.0, 1000.0, 620.0);
+			}
+		}
 		virtual void Tick(float Dt) override { T += Dt; }
 		virtual void OnUi(const FUiEvent& E) override
 		{
@@ -268,11 +313,15 @@ namespace SlopScreensImpl
 		struct FEntry { FText Label; FText Desc; FName Id; };
 		TArray<FEntry> Entries;
 		int32 Sel = 0;
+		// Rows that start a fight, then practice, then everything else.
+		static constexpr int32 Play = 5;
+		static constexpr int32 Practice = 8;
 
 		FMainMenu()
 		{
 			Entries = {
-				{LOCTEXT("Arcade", "Arcade"), LOCTEXT("ArcadeD", "Climb a tower of the tournament's fighters to the Ebony Heart Fragment in its roost. Your choice of tower sets the difficulty."), TEXT("arcade")},
+				{LOCTEXT("Story", "Story"), LOCTEXT("StoryD", "Wren's way through the Ebony Heart Tournament. It fights at the CPU difficulty in Settings."), TEXT("story")},
+				{LOCTEXT("Arcade", "Arcade"), LOCTEXT("ArcadeD", "Climb a tower of the tournament's fighters to the Ebony Heart Fragment in the Heartwater. Your choice of tower sets the difficulty."), TEXT("arcade")},
 				{LOCTEXT("Survival", "Survival"), LOCTEXT("SurvivalD", "An endless ladder: one round a fight, your health carried on with a little given back after each win, and the Ebony Heart Fragment waiting every fifth wave. How far can you climb?"), TEXT("survival")},
 				{LOCTEXT("Versus", "Versus"), LOCTEXT("VersusD", "Two players on one machine. Any fighter, any stage, mirror matches welcome."), TEXT("versus")},
 				{LOCTEXT("VersusCpu", "Versus CPU"), LOCTEXT("VersusCpuD", "One fight against the CPU: your fighter, theirs, and the stage. It fights at the CPU difficulty in Settings."), TEXT("cpu")},
@@ -289,6 +338,15 @@ namespace SlopScreensImpl
 		{
 			Sel = FMath::Clamp(GI->MenuChoice, 0, Entries.Num() - 1);
 			GI->Audio->PlayMusic(TEXT("music_menu"));
+			if (ASlopShowroom* Room = GI->OpenShowroom())
+			{
+				// Whoever was fought with last stands in the hall; a starter the first time.
+				const TArray<FName>& Roster = FContent::Roster();
+				const FMatchConfig& C = GI->Flow.Config;
+				const bool bLast = GI->IsUnlocked(C.P1) && Roster.Contains(C.P1);
+				Room->SetLayout(-2600.0, 1400.0, 1040.0, 800.0);
+				Room->Show(1, bLast ? C.P1 : Roster[FMath::RandRange(0, Roster.Num() - 1)], bLast && C.bCostume[0], bLast ? C.Outfit[0] : NAME_None);
+			}
 		}
 
 		virtual TSharedRef<SWidget> Build() override
@@ -298,32 +356,42 @@ namespace SlopScreensImpl
 			{
 				Labels.Add(E.Label);
 			}
-			return SNew(SOverlay)
-				+ SOverlay::Slot()[SlopUI::Backdrop()]
-				+ SOverlay::Slot()[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SBox).WidthOverride(1920).HeightOverride(1080)
+			SlopUI::FMenuStyle Style;
+			Style.Width = 520.f;
+			Style.Size = 35.f;
+			Style.Major = Play;
+			Style.MinorSize = 27.f;
+			Style.GapsAfter = {Play - 1, Practice - 1};
+			TSharedRef<SConstraintCanvas> C = SlopUI::Canvas();
+			SlopUI::Place(C, SlopUI::TopLeft, FVector2D(-70.f, -90.f), SNew(SBox).WidthOverride(810.f).HeightOverride(440.f)
 				[
-					SNew(SConstraintCanvas)
-					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(120, 80, 1200, 150)).AutoSize(true)[SlopUI::Title(LOCTEXT("Name", "EBONY HEARTS"), 96.f, SlopUI::Accent)]
-					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(140, 290, 470, 700)).AutoSize(true)
+					SNew(SImage).Image(SlopUI::Brush(SlopUI::ETex::Glow)).ColorAndOpacity(SlopUI::Accent.CopyWithNewOpacity(0.32f))
+				]);
+			SlopUI::Place(C, SlopUI::TopLeft, FVector2D(64.f, 40.f), SNew(SBox).WidthOverride(540.f).HeightOverride(180.f)[SNew(SImage).Image(SlopUI::Brush(SlopUI::ETex::Logo))]);
+			SlopUI::Place(C, SlopUI::MidLeft, FVector2D(130.f, 96.f),
+				SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, [this](int32 I) { Sel = I; Sound(TEXT("ui_move")); }, Style),
+				FVector2D(0.f, 0.5f));
+			// What the row does, low and to the side, with the world between it and the list.
+			SlopUI::Place(C, SlopUI::FootCentre, FVector2D(-260.f, -104.f), SNew(SBox).WidthOverride(640.f)
+				[
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot().AutoHeight()[SlopUI::CapsLabel(TAttribute<FText>::CreateLambda([this]() { return FText::FromString(Entries[Sel].Label.ToString().ToUpper()); }), 22.f, SlopUI::Spark)]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 8, 0, 0)
 					[
-						SlopUI::Menu(Labels, [this]() { return Sel; }, nullptr, [this](int32 I) { Sel = I; Choose(); }, 460.f, 34.f, [this](int32 I) { Sel = I; Sound(TEXT("ui_move")); })
+						SNew(STextBlock).Font(SlopUI::Body(27.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true)
+						.ShadowOffset(FVector2D(1, 1)).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.9f))
+						.Text_Lambda([this]() { return Entries[Sel].Desc; })
 					]
-					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(760, 330, 900, 230))
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 10, 0, 0)
 					[
-						SlopUI::PanelBox(SNew(STextBlock).Font(SlopUI::Body(30.f)).ColorAndOpacity(SlopUI::Text).AutoWrapText(true)
-							.Text_Lambda([this]() { return Entries[Sel].Desc; }))
-					]
-					+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(780, 590, 900, 50))
-					[
-						SNew(STextBlock).Font(SlopUI::Body(26.f)).ColorAndOpacity(SlopUI::Amber)
+						SNew(STextBlock).Font(SlopUI::Body(23.f)).ColorAndOpacity(SlopUI::Warn)
 						.Text_Lambda([this]() { return GI->Progress.TutorialDone() ? FText::GetEmpty() : LOCTEXT("TutTip", "New to Ebony Hearts? The tutorial takes about five minutes."); })
 					]
-				]]]
-				+ SOverlay::Slot()[SlopUI::Hint([this]()
-				{
-					const EGlyphs G = GI->Router->Glyphs();
-					return FText::Format(LOCTEXT("MenuHint", "Up and down to choose   ·   {0} to select"), SlopUI::Confirm(G));
-				})];
+				], FVector2D(0.f, 1.f));
+			TSharedRef<SWidget> Shell = SlopUI::Shell(GI, C, {{SlopUI::EPrompt::UpDown, LOCTEXT("MenuMove", "Choose")}, {SlopUI::EPrompt::Confirm, LOCTEXT("MenuPick", "Select")}});
+			return SNew(SOverlay)
+				+ SOverlay::Slot()[SlopUI::Motes(16)]
+				+ SOverlay::Slot()[Shell];
 		}
 
 		void Choose()
@@ -332,7 +400,12 @@ namespace SlopScreensImpl
 			Sound(TEXT("ui_select"));
 			const FName Id = Entries[Sel].Id;
 			FGameFlow& F = GI->Flow;
-			if (Id == TEXT("arcade")) GI->Goto(SlopScreens::Select(EMode::Arcade));
+			if (Id == TEXT("story"))
+			{
+				GI->Flow.StartStory(GI->Settings.Difficulty);
+				GI->EnterFight(true);
+			}
+			else if (Id == TEXT("arcade")) GI->Goto(SlopScreens::Select(EMode::Arcade));
 			else if (Id == TEXT("survival")) GI->Goto(SlopScreens::Select(EMode::Survival));
 			else if (Id == TEXT("versus")) GI->Goto(SlopScreens::Devices());
 			else if (Id == TEXT("cpu")) GI->Goto(SlopScreens::Select(EMode::Cpu));
@@ -347,7 +420,7 @@ namespace SlopScreensImpl
 				F.Config.P2 = TEXT("gorm");
 				F.Config.Stage = TEXT("rendering_yards");
 				F.Config.RoundsToWin = 1;
-				GI->StartMatch();
+				GI->EnterFight(false);
 			}
 			else if (Id == TEXT("trials")) GI->Goto(SlopScreens::Select(EMode::Trials));
 			else if (Id == TEXT("extras")) GI->Goto(SlopScreens::Extras());
@@ -412,8 +485,8 @@ namespace SlopScreensImpl
 	{
 		TSharedRef<FListScreen> S = MakeShared<FListScreen>();
 		S->bOverlay = true;
-		S->Heading = LOCTEXT("Paused", "PAUSED");
-		S->Top = 250.f;
+		S->Heading = LOCTEXT("Paused", "Paused");
+		S->HeadingSize = 68.f;
 		TWeakPtr<FListScreen> W = S;
 		auto Resume = [W]()
 		{
@@ -502,9 +575,8 @@ namespace SlopScreensImpl
 	{
 		TSharedRef<FListScreen> S = MakeShared<FListScreen>();
 		S->bOverlay = true;
-		S->Heading = LOCTEXT("TrainingHead", "TRAINING");
-		S->HeadingSize = 80.f;
-		S->Top = 200.f;
+		S->Heading = LOCTEXT("TrainingHead", "Training");
+		S->HeadingSize = 62.f;
 		TWeakPtr<FListScreen> W = S;
 		struct FRow
 		{
@@ -584,9 +656,17 @@ namespace SlopScreensImpl
 	TSharedPtr<FSlopScreen> MakeResults(const FMatchResult& R)
 	{
 		TSharedRef<FListScreen> S = MakeShared<FListScreen>();
-		S->bMatchBehind = false;
-		S->Top = 220.f;
 		USlopGameInstance* GI = USlopGameInstance::Get();
+		// The winner stands in the hall beside the result; a boss's win shows no one.
+		const FName Winner = R.Winner == 0 ? R.P1 : (R.Winner == 1 ? R.P2 : NAME_None);
+		const FFighterDef* WinnerDef = Winner.IsNone() ? nullptr : Def(Winner);
+		const bool bLostArcade = (R.Mode == EMode::Arcade || R.Mode == EMode::Survival) && R.Winner != 0;
+		S->Figure = WinnerDef && !WinnerDef->bBoss && !bLostArcade ? Winner : NAME_None;
+		if (!S->Figure.IsNone())
+		{
+			S->FigureOutfit = GI->Flow.Config.Outfit[R.Winner];
+			S->bFigureCostume = GI->Flow.Config.bCostume[R.Winner];
+		}
 		FGameFlow& F = GI->Flow;
 		TWeakPtr<FListScreen> W = S;
 		auto GoMenu = [GI]()
@@ -600,7 +680,7 @@ namespace SlopScreensImpl
 			FString P;
 			if (R.bFlawless)
 			{
-				P += LOCTEXT("FlawlessV", "FLAWLESS VICTORY").ToString();
+				P += LOCTEXT("FlawlessV", "Flawless Victory").ToString();
 			}
 			if (!R.Finisher.IsNone())
 			{
@@ -608,11 +688,11 @@ namespace SlopScreensImpl
 				{
 					P += TEXT("   ·   ");
 				}
-				P += R.Finisher.ToString().StartsWith(TEXT("stage_")) ? LOCTEXT("StageSlop", "STAGE SLOPTALITY").ToString() : LOCTEXT("Slop", "SLOPTALITY").ToString();
+				P += R.Finisher.ToString().StartsWith(TEXT("stage_")) ? LOCTEXT("StageHearted", "Stage Hearted").ToString() : LOCTEXT("Hearted", "Hearted").ToString();
 			}
 			if (!P.IsEmpty())
 			{
-				S->Line(FText::FromString(P), 48.f, SlopUI::Accent, true);
+				S->Line(FText::FromString(P), 40.f, SlopUI::Spark, true);
 			}
 		};
 		const EMode M = R.Mode;
@@ -620,7 +700,7 @@ namespace SlopScreensImpl
 		if (M == EMode::Arcade && F.OnSecretRung())
 		{
 			// The old master's challenge, won or lost, ends the run: there is no continue against
-			// him, and the tower was already recorded when the Slopbat fell.
+			// him, and the tower was already recorded when the Fragment fell.
 			const bool bWon = R.Winner == 0;
 			const FName Fighter = R.P1;
 			if (bWon)
@@ -628,13 +708,13 @@ namespace SlopScreensImpl
 				const int32 Pts = F.AddArcadeScore(R);
 				GI->Progress.Unlock(USlopGameInstance::UnlockKey(FGameFlow::SecretFighter()));
 				GI->Progress.RaiseArcadeScore(Fighter, F.ArcadeTower(), F.ArcadeScore());
-				S->Line(FText::Format(LOCTEXT("ScoreLine", "+{0} points   ·   total {1}"), FText::AsNumber(Pts), FText::AsNumber(F.ArcadeScore())), 30.f, SlopUI::Amber);
+				S->Line(FText::Format(LOCTEXT("ScoreLine", "+{0} points   ·   total {1}"), FText::AsNumber(Pts), FText::AsNumber(F.ArcadeScore())), 30.f, SlopUI::Warn);
 			}
 			S->Heading = FText::FromString(Json::Str(Secret, bWon ? TEXT("won") : TEXT("lost")));
 			S->HeadingSize = 44.f;
 			if (bWon)
 			{
-				S->Line(FText::FromString(Json::Str(Secret, TEXT("unlocked"))), 30.f, SlopUI::Accent);
+				S->Line(FText::FromString(Json::Str(Secret, TEXT("unlocked"))), 30.f, SlopUI::Spark);
 			}
 			S->Item(LOCTEXT("Continue", "Continue"), [GI, Fighter]() { GI->Goto(SlopScreens::Ending(Fighter, true)); });
 		}
@@ -644,17 +724,22 @@ namespace SlopScreensImpl
 			{
 				const int32 Pts = F.AddArcadeScore(R);
 				const int32 Total = F.ArcadeScore();
+				if (F.InStory() && R.P2 == TEXT("bram"))
+				{
+					// He gives her a proper uniform.
+					GI->Progress.Unlock(TEXT("outfit:wren_uniform"));
+				}
 				const bool bMore = F.ArcadeAdvance(R.bFlawless, GI->Now());
 				const FText Score = FText::Format(LOCTEXT("ScoreLine", "+{0} points   ·   total {1}"), FText::AsNumber(Pts), FText::AsNumber(Total));
 				if (bMore)
 				{
 					S->Heading = FText::Format(LOCTEXT("WinsX", "{0} WINS"), Upper(Def(R.P1)->Name));
 					Flourish();
-					S->Line(Score, 30.f, SlopUI::Amber);
+					S->Line(Score, 30.f, SlopUI::Warn);
 					const FRung* Next = F.CurrentRung();
-					const FText Who = Next->Kind == TEXT("boss") ? LOCTEXT("TheSlopbat", "the Ebony Heart Fragment") : (Next->Kind == TEXT("mirror") ? LOCTEXT("TheReflection", "the Reflection") : FText::FromString(Def(Next->Opponent)->Name));
+					const FText Who = Next->Kind == TEXT("boss") ? LOCTEXT("TheFragment", "the Ebony Heart Fragment") : (Next->Kind == TEXT("mirror") ? LOCTEXT("TheReflection", "the Reflection") : FText::FromString(Def(Next->Opponent)->Name));
 					S->Line(FText::Format(LOCTEXT("Next", "Next: {0}"), Who), 30.f, SlopUI::Dim);
-					S->Item(LOCTEXT("Continue", "Continue"), [GI]() { GI->Goto(SlopScreens::FaceOff()); });
+					S->Item(LOCTEXT("Continue", "Continue"), [GI]() { GI->EnterFight(true); });
 					S->Item(LOCTEXT("QuitArcade", "Quit Arcade"), GoMenu);
 				}
 				else
@@ -665,18 +750,28 @@ namespace SlopScreensImpl
 					GI->Progress.RecordArcade(R.P1, Tower, Secs, Total);
 					S->Heading = StoryLine(TEXT("boss_defeated"));
 					S->HeadingSize = 48.f;
-					S->Line(Score, 30.f, SlopUI::Amber);
+					if (F.InStory())
+					{
+						if (const TArray<TSharedPtr<FJsonValue>>* After = Json::Arr(Json::Obj(GetContent().Story, TEXT("story")), TEXT("after_fragment")))
+						{
+							for (const TSharedPtr<FJsonValue>& V : *After)
+							{
+								S->Line(FText::FromString(V->AsString()), 30.f, SlopUI::Text);
+							}
+						}
+					}
+					S->Line(Score, 30.f, SlopUI::Warn);
 					S->Line(FText::Format(LOCTEXT("TimeLine", "Time {0}:{1}   ·   continues {2}{3}"), (int32)Secs / 60, FText::FromString(FString::Printf(TEXT("%02d"), (int32)Secs % 60)),
-						F.ArcadeContinues(), Total > OldBest ? LOCTEXT("NewBest", "   ·   NEW BEST SCORE") : FText::GetEmpty()), 30.f, Total > OldBest ? SlopUI::Accent : SlopUI::Dim);
+						F.ArcadeContinues(), Total > OldBest ? LOCTEXT("NewBest", "   ·   NEW BEST SCORE") : FText::GetEmpty()), 30.f, Total > OldBest ? SlopUI::Spark : SlopUI::Dim);
 					const FName Fighter = R.P1;
-					if (F.SecretEarned() && !GI->IsUnlocked(FGameFlow::SecretFighter()))
+					if (F.SecretEarned() && (F.InStory() || !GI->IsUnlocked(FGameFlow::SecretFighter())))
 					{
 						// No continue all the way up: someone on the still water has been watching.
 						S->Line(FText::FromString(Json::Str(Secret, TEXT("offer"))), 30.f, SlopUI::Text);
 						S->Item(FText::FromString(Json::Str(Secret, TEXT("approach"), TEXT("Face him"))), [GI]()
 						{
 							GI->Flow.AddSecretRung();
-							GI->Goto(SlopScreens::FaceOff());
+							GI->EnterFight(true);
 						});
 						S->Item(FText::FromString(Json::Str(Secret, TEXT("leave"), TEXT("Walk on"))), [GI, Fighter]() { GI->Goto(SlopScreens::Ending(Fighter, true)); });
 					}
@@ -688,14 +783,14 @@ namespace SlopScreensImpl
 			}
 			else
 			{
-				S->Heading = LOCTEXT("ContinueQ", "CONTINUE?");
-				S->HeadingSize = 110.f;
+				S->Heading = LOCTEXT("ContinueQ", "Continue?");
+				S->HeadingSize = 96.f;
 				TSharedRef<double> Count = MakeShared<double>(10.99);
-				S->Line(TAttribute<FText>::CreateLambda([Count]() { return FText::AsNumber(FMath::Max(0, (int32)*Count)); }), 140.f, SlopUI::Rust * 1.3f, true);
+				S->Line(TAttribute<FText>::CreateLambda([Count]() { return FText::AsNumber(FMath::Max(0, (int32)*Count)); }), 128.f, SlopUI::Danger, true);
 				S->Item(LOCTEXT("Retry", "Retry"), [GI]()
 				{
 					GI->Flow.ArcadeRetry();
-					GI->Goto(SlopScreens::FaceOff());
+					GI->EnterFight(true);
 				});
 				S->Item(LOCTEXT("QuitArcade", "Quit Arcade"), GoMenu);
 				S->OnTick = [Count, GoMenu](float Dt)
@@ -719,10 +814,10 @@ namespace SlopScreensImpl
 				S->Heading = FText::Format(LOCTEXT("WaveCleared", "WAVE {0} CLEARED"), Waves);
 				Flourish();
 				const int32 Carried = F.Config.P1Health > 0 ? F.Config.P1Health : P1->Health;
-				const FText Next = F.Config.P2 == TEXT("slopbat") ? LOCTEXT("TheSlopbat", "the Ebony Heart Fragment") : FText::FromString(Def(F.Config.P2)->Name);
+				const FText Next = F.Config.P2 == TEXT("slopbat") ? LOCTEXT("TheFragment", "the Ebony Heart Fragment") : FText::FromString(Def(F.Config.P2)->Name);
 				S->Line(FText::Format(LOCTEXT("Carried", "Health carried on: {0}%   ·   Next: wave {1}, {2} ({3})"), FMath::RoundToInt(100.0 * Carried / P1->Health),
 					Waves + 1, Next, FGameFlow::DifficultyName(F.Config.Difficulty)), 30.f, SlopUI::Dim);
-				S->Item(LOCTEXT("Continue", "Continue"), [GI]() { GI->Goto(SlopScreens::FaceOff()); });
+				S->Item(LOCTEXT("Continue", "Continue"), [GI]() { GI->EnterFight(true); });
 				S->Item(LOCTEXT("QuitSurvival", "Quit Survival"), GoMenu);
 			}
 			else
@@ -732,12 +827,12 @@ namespace SlopScreensImpl
 				S->Heading = FText::Format(LOCTEXT("Survived", "{0} SURVIVED {1} {1}|plural(one=WAVE,other=WAVES)"), Upper(P1->Name), Waves);
 				S->HeadingSize = 80.f;
 				S->Line(bBest && Waves > 0 ? LOCTEXT("NewRecord", "NEW RECORD") : FText::Format(LOCTEXT("BestWith", "Best with {0}: {1}"), FText::FromString(P1->Name), GI->Progress.BestSurvival(R.P1)),
-					34.f, bBest && Waves > 0 ? SlopUI::Accent : SlopUI::Dim);
+					34.f, bBest && Waves > 0 ? SlopUI::Spark : SlopUI::Dim);
 				const FName Fighter = R.P1;
 				S->Item(LOCTEXT("TryAgain", "Try Again"), [GI, Fighter]()
 				{
 					GI->Flow.StartSurvival(Fighter, (int32)(FDateTime::Now().GetTicks() % 100000));
-					GI->Goto(SlopScreens::FaceOff());
+					GI->EnterFight(true);
 				});
 				S->Item(LOCTEXT("CharSelect", "Character Select"), [GI]() { GI->Flow.EndSurvival(); GI->Goto(SlopScreens::Select(EMode::Survival)); });
 				S->Item(LOCTEXT("MainMenu", "Main Menu"), GoMenu);
@@ -755,13 +850,13 @@ namespace SlopScreensImpl
 			S->Heading = R.Winner >= 0 ? FText::Format(LOCTEXT("WinsX", "{0} WINS"), Upper(Def(R.Winner == 0 ? R.P1 : R.P2)->Name)) : LOCTEXT("DrawH", "DRAW");
 			if (M == EMode::Versus && R.Winner >= 0)
 			{
-				S->Line(FText::Format(LOCTEXT("PlayerN", "Player {0}"), R.Winner + 1), 34.f, R.Winner == 0 ? SlopUI::Accent : SlopUI::Amber);
+				S->Line(FText::Format(LOCTEXT("PlayerN", "Player {0}"), R.Winner + 1), 34.f, R.Winner == 0 ? SlopUI::Spark : SlopUI::Warn);
 			}
 			else if (M == EMode::Cpu)
 			{
 				// Who that was, for a mirror match, and at what difficulty.
 				S->Line(FText::Format(R.Winner == 0 ? LOCTEXT("YouBeatCpu", "You beat the CPU ({0})") : (R.Winner == 1 ? LOCTEXT("CpuBeatYou", "The CPU wins ({0})") : LOCTEXT("CpuDraw", "Against the CPU ({0})")),
-					FGameFlow::DifficultyName(F.Config.Difficulty)), 34.f, R.Winner == 1 ? SlopUI::Amber : SlopUI::Accent);
+					FGameFlow::DifficultyName(F.Config.Difficulty)), 34.f, R.Winner == 1 ? SlopUI::Warn : SlopUI::Spark);
 			}
 			Flourish();
 			S->Item(LOCTEXT("Rematch", "Rematch"), [GI]() { GI->RestartMatch(); });
@@ -776,8 +871,9 @@ namespace SlopScreensImpl
 	{
 		TSharedRef<FListScreen> S = MakeShared<FListScreen>();
 		S->Heading = LOCTEXT("DataErr", "THE GAME DATA IS DAMAGED");
-		S->HeadingSize = 64.f;
-		S->HeadingColor = SlopUI::Rust * 1.4f;
+		S->HeadingSize = 58.f;
+		S->HeadingColor = SlopUI::Danger;
+		S->bCentred = true;
 		int32 N = 0;
 		for (const FString& E : GetContent().Errors)
 		{

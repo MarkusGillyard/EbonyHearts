@@ -33,6 +33,8 @@ cp "$ROOT"/Docs/Licenses/* "$OUT/Licenses/"
 printf 'Ebony Hearts %s (%s build of source commit %s, %s)\n' "$VER" "$CFG" "$REV" "$(date -u +%Y-%m-%d)" > "$OUT/VERSION.txt"
 # The launcher carries the game's name (it finds the binary by its own folder, whatever it is called).
 mv "$OUT/MortalSlopbat.sh" "$OUT/EbonyHearts.sh"
+# The desktop's window list reads the window's class: this gives it the game's name, not the binary's.
+sed -i '2i export SDL_APP_ID=EbonyHearts' "$OUT/EbonyHearts.sh"
 chmod +x "$OUT/EbonyHearts.sh"
 (cd "$OUT" && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)
 tar -C "$BUILDS/release" -czf "$OUT.tar.gz" "$NAME"

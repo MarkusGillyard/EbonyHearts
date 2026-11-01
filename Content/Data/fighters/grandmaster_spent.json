@@ -1,15 +1,15 @@
 {
 	"id": "grandmaster_spent",
-	"name": "Grandmaster",
+	"name": "The Grandmaster",
 	"title": "Out of Qhi",
 	"pronoun": "him",
 	"style": "Boxing, out of Qhi",
-	"blurb": "With his Qhi gone the old master boxes: a clean, careful guard and sound combinations on legs that no longer carry him far.",
+	"blurb": "With his Qhi gone he boxes: a clean, careful guard and sound combinations.",
 	"body": "grandmaster",
 	"resource": "none",
 	"copyable": false,
 	"stats": {
-		"height": 1.7,
+		"height": 1.83,
 		"health": 1000,
 		"walk_f": 1.7,
 		"walk_b": 1.55,

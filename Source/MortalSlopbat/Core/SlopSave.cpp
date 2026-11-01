@@ -195,6 +195,9 @@ namespace Slop
 		J->SetBoolField(TEXT("dynamic_res"), bDynamicRes);
 		J->SetStringField(TEXT("graphics"), Graphics);
 		J->SetNumberField(TEXT("ui_scale"), UIScale);
+		J->SetNumberField(TEXT("screen_margin"), ScreenMargin);
+		J->SetStringField(TEXT("screen"), Screen);
+		J->SetStringField(TEXT("speakers"), Speakers);
 		J->SetNumberField(TEXT("master_volume"), MasterVolume);
 		J->SetNumberField(TEXT("music_volume"), MusicVolume);
 		J->SetNumberField(TEXT("effects_volume"), EffectsVolume);
@@ -203,6 +206,7 @@ namespace Slop
 		J->SetBoolField(TEXT("flashes"), bFlashes);
 		J->SetStringField(TEXT("effects"), Effects);
 		J->SetStringField(TEXT("gore"), Gore);
+		J->SetStringField(TEXT("intro"), IntroLength);
 		J->SetBoolField(TEXT("post_fx"), bPostFx);
 		J->SetBoolField(TEXT("motion_smoothing"), bMotionSmoothing);
 		J->SetBoolField(TEXT("input_display"), bInputDisplay);
@@ -262,6 +266,10 @@ namespace Slop
 		const FString G = Json::Str(J, TEXT("graphics"), D.Graphics);
 		Graphics = (G == TEXT("low") || G == TEXT("high") || G == TEXT("epic")) ? G : D.Graphics;
 		UIScale = FMath::Clamp(Json::Num(J, TEXT("ui_scale"), D.UIScale), 0.85, 1.25);
+		ScreenMargin = FMath::Clamp(Json::Num(J, TEXT("screen_margin"), D.ScreenMargin), 0.0, 0.05);
+		Screen = Json::Str(J, TEXT("screen"), D.Screen);
+		const FString Sp = Json::Str(J, TEXT("speakers"), D.Speakers);
+		Speakers = (Sp == TEXT("auto") || Sp == TEXT("stereo") || Sp == TEXT("surround")) ? Sp : D.Speakers;
 		MasterVolume = FMath::Clamp(Json::Num(J, TEXT("master_volume"), D.MasterVolume), 0.0, 1.0);
 		MusicVolume = FMath::Clamp(Json::Num(J, TEXT("music_volume"), D.MusicVolume), 0.0, 1.0);
 		EffectsVolume = FMath::Clamp(Json::Num(J, TEXT("effects_volume"), D.EffectsVolume), 0.0, 1.0);
@@ -270,6 +278,8 @@ namespace Slop
 		bFlashes = Json::Bool(J, TEXT("flashes"), D.bFlashes);
 		const FString E = Json::Str(J, TEXT("effects"), D.Effects);
 		Effects = (E == TEXT("full") || E == TEXT("reduced")) ? E : D.Effects;
+		const FString In = Json::Str(J, TEXT("intro"), D.IntroLength);
+		IntroLength = (In == TEXT("full") || In == TEXT("short")) ? In : D.IntroLength;
 		const FString Go = Json::Str(J, TEXT("gore"), D.Gore);
 		Gore = (Go == TEXT("full") || Go == TEXT("low") || Go == TEXT("off")) ? Go : D.Gore;
 		bPostFx = Json::Bool(J, TEXT("post_fx"), D.bPostFx);
@@ -282,7 +292,7 @@ namespace Slop
 		DeadZone = FMath::Clamp(Json::Num(J, TEXT("dead_zone"), D.DeadZone), 0.05, 0.6);
 		bVibration = Json::Bool(J, TEXT("vibration"), D.bVibration);
 		const FString Gl = Json::Str(J, TEXT("glyphs"), D.Glyphs);
-		Glyphs = (Gl == TEXT("auto") || Gl == TEXT("playstation") || Gl == TEXT("xbox")) ? Gl : D.Glyphs;
+		Glyphs = (Gl == TEXT("auto") || Gl == TEXT("playstation") || Gl == TEXT("xbox") || Gl == TEXT("pc")) ? Gl : D.Glyphs;
 		for (int32 H = 0; H < 2; ++H)
 		{
 			const TSharedPtr<FJsonObject> K = Json::Obj(J, H == 0 ? TEXT("keys_left") : TEXT("keys_right"));
@@ -386,6 +396,49 @@ namespace Slop
 		Data->SetBoolField(TEXT("tutorial_done"), false);
 	}
 
+	// Trials are recorded by name, and some have since taken the names on their fighters' sheets.
+	static void CarryRenamedTrials(const TSharedPtr<FJsonObject>& Data)
+	{
+		static const TMap<FString, FString> Renamed = {
+			{TEXT("Lantern Lash"), TEXT("Muay Thai Combination")},
+			{TEXT("Temple Bell"), TEXT("Clinch Strikes")},
+			{TEXT("Lash into the Rush"), TEXT("Muay Thai Combination, Spinning Elbows")},
+			{TEXT("Bell and Rising Knee"), TEXT("Clinch Strikes, Rising Knee")},
+			{TEXT("Rush and Ember"), TEXT("Spinning Elbows, Lamplighter Flame")},
+			{TEXT("One-Two, Backfist"), TEXT("One-Two, Spinning Elbow")},
+			{TEXT("Turning Light"), TEXT("Spinning Heel Kick")},
+			{TEXT("Flying Cross"), TEXT("Flying Knee")},
+			{TEXT("Head Kick, Lifting Light"), TEXT("Head Kick, Tornado Kick")},
+			{TEXT("Feint into the Reaping Throw"), TEXT("Feint into the Suplex")},
+			{TEXT("Watch Combination"), TEXT("Watchman's Four")},
+			{TEXT("Baton Lift"), TEXT("Night Stick")},
+			{TEXT("Three Drives"), TEXT("Three Prize Ring Drives")},
+			{TEXT("Three Hammers"), TEXT("Tallow Mill")},
+			{TEXT("Belly Kick"), TEXT("Vat Stir")},
+			{TEXT("Circling Palms"), TEXT("Mourning Palms")},
+			{TEXT("Crescent"), TEXT("Veil Kick")},
+		};
+		const TSharedPtr<FJsonObject> Trials = Json::Obj(Data, TEXT("trials"));
+		if (!Trials.IsValid())
+		{
+			return;
+		}
+		for (auto& KV : Trials->Values)
+		{
+			const TArray<TSharedPtr<FJsonValue>>* Done = nullptr;
+			if (KV.Value->TryGetArray(Done))
+			{
+				TArray<TSharedPtr<FJsonValue>> Carried;
+				for (const TSharedPtr<FJsonValue>& V : *Done)
+				{
+					const FString* New = V->Type == EJson::String ? Renamed.Find(V->AsString()) : nullptr;
+					Carried.Add(New ? MakeShared<FJsonValueString>(*New) : V);
+				}
+				KV.Value = MakeShared<FJsonValueArray>(Carried);
+			}
+		}
+	}
+
 	void FSlopProgress::Load()
 	{
 		Reset();
@@ -456,6 +509,7 @@ namespace Slop
 			Data->SetNumberField(TEXT("stranger"), FMath::Clamp(Json::Int(J, TEXT("stranger"), 0), 0, 6));
 		}
 		Data->SetBoolField(TEXT("tutorial_done"), Json::Bool(J, TEXT("tutorial_done"), false));
+		CarryRenamedTrials(Data);
 	}
 
 	void FSlopProgress::MergeOriginal(const TSharedPtr<FJsonObject>& Old)
@@ -481,6 +535,7 @@ namespace Slop
 		}
 		Data->SetBoolField(TEXT("tutorial_done"), Json::Bool(Old, TEXT("tutorial_done"), false));
 		Data->SetBoolField(TEXT("imported"), true);
+		CarryRenamedTrials(Data);
 	}
 
 	bool FSlopProgress::Save() const { return WriteFileAtomic(Path(), ToText(Data.ToSharedRef())); }

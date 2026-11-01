@@ -346,6 +346,7 @@ bool FSlopRoundStorm::RunTest(const FString&)
 	const FMoveDef* Storm = Bat->Move(TEXT("storm_shroud"));
 	TestFalse("no storm at full health", H.F(1).CanUse(*Storm));
 	H.F(1).Health = (int32)(Bat->Health * 0.4);
+	H.F(1).BossForm = 1;
 	TestTrue("the storm comes below half health", H.F(1).CanUse(*Storm));
 	H.Place(3.0);
 	H.F(1).StartMove(*Storm);
@@ -371,7 +372,7 @@ bool FSlopRoundBossThrow::RunTest(const FString&)
 	return true;
 }
 
-// The Slopbat's bite is a grab (a block does not stop it), but a punch as it closes breaks it.
+// The Fragment's bite is a grab (a block does not stop it), but a punch as it closes breaks it.
 SLOP_TEST(FSlopRoundBossBite, "Rounds.BossBiteCanBeBroken")
 bool FSlopRoundBossBite::RunTest(const FString&)
 {

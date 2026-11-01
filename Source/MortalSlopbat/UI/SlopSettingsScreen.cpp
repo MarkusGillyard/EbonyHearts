@@ -1,13 +1,12 @@
 #include "UI/SlopScreens.h"
 #include "UI/SlopStyle.h"
+#include "UI/SlopWidgets.h"
 #include "Core/SlopAudio.h"
 #include "Core/SlopGameInstance.h"
 #include "View/SlopMatch.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
-#include "Widgets/Layout/SConstraintCanvas.h"
-#include "Widgets/Layout/SScaleBox.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/Text/STextBlock.h"
@@ -28,6 +27,8 @@ namespace SlopSettingsImpl
 		TFunction<bool(int32)> Change;
 		// Confirm on the row (actions, rebinding).
 		TFunction<void()> Activate;
+		// A slider's position, 0..1, drawn beside its value.
+		TFunction<float()> Meter;
 		bool bDisplay = false;
 		bool bHeader = false;
 	};
@@ -71,6 +72,7 @@ namespace SlopSettingsImpl
 			FRow R;
 			R.Label = L;
 			R.Value = [V]() { return Percent(*V); };
+			R.Meter = [V, Lo, Hi]() { return (float)((*V - Lo) / (Hi - Lo)); };
 			R.Change = [this, V, Lo, Hi, StepV](int32 D)
 			{
 				const double N = FMath::Clamp(FMath::RoundToDouble((*V + D * StepV) * 100.0) / 100.0, Lo, Hi);
@@ -160,6 +162,7 @@ namespace SlopSettingsImpl
 		{
 			FSlopSettings& S = GI->Settings;
 			S.WindowMode = Before.WindowMode;
+			S.Screen = Before.Screen;
 			S.Resolution = Before.Resolution;
 			S.bVSync = Before.bVSync;
 			S.FrameCap = Before.FrameCap;
@@ -178,6 +181,23 @@ namespace SlopSettingsImpl
 			{
 			case 0:
 			{
+				const TArray<FString> Screens = GI->ScreenNames();
+				if (Screens.Num() > 0 || !S.Screen.IsEmpty())
+				{
+					TArray<FText> ScreenRows = {LOCTEXT("ScreenMain", "Main display")};
+					for (const FString& N : Screens)
+					{
+						ScreenRows.Add(FText::FromString(N));
+					}
+					Rows.Add(Choice(LOCTEXT("ScreenRow", "Screen"), ScreenRows, [&S, Screens]() { return Screens.IndexOfByKey(S.Screen) + 1; },
+						[&S, Screens](int32 V) { S.Screen = V > 0 ? Screens[V - 1] : FString(); }, true));
+				}
+				Rows.Add(Action(LOCTEXT("ScreenNow", "This display now"), []() {}, [this]()
+				{
+					const FIntPoint Size = GI->ScreenSize();
+					const double Hz = GI->DisplayRefresh();
+					return Hz > 1.0 ? FText::FromString(FString::Printf(TEXT("%d × %d at %d Hz"), Size.X, Size.Y, FMath::RoundToInt(Hz))) : FText::GetEmpty();
+				}));
 				Rows.Add(Choice(LOCTEXT("Window", "Window"), {LOCTEXT("Windowed", "Window"), LOCTEXT("Borderless", "Full screen (borderless)"), LOCTEXT("Exclusive", "Full screen (exclusive)")},
 					[&S]() { return S.WindowMode; }, [&S](int32 V) { S.WindowMode = V; }, true));
 				static const FIntPoint Res[] = {{1280, 720}, {1600, 900}, {1920, 1080}, {1920, 1200}, {2560, 1440}, {3440, 1440}, {3840, 2160}};
@@ -204,6 +224,7 @@ namespace SlopSettingsImpl
 				Rows.Add(Choice(LOCTEXT("Graphics", "Graphics"), {LOCTEXT("High", "High"), LOCTEXT("Epic", "Epic (finer shadows and effects; a faster GPU)"), LOCTEXT("Low", "Low (no depth of field, simpler shadows)")},
 					[&S]() { return S.Graphics == TEXT("low") ? 2 : (S.Graphics == TEXT("epic") ? 1 : 0); },
 					[&S](int32 V) { S.Graphics = V == 2 ? TEXT("low") : (V == 1 ? TEXT("epic") : TEXT("high")); }, true));
+				Rows.Add(Slider(LOCTEXT("Margin", "Screen margin (for a TV that crops its edges)"), &S.ScreenMargin, 0.0, 0.05, 0.01));
 				Rows.Add(Toggle(LOCTEXT("PostFx", "Vignette and grain"), &S.bPostFx));
 				Rows.Add(Toggle(LOCTEXT("Smooth", "Motion smoothing between ticks"), &S.bMotionSmoothing));
 				break;
@@ -213,6 +234,18 @@ namespace SlopSettingsImpl
 				Rows.Add(Slider(LOCTEXT("Music", "Music"), &S.MusicVolume));
 				Rows.Add(Slider(LOCTEXT("Effects", "Effects"), &S.EffectsVolume));
 				Rows.Add(Slider(LOCTEXT("Voices", "Cries and screams"), &S.VoiceVolume));
+				Rows.Add(Choice(LOCTEXT("Speakers", "Speakers"), {LOCTEXT("SpAuto", "Automatic"), LOCTEXT("SpStereo", "Stereo"), LOCTEXT("SpSurround", "Surround")},
+					[&S]() { return S.Speakers == TEXT("stereo") ? 1 : (S.Speakers == TEXT("surround") ? 2 : 0); },
+					[&S](int32 V) { S.Speakers = V == 1 ? TEXT("stereo") : (V == 2 ? TEXT("surround") : TEXT("auto")); }));
+				// Automatic says what it found, so a surround system set to stereo in the system's own
+				// sound settings can be seen here.
+				Rows.Last().Value = [this]()
+				{
+					const FSlopSettings& St = GI->Settings;
+					if (St.Speakers == TEXT("stereo")) return LOCTEXT("SpStereo", "Stereo");
+					if (St.Speakers == TEXT("surround")) return LOCTEXT("SpSurround", "Surround");
+					return GI->Audio->IsSurround() ? FText::Format(LOCTEXT("SpFound", "Automatic (surround, {0} channels)"), GI->Audio->OutputChannels()) : LOCTEXT("SpFoundStereo", "Automatic (stereo)");
+				};
 				break;
 			case 2:
 				Rows.Add(Toggle(LOCTEXT("Shake", "Camera shake"), &S.bScreenShake));
@@ -223,6 +256,8 @@ namespace SlopSettingsImpl
 					[&S]() { return S.Gore == TEXT("low") ? 1 : (S.Gore == TEXT("off") ? 2 : 0); }, [&S](int32 V) { S.Gore = V == 1 ? TEXT("low") : (V == 2 ? TEXT("off") : TEXT("full")); }));
 				Rows.Add(Slider(LOCTEXT("UIScale", "Text size"), &S.UIScale, 0.85, 1.25, 0.05));
 				Rows.Add(Toggle(LOCTEXT("InputDisp", "Input display in fights"), &S.bInputDisplay));
+				Rows.Add(Choice(LOCTEXT("Intro", "Pre-fight intro"), {LOCTEXT("IFull", "Full"), LOCTEXT("IShort", "Short")}, [&S]() { return S.IntroLength == TEXT("short") ? 1 : 0; },
+					[&S](int32 V) { S.IntroLength = V ? TEXT("short") : TEXT("full"); }));
 				Rows.Add(Choice(LOCTEXT("Diff", "CPU difficulty (Versus CPU, Training)"), {FGameFlow::DifficultyName(0), FGameFlow::DifficultyName(1), FGameFlow::DifficultyName(2)},
 					[&S]() { return S.Difficulty; }, [&S](int32 V) { S.Difficulty = V; }));
 				Rows.Add(Choice(LOCTEXT("VsRounds", "Rounds to win (Versus, Versus CPU)"), {FText::AsNumber(1), FText::AsNumber(2), FText::AsNumber(3), FText::AsNumber(4), FText::AsNumber(5)},
@@ -236,9 +271,9 @@ namespace SlopSettingsImpl
 			{
 				Rows.Add(Slider(LOCTEXT("Dead", "Stick dead zone"), &S.DeadZone, 0.05, 0.6, 0.05));
 				Rows.Add(Toggle(LOCTEXT("Vibe", "Vibration"), &S.bVibration));
-				Rows.Add(Choice(LOCTEXT("Glyphs", "Button names"), {LOCTEXT("Auto", "Automatic"), LOCTEXT("PS", "PlayStation"), LOCTEXT("Xb", "Xbox")},
-					[&S]() { return S.Glyphs == TEXT("playstation") ? 1 : (S.Glyphs == TEXT("xbox") ? 2 : 0); },
-					[&S](int32 V) { S.Glyphs = V == 1 ? TEXT("playstation") : (V == 2 ? TEXT("xbox") : TEXT("auto")); }));
+				Rows.Add(Choice(LOCTEXT("Glyphs", "Button prompts"), {LOCTEXT("Auto", "Automatic"), LOCTEXT("PS", "PlayStation"), LOCTEXT("Xb", "Xbox"), LOCTEXT("Pc", "PC")},
+					[&S]() { return S.Glyphs == TEXT("playstation") ? 1 : (S.Glyphs == TEXT("xbox") ? 2 : (S.Glyphs == TEXT("pc") ? 3 : 0)); },
+					[&S](int32 V) { S.Glyphs = V == 1 ? TEXT("playstation") : (V == 2 ? TEXT("xbox") : (V == 3 ? TEXT("pc") : TEXT("auto"))); }));
 				for (int32 H = 0; H < 3; ++H)
 				{
 					Rows.Add(Header(H == 0 ? LOCTEXT("KL", "KEYBOARD, LEFT HALF") : (H == 1 ? LOCTEXT("KR", "KEYBOARD, RIGHT HALF") : LOCTEXT("PadH", "CONTROLLERS (directions are always the D-pad and left stick; the triggers also block and run)"))));
@@ -253,7 +288,7 @@ namespace SlopSettingsImpl
 								return LOCTEXT("Press", "press a key…");
 							}
 							return H < 2 ? SlopUI::KeyName(St.Keys[H][(int32)Act], EGlyphs::Keyboard)
-								: SlopUI::KeyName(St.PadButtons[(int32)Act], GI->Router->Glyphs() == EGlyphs::Keyboard ? EGlyphs::Xbox : GI->Router->Glyphs());
+								: SlopUI::KeyName(St.PadButtons[(int32)Act], GI->Router->PadGlyphs());
 						}));
 					}
 				}
@@ -375,35 +410,74 @@ namespace SlopSettingsImpl
 			{
 				BuildRows();
 			}
-			const TArray<FText> Tabs = {LOCTEXT("TVideo", "Video"), LOCTEXT("TAudio", "Sound"), LOCTEXT("TComfort", "Comfort and game"), LOCTEXT("TControls", "Controls")};
+			const TArray<FText> Tabs = {LOCTEXT("TVideo", "Video"), LOCTEXT("TAudio", "Sound"), LOCTEXT("TComfort", "Comfort and Game"), LOCTEXT("TControls", "Controls")};
 			TSharedRef<SHorizontalBox> TabRow = SNew(SHorizontalBox);
 			for (int32 I = 0; I < Tabs.Num(); ++I)
 			{
-				TabRow->AddSlot().AutoWidth().Padding(0, 0, 36, 0)
+				TabRow->AddSlot().AutoWidth().Padding(0, 0, 44, 0)
 				[
-					SNew(STextBlock).Text(Tabs[I]).Font(SlopUI::Display(40.f)).ColorAndOpacity_Lambda([this, I]() { return Tab == I ? SlopUI::Accent : SlopUI::Dim; })
+					SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("NoBrush")).Padding(0)
+					.OnMouseButtonDown_Lambda([this, I](const FGeometry&, const FPointerEvent&)
+					{
+						Tab = I;
+						Sel = 0;
+						BuildRows();
+						Sound(TEXT("ui_move"));
+						GI->RebuildScreen();
+						return FReply::Handled();
+					})
+					[
+						SNew(SVerticalBox)
+						+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(Tabs[I]).Font(SlopUI::Display(32.f)).ColorAndOpacity(Tab == I ? SlopUI::Text : SlopUI::Faint)]
+						+ SVerticalBox::Slot().AutoHeight().Padding(0, 6, 0, 0).HAlign(HAlign_Fill)
+						[
+							SNew(SBox).HeightOverride(2.f)[SNew(SImage).Image(SlopUI::Box()).ColorAndOpacity(Tab == I ? SlopUI::Spark : FLinearColor::Transparent)]
+						]
+					]
 				];
 			}
 			// As many rows as fit above the message line; the window follows the selection.
 			TSharedRef<SVerticalBox> List = SNew(SVerticalBox);
 			const int32 Visible = 11;
 			const int32 First = FMath::Clamp(Sel - Visible / 2, 0, FMath::Max(0, Rows.Num() - Visible));
-			if (First > 0)
-			{
-				List->AddSlot().AutoHeight().HAlign(HAlign_Center)[SlopUI::Label(LOCTEXT("More", "▲"), 20.f, SlopUI::Dim)];
-			}
+			List->AddSlot().AutoHeight().HAlign(HAlign_Center)[SlopUI::Label(First > 0 ? LOCTEXT("More", "▲") : FText::GetEmpty(), 18.f, SlopUI::Dim)];
 			for (int32 I = First; I < FMath::Min(Rows.Num(), First + Visible); ++I)
 			{
 				const FRow& R = Rows[I];
 				if (R.bHeader)
 				{
-					List->AddSlot().AutoHeight().Padding(0, 14, 0, 2)[SlopUI::Label(R.Label, 24.f, SlopUI::Amber)];
+					List->AddSlot().AutoHeight().Padding(0, 14, 0, 4)[SlopUI::CapsLabel(R.Label, 20.f, SlopUI::Spark)];
 					continue;
 				}
-				List->AddSlot().AutoHeight().Padding(0, 2)
+				const auto IsSel = [this, I]() { return Sel == I; };
+				TSharedRef<SHorizontalBox> Value = SNew(SHorizontalBox);
+				if (R.Meter)
+				{
+					Value->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 18, 0)
+					[
+						SNew(SBox).WidthOverride(260.f).HeightOverride(6.f)
+						[
+							SNew(SOverlay)
+							+ SOverlay::Slot()[SNew(SImage).Image(SlopUI::Box()).ColorAndOpacity(SlopUI::Line)]
+							+ SOverlay::Slot().HAlign(HAlign_Left)
+							[
+								SNew(SBox).WidthOverride_Lambda([M = R.Meter]() { return FOptionalSize(260.f * FMath::Clamp(M(), 0.f, 1.f)); })
+								[
+									SNew(SImage).Image(SlopUI::Box()).ColorAndOpacity_Lambda([IsSel]() { return IsSel() ? SlopUI::Spark : SlopUI::Dim; })
+								]
+							]
+						]
+					];
+				}
+				Value->AddSlot().AutoWidth().VAlign(VAlign_Center)
 				[
-					SNew(SBorder).BorderImage(SlopUI::Rounded()).Padding(FMargin(18, 6))
-					.BorderBackgroundColor_Lambda([this, I]() { return Sel == I ? FLinearColor(0.04f, 0.07f, 0.02f, 0.95f) : FLinearColor(0.01f, 0.016f, 0.013f, 0.75f); })
+					SNew(STextBlock).Font(SlopUI::Strong(26.f)).Text_Lambda([V = R.Value]() { return V ? V() : FText::GetEmpty(); })
+					.ColorAndOpacity_Lambda([IsSel]() { return IsSel() ? SlopUI::Text : SlopUI::Dim; })
+				];
+				List->AddSlot().AutoHeight().Padding(0, 1)
+				[
+					SNew(SBorder).BorderImage(SlopUI::Box()).Padding(FMargin(22, 7))
+					.BorderBackgroundColor_Lambda([IsSel]() { return IsSel() ? SlopUI::Raised : FLinearColor::Transparent; })
 					.OnMouseButtonDown_Lambda([this, I](const FGeometry&, const FPointerEvent&) { Sel = I; Press(); return FReply::Handled(); })
 					.OnMouseMove_Lambda([this, I](const FGeometry&, const FPointerEvent&)
 					{
@@ -416,43 +490,33 @@ namespace SlopSettingsImpl
 					})
 					[
 						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot().FillWidth(1.f)[SNew(STextBlock).Font(SlopUI::Body(28.f)).Text(R.Label).ColorAndOpacity_Lambda([this, I]() { return Sel == I ? SlopUI::Accent : SlopUI::Text; })]
-						+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Font(SlopUI::Body(28.f)).ColorAndOpacity(SlopUI::Text).Text_Lambda([V = R.Value]() { return V ? V() : FText::GetEmpty(); })]
+						+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)
+						[
+							SNew(STextBlock).Font(SlopUI::Body(27.f)).Text(R.Label).ColorAndOpacity_Lambda([IsSel]() { return IsSel() ? SlopUI::Text : SlopUI::Dim; })
+						]
+						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Value]
 					]
 				];
 			}
-			if (First + Visible < Rows.Num())
-			{
-				List->AddSlot().AutoHeight().HAlign(HAlign_Center)[SlopUI::Label(LOCTEXT("MoreDown", "▼"), 20.f, SlopUI::Dim)];
-			}
-			TSharedRef<SOverlay> O = SNew(SOverlay);
-			O->AddSlot()[bFromPause ? StaticCastSharedRef<SWidget>(SNew(SImage).Image(SlopUI::Box()).ColorAndOpacity(FLinearColor(0, 0, 0, 0.82f))) : SlopUI::Backdrop()];
-			O->AddSlot()[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SBox).WidthOverride(1920).HeightOverride(1080)
-			[
-				SNew(SConstraintCanvas)
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 50, 1600, 90))[SlopUI::Title(LOCTEXT("SettingsT", "SETTINGS"), 72.f, SlopUI::Text)]
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 150, 1600, 60))[TabRow]
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 230, 1600, 700))[List]
-				+ SConstraintCanvas::Slot().Alignment(FVector2D::ZeroVector).Offset(FMargin(160, 950, 1600, 50))
+			List->AddSlot().AutoHeight().HAlign(HAlign_Center)[SlopUI::Label(First + Visible < Rows.Num() ? LOCTEXT("MoreDown", "▼") : FText::GetEmpty(), 18.f, SlopUI::Dim)];
+			TSharedRef<SConstraintCanvas> C = SlopUI::Canvas();
+			SlopUI::Place(C, SlopUI::TopLeft, FVector2D(130.f, 56.f), SlopUI::Heading(LOCTEXT("SettingsT", "Settings"), FText::GetEmpty(), 50.f));
+			SlopUI::Place(C, SlopUI::TopLeft, FVector2D(130.f, 170.f), TabRow);
+			SlopUI::Place(C, SlopUI::TopLeft, FVector2D(130.f, 236.f), List, FVector2D::ZeroVector, FVector2D(1300.f, 690.f));
+			SlopUI::Place(C, SlopUI::FootLeft, FVector2D(130.f, -92.f), SNew(SBox).WidthOverride(1300.f)
 				[
-					SNew(STextBlock).Font(SlopUI::Body(26.f)).ColorAndOpacity(SlopUI::Amber).Text_Lambda([this]()
+					SNew(STextBlock).Font(SlopUI::Strong(25.f)).ColorAndOpacity(SlopUI::Warn).AutoWrapText(true).Text_Lambda([this]()
 					{
 						if (bPendingDisplay)
 						{
-							return FText::Format(LOCTEXT("Keep", "Keep these display settings? {0} to keep · reverting in {1} s"),
+							return FText::Format(LOCTEXT("Keep", "Keep these display settings? {0} to keep  ·  reverting in {1} s"),
 								SlopUI::Confirm(GI->Router->Glyphs()), FMath::Max(0, FMath::CeilToInt(RevertAt - GI->Now())));
 						}
 						return CaptureMessage;
 					})
-				]
-			]]];
-			O->AddSlot()[SlopUI::Hint([this]()
-			{
-				const EGlyphs G = GI->Router->Glyphs();
-				return FText::Format(LOCTEXT("SetHint", "Up and down to choose   ·   left and right to change   ·   {0} for the next page   ·   {1} to go back"),
-					G == EGlyphs::Keyboard ? FText::FromString(TEXT("Tab")) : LOCTEXT("R1", "R1"), SlopUI::Back(G));
-			})];
-			return O;
+				], FVector2D(0.f, 1.f));
+			return SlopUI::Shell(GI, C, {{SlopUI::EPrompt::UpDown, LOCTEXT("SetMove", "Choose")}, {SlopUI::EPrompt::Sideways, LOCTEXT("SetChange", "Change")},
+				{SlopUI::EPrompt::Page, LOCTEXT("SetPage", "Next page")}, {SlopUI::EPrompt::Back, LOCTEXT("SetBack", "Back")}}, bFromPause ? SlopUI::EVeil::Full : SlopUI::EVeil::Side);
 		}
 
 		void Press()

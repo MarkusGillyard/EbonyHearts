@@ -1,9 +1,10 @@
 """Resizes the stage renders the game makes with -SlopHideFighters -SlopShotsNoUi (each ground
-empty, from the fight camera at the start of a round) to the stage screen's 960 x 540 picture,
-into SourceArt/StagePictures/<id>.png.
+empty, from the fight camera at the start of a round) to the stage screen's picture, into
+SourceArt/StagePictures/<id>.png. The picture fills 1080 units, so this size is one to one at 4K.
 
-    for each stage:  run_game -SlopMatch=ashka,bram,training,<stage> -RenderOffscreen -ForceRes \\
+    for each stage:  RESX=3840 RESY=2160 SLOP_OFFSCREEN=1 run_game -SlopMatch=ashka,bram,training,<stage> \\
                        -SlopHideFighters -SlopShotsNoUi -SlopShots=150 -SlopShotPrefix=stagepic_<stage> -SlopQuitAt=170
+                     (a profile with dynamic_res off, or the render scale softens the picture)
     then:            python3 -I Tools/stage_pictures.py   (and the import step "stagepics")
 """
 import glob
@@ -16,7 +17,7 @@ from PIL import Image
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SHOTS = os.path.join(HERE, "Saved", "Screenshots", "LinuxEditor")
 OUT = os.path.join(HERE, "SourceArt", "StagePictures")
-W, H = 960, 540
+W, H = 2160, 1215
 
 os.makedirs(OUT, exist_ok=True)
 done = 0

@@ -91,7 +91,7 @@
  },
  "texture_notes": {
   "skin": [
-   "tinted middleage_darkskinned_male_diffuse.png -> #a8836a (per-channel gain [4.758, 7.954, 9.662])",
+   "tinted middleage_darkskinned_male_diffuse.png -> #a8836a (per-channel gain [4.759, 7.955, 9.663])",
    "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #a8836a"
   ],
   "face": [
@@ -99,38 +99,38 @@
    "brows: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyebrows/eyebrow002/eyebrow002.png -> tile (0.5, 0.0, 0.5, 0.5)"
   ],
   "suit": [
-   "hollis_suit: Fabric066 tinted #5f6337, 8 cm tiles, roughness 0.92, metallic 0",
-   "hollis_glove_l: Leather026 tinted #1e1b18, 15 cm tiles, roughness 0.32, metallic 0",
-   "hollis_glove_r: Leather026 tinted #1e1b18, 15 cm tiles, roughness 0.32, metallic 0",
-   "hollis_cuff_l: Leather026 tinted #1e1b18, 15 cm tiles, roughness 0.32, metallic 0",
-   "hollis_cuff_r: Leather026 tinted #1e1b18, 15 cm tiles, roughness 0.32, metallic 0"
+   "hollis_suit: Fabric066 tinted #08080d, 8 cm tiles, roughness 0.55, metallic 0",
+   "hollis_glove_l: Leather026 tinted #0b0a12, 15 cm tiles, roughness 0.30, metallic 0",
+   "hollis_glove_r: Leather026 tinted #0b0a12, 15 cm tiles, roughness 0.30, metallic 0",
+   "hollis_cuff_l: Leather026 tinted #0b0a12, 15 cm tiles, roughness 0.30, metallic 0",
+   "hollis_cuff_r: Leather026 tinted #0b0a12, 15 cm tiles, roughness 0.30, metallic 0"
   ],
   "metal": [
-   "hollis_sole_l: Metal055A tinted #45464a, 20 cm tiles, roughness 0.62, metallic 1",
-   "hollis_sole_r: Metal055A tinted #45464a, 20 cm tiles, roughness 0.62, metallic 1",
-   "hollis_corselet: Metal042A tinted #b98c3c, 18 cm tiles, roughness 0.30, metallic 1",
-   "hollis_helmet: Metal042A tinted #b98c3c, 18 cm tiles, roughness 0.30, metallic 1",
-   "hollis_helmet_collar: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
-   "hollis_port_frame0: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
-   "hollis_port_glass0: flat #2f9a6a",
-   "hollis_port_frame1: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
-   "hollis_port_glass1: flat #2f9a6a",
-   "hollis_guard10: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
-   "hollis_guard15: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
-   "hollis_guard19: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
-   "hollis_port_frame2: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
-   "hollis_port_glass2: flat #2f9a6a",
-   "hollis_guard20: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
-   "hollis_guard25: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
-   "hollis_guard29: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
-   "hollis_harpoon_grip: Metal055A tinted #3a3836, 15 cm tiles, roughness 0.50, metallic 1",
-   "hollis_harpoon_barrel: Metal042A tinted #8c6a2e, 12 cm tiles, roughness 0.40, metallic 1",
-   "hollis_harpoon_tip: Metal055A tinted #3a3836, 15 cm tiles, roughness 0.50, metallic 1"
+   "hollis_sole_l: Metal055A tinted #0d0c14, 20 cm tiles, roughness 0.50, metallic 1",
+   "hollis_sole_r: Metal055A tinted #0d0c14, 20 cm tiles, roughness 0.50, metallic 1",
+   "hollis_corselet: Metal042A tinted #1d1233, 18 cm tiles, roughness 0.30, metallic 1",
+   "hollis_helmet: Metal042A tinted #1d1233, 18 cm tiles, roughness 0.30, metallic 1",
+   "hollis_helmet_collar: Metal042A tinted #120c22, 12 cm tiles, roughness 0.36, metallic 1",
+   "hollis_port_frame0: Metal042A tinted #120c22, 12 cm tiles, roughness 0.36, metallic 1",
+   "hollis_port_glass0: flat #7a35ff",
+   "hollis_port_frame1: Metal042A tinted #120c22, 12 cm tiles, roughness 0.36, metallic 1",
+   "hollis_port_glass1: flat #7a35ff",
+   "hollis_guard10: Metal042A tinted #120c22, 12 cm tiles, roughness 0.36, metallic 1",
+   "hollis_guard15: Metal042A tinted #120c22, 12 cm tiles, roughness 0.36, metallic 1",
+   "hollis_guard19: Metal042A tinted #120c22, 12 cm tiles, roughness 0.36, metallic 1",
+   "hollis_port_frame2: Metal042A tinted #120c22, 12 cm tiles, roughness 0.36, metallic 1",
+   "hollis_port_glass2: flat #7a35ff",
+   "hollis_guard20: Metal042A tinted #120c22, 12 cm tiles, roughness 0.36, metallic 1",
+   "hollis_guard25: Metal042A tinted #120c22, 12 cm tiles, roughness 0.36, metallic 1",
+   "hollis_guard29: Metal042A tinted #120c22, 12 cm tiles, roughness 0.36, metallic 1",
+   "hollis_harpoon_grip: Metal055A tinted #100e18, 15 cm tiles, roughness 0.46, metallic 1",
+   "hollis_harpoon_barrel: Metal042A tinted #120c22, 12 cm tiles, roughness 0.36, metallic 1",
+   "hollis_harpoon_tip: Metal055A tinted #100e18, 15 cm tiles, roughness 0.46, metallic 1"
   ],
   "leather": [
-   "hollis_boot_l: Leather021 tinted #3a3026, 20 cm tiles, roughness 0.60, metallic 0",
-   "hollis_boot_r: Leather021 tinted #3a3026, 20 cm tiles, roughness 0.60, metallic 0",
-   "hollis_belt: Leather021 tinted #2a2018, 20 cm tiles, roughness 0.50, metallic 0"
+   "hollis_boot_l: Leather021 tinted #0a0910, 20 cm tiles, roughness 0.50, metallic 0",
+   "hollis_boot_r: Leather021 tinted #0a0910, 20 cm tiles, roughness 0.50, metallic 0",
+   "hollis_belt: Leather021 tinted #0e0a1a, 20 cm tiles, roughness 0.45, metallic 0"
   ]
  },
  "parts": {
@@ -287,7 +287,7 @@
   },
   "hollis_glove_l": {
    "vertices": 1866,
-   "faces": 2404,
+   "faces": 2402,
    "triangles": 3728,
    "max_influences": 5,
    "unweighted_vertices": 0,
@@ -316,7 +316,7 @@
   },
   "hollis_glove_r": {
    "vertices": 1866,
-   "faces": 2416,
+   "faces": 2418,
    "triangles": 3728,
    "max_influences": 5,
    "unweighted_vertices": 0,
@@ -370,9 +370,9 @@
    ]
   },
   "hollis_belt": {
-   "vertices": 318,
-   "faces": 352,
-   "triangles": 636,
+   "vertices": 334,
+   "faces": 368,
+   "triangles": 668,
    "max_influences": 6,
    "unweighted_vertices": 0,
    "material": "M_hollis_leather",
@@ -389,9 +389,9 @@
    ]
   },
   "hollis_corselet": {
-   "vertices": 2090,
-   "faces": 2285,
-   "triangles": 4180,
+   "vertices": 2092,
+   "faces": 2265,
+   "triangles": 4192,
    "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_hollis_metal",
@@ -616,9 +616,9 @@
    ]
   }
  },
- "triangles_total": 43600,
- "top_of_everything_cm": 207.62,
- "standing_height_cm": 195.0,
+ "triangles_total": 43644,
+ "top_of_everything_cm": 213.96,
+ "standing_height_cm": 201.0,
  "lowest_point_cm": -0.0,
  "bones": 65,
  "root_bone": [
@@ -631,22 +631,22 @@
    1.3999,
    2.4492
   ],
-  "height_macro": 0.629395,
-  "height_before_scale_m": 1.91516,
-  "uniform_scale": 0.999914,
-  "body_height_m": 1.915,
+  "height_macro": 0.673248,
+  "height_before_scale_m": 1.97481,
+  "uniform_scale": 1.000097,
+  "body_height_m": 1.975,
   "targets_applied": 4
  },
  "timings_s": {
-  "enable_mpfb": 0.18,
-  "mpfb_body": 1.02,
+  "enable_mpfb": 0.26,
+  "mpfb_body": 1.13,
   "bake_body": 0.02,
-  "outfit": 2.07,
-  "textures": 17.4,
+  "outfit": 2.06,
+  "textures": 17.76,
   "finalize": 0.17,
   "save_blend": 0.02,
   "export_fbx": 0.35
  },
- "script_wall_s": 21.2,
- "peak_rss_mb": 1926.8
+ "script_wall_s": 21.8,
+ "peak_rss_mb": 1927.9
 }

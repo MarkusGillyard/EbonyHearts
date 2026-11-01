@@ -62,7 +62,7 @@ void ASlopFightCamera::Targets(FVector& OutPos, FVector& OutLook) const
 	const double HalfH = Dist * HalfHPerD;
 	const double Lim = FMath::Max(0.0, FFightSim::StageHalf + 0.9 - HalfW);
 	const double Cx = FMath::Clamp(Mid, -Lim, Lim);
-	// Anchored to the lowest fighter: something above the farthest framing (the Slopbat rising
+	// Anchored to the lowest fighter: something above the farthest framing (the Fragment rising
 	// for its dive) leaves the top of the screen rather than the player the bottom.
 	const double Ly = Bottom + HalfH;
 	FVector Focus(Cx, Ly, 0.0);
@@ -84,6 +84,20 @@ void ASlopFightCamera::Snap()
 	Targets(Pos, LookAt);
 	PosV = LookV = FVector::ZeroVector;
 	Apply();
+}
+
+void ASlopFightCamera::Stage(const FVector& InPos, const FVector& InLook)
+{
+	OverridePos = Pos = InPos;
+	OverrideLook = LookAt = InLook;
+	OverrideW = OverrideTarget = 1.0;
+	PosV = LookV = FVector::ZeroVector;
+	Apply();
+}
+
+double ASlopFightCamera::HalfWidthAt(double Distance) const
+{
+	return Distance * FMath::Tan(FMath::DegreesToRadians(VFov * 0.5)) * Aspect();
 }
 
 void ASlopFightCamera::Step(double Delta)

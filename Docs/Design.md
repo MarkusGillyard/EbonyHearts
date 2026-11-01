@@ -1,39 +1,32 @@
 # Ebony Hearts — design
 
 The game was called Mortal Slopbat until 2.7.0, when Markus renamed it Ebony Hearts; the
-project, its module and the save folder keep the old name inside, and the Slopbat remains the
-boss at the top of every tower.
+project, its module and the save folder keep the old name inside, and the data still calls the final
+boss `slopbat`.
 
 ## Premise
 
 The Ebony Heart is said to bestow Divinity upon whoever holds it. It has been lost for exactly
-five hundred years. The Outer Gods, bored, have staged a tournament for their entertainment: one
+five hundred years. The Outer Gods, bored, have staged the Ebony Heart Tournament for their entertainment: one
 worthy mortal may claim the Heart. The fighters gather in the Sump, the low country where every
 river in the world ends (black water, reed forests and stilt-towns sinking into living mud), and
-at the top of every tower waits a **Fragment of the Ebony Heart, wearing the shape of the
-Slopbat**: the final boss is still the Slopbat, and what it is now is the Fragment.
+at the top of every tower waits a **Fragment of the Ebony Heart**, with Hollis Fathom, its servant,
+before it.
 
-**Canon, as Markus has fixed it (29 October 2026), and what is not.** Fixed: the Ebony Heart, its
-five hundred years, the Outer Gods' tournament for one worthy mortal, the Fragment in the
-Slopbat's shape; Ashka is **Pure Good**; the Grandmaster is **Neutral**. Not decided, so stated
-nowhere in the game: who the protagonist is (Ashka or Wren), every other fighter's alignment,
-and Wren's and the Grandmaster's reasons for fighting (their bios and endings say only what they
-are). The six original fighters' bios and endings are the original game's text and still speak of
-asking the Slopbat for something; they read with the Fragment wearing its shape, and whether they
-stand under the new canon is Markus's call. Names: **Wren** and **Grandmaster**, no surnames.
+Wren is the story's protagonist. The original fighters' arcade endings still speak of asking the boss
+for something.
 
-The game takes these stakes seriously. The Slopbat's name is the joke, along with a few chosen
-moments (the finishers' name, the Reflection). There is no fourth-wall commentary and no
+The game takes these stakes seriously, apart from a few chosen moments (the Reflection). There is no fourth-wall commentary and no
 AI-themed material.
 
 ## Tone and art direction: bog-gothic arcade
 
 - **Silhouette first.** Every fighter is recognisable as a black shape: a lean kickboxer, a
   giant, a hooded assassin trailing a chain, a tall veiled mourner, a long-coated constable in a
-  peaked cap, a round-helmeted diving suit, a braided fighter in a short belted jacket, a bald old
-  master in a long robe, and the winged boss.
+  peaked cap, a round-helmeted diving suit, a braided fighter in a short belted jacket, a long-haired
+  master in a black robe, and the boss, which keeps no fixed shape.
 - **Palette.** Stages in deep teal-black, moss and wet stone, lit by lantern amber and furnace
-  orange; supernatural power in sickly slop-green (the Sump), ember orange (Ashka), pale
+  orange; supernatural power in sickly green (the Sump), crimson (Ashka), pale
   dirge-blue (Mirela), brass (Hollis), fen-light teal (Wren), Qhi gold (the Grandmaster). Each
   fighter has one dominant
   colour that reads against every stage.
@@ -46,11 +39,13 @@ AI-themed material.
   both fighters whole from feet to head with a margin, pulling back for jumps and juggles and
   anchored to the floor, never cutting during play.
   Finishers may take a closer framing and always return.
-- **UI.** New Rocker (display) and Oswald (text), bone-white on near-black teal, slop-green for
-  focus and selection, amber and rust for warnings. MK-style top bars: health with names, a run
-  meter beneath, round wins, the timer between them.
+- **UI.** Built on the owner's title card: Cinzel and Source Sans 3, worn silver on obsidian, violet
+  for focus. Long top bars: health with names, the fighter's meter beneath, round wins, the timer
+  between them. `Docs/UI.md` is the design system.
 - **Effects.** Short and punchy: impact sparks and rings, a brief light, blood that follows the
   gore setting, dust where bodies land. Reduced effects and no-flash options exist.
+- **Content.** Made for adults: intense violence, blood and gore. The Gore setting (Full, Low, Off) is
+  the player's choice, and Full is the game as intended.
 - **Finish.** The frame is finished like a dark print: the stage softens a few metres behind the
   fighting plane (high graphics), and a soft vignette and faint grain lie over the fight (can be
   turned off). Each fighter's own colour catches along the edges of the body like a back light.
@@ -90,7 +85,7 @@ hit.
 
 Rounds last 90 seconds; two round wins take the match. The deciding knockout leaves the loser
 dizzy (FINISH HIM / FINISH HER / FINISH IT) for seven seconds: the winner may enter their
-**Sloptality** at the right distance (close, sweep or far), or simply hit them. The Rendering
+**Hearted** at the right distance (close, sweep or far), or simply hit them. The Rendering
 Yards also has a stage finisher (D,D,D+LP up close).
 
 ### Loops closed, and one kept for later
@@ -123,16 +118,16 @@ closed, with tests that repeat every special inside its cancel window (`Combat.C
 
 ## Roster
 
-| Fighter | Look | Style and role | Specials (planned) | Sloptality |
+| Fighter | Look | Style and role | Specials (planned) | Hearted |
 |---|---|---|---|---|
-| **Ashka Rook** (she), the Last Lamplighter, 1.74 m | Lean, athletic, brown skin, black ponytail, amber eyes; dark leather sleeveless vest, rust-red silk fight shorts with gold trim and waistband, bone-white hand and shin wraps, gold arm band, a small brass lamp charm | Muay Thai and lamp-fire. Aggressive striker | Ember Shot (fireball), Wick Knee (flying knee), Elbow Rush, Rising Knee (anti-air); the Teep (forward + low kick), a push kick that keeps distance | Last Light: burns the opponent to ash |
-| **Gorm Tallow** (he), the Renderer, 2.12 m | Huge, bald, pale ruddy skin, heavy jaw; bare barrel chest under a thick rubberised leather apron, rolled canvas trousers, heavy boots, iron vambraces | Sumo and catch wrestling. Grappler: slow, armoured, devastating up close | Vat Press (command grab), Tallow Hide (armour), Rendering Charge (armoured shoulder), Ground Slap (low shockwave), Tallow Slaps (a stepping thrust string that shoves), Rising Belly (armoured anti-air), Belly Slide (under high projectiles), Belly-to-Belly (a breakable second command grab, thrown behind him) | Rendered Down: lifts and slams, then stamps them flat |
-| **Nix Hollow** (he), Hand of the Drowned, 1.78 m | Slim; charcoal and black wrapped garments, deep hood, a cloth mask over nose and mouth, slop-green sash, glowing green eyes; a kusarigama (sickle and chain) | Ninjutsu. Mix-up and teleports | Sickle Throw (returns), Sinkstep (sink through the floor and rise behind), Undertow (chain trips the legs), Drowned Drop (air dive) | Undertow: drags them down into a slop pool |
-| **Mirela Sorrow** (she), the Keening Widow, 1.82 m | Tall, slender, pale; very long black hair; an ivory mourning gown with a long skirt open at the front over ivory leggings, a black lace veil over hair and shoulders, black gloves | Baguazhang palms and a voice that unmakes. Zoner | Lament (slow, large wave), Keen (scream that dazes and passes through projectiles), Grave Float (hover), Veil Step (backward fade) | The Last Note: turns them to salt that crumbles |
-| **Bram Ketch** (he), Captain of the Lantern Watch, 1.86 m | Broad, weathered, short grey-brown hair and mutton-chop beard; a long navy watch coat with brass buttons and coat tails, a peaked watch cap, leather boots; a hardwood baton and a lantern at his belt | Bare-knuckle boxing and the baton. Rushdown | Signal Flare (high arc / low roll), Baton Trip, Bull Rush, Stand Down (counter) | Lights Out: a baton swing that sends them over the horizon |
-| **Hollis Fathom** (he), the Diving Bell, 1.95 m | An olive canvas diving suit, a round brass helmet with three portholes and a faint green glow inside, a brass breastplate, lead-soled boots, rubber gloves, a harpoon gun | Deep-sea pressure. Heavy zoner and trapper | Harpoon (pulls them in), Anchor Drop (overhead from above), Bubble (slow trap), Vent (steam burst reversal) | Crush Depth: reels them in and the helmet swallows them |
-| **Wren** (she), the All-Rounder, 1.68 m | Young, lean and strong; light skin, dark-blonde hair in tight braids; a short, heavy-weave charcoal jacket with cross-collar lapels and forearm sleeves, belted with a faded red belt, over a dark rash-guard top; ankle-length grappling trousers with reinforced knees, laced wrestling shoes, open-finger gloves; a little teal glass at the belt | Mixed martial arts (kickboxing, taekwondo kicks, boxing, judo, an armlock) and marsh-light. All-rounder | Turning Light (spinning back kick), Flying Cross (lunging cross), Lifting Light (spinning crescent anti-air), Bar the Door (catches a high or mid blow into an armlock), Flicker Step (a short blink, forward or back, through projectiles), Wisp Feint (a lit feint that cancels into anything); judo throws | Led Astray: the marsh-lights lead them off into the fog |
-| **Grandmaster** (he), Master of Qhi; no other name, 1.70 m | Elderly, East Asian, thin and wiry; a shaved head, heavy brow, high cheekbones over hollow cheeks, deep-set eyes, a grey-white goatee; a long ink-blue cross-collar robe over a bone-grey inner robe, pale-gold cloud embroidery at hem, cuffs and collar, a broad black sash with a jade pendant, black cloth shoes | Qhi and a lifetime of martial arts: every fighter's shape (and the Fragment's) from his form library, changed even inside a combo, and three instant kills; traditional boxing when the Qhi is spent. Secret, for experts | Still Palm (Qhi bolt), Sinking Palm (Qhi along the floor), Rising Palm (anti-air), Drift (floats over and behind), Weave, Yield (parry and returning palm), Ward (breaks projectiles), Step Aside (an evade), Borrowed Face (becomes the opponent, stronger), the form library (any fighter's shape, the Fragment's), Two Fingers into One Strike, Find the Crack and Heart Stop (instant kills) | Still Water: two fingers to the brow, and they still to standing water and fall |
+| **Ashka Rook** (she), the Last Lamplighter, 1.70 m | Lean and slim, long crimson hair in a loose braid, with bangs and two strands framing her face, crimson eyes, a calm expression. A white shirt, black tie, black trousers and brown loafers under a long black trench coat. Muay Thai & Flame Style: the Lamplighter Flame, spinning elbows, flying knee, teep and front kicks, clinch strikes and trips, leg and calf kicks. Her crimson cross-shaped lamp tattoo shows through her coat as the flame burns. |
+| **Gorm Tallow** (he), the Renderer, 2.12 m | Huge, bald, pale ruddy skin, a pronounced brow and a heavy jaw; bare barrel chest under a thick rubberised leather apron with a reflective stripe, rolled canvas work trousers with reinforced knees, heavy steel-toed boots, strapped iron forearm guards | Sumo and catch wrestling. Grappler: slow, armoured, devastating up close | Vat Press (command grab), Tallow Hide (armour), Rendering Charge (armoured shoulder), Ground Slap (low shockwave), Tallow Slaps (a stepping thrust string that shoves), Rising Belly (armoured anti-air), Belly Slide (under high projectiles), Overarm Throw and Double Wristlock (breakable command grabs, the first a side throw, the second a catch hold), Forearm Smash (armoured), Headbutt (quick and short), Belly-to-Belly (a breakable second command grab, thrown behind him) | Rendered Down: lifts and slams, then stamps them flat |
+| **Nix Hollow** (he), Shinobi of the Code Sea, 6'4" (1.93 m) | Muscular, in charcoal, jet black and lime green; deep hood, a cloth mask over nose and mouth, glowing eyes; a kusarigama (sickle and chain) and Code Sea, a jet-black katana with a line of lime-green water, sheathed across his back | Ninjutsu and kusarigama. The fastest, the easiest combos, the lowest damage | Sickle Throw (returns), Sinkstep (sink through the floor and rise behind), Undertow (chain trips the legs), Drowned Drop (air dive), Hidden Weapons, Code Sea, Hypnosis, Illusion | Undertow: drags them down into a pool |
+| **Mirela Sorrow** (she), the Keening Nun, 5'5" (1.65 m) | Slim, fair, beautiful; very long black hair, pale blue eyes; a simple nun's outfit: a plain black habit, a white collar, a black veil edged in white. Her motif is a nun praying | Baguazhang and supernatural vocal techniques. Zoner | Lament (slow, large wave), Keen (scream that dazes and passes through projectiles), Grave Float (hover), Veil Step (backward fade) | The Last Note: turns them to salt that crumbles |
+| **Bram Ketch** (he), 'Officer Knuckles', Captain of the Lantern Watch, 6'3" (1.91 m) | Lean and muscular, weathered, short grey-brown hair and mutton-chop beard; a long navy watch coat with brass buttons and coat tails, a peaked watch cap, leather boots; a hardwood baton and a lantern at his belt; "The Law is Order." tattooed on his right shoulder, seen in his coat-off outfit | Bare-knuckle boxing and hardwood baton techniques. Rushdown | Signal Flare (high arc / low roll), Baton Trip, Bull Rush, Stand Down (counter) | Lights Out: a baton swing that sends them over the horizon |
+| **Hollis Fathom** (he), Guardian of the Ebony Heart, a boss, 2.01 m (his playable design, kept for reference; see below) | An olive canvas diving suit, a round brass helmet with three portholes and a faint green glow inside, a brass breastplate, lead-soled boots, rubber gloves, a harpoon gun | Deep-sea pressure. Heavy zoner and trapper | Harpoon (pulls them in), Anchor Drop (overhead from above), Bubble (slow trap), Vent (steam burst reversal) | Crush Depth: reels them in and the helmet swallows them |
+| **Wren Ku** (she), 'Punt', 1.78 m | Lean, muscular and athletic, long brown hair in two braids, ocean-blue eyes, a warm smile. Five outfits (her attire, MMA gear, Muay Thai gear, a BJJ gi, and the unmarked black uniform Bram gives her in the story), chosen on the select screen. Mixed Martial Arts and Look See Do: spinning elbows, flying knee, spinning back kick, spinning heel kick, suplex, tornado kick, the 720 Hook Kick, Spirit Enhanced Strikes (a golden lightning aura). |
+| **The Grandmaster** (he), Grandmaster of the Ebony Heart Tournament, 1.83 m | Lean; fair skin, golden eyes, a calm smile, very long jet-black hair that swings with him, a jet-black robe, hands behind his back | Qhi and a lifetime of martial arts: every fighter's shape (and the Fragment's) from his form library, changed even inside a combo, and three instant kills; traditional boxing when the Qhi is spent. Secret, for experts | Still Palm (Qhi bolt), Sinking Palm (Qhi along the floor), Rising Palm (anti-air), Drift (floats over and behind), Weave, Yield (parry and returning palm), Ward (breaks projectiles), Step Aside (an evade), Borrowed Face (becomes the opponent, stronger), the form library (any fighter's shape, the Fragment's), Two Fingers into One Strike, Find the Crack and Heart Stop (instant kills) | Still Water: two fingers to the brow, and they still to standing water and fall |
 
 Rivals (the second-to-last arcade fight), from the original game: Ashka and Nix (the Drowned
 Hand put out Ninefathom's beacon), Gorm and Bram (Bram once arrested him for a vat fire he did not
@@ -147,13 +142,13 @@ forward/back in m/s; frame data are startup frames at 60 Hz.
 
 | Fighter | Archetype and feel | Strengths | Weaknesses | Signature tools | Counterplay |
 |---|---|---|---|---|---|
-| Ashka | All-rounder; tall square Muay Thai stance (thumbs at the brows, a slow rock between the feet), walk 2.5/2.05, run 5.4 | 6-frame elbow and knee starters, a fireball, a 5-frame anti-air knee | No armour, average range; the knee and rush are punishable on block | Ember Shot, Wick Knee, Elbow Rush, Rising Knee | Block the rush low-high, punish Rising Knee's 24 recovery frames |
+| Ashka | All-rounder; tall square Muay Thai stance (thumbs at the brows, a slow rock between the feet), walk 2.5/2.05, run 5.4 | 6-frame elbow and knee starters, the Lamplighter Flame at range, a 5-frame anti-air knee, clinch strikes and trips, leg and calf kicks | No armour, average range; the knee and the elbows are punishable on block | Lamplighter Flame and its Flying and Rising Knees, Spinning Elbows, Teep Kick, Front Kick | Block the elbows low-high, punish the Rising Knee's 24 recovery frames |
 | Gorm | Grappler; deep wide sumo squat with a straight back and sliding feet, slow walk 1.9/1.6, heavy jump | Command grab (Vat Press), Tallow Hide armour, armoured charge, overhead hammer | Slowest walk and run, almost no zoning, big recoveries | Vat Press, Tallow Hide, Rendering Charge, Ground Slap | Stay out of grab range, zone him, jump the slap, punish the 32-frame grab whiff |
-| Nix | Mix-up; slim oblique ichimonji stance (sunk rear leg, upright spine), fastest walk 2.7/2.3, run 5.8 | Overheads and lows from the same chain, a returning sickle, a teleport behind | Low damage per hit; Sinkstep (34 frames) and Undertow are slow and reactable | Sickle Throw, Sinkstep, Undertow, Drowned Drop | Block on reaction to the teleport, crouch the trip, anti-air the dive |
+| Nix | Speed and mix-up; oblique ichimonji stance (sunk rear leg, upright spine), fastest walk 2.8/2.4, run 6.0, the quickest first blows; Power 0.88, the lowest damage | One button repeated is a whole combination (LP four times, HP five, HK three), overheads and lows from the same chain, a returning sickle, a teleport behind, a false one, a daze | The lowest damage on the roster; Sinkstep (34 frames), Undertow, Hypnosis (18) are slow and reactable | Sickle Throw, Sinkstep, Undertow, Drowned Drop, Code Sea, Hypnosis, Illusion | Block on reaction to the teleport, crouch the trip, anti-air the dive, step back from Hypnosis, punish Illusion: it does not move him |
 | Mirela | Zoner; tall palm stance on bent knees, the torso twisted to the opponent, a circling walk, walk 2.4/2.0, 1040 health | Slow large wave, a scream that passes through projectiles and dazes, hover, a backward fade | Slow startups (13-14 frames), weak up close | Lament, Keen, Grave Float, Veil Step | Close the distance under the wave, punish Keen's recovery, catch the hover landing |
 | Bram | Rushdown; upright Prize Ring guard (lead fist out, rear forearm across the body), walk 2.6/2.0, run 5.6 | Fast hooks, a long-reaching Bull Rush (9 active frames), high and low flares, a 3-frame counter stance | Flares are slow (13), the counter loses to throws and lows | Signal Flare high/low, Baton Trip, Bull Rush, Stand Down | Throw the counter stance, block the rush and punish, low-block the trip |
-| Hollis | Heavy zoner and trapper; planted suit (wide flat feet, the helmet turning only with the chest), walk 2.0/1.7, 1080 health | The pull (Harpoon) from range, an overhead from above, a slow trapping bubble, a steam reversal | Slowest normals (9-10 frames), slow projectiles, poor mobility | Harpoon, Anchor Drop, Bubble, Vent | Jump the harpoon, dash in behind the bubble, bait Vent and punish its 30 recovery frames |
-| Wren | All-rounder; bladed MMA guard (hands high, lead hand out), a light bounce, walk 2.6/2.15, run 5.6 | Reliable fundamentals at every range: a 1-2 into a head kick, a lunging cross, a crescent anti-air, judo throws that leave her close (6-frame recovery), a parry for highs and mids that becomes an armlock, a blink through projectiles, a feint that cancels into anything | The shortest reach, no projectile, average damage; Turning Light (-12) and Flying Cross (-9) are punishable on block; Bar the Door loses to lows, throws and projectiles; Flicker Step has no strike invulnerability | Turning Light, Flying Cross, Lifting Light, Bar the Door, Flicker Step, Wisp Feint | Low-block her strings' kicks, punish the spinning kick and the cross on block, throw or sweep the parry, hit her out of the flicker |
+| Hollis (boss) | Hollism: long combinations through the summoned Greatsword and forms and animals; 800 to 1000 health by difficulty, 60% damage taken; walk 2.0/1.7 | Long sequences, cinematic Reckoning for those who fail to block, the pull (Harpoon) from range, a steam reversal | Low health; every sequence ends in a recovery a player can punish; from half health the Fragmented Vessel charges in the open | Ebony Heart Greatsword, The Shark, The Eel, The Anchor, Reckoning, Fragmented Vessel | Block the sequence and punish its end, jump the harpoon, break the Vessel's charge with 111 damage |
+| Wren | All-rounder; bladed MMA guard (hands high, lead hand out), a light bounce, walk 2.6/2.15, run 5.6 | Reliable fundamentals at every range: a 1-2 into a head kick, a flying knee, a tornado kick anti-air, a suplex and hip throw that leave her close (6-frame recovery), a counter for highs and mids that becomes an armbar, a slip through projectiles, a feint that cancels into anything, Spirit Enhanced Strikes | The shortest reach, no projectile, average damage; the Spinning Heel Kick (-12) and Flying Knee (-9) are punishable on block; the Armbar Counter loses to lows, throws and projectiles; the Slip Step has no strike invulnerability | Spinning Heel Kick, Flying Knee, Tornado Kick, Spinning Back Kick, 720 Hook Kick, Armbar Counter, Slip Step, Feint | Low-block her strings' kicks, punish the spinning kick and the knee on block, throw or sweep the counter, hit her out of the slip |
 | Grandmaster (own body) | Expert; with Qhi in him he stands upright and unafraid, chest open, chin level, both hands calmly behind his back (a hand comes forward only to strike); walk 2.1/1.9, no run (a Qhi glide, hands still behind him), lower jump | The best magical defence (magic does half), Qhi zoning high and low, a 6-frame invulnerable anti-air, a cross-up float, a free weave and parry, a ward against projectiles, an evade, economical normals, every fighter's shape on call, and three instant kills | The worst physical defence (blows do 20% more), weaker blows (95%), everything supernatural costs Qhi, and an empty meter leaves him spent | Still Palm, Sinking Palm, Rising Palm, Drift, Weave, Yield, Ward, Step Aside, Borrowed Face, the form library, Two Fingers, Find the Crack, Heart Stop | Rush him with physical blows, low-hit the weave and Two Fingers, throw the parry, hit the 24- and 30-frame shapeshifts and Find the Crack's 58-frame startup, make him spend |
 | Grandmaster (borrowed) | The copied fighter's own moves and second meter: copied from the opponent facing him, Qhi-enhanced (120% damage, 85% taken, 108% speed); remembered from his library, as the fighter is | Everything that fighter does, and his own changes of shape and Heart Stop on top | The shape burns Qhi (3.6 a second; the Fragment's twice that) and every blow it takes (0.05 a point of damage); it breaks into the spent body at zero | The copied fighter's | Hit it: each blow shortens it; make it break |
 | Grandmaster (spent) | Traditional boxing, upright and careful: a high guard, fists at the cheekbones, elbows in, chin down; walk 1.7/1.55, no run, a weak hop | Clean combinations (jab, cross, right hook; body jab and cross; a left hook to the body), a slip for highs, a parry for highs and mids with a counter cross | Blows do 50% more, his own do 65%; no kicks, no Qhi, no specials of Qhi, no shapeshift, until 25 Qhi has crept back (about nine seconds, sooner by blocking and parrying) | Jab, Cross, Right Hook, Left Hook to the Body, Slip, Parry | Press him: this is the moment; go low, throw him |
@@ -260,21 +255,67 @@ the still water of the Drowned Chapel. Face him (a CPU tier above Master, his fu
 to the ending. Beat him and he is unlocked for good (saved with the progress); lose and the run
 ends as it would have, with nothing lost, and he waits for the next clean run.
 
-## The Ebony Heart Fragment, in the Slopbat's shape (final boss), 2.65 m
+## Hollis Fathom (boss), 2.01 m
 
-A Fragment of the Ebony Heart wearing the Slopbat's shape, named "Ebony Heart Fragment" on its bar,
-"The Slopbat" beneath. The shape: a gaunt, towering sovereign of tar: glossy black-green skin traced with glowing green veins, long arms
-and claws, a bat's ears and a crown of horn, glowing green eyes, a tattered membrane cloak, and
-great bat wings folded at its back. It cannot be thrown and has much more health (1400, 1650 or 1900 by tower), but every
-pattern can be learned: claw swipes; Tar Spit (high, duck it); Wing Gust (pushes, no damage);
-the Dive (it flies off the top of the screen, its shadow follows you for a second, then it comes
-down where the shadow is; move away, and punish while it is stuck in the mud); and below half
-health the **Storm Shroud** (inspired by Vessimund's lightning burst in Slopperfall): it gathers
-green lightning for most of a second, then lightning strikes all around it. Get out of range, or
-hit it while it gathers to break the charge. Its defeat collapses the shape into slop and the
-waters recede; then the champion's ending plays. The Grandmaster can wear its shape (below); the
-Fragment itself cannot be held (One Strike's catch only parries it), and Find the Crack can kill
-it outright, though it claws or gusts at the long startup when it sees it coming.
+Hollis cannot be picked. He sits before the sole entrance to the Fragmented Palace (the stage
+`palace_gate`) and stands before the Fragment in every tower (Mirela meets him once, as her rival, and
+their thread is kept) and on alternate boss waves in Survival. One round with no clock, of 800, 900 or
+1000 health by difficulty (half for each phase in the story, 200 less in Survival), and he takes 60% of any
+blow: low health, high defence. Those numbers are `FGameFlow::ServantHealth`; the `health` in his data is
+only a default the boss fights replace. His old moves stay, and
+everything here also reaches the Grandmaster's shape of him, except the Vessel.
+
+**Phase one, Hollism** (`FGuardianBrain`). Long combinations through the summoned Ebony Heart Greatsword,
+weapons and beasts, each ending in a recovery a player can punish, then a rest to do it in. On his feet
+between them he guards as often as his difficulty allows (30, 60 and 85% of blows), never in a recovery,
+and he throws whoever stands close and only guards:
+
+| Sequence | Hits | Answer |
+|---|---|---|
+| Greatsword (F,F+HP) | Cleave, Backhand (mids), Reap (low), Execution (overhead, 50 frames of recovery) | Mix the guard, punish the Execution |
+| Beasts (D,F+HK) | The Shark (he dissolves and lunges 4.4 m), The Eel (a low rush), The Anchor (overhead, 52 frames) | Block low for the Eel, high for the Anchor |
+| Reckoning (B,F+HP) | A lunge that, if it lands, runs on by itself: the camera comes in on four blows. Blocked, it stops, 40 frames open | Block the first blow |
+
+**Phase two, the Fragmented Vessel** (`FFighter::GuardianTick`), from half his health. He stands and
+charges for 400 frames, a gauge filling on his bar. He does not flinch, but every landed blow counts:
+111 damage breaks it, three solid hits, and leaves him spent for 150 frames taking half as much again;
+he charges again nine seconds later. If it fills, it kills, across the whole stage, guarded or not.
+
+## The Ebony Heart Fragment (final boss), 2.65 m
+
+The last fight of every tower, in the Heartwater, one round with no clock, of 1400, 1650 or 1900 health. It cannot
+be thrown. Data still calls it `slopbat` (the Fragment itself is archived whole in `Archive/Slopbat`).
+
+Its body is built by `Tools/blender/build_fragment.py`: an amoeba with long pseudopods, spreading where
+it meets the water, on the fighters' rig so every pose and hit box applies. Its skin
+(`M_CharacterFragment`) is a window on a galaxy, read in screen space so the stars stay put while it
+flows, and it breathes. It looks different to each beholder: colours in `slopbat.json` `observers`, and
+to the Grandmaster, or when he wears it, a ringed worm (`slopbat_worm`, `USlopGameInstance::MeshFor`).
+
+It flows through three forms with its wounds (`FFighter::BossFormTick`, untouchable as it changes, its
+colours turning over and burning brighter), and `FBossBrain` brings out more each time. Every piece of
+Ebony Energy is slow to arrive and shows itself first (`arm` frames, drawn as a ring on the water or a
+thread of light):
+
+| Form | Health | Adds | Answer |
+|---|---|---|---|
+| Water | above 66% | Pseudopod, Undertow (low), Rising Flow (anti-air), Engulf (a grab, breakable), The Tide (a low wave), Swim (it sinks, follows you under the water and rises) | Block low, jump the Tide, walk away from where it surfaces, punish its landing |
+| Energy | above 33% | Ebony Orb (huge and slow, a mid, knocks down) and Ebony Seal (a ring under you that erupts, unblockable) | Jump or block the Orb; leave the ring |
+| Ebony | below 33% | Ebony Lance (a line of light, then a beam the length of the stage, a high) | Duck it |
+
+Below half health it also has the Ebony Cross, a seal that erupts as a tall cross. Wren holds the
+Fighting Spirit of Humanity and deals it a quarter more damage. The Grandmaster can wear its shape
+(below); the Fragment itself cannot be held (One Strike's catch only parries it), and Find the Crack can
+kill it outright, though it strikes at the long startup when it sees it coming.
+
+## Story mode
+
+Wren's way through the tournament (`story.json` `story`, `FGameFlow::StartStory`): the arcade's ladder
+with its own cards before each fight, at the CPU difficulty in Settings. Bram, Gorm, Nix, Mirela,
+Hollis at the Palace door (Wren in phase one, then Ashka, her best friend, beside her in phase two, the player as Ashka:
+their combined strength), the Fragment. Told by what the fighters are and what people will not say, with very little
+dialogue. The Grandmaster appears once, after the Fragment, however many continues it took, and she may
+walk past him; his line changes if she needed a second chance. Beaten or not, the story ends after him.
 
 ## Daxion (removed)
 
@@ -289,20 +330,22 @@ archive's README lists where each went, and the move-coverage report checks it.
 
 | Stage | Where | Look | Signature light |
 |---|---|---|---|
-| The Rendering Yards | Tallowmarket, Gorm's home | An iron floor between great rendering vats of glowing slop, catwalks, chains, a brick wall with furnace mouths, smokestacks, drizzle | Green vat glow and orange furnaces |
-| The Drowned Chapel | Lowmere's sunken church, Mirela's home | A flooded nave: ankle-deep water on stone flags, broken pews, columns, a great rose window with moonlight, hundreds of candles on ledges, hanging censers | Moonlight through the rose window; candle warmth |
+| The Rendering Yards | Tallowmarket, Gorm's home | An iron floor between great glowing rendering vats, catwalks, chains, a brick wall with furnace mouths, smokestacks, drizzle | Green vat glow and orange furnaces |
+| The Drowned Chapel | Lowmere's sunken church, Mirela's stage | A flooded nave: ankle-deep water on stone flags, broken pews, columns, a great rose window with moonlight, hundreds of candles on ledges, hanging censers | Moonlight through the rose window; candle warmth |
 | Lowmere Stilt Market | The market on stilts over the bog at night, Bram's beat | A boardwalk of planks with rope rails, stalls with awnings and hanging paper lanterns, nets and fish, bog water and reeds below, distant stilt houses with lit windows, mist | Strings of amber lanterns; cold mist |
-| The Slopbat's Roost | Beneath the Sump | A cavern of tar and bone: a ledge over a lake of slop, stalactites, tar falls, the drowned hoard glinting, green storm light | Pulsing green lightning |
+| The Roost | Beneath the Sump | A cavern of tar and bone: a ledge over a glowing lake, stalactites, tar falls, the drowned hoard glinting, green storm light | Pulsing green lightning |
+| The Fragmented Palace | Its one door | Black water before a door of black stone, a line of violet light down its middle, great shards of the palace hanging apart behind: where Hollis keeps his watch, not a Versus stage | Cold starlight, a violet rim |
+| The Heartwater | No shore | Shallow black water under a sky of stars, broken stone pillars far out, a band of galaxy behind: where the Fragment waits, not a Versus stage | Cold starlight, a violet rim |
 
 ## Modes
 
-Arcade (three towers: Novice, Warrior, Master, which also set the CPU's difficulty; rival flavour
-before the rival; the Reflection, a slop-dark mirror match, in Master; the boss; a short ending
+Arcade (three towers: Novice, Warrior, Grandmaster, which also set the CPU's difficulty; rival flavour
+before the rival; the Reflection, a dark mirror match, in Master; the boss; a short ending
 per fighter; points for every fight, from health and time left, flawless victories and
-Sloptalities, with the best total per fighter and tower kept), Trials (every fighter's combos,
+Hearted finishers, with the best total per fighter and tower kept), Trials (every fighter's combos,
 checked as they land, progress kept), Survival (an endless ladder, one
 round a fight, health carried on with 30% of full given back after a win and 45% after a
-flawless one, three waves at each difficulty and then Master, the Slopbat on every fifth wave;
+flawless one, three waves at each difficulty and then Master, Hollis and the Fragment by turns on every fifth wave;
 most waves cleared per fighter kept), Versus (two players, any pairing including mirrors, explicit device assignment),
 Training (dummy modes, move lists, reset, frame data, hitboxes, input history), Tutorial
 (movement, defence, attacks, a combo, a special, a throw and a finisher), Extras (endings seen,
@@ -328,7 +371,7 @@ changes is how it is drawn.
 - **Bodies.** Real anatomy instead of signed-distance sculpts: MakeHuman base meshes (CC0, all-quad
   topology, UV-mapped skin, eyes, brows, lashes) shaped per fighter, on one game skeleton of 65 bones (twelve of them half joints, which keep a bent limb's width).
   Proportions follow each fighter's height and build: Gorm a 2.12 m heavyweight, Ashka lean and
-  athletic, Mirela tall and slender, Bram broad, Hollis bulked by his suit, Nix slim.
+  athletic, Mirela slim, Bram lean and muscular, Hollis bulked by his suit, Nix tall and muscular.
 - **Costumes.** Modelled garments with their own material slots (leather, silk, canvas, wool,
   brass, iron, rubber), never painted on and never letting skin show through. Silhouette rules
   from the roster table hold: ponytail and wraps, apron and vambraces, hood and chain, veil and
@@ -346,7 +389,8 @@ changes is how it is drawn.
   shake. Framing is computed for 16:9; wider screens show more stage around the same view.
 - **Effects.** Sparks as short streaks, an expanding ring and a soft flash at the contact, a brief
   light, blood or (gore off) pale flakes, dust on landings. Reduced effects thin every burst.
-- **UI.** The original's look: New Rocker and Oswald (OFL), bone-white on near-black teal,
-  slop-green focus. Button names follow the device in hand (Cross/Circle on PlayStation pads).
+- **UI.** See `Docs/UI.md`. A connected controller's own buttons are shown (the ✕ ○ □ △ symbols on
+  PlayStation pads), in prompts, the tutorial, trials, move lists and the input display; Settings > Controls >
+  Button prompts holds them to PlayStation, Xbox or PC.
 - **Audio.** The original's synthesised set, with recorded CC0 punches and thuds (Kenney) layered
   under hits, blocks and landings; footsteps by floor. Cries and screams have their own volume.

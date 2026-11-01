@@ -28,7 +28,7 @@ TREAD = st.surface("metal_plate", tint=(0.55, 0.55, 0.55), rough=1.0, metal=1.0)
 BRICK = st.surface("factory_brick", tint=(0.48, 0.38, 0.34), rough=1.0)
 SOOT = st.surface("factory_brick__soot", tint=(0.26, 0.21, 0.2), rough=1.0)
 SETTS = st.surface("medieval_blocks_03", tint=(0.34, 0.33, 0.34), rough=0.7)
-SLOP = st.glow("GLOW_slop", (0.36, 1.0, 0.06), 1.9, "vat slop, spills and the channel: animate (slow scrolling noise, bubbles)", pattern=0.6, scale=3.0)
+SLOP = st.glow("GLOW_slop", (0.36, 1.0, 0.06), 1.9, "vat liquid, spills and the channel: animate (slow scrolling noise, bubbles)", pattern=0.6, scale=3.0)
 FIRE = st.glow("GLOW_furnace", (1.0, 0.3, 0.05), 3.4, "furnace mouths and fireboxes: flicker 0.25", pattern=0.5, scale=4.0)
 WIN = st.glow("GLOW_window", (1.0, 0.48, 0.16), 0.9, "furnace-house windows")
 FARWIN = st.glow("GLOW_window_far", (1.0, 0.45, 0.15), 0.6, "distant windows")
@@ -471,7 +471,7 @@ for vi, (x, y, r, h) in enumerate(VATS):
     top = VAT_BASE + h
     st.light(f"vat_glow_{vi + 1}", "point", (x, y - r - 0.5, top + 0.25), (0.5, 1.0, 0.18), 34.0 if vi == 0 else 26.0,
              radius=3.4 + r + 1.0, shadows=(vi == 0), flicker=0.12, flicker_speed=1.7, source_radius=0.4,
-             note="signature: green slop glow spilling over the lip")
+             note="signature: green vat glow spilling over the lip")
     st.light(f"firebox_{vi + 1}", "point", (x, y - r - 0.75, 0.35), (1.0, 0.45, 0.12), 5.0, radius=3.0, flicker=0.3,
              flicker_speed=8.0, source_radius=0.2)
 for i, (fx_, cd) in enumerate([(-8.2, 46.0), (8.3, 46.0), (-13.5, 30.0), (13.6, 30.0), (0.1, 26.0)]):
@@ -490,7 +490,7 @@ st.fx += [
       "color": [0.5, 0.56, 0.48, 0.35]} for (x, y, r, h) in VATS]
 st.notes += [
     "The centre vat (X 0, Y 6.6, r 2.0, lip at Z 3.3) is the one the stage finisher uses.",
-    "Drain grates in the floor are flush (tops at Z 0) with a faint slop glow under them.",
+    "Drain grates in the floor are flush (tops at Z 0) with a faint green glow under them.",
     "Gantry legs at X +-7.55 put their inner faces on X +-7.2: the visual edge of the floor.",
 ]
 

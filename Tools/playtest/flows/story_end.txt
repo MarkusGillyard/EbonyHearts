@@ -1,0 +1,4 @@
+# Story mode's end, the CPU playing Wren: Hollis, the Fragment, the Grandmaster, the ending, the credits.
+40:confirm
+-SlopAutoPlay=2 -SlopStoryFrom=4
+420

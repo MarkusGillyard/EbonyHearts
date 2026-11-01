@@ -333,7 +333,7 @@ bool FSlopBossPatterns::RunTest(const FString&)
 				FPadState Pads[2] = {C0.Think(), Boss.Think()};
 				Sim.Step(Pads);
 			}
-			TestTrue(FString::Printf(TEXT("%s against the Slopbat at level %d ends"), *Id.ToString(), Level), Sim.Phase == EPhase::MatchEnd);
+			TestTrue(FString::Printf(TEXT("%s against the Fragment at level %d ends"), *Id.ToString(), Level), Sim.Phase == EPhase::MatchEnd);
 		}
 	}
 	return true;
@@ -443,7 +443,7 @@ bool FSlopDummyPractice::RunTest(const FString&)
 }
 
 // A grab beats a block, so against a player who only blocks the Bite was most of the damage the
-// Slopbat did. It now waits between bites (and the bite can be broken, see Rounds).
+// Fragment did. It now waits between bites (and the bite can be broken, see Rounds).
 SLOP_TEST(FSlopBossBites, "AI.BossWaitsBetweenBites")
 bool FSlopBossBites::RunTest(const FString&)
 {
@@ -485,7 +485,7 @@ bool FSlopBossBites::RunTest(const FString&)
 				}
 			}
 		}
-		UE_LOG(LogSlop, Display, TEXT("Slopbat at level %d against a blocker: %d bites, %.0f damage a minute of which %.0f%% bites, shortest gap %d ticks"),
+		UE_LOG(LogSlop, Display, TEXT("Fragment at level %d against a blocker: %d bites, %.0f damage a minute of which %.0f%% bites, shortest gap %d ticks"),
 			Level, Bites, Damage * 3600.0 / FMath::Max(Ticks, 1), 100.0 * BiteDamage / FMath::Max(Damage, 1), MinGap);
 		TestTrue(FString::Printf(TEXT("level %d still bites"), Level), Bites > 0);
 		TestTrue(FString::Printf(TEXT("level %d waits at least %d ticks between bites"), Level, Wait[Level]), MinGap >= Wait[Level]);
@@ -493,7 +493,7 @@ bool FSlopBossBites::RunTest(const FString&)
 	return true;
 }
 
-// The Slopbat keeps its distance with tar and wind, but it should not keep firing: after each
+// The Fragment keeps its distance with tar and wind, but it should not keep firing: after each
 // one it waits a while and never repeats the same one straight away, against a CPU that comes
 // at it or a player who only blocks.
 SLOP_TEST(FSlopBossRanged, "AI.BossDoesNotSpamRangedAttacks")
@@ -543,7 +543,7 @@ bool FSlopBossRanged::RunTest(const FString&)
 				}
 			}
 			const TCHAR* Who = Opp == 0 ? TEXT("a CPU") : TEXT("a blocker");
-			UE_LOG(LogSlop, Display, TEXT("Slopbat at level %d against %s: %.1f ranged attacks a minute, shortest gap %d ticks"), Level, Who, Ranged * 3600.0 / FMath::Max(Ticks, 1), MinGap);
+			UE_LOG(LogSlop, Display, TEXT("Fragment at level %d against %s: %.1f ranged attacks a minute, shortest gap %d ticks"), Level, Who, Ranged * 3600.0 / FMath::Max(Ticks, 1), MinGap);
 			TestTrue(FString::Printf(TEXT("level %d against %s fires at all"), Level, Who), Ranged > 0);
 			TestEqual(FString::Printf(TEXT("level %d against %s never fires the same one twice running"), Level, Who), Repeats, 0);
 			TestTrue(FString::Printf(TEXT("level %d against %s waits at least %d ticks between them"), Level, Who, Wait[Level]), MinGap >= Wait[Level]);
@@ -603,55 +603,60 @@ bool FSlopAshkaChecks::RunTest(const FString&)
 	return true;
 }
 
-// Jabbed again and again, the CPU Bram reads the next one with Stand Down and answers with the
-// baton, and is hit no more often for it than he would be blocking alone.
-SLOP_TEST(FSlopBramParries, "AI.JabbedBramParriesWithoutLosingHisGuard")
+// Across whole matches the Master CPU Bram reads repeated blows with Stand Down: a fair share of his
+// tries catch one, and he is hit no more often for it than he would be blocking alone. (A lone
+// jabber cannot show this: from 1 m her jabs fall short of him, and jabs he blocks never arm the read.)
+SLOP_TEST(FSlopBramParries, "AI.MasterBramReadsBlowsWithStandDown")
 bool FSlopBramParries::RunTest(const FString&)
 {
 	const FFighterDef* Bram = GetContent().Fighter(TEXT("bram"));
-	const FFighterDef* Ashka = GetContent().Fighter(TEXT("ashka"));
-	if (!TestNotNull("bram", Bram) || !TestNotNull("ashka", Ashka) || !TestTrue("bram has ai", Bram->AI.IsValid()))
+	if (!TestNotNull("bram", Bram) || !TestTrue("bram has ai", Bram->AI.IsValid()))
 	{
 		return false;
 	}
 	FFighterDef NoParry = *Bram;
 	NoParry.AI = MakeShared<FJsonObject>(*Bram->AI);
 	NoParry.AI->RemoveField(TEXT("parries"));
-	int32 Hit[2] = {0, 0}, Jabs[2] = {0, 0}, Caught[2] = {0, 0}, Tried[2] = {0, 0};
+	int32 Hit[2] = {0, 0}, Ticks[2] = {0, 0}, Caught[2] = {0, 0}, Tried[2] = {0, 0};
 	for (int32 Pass = 0; Pass < 2; ++Pass)
 	{
-		for (int32 Seed = 0; Seed < 4; ++Seed)
+		const FFighterDef* Him = Pass == 0 ? Bram : &NoParry;
+		for (const FName& Opp : FContent::Roster())
 		{
-			FFightSim Sim;
-			Sim.bIntro = false;
-			Sim.bTraining = true;
-			Sim.Setup(Ashka, Pass == 0 ? Bram : &NoParry);
-			FCpuBrain Cpu(Sim, 1, 2, 400 + Seed);
-			for (int32 T = 0; T < 60 * 60; ++T)
+			if (Opp == Bram->Id)
 			{
-				// Ashka jabs whenever she can from close in, and otherwise walks in.
-				const FFighter& A = Sim.Fighters[0];
-				const double Gap = FMath::Abs(Sim.Fighters[1].Pos.X - A.Pos.X);
-				FPadState Pads[2];
-				Pads[0] = A.IsActionable() ? (Gap < 1.0 ? FPadIntent::Pad(5, A.Facing, BtnHP, 0) : FPadIntent::Pad(6, A.Facing)) : FPadState();
-				Pads[1] = Cpu.Think();
-				Sim.Step(Pads);
-				for (const FSimEvent& E : Sim.Events)
+				continue;
+			}
+			const FFighterDef* Other = GetContent().Fighter(Opp);
+			for (int32 Seed = 0; Seed < 4; ++Seed)
+			{
+				const int32 Side = Seed % 2;
+				FFightSim Sim;
+				Sim.bIntro = false;
+				Sim.Setup(Side == 0 ? Him : Other, Side == 0 ? Other : Him);
+				FCpuBrain C0(Sim, 0, 2, 1002 + Seed * 13);
+				FCpuBrain C1(Sim, 1, 2, 2002 + Seed * 17);
+				for (int32 T = 0; T < 60 * 60 * 6 && Sim.Phase != EPhase::MatchEnd; ++T)
 				{
-					Jabs[Pass] += E.Type == EEvent::Move && E.Who == 0 && E.Move == TEXT("hp");
-					Hit[Pass] += E.Type == EEvent::Hit && E.Who == 1 && E.Move == TEXT("hp");
-					Caught[Pass] += E.Type == EEvent::Parry && E.Who == 1;
-					Tried[Pass] += E.Type == EEvent::Move && E.Who == 1 && E.Move == TEXT("stand_down");
+					FPadState Pads[2] = {C0.Think(), C1.Think()};
+					Sim.Step(Pads);
+					++Ticks[Pass];
+					for (const FSimEvent& E : Sim.Events)
+					{
+						Hit[Pass] += E.Type == EEvent::Hit && E.Who == Side;
+						Caught[Pass] += E.Type == EEvent::Parry && E.Who == Side;
+						Tried[Pass] += E.Type == EEvent::Move && E.Who == Side && E.Move == TEXT("stand_down");
+					}
 				}
 			}
 		}
 	}
-	UE_LOG(LogSlop, Display, TEXT("Bram hit by %d of %d jabs with Stand Down, %d of %d without; %d caught of %d tried"), Hit[0], Jabs[0], Hit[1], Jabs[1], Caught[0], Tried[0]);
-	TestTrue("he parries some jabs", Caught[0] > 0);
-	TestEqual("never without a parry to use", Caught[1], 0);
-	const double With = double(Hit[0]) / FMath::Max(1, Jabs[0]);
-	const double Without = double(Hit[1]) / FMath::Max(1, Jabs[1]);
-	TestTrue(FString::Printf(TEXT("hit no more often (%.2f of jabs with it, %.2f without)"), With, Without), With <= Without + 0.03);
+	UE_LOG(LogSlop, Display, TEXT("Bram hit %d times in %d ticks with Stand Down, %d in %d without; %d caught of %d tried"), Hit[0], Ticks[0], Hit[1], Ticks[1], Caught[0], Tried[0]);
+	TestTrue(FString::Printf(TEXT("a fair share of his tries catch a blow (%d of %d)"), Caught[0], Tried[0]), Tried[0] >= 8 && Caught[0] * 4 >= Tried[0]);
+	TestTrue(FString::Printf(TEXT("the read is what catches them (%d with it, %d without)"), Caught[0], Caught[1]), Caught[0] > Caught[1] * 3);
+	const double With = double(Hit[0]) / FMath::Max(1, Ticks[0]);
+	const double Without = double(Hit[1]) / FMath::Max(1, Ticks[1]);
+	TestTrue(FString::Printf(TEXT("hit no more often (%.2f hits a second with it, %.2f without)"), With * 60.0, Without * 60.0), With <= Without * 1.1);
 	return true;
 }
 

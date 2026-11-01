@@ -15,7 +15,7 @@ class SBox;
 class SWidget;
 class FSlopScreen;
 class SSlopHud;
-namespace Slop { class IBrain; }
+namespace Slop { class IBrain; class FFighter; }
 
 // The game's one long-lived object: settings, progress, the flow from screen to screen, the
 // input router, audio, and the match when one is running. Screens are Slate widgets hosted in
@@ -35,6 +35,12 @@ public:
 	// Screens.
 	void Goto(const TSharedPtr<FSlopScreen>& Screen);
 	void ShowOverlay(const TSharedPtr<FSlopScreen>& Screen);
+	// Fades to ink, runs Then (a screen change or a load, however long it takes), and fades back.
+	// Input waits meanwhile, so a press cannot start the same thing twice. Asked for again while one
+	// is running, the first stands.
+	void FadeThen(TFunction<void()> Then, float Seconds = 0.2f);
+	// A dip from this much ink back to none, covering a jump without stopping anything.
+	void Curtain(float From, float Seconds);
 	void CloseOverlay();
 	void RebuildScreen();
 	TSharedPtr<FSlopScreen> CurrentScreen() const { return Screen; }
@@ -44,8 +50,9 @@ public:
 	// A line for the log (and, in unattended runs, the events file beside the frame record).
 	void Note(const FString& Line);
 
-	// Matches.
-	void StartMatch();
+	// Matches. EnterFight is how the screens start one: `bPrelude` plays the staging before it.
+	void EnterFight(bool bPrelude);
+	void StartMatch(bool bPrelude = false);
 	// Restart and Rematch: the CPU difficulty, rounds and round time as Settings now have them,
 	// for the modes that take them.
 	void RestartMatch();
@@ -55,6 +62,10 @@ public:
 	void OnMatchFinished(const Slop::FMatchResult& R);
 	// The skeletal mesh a fighter wears.
 	static FString MeshFor(FName Fighter);
+	// The body a fighter in a match wears (the Fragment shows each beholder what they see).
+	static FString MeshFor(const Slop::FFighter& Fighter);
+	// The outfits a fighter can wear (bodies), the first its usual one; empty for a fighter with one.
+	TArray<FName> OutfitsOf(FName Fighter) const;
 	// Whether a fighter may be picked: the starting roster always, a secret fighter once this
 	// profile has unlocked it (development builds: or named by -SlopUnlock= for the session, which
 	// never touches the saved progress).
@@ -75,6 +86,9 @@ public:
 	double TargetFrameRate() const;
 	// The refresh rate of the display the game window is on (0 when unknown, as offscreen).
 	double DisplayRefresh() const;
+	// The displays besides the main one, by name, and the size of the one the game plays on.
+	TArray<FString> ScreenNames() const;
+	FIntPoint ScreenSize() const;
 	void SaveSettings() { Settings.Save(); }
 	void Quit();
 	double Now() const;
@@ -109,6 +123,10 @@ private:
 	void TestCommandLine();
 	void DevCommandLine();
 	void KeepWindowMode();
+	void HoldRenderFloor();
+	void WarnOfSlowDisplay();
+	bool bWarnedSlowDisplay = false;
+	float RenderFloor = 0.f;
 
 	FTSTicker::FDelegateHandle TickHandle;
 	UPROPERTY()
@@ -120,6 +138,13 @@ private:
 	TSharedPtr<SBox> HudSlot;
 	TSharedPtr<SBox> OverlaySlot;
 	TSharedPtr<SBox> NoticeSlot;
+	// The ink over everything: its opacity, where it is heading and how fast.
+	float CurtainA = 1.f;
+	float CurtainTarget = 0.f;
+	float CurtainRate = 1.1f;
+	TFunction<void()> CurtainThen;
+	// Frames still to pass under full ink after a load, so its first frame is never seen.
+	int32 CurtainHold = 0;
 	TSharedPtr<FSlopScreen> Screen;
 	TSharedPtr<FSlopScreen> Overlay;
 	TSharedPtr<SSlopHud> Hud;
@@ -142,6 +167,10 @@ private:
 	TArray<FName> PoseCycle;
 	double PoseCycleAt = 0.0;
 	int32 PoseCycleIndex = 0;
+	TArray<FName> MoveCycle;
+	bool bMoveCycleFlip = false;      // -SlopMoveCycleFlip: from the right of the screen, the fighter's left to the camera
+	double MoveCycleAt = 0.0;
+	int32 MoveCycleIndex = 0;
 	double QuitAtSeconds = -1.0;
 	// Development: the fighters whose portraits are still to be rendered.
 	TArray<FName> PortraitQueue;
@@ -162,5 +191,6 @@ private:
 	double StartedAt = 0.0;
 	// Full screen asked of the window system again after start (KeepWindowMode).
 	double WindowCheckAt = 0.0;
+	double WindowWatchUntil = 0.0;
 	int32 WindowRequests = 0;
 };

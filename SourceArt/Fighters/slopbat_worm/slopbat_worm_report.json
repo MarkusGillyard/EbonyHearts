@@ -1,0 +1,56 @@
+{
+ "id": "slopbat_worm",
+ "parts": {
+  "slopbat_worm_body": {
+   "vertices": 11046,
+   "faces": 11092,
+   "triangles": 22080,
+   "max_influences": 10,
+   "unweighted_vertices": 773,
+   "material": "M_slopbat_worm_ebony",
+   "surface": "ebony",
+   "bones": [
+    "ankle_half_l",
+    "ankle_half_r",
+    "calf_l",
+    "calf_r",
+    "clavicle_l",
+    "clavicle_r",
+    "elbow_half_l",
+    "elbow_half_r",
+    "foot_l",
+    "foot_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "hip_half_l",
+    "hip_half_r",
+    "knee_half_l",
+    "knee_half_r",
+    "lowerarm_l",
+    "lowerarm_r",
+    "neck_01",
+    "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r",
+    "wrist_half_l",
+    "wrist_half_r"
+   ]
+  }
+ },
+ "triangles_total": 22080,
+ "top_of_everything_cm": 305.8,
+ "standing_height_cm": 305.8,
+ "lowest_point_cm": -16.083,
+ "bones": 65,
+ "root_bone": [
+  "root"
+ ]
+}

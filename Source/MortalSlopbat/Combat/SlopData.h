@@ -42,6 +42,8 @@ namespace Slop
 		double MinSpeed = 0.0;
 		FVector2D Size = FVector2D(0.3, 0.3);
 		int32 Life = 90;
+		// Ticks it shows itself before it can hit: the warning of a seal or a lance.
+		int32 Arm = 0;
 		int32 Hits = 1;
 		int32 Strength = 1;
 		ELevel Level = ELevel::High;
@@ -120,6 +122,12 @@ namespace Slop
 		FIntPoint Invuln = FIntPoint::ZeroValue;
 		FIntPoint ProjInvuln = FIntPoint::ZeroValue;
 		FIntPoint Armor = FIntPoint::ZeroValue;
+		// What the fighter summons or becomes for this move (a static mesh under /Game/Slop/Forms): held
+		// in the hand, or, with bHideBody, in place of the body.
+		FName FormMesh;
+		bool bHideBody = false;
+		// In the left hand (form_hand "l"); the right holds whatever the fighter always carries.
+		bool bFormLeft = false;
 		FIntPoint LowProfile = FIntPoint::ZeroValue;
 		FIntPoint Airborne = FIntPoint::ZeroValue;
 		bool bEndsCrouched = false;
@@ -313,6 +321,9 @@ namespace Slop
 		FString Style;
 		FString Blurb;
 		double Height = 1.8;
+		// The height the shared basic moves are measured at (stats "strike_height"; the fighter's own
+		// by default), so a body resized to a character sheet keeps the reach and push it was tuned for.
+		double StrikeHeight = 1.8;
 		int32 Health = 1000;
 		double WalkF = 2.4;
 		double WalkB = 1.9;
@@ -323,6 +334,8 @@ namespace Slop
 		double PushW = 0.28;
 		double ThrowRange = 0.95;
 		bool bBoss = false;
+		// The fighter this boss is vulnerable to (the Fragment: the Fighting Spirit of Humanity's holder).
+		FName SpiritHolder;
 		bool bHidden = false;
 		bool bUnthrowable = false;
 		// Damage taken from physical and magical blows (stats "phys_def", "magic_def"; 1 as
@@ -377,6 +390,7 @@ namespace Slop
 			return M ? &M->Get() : nullptr;
 		}
 		double Scale() const { return Height / BaseHeight; }
+		double StrikeScale() const { return StrikeHeight / BaseHeight; }
 		// The notation a player types for a move (first ground or air command that starts it).
 		FString NotationOf(FName MoveId) const;
 	};

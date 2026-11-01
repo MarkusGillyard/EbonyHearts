@@ -1,0 +1,607 @@
+{
+ "slots": {
+  "skin": {
+   "material": "M_wren_uniform_skin",
+   "size": 2048,
+   "files": {
+    "basecolor": "wren_uniform_skin_basecolor.png",
+    "normal": "wren_uniform_skin_normal.png",
+    "orm": "wren_uniform_skin_orm.png"
+   },
+   "objects": [
+    "wren_uniform_body"
+   ]
+  },
+  "hairface": {
+   "material": "M_wren_uniform_hairface",
+   "size": 2048,
+   "files": {
+    "basecolor": "wren_uniform_hairface_basecolor.png",
+    "normal": "wren_uniform_hairface_normal.png",
+    "orm": "wren_uniform_hairface_orm.png",
+    "emissive": "wren_uniform_hairface_emissive.png"
+   },
+   "objects": [
+    "wren_uniform_eyes",
+    "wren_uniform_brows",
+    "wren_uniform_lashes",
+    "wren_uniform_hair_cap",
+    "wren_uniform_braids"
+   ]
+  },
+  "jacket": {
+   "material": "M_wren_uniform_jacket",
+   "size": 2048,
+   "files": {
+    "basecolor": "wren_uniform_jacket_basecolor.png",
+    "normal": "wren_uniform_jacket_normal.png",
+    "orm": "wren_uniform_jacket_orm.png"
+   },
+   "objects": [
+    "wren_uniform_jacket",
+    "wren_uniform_jacket_skirt0",
+    "wren_uniform_jacket_skirt1",
+    "wren_uniform_lapel"
+   ]
+  },
+  "cloth": {
+   "material": "M_wren_uniform_cloth",
+   "size": 2048,
+   "files": {
+    "basecolor": "wren_uniform_cloth_basecolor.png",
+    "normal": "wren_uniform_cloth_normal.png",
+    "orm": "wren_uniform_cloth_orm.png"
+   },
+   "objects": [
+    "wren_uniform_trousers",
+    "wren_uniform_rashguard"
+   ]
+  },
+  "belt": {
+   "material": "M_wren_uniform_belt",
+   "size": 512,
+   "files": {
+    "basecolor": "wren_uniform_belt_basecolor.png",
+    "normal": "wren_uniform_belt_normal.png",
+    "orm": "wren_uniform_belt_orm.png"
+   },
+   "objects": [
+    "wren_uniform_belt",
+    "wren_uniform_belt_knot",
+    "wren_uniform_belt_tail0",
+    "wren_uniform_belt_tail1"
+   ]
+  },
+  "leather": {
+   "material": "M_wren_uniform_leather",
+   "size": 1024,
+   "files": {
+    "basecolor": "wren_uniform_leather_basecolor.png",
+    "normal": "wren_uniform_leather_normal.png",
+    "orm": "wren_uniform_leather_orm.png"
+   },
+   "objects": [
+    "wren_uniform_shoe_l",
+    "wren_uniform_sole_l",
+    "wren_uniform_shoe_r",
+    "wren_uniform_sole_r",
+    "wren_uniform_laces_l",
+    "wren_uniform_laces_r"
+   ]
+  }
+ },
+ "texture_notes": {
+  "skin": [
+   "toned young_lightskinned_female_diffuse.png to #e6c0a6, broad tones flattened",
+   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #e6c0a6"
+  ],
+  "hairface": [
+   "eyes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyes/materials/lightblue_eye.png -> tile (0.0, 0.0, 0.5, 0.5)",
+   "brows: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyebrows/eyebrow006/eyebrow006.png -> tile (0.5, 0.0, 0.5, 0.5)",
+   "lashes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyelashes/eyelashes02/eyelashes02.png -> tile (0.0, 0.5, 0.5, 0.5)",
+   "hair_cap: generated hair strands #5f4c3a -> tile (0.5, 0.5, 0.25, 0.5)",
+   "braids: generated hair strands #5f4c3a -> tile (0.75, 0.5, 0.25, 0.5)"
+  ],
+  "jacket": [
+   "wren_uniform_jacket: Fabric066 tinted #08080a, 5 cm tiles, roughness 0.90, metallic 0",
+   "wren_uniform_jacket_skirt0: Fabric066 tinted #08080a, 5 cm tiles, roughness 0.90, metallic 0",
+   "wren_uniform_jacket_skirt1: Fabric066 tinted #08080a, 5 cm tiles, roughness 0.90, metallic 0",
+   "wren_uniform_lapel: Fabric066 tinted #050506, 4 cm tiles, roughness 0.88, metallic 0"
+  ],
+  "cloth": [
+   "wren_uniform_trousers: panel embroidery in #45484d on 0 texels",
+   "wren_uniform_trousers: Fabric034 tinted #09090c, 15 cm tiles, roughness 0.70, metallic 0",
+   "wren_uniform_rashguard: Fabric034 tinted #0a0a0c, 12 cm tiles, roughness 0.60, metallic 0"
+  ],
+  "belt": [
+   "wren_uniform_belt: stitch embroidery in #4c1918 on 24300 texels",
+   "wren_uniform_belt: Fabric001 tinted #050506, 7 cm tiles, roughness 0.92, metallic 0",
+   "wren_uniform_belt_knot: stitch embroidery in #4c1918 on 0 texels",
+   "wren_uniform_belt_knot: Fabric001 tinted #050506, 7 cm tiles, roughness 0.92, metallic 0",
+   "wren_uniform_belt_tail0: stitch embroidery in #4c1918 on 9055 texels",
+   "wren_uniform_belt_tail0: Fabric001 tinted #050506, 7 cm tiles, roughness 0.92, metallic 0",
+   "wren_uniform_belt_tail1: stitch embroidery in #4c1918 on 7805 texels",
+   "wren_uniform_belt_tail1: Fabric001 tinted #050506, 7 cm tiles, roughness 0.92, metallic 0"
+  ],
+  "leather": [
+   "wren_uniform_shoe_l: Leather021 tinted #08080a, 18 cm tiles, roughness 0.55, metallic 0",
+   "wren_uniform_sole_l: Leather026 tinted #121214, 15 cm tiles, roughness 0.70, metallic 0",
+   "wren_uniform_shoe_r: Leather021 tinted #08080a, 18 cm tiles, roughness 0.55, metallic 0",
+   "wren_uniform_sole_r: Leather026 tinted #121214, 15 cm tiles, roughness 0.70, metallic 0",
+   "wren_uniform_laces_l: Leather021 tinted #101014, 6 cm tiles, roughness 0.80, metallic 0",
+   "wren_uniform_laces_r: Leather021 tinted #101014, 6 cm tiles, roughness 0.80, metallic 0"
+  ]
+ },
+ "parts": {
+  "wren_uniform_body": {
+   "vertices": 7719,
+   "faces": 7586,
+   "triangles": 15172,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_skin",
+   "surface": "body",
+   "bones": [
+    "ankle_half_l",
+    "ankle_half_r",
+    "calf_l",
+    "calf_r",
+    "clavicle_l",
+    "clavicle_r",
+    "hand_l",
+    "hand_r",
+    "head",
+    "hip_half_l",
+    "hip_half_r",
+    "index_01_l",
+    "index_01_r",
+    "index_02_l",
+    "index_02_r",
+    "index_03_l",
+    "index_03_r",
+    "lowerarm_l",
+    "lowerarm_r",
+    "middle_01_l",
+    "middle_01_r",
+    "middle_02_l",
+    "middle_02_r",
+    "middle_03_l",
+    "middle_03_r",
+    "neck_01",
+    "pelvis",
+    "pinky_01_l",
+    "pinky_01_r",
+    "pinky_02_l",
+    "pinky_02_r",
+    "pinky_03_l",
+    "pinky_03_r",
+    "ring_01_l",
+    "ring_01_r",
+    "ring_02_l",
+    "ring_02_r",
+    "ring_03_l",
+    "ring_03_r",
+    "shoulder_half_l",
+    "shoulder_half_r",
+    "spine_01",
+    "spine_03",
+    "thumb_01_l",
+    "thumb_01_r",
+    "thumb_02_l",
+    "thumb_02_r",
+    "thumb_03_l",
+    "thumb_03_r",
+    "upperarm_l",
+    "upperarm_r",
+    "wrist_half_l",
+    "wrist_half_r"
+   ]
+  },
+  "wren_uniform_eyes": {
+   "vertices": 1064,
+   "faces": 1020,
+   "triangles": 2040,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_hairface",
+   "surface": "eyes",
+   "bones": [
+    "head"
+   ]
+  },
+  "wren_uniform_brows": {
+   "vertices": 124,
+   "faces": 96,
+   "triangles": 192,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_hairface",
+   "surface": "brows",
+   "bones": [
+    "head"
+   ]
+  },
+  "wren_uniform_lashes": {
+   "vertices": 250,
+   "faces": 184,
+   "triangles": 368,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_hairface",
+   "surface": "lashes",
+   "bones": [
+    "head"
+   ]
+  },
+  "wren_uniform_trousers": {
+   "vertices": 2826,
+   "faces": 2852,
+   "triangles": 5656,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_cloth",
+   "surface": "trousers",
+   "bones": [
+    "ankle_half_l",
+    "ankle_half_r",
+    "calf_l",
+    "calf_r",
+    "foot_l",
+    "hip_half_l",
+    "hip_half_r",
+    "knee_half_l",
+    "knee_half_r",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "wren_uniform_shoe_l": {
+   "vertices": 1120,
+   "faces": 1144,
+   "triangles": 2236,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_leather",
+   "surface": "shoes",
+   "bones": [
+    "ankle_half_l",
+    "ball_l",
+    "calf_l",
+    "foot_l"
+   ]
+  },
+  "wren_uniform_sole_l": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_leather",
+   "surface": "sole",
+   "bones": [
+    "ball_l",
+    "foot_l"
+   ]
+  },
+  "wren_uniform_shoe_r": {
+   "vertices": 1120,
+   "faces": 1144,
+   "triangles": 2236,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_leather",
+   "surface": "shoes",
+   "bones": [
+    "ankle_half_r",
+    "ball_r",
+    "calf_r",
+    "foot_r"
+   ]
+  },
+  "wren_uniform_sole_r": {
+   "vertices": 56,
+   "faces": 80,
+   "triangles": 108,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_leather",
+   "surface": "sole",
+   "bones": [
+    "ball_r",
+    "foot_r"
+   ]
+  },
+  "wren_uniform_laces_l": {
+   "vertices": 170,
+   "faces": 110,
+   "triangles": 220,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_leather",
+   "surface": "laces",
+   "bones": [
+    "ankle_half_l",
+    "calf_l",
+    "foot_l"
+   ]
+  },
+  "wren_uniform_laces_r": {
+   "vertices": 170,
+   "faces": 110,
+   "triangles": 220,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_leather",
+   "surface": "laces",
+   "bones": [
+    "ankle_half_r",
+    "calf_r",
+    "foot_r"
+   ]
+  },
+  "wren_uniform_rashguard": {
+   "vertices": 4714,
+   "faces": 4742,
+   "triangles": 9436,
+   "max_influences": 7,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_cloth",
+   "surface": "rashguard",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "elbow_half_l",
+    "elbow_half_r",
+    "head",
+    "hip_half_l",
+    "hip_half_r",
+    "lowerarm_l",
+    "lowerarm_r",
+    "neck_01",
+    "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "wren_uniform_jacket": {
+   "vertices": 4936,
+   "faces": 5048,
+   "triangles": 9880,
+   "max_influences": 7,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_jacket",
+   "surface": "jacket",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "elbow_half_l",
+    "elbow_half_r",
+    "head",
+    "hip_half_l",
+    "hip_half_r",
+    "lowerarm_l",
+    "lowerarm_r",
+    "neck_01",
+    "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r",
+    "wrist_half_l",
+    "wrist_half_r"
+   ]
+  },
+  "wren_uniform_jacket_skirt0": {
+   "vertices": 682,
+   "faces": 680,
+   "triangles": 1360,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_jacket",
+   "surface": "jacket",
+   "bones": [
+    "hip_half_l",
+    "hip_half_r",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "wren_uniform_jacket_skirt1": {
+   "vertices": 682,
+   "faces": 680,
+   "triangles": 1360,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_jacket",
+   "surface": "jacket",
+   "bones": [
+    "hip_half_l",
+    "hip_half_r",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "wren_uniform_lapel": {
+   "vertices": 156,
+   "faces": 154,
+   "triangles": 308,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_jacket",
+   "surface": "lapel",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "hip_half_r",
+    "neck_01",
+    "pelvis",
+    "shoulder_half_l",
+    "shoulder_half_r",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
+  "wren_uniform_belt": {
+   "vertices": 312,
+   "faces": 352,
+   "triangles": 624,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_belt",
+   "surface": "belt",
+   "bones": [
+    "hip_half_l",
+    "hip_half_r",
+    "pelvis",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "wren_uniform_belt_knot": {
+   "vertices": 62,
+   "faces": 70,
+   "triangles": 120,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_belt",
+   "surface": "belt",
+   "bones": [
+    "pelvis"
+   ]
+  },
+  "wren_uniform_belt_tail0": {
+   "vertices": 48,
+   "faces": 46,
+   "triangles": 92,
+   "max_influences": 4,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_belt",
+   "surface": "belt",
+   "bones": [
+    "hip_half_r",
+    "pelvis",
+    "spine_01",
+    "spine_03",
+    "thigh_r"
+   ]
+  },
+  "wren_uniform_belt_tail1": {
+   "vertices": 48,
+   "faces": 46,
+   "triangles": 92,
+   "max_influences": 4,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_belt",
+   "surface": "belt",
+   "bones": [
+    "hip_half_l",
+    "pelvis",
+    "spine_01",
+    "spine_03",
+    "thigh_l"
+   ]
+  },
+  "wren_uniform_hair_cap": {
+   "vertices": 541,
+   "faces": 518,
+   "triangles": 940,
+   "max_influences": 4,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_hairface",
+   "surface": "hair_cap",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "spine_03"
+   ]
+  },
+  "wren_uniform_braids": {
+   "vertices": 7200,
+   "faces": 5250,
+   "triangles": 10500,
+   "max_influences": 6,
+   "unweighted_vertices": 0,
+   "material": "M_wren_uniform_hairface",
+   "surface": "braids",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "head",
+    "neck_01",
+    "shoulder_half_l",
+    "shoulder_half_r",
+    "spine_01",
+    "spine_02",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  }
+ },
+ "triangles_total": 63268,
+ "top_of_everything_cm": 179.41,
+ "standing_height_cm": 178.0,
+ "lowest_point_cm": -0.0,
+ "bones": 65,
+ "root_bone": [
+  "root"
+ ],
+ "id": "wren_uniform",
+ "name": "Wren Ku",
+ "height": {
+  "macro_range_m": [
+   1.1783,
+   2.2041
+  ],
+  "height_macro": 0.686035,
+  "height_before_scale_m": 1.76792,
+  "uniform_scale": 1.000045,
+  "body_height_m": 1.768,
+  "targets_applied": 43
+ },
+ "timings_s": {
+  "enable_mpfb": 0.18,
+  "mpfb_body": 1.61,
+  "bake_body": 0.02,
+  "outfit": 2.89,
+  "textures": 25.67,
+  "finalize": 0.26,
+  "save_blend": 0.02,
+  "export_fbx": 0.37
+ },
+ "script_wall_s": 31.0,
+ "peak_rss_mb": 1918.0
+}

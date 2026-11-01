@@ -1,0 +1,85 @@
+{
+	"build": {
+		"shoulders": 1.3,
+		"chest": 1.3,
+		"waist": 1.3,
+		"limbs": 1.3,
+		"hips": 1.22
+	},
+	"materials": {
+		"skin": {
+			"color": "#d39a84"
+		},
+		"brows": {
+			"color": "#5a3826"
+		},
+		"eyes": {
+			"color": "#7d93a0"
+		},
+		"apron": {
+			"color": "#2b221c",
+			"kind": "leather",
+			"roughness": 0.3
+		},
+		"strap": {
+			"color": "#1f1915",
+			"kind": "leather",
+			"roughness": 0.45
+		},
+		"iron": {
+			"color": "#5a5855",
+			"kind": "metal",
+			"roughness": 0.48
+		},
+		"trousers": {
+			"color": "#77694c",
+			"kind": "fabric",
+			"roughness": 0.92
+		},
+		"boots": {
+			"color": "#2c2018",
+			"kind": "leather",
+			"roughness": 0.55
+		},
+		"sole": {
+			"color": "#17120f",
+			"kind": "leather",
+			"roughness": 0.7
+		}
+	},
+	"cloth": [
+		{
+			"kind": "skirt",
+			"joint": "hips",
+			"material": "apron",
+			"top": 0.035,
+			"rx": 0.13,
+			"rz": 0.09,
+			"length": 0.255,
+			"flare": 0.012,
+			"cols": 7,
+			"rows": 6,
+			"gap": 0.66,
+			"shape": 0.14,
+			"damping": 0.95,
+			"thickness": 0.011,
+			"folds": 0.003,
+			"fold_count": 3
+		}
+	],
+	"sculpt": {
+		"figure": "male",
+		"muscle": 1.0,
+		"face": {
+			"jaw": 1.14,
+			"chin": 1.25,
+			"brow": 1.6,
+			"nose": 1.15,
+			"lips": 0.88,
+			"cheek": 1.1,
+			"eye_open": 0.86
+		},
+		"feet": 1.14
+	},
+	"glow": "#ffd9a0"
+}

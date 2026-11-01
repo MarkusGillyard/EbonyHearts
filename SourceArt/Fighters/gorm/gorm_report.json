@@ -41,7 +41,11 @@
     "gorm_sole_r",
     "gorm_apron",
     "gorm_belt",
-    "gorm_neckstrap"
+    "gorm_neckstrap",
+    "gorm_guard_strap_l0",
+    "gorm_guard_strap_l1",
+    "gorm_guard_strap_r0",
+    "gorm_guard_strap_r1"
    ]
   },
   "canvas": {
@@ -53,7 +57,10 @@
     "orm": "gorm_canvas_orm.png"
    },
    "objects": [
-    "gorm_trousers"
+    "gorm_trousers",
+    "gorm_apron_stripe",
+    "gorm_knee_l",
+    "gorm_knee_r"
    ]
   },
   "iron": {
@@ -68,15 +75,19 @@
     "gorm_buckle",
     "gorm_rivets",
     "gorm_vambrace_l",
-    "gorm_vambrace_r"
+    "gorm_vambrace_r",
+    "gorm_toecap_l",
+    "gorm_toecap_r"
    ]
   }
  },
  "texture_notes": {
   "skin": [
-   "tinted young_lightskinned_male_diffuse.png -> #d39a84 (per-channel gain [0.904, 0.878, 1.012])",
+   "toned middleage_lightskinned_male_diffuse.png to #d7a58e, broad tones flattened",
+   "blended 30% of old_lightskinned_male_diffuse.png",
+   "weathered flush #c0503c on cheeks, nose, ears and brow",
    "painted scalp hair replaced by forehead skin tone",
-   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #d39a84"
+   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #d7a58e"
   ],
   "face": [
    "eyes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyes/materials/grey_eye.png -> tile (0.0, 0.0, 0.5, 0.5)",
@@ -90,24 +101,33 @@
    "gorm_sole_r: Leather021 tinted #17120f, 20 cm tiles, roughness 0.70, metallic 0",
    "gorm_apron: Leather026 tinted #2b221c, 45 cm tiles, roughness 0.30, metallic 0",
    "gorm_belt: Leather021 tinted #1f1915, 25 cm tiles, roughness 0.45, metallic 0",
-   "gorm_neckstrap: Leather021 tinted #1f1915, 25 cm tiles, roughness 0.45, metallic 0"
+   "gorm_neckstrap: Leather021 tinted #1f1915, 25 cm tiles, roughness 0.45, metallic 0",
+   "gorm_guard_strap_l0: Leather021 tinted #1f1915, 25 cm tiles, roughness 0.45, metallic 0",
+   "gorm_guard_strap_l1: Leather021 tinted #1f1915, 25 cm tiles, roughness 0.45, metallic 0",
+   "gorm_guard_strap_r0: Leather021 tinted #1f1915, 25 cm tiles, roughness 0.45, metallic 0",
+   "gorm_guard_strap_r1: Leather021 tinted #1f1915, 25 cm tiles, roughness 0.45, metallic 0"
   ],
   "canvas": [
-   "gorm_trousers: Fabric066 tinted #77694c, 4 cm tiles, roughness 0.92, metallic 0"
+   "gorm_trousers: Fabric066 tinted #5a5240, 8 cm tiles, roughness 0.92, metallic 0",
+   "gorm_apron_stripe: Fabric001 tinted #b4b5a6, 12 cm tiles, roughness 0.30, metallic 0",
+   "gorm_knee_l: Fabric066 tinted #3d3829, 8 cm tiles, roughness 0.92, metallic 0",
+   "gorm_knee_r: Fabric066 tinted #3d3829, 8 cm tiles, roughness 0.92, metallic 0"
   ],
   "iron": [
    "gorm_buckle: Metal055A tinted #5a5855, 25 cm tiles, roughness 0.48, metallic 1",
    "gorm_rivets: Metal055A tinted #5a5855, 25 cm tiles, roughness 0.48, metallic 1",
    "gorm_vambrace_l: Metal055A tinted #5a5855, 25 cm tiles, roughness 0.48, metallic 1",
-   "gorm_vambrace_r: Metal055A tinted #5a5855, 25 cm tiles, roughness 0.48, metallic 1"
+   "gorm_vambrace_r: Metal055A tinted #5a5855, 25 cm tiles, roughness 0.48, metallic 1",
+   "gorm_toecap_l: Metal055A tinted #5a5855, 25 cm tiles, roughness 0.48, metallic 1",
+   "gorm_toecap_r: Metal055A tinted #5a5855, 25 cm tiles, roughness 0.48, metallic 1"
   ]
  },
  "parts": {
   "gorm_body": {
-   "vertices": 10103,
-   "faces": 9994,
-   "triangles": 19988,
-   "max_influences": 8,
+   "vertices": 9847,
+   "faces": 9702,
+   "triangles": 19404,
+   "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_gorm_skin",
    "surface": "body",
@@ -211,9 +231,9 @@
    ]
   },
   "gorm_trousers": {
-   "vertices": 2298,
-   "faces": 2336,
-   "triangles": 4600,
+   "vertices": 2254,
+   "faces": 2290,
+   "triangles": 4512,
    "max_influences": 8,
    "unweighted_vertices": 0,
    "material": "M_gorm_canvas",
@@ -292,9 +312,9 @@
    ]
   },
   "gorm_apron": {
-   "vertices": 1074,
-   "faces": 1072,
-   "triangles": 2144,
+   "vertices": 1076,
+   "faces": 1074,
+   "triangles": 2148,
    "max_influences": 8,
    "unweighted_vertices": 0,
    "material": "M_gorm_leather",
@@ -305,8 +325,6 @@
     "hip_half_l",
     "hip_half_r",
     "pelvis",
-    "shoulder_half_l",
-    "shoulder_half_r",
     "spine_01",
     "spine_02",
     "spine_03",
@@ -317,9 +335,9 @@
    ]
   },
   "gorm_belt": {
-   "vertices": 314,
-   "faces": 379,
-   "triangles": 628,
+   "vertices": 320,
+   "faces": 370,
+   "triangles": 640,
    "max_influences": 8,
    "unweighted_vertices": 0,
    "material": "M_gorm_leather",
@@ -362,6 +380,7 @@
     "neck_01",
     "shoulder_half_l",
     "shoulder_half_r",
+    "spine_02",
     "spine_03",
     "upperarm_l",
     "upperarm_r"
@@ -402,9 +421,126 @@
    "bones": [
     "lowerarm_r"
    ]
+  },
+  "gorm_apron_stripe": {
+   "vertices": 164,
+   "faces": 168,
+   "triangles": 320,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_canvas",
+   "surface": "stripe",
+   "bones": [
+    "thigh_l",
+    "thigh_r"
+   ]
+  },
+  "gorm_knee_l": {
+   "vertices": 558,
+   "faces": 595,
+   "triangles": 1108,
+   "max_influences": 3,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_canvas",
+   "surface": "patch",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "knee_half_l",
+    "thigh_l"
+   ]
+  },
+  "gorm_toecap_l": {
+   "vertices": 252,
+   "faces": 318,
+   "triangles": 496,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_iron",
+   "surface": "iron",
+   "bones": [
+    "ball_l",
+    "foot_l"
+   ]
+  },
+  "gorm_guard_strap_l0": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_leather",
+   "surface": "strap",
+   "bones": [
+    "lowerarm_l"
+   ]
+  },
+  "gorm_guard_strap_l1": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_leather",
+   "surface": "strap",
+   "bones": [
+    "lowerarm_l"
+   ]
+  },
+  "gorm_knee_r": {
+   "vertices": 566,
+   "faces": 606,
+   "triangles": 1120,
+   "max_influences": 3,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_canvas",
+   "surface": "patch",
+   "bones": [
+    "calf_l",
+    "calf_r",
+    "knee_half_r",
+    "thigh_r"
+   ]
+  },
+  "gorm_toecap_r": {
+   "vertices": 252,
+   "faces": 318,
+   "triangles": 496,
+   "max_influences": 2,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_iron",
+   "surface": "iron",
+   "bones": [
+    "ball_r",
+    "foot_r"
+   ]
+  },
+  "gorm_guard_strap_r0": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_leather",
+   "surface": "strap",
+   "bones": [
+    "lowerarm_r"
+   ]
+  },
+  "gorm_guard_strap_r1": {
+   "vertices": 120,
+   "faces": 120,
+   "triangles": 240,
+   "max_influences": 1,
+   "unweighted_vertices": 0,
+   "material": "M_gorm_leather",
+   "surface": "strap",
+   "bones": [
+    "lowerarm_r"
+   ]
   }
  },
- "triangles_total": 37344,
+ "triangles_total": 41188,
  "top_of_everything_cm": 212.0,
  "standing_height_cm": 212.0,
  "lowest_point_cm": 0.0,
@@ -416,25 +552,25 @@
  "name": "Gorm Tallow",
  "height": {
   "macro_range_m": [
-   1.4701,
-   2.4364
+   1.4474,
+   2.4137
   ],
-  "height_macro": 0.763184,
-  "height_before_scale_m": 2.08995,
-  "uniform_scale": 1.000024,
+  "height_macro": 0.779785,
+  "height_before_scale_m": 2.0901,
+  "uniform_scale": 0.99995,
   "body_height_m": 2.09,
-  "targets_applied": 60
+  "targets_applied": 66
  },
  "timings_s": {
-  "enable_mpfb": 0.19,
-  "mpfb_body": 1.18,
+  "enable_mpfb": 0.21,
+  "mpfb_body": 1.25,
   "bake_body": 0.02,
-  "outfit": 1.1,
-  "textures": 19.47,
-  "finalize": 0.13,
-  "save_blend": 0.01,
-  "export_fbx": 0.24
+  "outfit": 1.38,
+  "textures": 23.06,
+  "finalize": 0.14,
+  "save_blend": 0.02,
+  "export_fbx": 0.3
  },
- "script_wall_s": 22.4,
- "peak_rss_mb": 2276.8
+ "script_wall_s": 26.4,
+ "peak_rss_mb": 1989.4
 }

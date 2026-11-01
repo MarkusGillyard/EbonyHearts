@@ -8,7 +8,7 @@ class UStaticMeshComponent;
 
 namespace Slop
 {
-	// Stages the finishers and the other set pieces: every Sloptality, the Rendering Yards' stage
+	// Stages the finishers and the other set pieces: every Hearted, the Rendering Yards' stage
 	// finisher, the Fragment's defeat and the Grandmaster's instant kills. Each is timed to its move's frames
 	// in the simulation, so skipping a finisher simply jumps to its end, and nothing here changes
 	// the outcome. Gore "off" swaps blood for ash and dust. Everything is put back at the next round.

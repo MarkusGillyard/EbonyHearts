@@ -20,6 +20,7 @@
 #include "UI/SlopScreen.h"
 #include "UI/SlopScreens.h"
 #include "UI/SlopStyle.h"
+#include "UI/SlopWidgets.h"
 #include "View/SlopMatch.h"
 #include "View/SlopShowroom.h"
 #include "View/SlopDevTour.h"
@@ -111,6 +112,7 @@ void USlopGameInstance::OnStart()
 	}
 	bStarted = true;
 	StartedAt = Now();
+	WindowWatchUntil = StartedAt + 15.0;
 	BuildRoot();
 	ApplySettings(true);
 	Audio->Preload();
@@ -125,6 +127,7 @@ void USlopGameInstance::OnStart()
 	if (!Screen.IsValid())
 	{
 		Goto(GetContent().Errors.Num() > 0 ? SlopScreens::DataError() : SlopScreens::Title());
+		Curtain(1.f, 0.9f);
 	}
 	// What happened to the save files, if anything did, once, over the title.
 	const FString Notes = FString::Join(TArray<FString>({Settings.LoadNote, Progress.LoadNote}).FilterByPredicate([](const FString& N) { return !N.IsEmpty(); }), TEXT("\n"));
@@ -144,13 +147,18 @@ void USlopGameInstance::BuildRoot()
 	+ SOverlay::Slot()[SAssignNew(ScreenSlot, SBox)]
 	+ SOverlay::Slot()[SAssignNew(HudSlot, SBox)]
 	+ SOverlay::Slot()[SAssignNew(OverlaySlot, SBox)]
-	+ SOverlay::Slot().VAlign(VAlign_Top).HAlign(HAlign_Center).Padding(0, 24)
+	+ SOverlay::Slot()
+	[
+		// Collapsed when clear: a blended quad over the whole screen is not free at 3440 x 1440.
+		SNew(SImage).Image(SlopUI::Box()).Visibility_Lambda([this]() { return CurtainA > 0.f ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
+		.ColorAndOpacity_Lambda([this]() { return SlopUI::Ink.CopyWithNewOpacity(CurtainA); })
+	]
+	+ SOverlay::Slot().VAlign(VAlign_Top).HAlign(HAlign_Center).Padding(0, 30)
 	[
 		SAssignNew(NoticeSlot, SBox)
+		.Visibility_Lambda([this]() { return Now() < NoticeUntil ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
 		[
-			SNew(STextBlock).Font(SlopUI::Body(28.f)).ColorAndOpacity(SlopUI::Amber)
-			.ShadowOffset(FVector2D(2, 2)).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.8f))
-			.Text_Lambda([this]() { return Now() < NoticeUntil ? NoticeText : FText::GetEmpty(); })
+			SlopUI::PanelBox(SNew(STextBlock).Font(SlopUI::Strong(26.f)).ColorAndOpacity(SlopUI::Text).Text_Lambda([this]() { return NoticeText; }), FMargin(26.f, 10.f))
 		]
 	];
 	GEngine->GameViewport->AddViewportWidgetContent(Root.ToSharedRef(), 10);
@@ -169,8 +177,23 @@ void USlopGameInstance::Goto(const TSharedPtr<FSlopScreen>& S)
 	}
 	Screen->GI = this;
 	Note(TEXT("Screen: ") + Screen->ScreenName);
+	// Leaving by another way (the mouse, which the router does not hold back) overrides a queued fade.
+	CurtainThen = nullptr;
+	CurtainTarget = 0.f;
+	if (!Screen->ShowsMatch())
+	{
+		// The hall is behind every menu; each screen says who stands in it.
+		if (ASlopShowroom* Room = OpenShowroom())
+		{
+			Room->Clear();
+		}
+	}
 	ScreenSlot->SetContent(Screen->Build());
 	Screen->Enter();
+	if (!Screen->ShowsMatch())
+	{
+		Curtain(0.4f, 0.2f);
+	}
 	if (!Screen->ShowsMatch() && Match)
 	{
 		EndMatch();
@@ -214,6 +237,24 @@ void USlopGameInstance::ShowOverlay(const TSharedPtr<FSlopScreen>& S)
 }
 
 void USlopGameInstance::CloseOverlay() { ShowOverlay(nullptr); }
+
+void USlopGameInstance::FadeThen(TFunction<void()> Then, float Seconds)
+{
+	if (CurtainThen)
+	{
+		return;
+	}
+	CurtainThen = MoveTemp(Then);
+	CurtainTarget = 1.f;
+	CurtainRate = 1.f / FMath::Max(Seconds, 0.01f);
+}
+
+void USlopGameInstance::Curtain(float From, float Seconds)
+{
+	CurtainA = FMath::Max(CurtainA, From);
+	CurtainTarget = 0.f;
+	CurtainRate = CurtainA / FMath::Max(Seconds, 0.01f);
+}
 
 void USlopGameInstance::Notice(const FText& Text, double Seconds)
 {
@@ -259,6 +300,41 @@ FString USlopGameInstance::MeshFor(FName Fighter)
 	return FString::Printf(TEXT("/Game/Slop/Fighters/%s/%s.%s"), *Id, *Id, *Id);
 }
 
+FString USlopGameInstance::MeshFor(const FFighter& Fighter)
+{
+	static const FName Fragment(TEXT("slopbat")), Grandmaster(TEXT("grandmaster"));
+	if (Fighter.Def->Body == Fragment && (Fighter.BaseDef->Id == Grandmaster || Fighter.Opponent().BaseDef->Id == Grandmaster))
+	{
+		// He sees a worm, and when he wears its shape, that is the shape he wears.
+		return MeshFor(FName(TEXT("slopbat_worm")));
+	}
+	if (!Fighter.OutfitBody.IsNone() && Fighter.Def == Fighter.BaseDef)
+	{
+		return MeshFor(Fighter.OutfitBody);
+	}
+	return MeshFor(Fighter.Def->Body);
+}
+
+TArray<FName> USlopGameInstance::OutfitsOf(FName Fighter) const
+{
+	TArray<FName> Out;
+	if (Fighter == TEXT("wren"))
+	{
+		// (Her uniform is Bram Ketch's to give: she has it once she has beaten him in the story.)
+		Out = {FName(TEXT("wren")), FName(TEXT("wren_mma")), FName(TEXT("wren_muay_thai")), FName(TEXT("wren_gi"))};
+		if (Progress.IsUnlocked(TEXT("outfit:wren_uniform")))
+		{
+			Out.Add(TEXT("wren_uniform"));
+		}
+	}
+	else if (Fighter == TEXT("bram"))
+	{
+		// (The coat hides his tattoo.)
+		Out = {FName(TEXT("bram")), FName(TEXT("bram_coat_off"))};
+	}
+	return Out;
+}
+
 void USlopGameInstance::RestartMatch()
 {
 	FMatchConfig& C = Flow.Config;
@@ -271,10 +347,15 @@ void USlopGameInstance::RestartMatch()
 		C.RoundsToWin = FMath::Clamp(Settings.VersusRounds, 1, 5);
 		C.RoundSeconds = Settings.RoundSeconds;
 	}
-	StartMatch();
+	FadeThen([this]() { StartMatch(); });
 }
 
-void USlopGameInstance::StartMatch()
+void USlopGameInstance::EnterFight(bool bPrelude)
+{
+	FadeThen([this, bPrelude]() { StartMatch(bPrelude); });
+}
+
+void USlopGameInstance::StartMatch(bool bPrelude)
 {
 	UWorld* W = GetWorld();
 	if (!W)
@@ -283,6 +364,7 @@ void USlopGameInstance::StartMatch()
 	}
 	EndMatch();
 	CloseOverlay();
+	CloseShowroom();
 	Router->SetSolo(!Flow.TwoPlayers());
 	Router->ResetAll();
 	FActorSpawnParameters P;
@@ -300,13 +382,14 @@ void USlopGameInstance::StartMatch()
 		return;
 	}
 	Match->OnFinished = [this](const FMatchResult& R) { OnMatchFinished(R); };
-	Router->bFightActive = true;
+	// Through the staging the keys stay menu keys, so a punch skips it as it always skipped the face-off.
+	Router->bFightActive = !bPrelude;
 	SAssignNew(Hud, SSlopHud).GI(this).Match(Match);
 	if (HudSlot.IsValid())
 	{
 		HudSlot->SetContent(Hud.ToSharedRef());
 	}
-	Goto(SlopScreens::MatchScreen());
+	Goto(bPrelude ? SlopScreens::FaceOff() : SlopScreens::MatchScreen());
 }
 
 void USlopGameInstance::EndMatch()
@@ -350,7 +433,7 @@ void USlopGameInstance::OnMatchFinished(const FMatchResult& R)
 		}
 	}
 	Progress.Save();
-	Goto(SlopScreens::Results(R));
+	FadeThen([this, R]() { Goto(SlopScreens::Results(R)); }, 0.3f);
 	if (SoakConfig)
 	{
 		SoakRestartAt = Now() + 3.0;
@@ -362,7 +445,9 @@ void USlopGameInstance::ApplySettings(bool bDisplay)
 	if (Audio)
 	{
 		Audio->SetVolumes((float)Settings.MasterVolume, (float)Settings.MusicVolume, (float)Settings.EffectsVolume, (float)Settings.VoiceVolume);
+		Audio->SetSpeakers(Settings.Speakers);
 	}
+	SlopUI::SetScreenMargin((float)Settings.ScreenMargin);
 	static float AppliedTextScale = 1.f;
 	if ((float)Settings.UIScale != AppliedTextScale)
 	{
@@ -373,6 +458,7 @@ void USlopGameInstance::ApplySettings(bool bDisplay)
 			RebuildScreen();
 		}
 	}
+	SlopUI::SetReducedMotion(Settings.Effects == TEXT("reduced"));
 	if (!bDisplay || !GEngine)
 	{
 		return;
@@ -388,8 +474,12 @@ void USlopGameInstance::ApplySettings(bool bDisplay)
 		{
 			const EWindowMode::Type Mode = Settings.WindowMode == 0 ? EWindowMode::Windowed : (Settings.WindowMode == 1 ? EWindowMode::WindowedFullscreen : EWindowMode::Fullscreen);
 			U->SetFullscreenMode(Mode);
-			const FIntPoint Desktop = U->GetDesktopResolution();
+			const FIntPoint Chosen = ScreenSize();
+			const FIntPoint Desktop = Chosen.X > 0 ? Chosen : U->GetDesktopResolution();
 			U->SetScreenResolution(Mode == EWindowMode::WindowedFullscreen && Desktop.X > 0 && Desktop.Y > 0 ? Desktop : Settings.Resolution);
+			// KeepWindowMode carries the window to the chosen display and holds it there.
+			WindowRequests = 0;
+			WindowWatchUntil = Now() + 15.0;
 		}
 		U->SetVSyncEnabled(Settings.bVSync);
 		const double Target = TargetFrameRate();
@@ -406,7 +496,8 @@ void USlopGameInstance::ApplySettings(bool bDisplay)
 		};
 		SetCVar(TEXT("r.DynamicRes.OperationMode"), Settings.bDynamicRes ? 2.f : 0.f);
 		SetCVar(TEXT("r.DynamicRes.FrameTimeBudget"), (float)Budget);
-		SetCVar(TEXT("r.DynamicRes.MinScreenPercentage"), 50.f);
+		// The floor is set by HoldRenderFloor, which follows the output's size.
+		RenderFloor = 0.f;
 		SetCVar(TEXT("r.DynamicRes.MaxScreenPercentage"), 100.f);
 		UE_LOG(LogSlop, Log, TEXT("Display: %.2f Hz, frame rate target %.1f, render resolution %s"), DisplayRefresh(), Target,
 			Settings.bDynamicRes ? TEXT("dynamic") : TEXT("full"));
@@ -423,6 +514,74 @@ void USlopGameInstance::ApplySettings(bool bDisplay)
 		{
 			U->ApplySettings(false);
 		}
+	}
+}
+
+#if PLATFORM_LINUX
+// The display of that name, or the main one when it is empty or no longer connected.
+static SDL_DisplayID ChosenDisplay(const FString& Name)
+{
+	SDL_DisplayID Found = SDL_GetPrimaryDisplay();
+	int Count = 0;
+	if (SDL_DisplayID* List = SDL_GetDisplays(&Count))
+	{
+		for (int I = 0; I < Count; ++I)
+		{
+			if (!Name.IsEmpty() && Name == UTF8_TO_TCHAR(SDL_GetDisplayName(List[I])))
+			{
+				Found = List[I];
+			}
+		}
+		SDL_free(List);
+	}
+	return Found;
+}
+#endif
+
+TArray<FString> USlopGameInstance::ScreenNames() const
+{
+	TArray<FString> Out;
+#if PLATFORM_LINUX
+	int Count = 0;
+	if (SDL_DisplayID* List = SDL_GetDisplays(&Count))
+	{
+		const SDL_DisplayID Main = SDL_GetPrimaryDisplay();
+		for (int I = 0; I < Count; ++I)
+		{
+			if (List[I] != Main)
+			{
+				Out.Add(UTF8_TO_TCHAR(SDL_GetDisplayName(List[I])));
+			}
+		}
+		SDL_free(List);
+	}
+#endif
+	return Out;
+}
+
+FIntPoint USlopGameInstance::ScreenSize() const
+{
+#if PLATFORM_LINUX
+	SDL_Rect B;
+	if (const SDL_DisplayID D = ChosenDisplay(Settings.Screen))
+	{
+		if (SDL_GetDisplayBounds(D, &B))
+		{
+			return FIntPoint(B.w, B.h);
+		}
+	}
+#endif
+	return FIntPoint::ZeroValue;
+}
+
+void USlopGameInstance::WarnOfSlowDisplay()
+{
+	// Many 4K TVs prefer 30 Hz over HDMI even when they offer 60, and it reads as a slow game.
+	const double Hz = DisplayRefresh();
+	if (!bWarnedSlowDisplay && Hz > 1.0 && Hz < 50.0 && Now() > WindowWatchUntil)
+	{
+		bWarnedSlowDisplay = true;
+		Notice(FText::Format(LOCTEXT("SlowDisplay", "This display is set to {0} Hz: choose 60 Hz in your system's display settings for smooth play"), FMath::RoundToInt(Hz)), 10.0);
 	}
 }
 
@@ -469,7 +628,7 @@ double USlopGameInstance::TargetFrameRate() const
 void USlopGameInstance::KeepWindowMode()
 {
 #if PLATFORM_LINUX
-	if (!bStarted || WindowRequests >= 3 || Now() < WindowCheckAt || Now() > StartedAt + 15.0 || !GEngine || !GEngine->GameViewport
+	if (!bStarted || WindowRequests >= 3 || Now() < WindowCheckAt || Now() > WindowWatchUntil || !GEngine || !GEngine->GameViewport
 		|| FSlateApplication::Get().IsRenderingOffScreen())
 	{
 		return;
@@ -481,8 +640,23 @@ void USlopGameInstance::KeepWindowMode()
 		return;
 	}
 	SDL_Window* H = static_cast<SDL_Window*>(W->GetNativeWindow()->GetOSWindowHandle());
-	const SDL_DisplayID Display = H ? SDL_GetDisplayForWindow(H) : 0;
+	SDL_DisplayID Display = H ? SDL_GetDisplayForWindow(H) : 0;
 	SDL_Rect B;
+	// The engine opens on the main display and goes full screen wherever the window stands, so
+	// another display is reached by taking the window there first.
+	const SDL_DisplayID Want = ChosenDisplay(Settings.Screen);
+	if (H && Display && Want && Want != Display && SDL_GetDisplayBounds(Want, &B))
+	{
+		++WindowRequests;
+		UE_LOG(LogSlop, Log, TEXT("Moving the game to %hs (%dx%d at %d,%d)"), SDL_GetDisplayName(Want), B.w, B.h, B.x, B.y);
+		SDL_SetWindowFullscreen(H, false);
+		SDL_SyncWindow(H);
+		SDL_SetWindowPosition(H, B.x + 32, B.y + 32);
+		SDL_SyncWindow(H);
+		SDL_SetWindowFullscreen(H, true);
+		SDL_SyncWindow(H);
+		Display = Want;
+	}
 	int X = 0, Y = 0, Wd = 0, Ht = 0;
 	if (!Display || !SDL_GetDisplayBounds(Display, &B) || !SDL_GetWindowPosition(H, &X, &Y) || !SDL_GetWindowSize(H, &Wd, &Ht))
 	{
@@ -516,6 +690,27 @@ void USlopGameInstance::Quit()
 	UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, false);
 }
 
+void USlopGameInstance::HoldRenderFloor()
+{
+	FVector2D Size;
+	if (!GEngine || !GEngine->GameViewport)
+	{
+		return;
+	}
+	GEngine->GameViewport->GetViewportSize(Size);
+	// Upscaling keeps the picture at 4K from less than half its height, and the output's own cost
+	// there leaves little for the scene: at the usual floor a mid-range card just misses 60.
+	const float Floor = Size.Y >= 2000.0 ? 45.f : 50.f;
+	if (Floor != RenderFloor)
+	{
+		RenderFloor = Floor;
+		if (IConsoleVariable* V = IConsoleManager::Get().FindConsoleVariable(TEXT("r.DynamicRes.MinScreenPercentage")))
+		{
+			V->Set(Floor, ECVF_SetByCode);
+		}
+	}
+}
+
 void USlopGameInstance::OnDeviceConnection(EInputDeviceConnectionState State, FPlatformUserId User, FInputDeviceId Device)
 {
 	const bool bConnected = State == EInputDeviceConnectionState::Connected;
@@ -524,7 +719,13 @@ void USlopGameInstance::OnDeviceConnection(EInputDeviceConnectionState State, FP
 		return;
 	}
 	// Only the pad that came or went loses what it held; everyone else's inputs carry on.
+	const Slop::EGlyphs Shown = Router->Glyphs();
 	Router->OnConnectionChanged(Device, bConnected);
+	// Prompts follow by themselves; a page that wrote the buttons into its text needs writing again.
+	if (Router->Glyphs() != Shown)
+	{
+		RebuildScreen();
+	}
 	Notice(bConnected ? LOCTEXT("PadOn", "Controller connected") : LOCTEXT("PadOff", "Controller disconnected"));
 	if (!bConnected && Match && !Match->IsPaused() && !Match->HasEnded())
 	{
@@ -567,6 +768,10 @@ void USlopGameInstance::DispatchUi()
 	}
 	for (const FUiEvent& E : Events)
 	{
+		if (CurtainThen)
+		{
+			break;
+		}
 		if (Overlay.IsValid())
 		{
 			Overlay->OnUi(E);
@@ -642,13 +847,42 @@ bool USlopGameInstance::Tick(float Dt)
 			FrameStats->Flush();
 		}
 	}
-	if (Screen.IsValid())
+	if (Audio)
 	{
-		Screen->Tick(Dt);
+		Audio->Tick(Dt, !Match || Match->HasEnded());
 	}
-	if (Overlay.IsValid())
+	HoldRenderFloor();
+	WarnOfSlowDisplay();
+	if (CurtainHold > 0)
 	{
-		Overlay->Tick(Dt);
+		--CurtainHold;
+	}
+	else
+	{
+		CurtainA = FMath::FInterpConstantTo(CurtainA, CurtainTarget, Dt, CurtainRate);
+		if (CurtainThen && CurtainA >= 1.f)
+		{
+			// Under full ink: whatever this loads is never seen arriving.
+			TFunction<void()> Then = MoveTemp(CurtainThen);
+			CurtainThen = nullptr;
+			Then();
+			Dt = 0.f;
+			CurtainHold = 3;
+			Curtain(1.f, 0.42f);
+		}
+	}
+	// A screen being left no longer runs: its timers (the continue countdown) must not act behind a
+	// choice already made.
+	if (!CurtainThen)
+	{
+		if (Screen.IsValid())
+		{
+			Screen->Tick(Dt);
+		}
+		if (Overlay.IsValid())
+		{
+			Overlay->Tick(Dt);
+		}
 	}
 #if !UE_BUILD_SHIPPING
 	if (Tour && Match && static_cast<FMoveTour*>(Tour)->Done() && ShotTicks.Num() == 0 && QuitAtSeconds < 0.0)
@@ -661,6 +895,28 @@ bool USlopGameInstance::Tick(float Dt)
 		Match->Views[0]->Anim.PoseOverride = Pose;
 		PoseCycleAt = Now() + 1.5;
 		UE_LOG(LogSlop, Log, TEXT("Pose: %s"), *Pose.ToString());
+	}
+	if (MoveCycle.Num() > 0 && Match && Now() >= MoveCycleAt)
+	{
+		Slop::FFighter& A = Match->Sim.Fighters[0];
+		Slop::FFighter& B = Match->Sim.Fighters[1];
+		if (A.IsActionable() && B.IsActionable())
+		{
+			if (bMoveCycleFlip && A.Facing > 0)
+			{
+				B.Pos.X = A.Pos.X - 0.8;
+				MoveCycleAt = Now() + 0.5;
+			}
+			else
+			{
+				B.Pos.X = A.Pos.X + A.Facing * 0.8;
+				if (const Slop::FMoveDef* M = A.Def->Move(MoveCycle[MoveCycleIndex++ % MoveCycle.Num()]))
+				{
+					A.StartMove(*M);
+				}
+				MoveCycleAt = Now() + 3.0;
+			}
+		}
 	}
 	for (int32 I = ExecAt.Num() - 1; I >= 0; --I)
 	{
@@ -849,7 +1105,7 @@ void USlopGameInstance::DevCommandLine()
 #if !UE_BUILD_SHIPPING
 	const TCHAR* Cmd = FCommandLine::Get();
 	// Development: -SlopSecret=<fighter> starts at the Grandmaster's challenge, as if <fighter> had
-	// just beaten the Slopbat without a continue (the face-off, the fight, the results and, won,
+	// just beaten the Fragment without a continue (the face-off, the fight, the results and, won,
 	// the unlock, saved to the profile in use).
 	FString SecretArg;
 	if (FParse::Value(Cmd, TEXT("SlopSecret="), SecretArg) && GetContent().Fighter(FName(*SecretArg)))
@@ -858,7 +1114,39 @@ void USlopGameInstance::DevCommandLine()
 		if (Flow.SecretEarned())
 		{
 			Flow.AddSecretRung();
-			Goto(SlopScreens::FaceOff());
+			StartMatch(true);
+		}
+	}
+	// Development: -SlopResults=p1,p2,mode,winner[,flawless][,finisher move] shows that result screen
+	// with no fight before it (versus, cpu, survival, tutorial; arcade only as a loss, since a win
+	// needs a running ladder).
+	FString ResultsArg;
+	if (FParse::Value(Cmd, TEXT("SlopResults="), ResultsArg, false))
+	{
+		TArray<FString> Parts;
+		ResultsArg.ParseIntoArray(Parts, TEXT(","));
+		if (Parts.Num() >= 4)
+		{
+			FMatchResult R;
+			R.P1 = FName(*Parts[0]);
+			R.P2 = FName(*Parts[1]);
+			const FString Mode = Parts[2];
+			R.Mode = Mode == TEXT("versus") ? EMode::Versus : Mode == TEXT("survival") ? EMode::Survival : Mode == TEXT("tutorial") ? EMode::Tutorial
+				: Mode == TEXT("arcade") ? EMode::Arcade : EMode::Cpu;
+			R.Winner = FCString::Atoi(*Parts[3]);
+			R.bFlawless = Parts.Contains(TEXT("flawless"));
+			if (Parts.Num() >= 5 && Parts.Last() != TEXT("flawless"))
+			{
+				R.Finisher = FName(*Parts.Last());
+			}
+			Flow.Config.P1 = R.P1;
+			Flow.Config.P2 = R.P2;
+			Flow.Config.Mode = R.Mode;
+			if (R.Mode == EMode::Survival)
+			{
+				Flow.StartSurvival(R.P1, 7);
+			}
+			Goto(SlopScreens::Results(R));
 		}
 	}
 	FString UnlockArg;
@@ -874,7 +1162,7 @@ void USlopGameInstance::DevCommandLine()
 	FString MatchArg;
 	if (FParse::Value(Cmd, TEXT("SlopMatch="), MatchArg, false))
 	{
-		// p1,p2,mode[,stage[,difficulty]]
+		// p1,p2,mode[,stage[,difficulty[,p1 outfit]]]
 		TArray<FString> Parts;
 		MatchArg.ParseIntoArray(Parts, TEXT(","));
 		if (Parts.Num() >= 3)
@@ -894,8 +1182,23 @@ void USlopGameInstance::DevCommandLine()
 			{
 				C.Difficulty = FCString::Atoi(*Parts[4]);
 			}
+			if (Parts.Num() >= 6)
+			{
+				C.Outfit[0] = FName(*Parts[5]);
+			}
 			StartMatch();
 		}
+	}
+	// Development: -SlopStoryFrom=<rung> starts Story mode at that fight, to reach its end quickly.
+	int32 StoryFrom = -1;
+	if (FParse::Value(Cmd, TEXT("SlopStoryFrom="), StoryFrom))
+	{
+		Flow.StartStory(1);
+		for (int32 I = 0; I < StoryFrom; ++I)
+		{
+			Flow.ArcadeAdvance(false, Now());
+		}
+		StartMatch(true);
 	}
 	FString TourArg;
 	if (FParse::Value(Cmd, TEXT("SlopTour="), TourArg))
@@ -986,6 +1289,19 @@ void USlopGameInstance::DevCommandLine()
 	if (FParse::Value(Cmd, TEXT("SlopShotEvery="), ShotEvery))
 	{
 		NextShotAt = Now() + ShotEvery;
+	}
+	// Development: -SlopMoveCycle=a,b plays those moves of P1's in turn from close in, to look at throws in motion.
+	FString MoveArg;
+	if (FParse::Value(Cmd, TEXT("SlopMoveCycle="), MoveArg, false))
+	{
+		TArray<FString> Parts;
+		MoveArg.ParseIntoArray(Parts, TEXT(","));
+		for (const FString& P : Parts)
+		{
+			MoveCycle.Add(FName(*P));
+		}
+		MoveCycleAt = Now() + 4.0;
+		bMoveCycleFlip = FParse::Param(Cmd, TEXT("SlopMoveCycleFlip"));
 	}
 	FString PoseArg;
 	if (FParse::Value(Cmd, TEXT("SlopPoses="), PoseArg, false))

@@ -71,8 +71,14 @@ namespace Slop
 		bool IsPadConnected(int32 Device) const;
 		FString PadName(int32 Device) const;
 		int32 ConnectedPadCount() const;
-		// The prompt style for what was used last (or what the setting forces).
+		// The buttons to show: what Settings chooses, or else a connected pad's own, whatever was
+		// pressed last; the keyboard's only with no pad at all.
 		EGlyphs Glyphs() const;
+		// The same for something only a pad has, such as its bindings: never the keyboard.
+		EGlyphs PadGlyphs() const;
+		// Sony renamed one button with the DualSense: older pads say Share on their face.
+		bool PadSaysShare() const;
+		static bool NameSaysShare(const FString& PadName);
 		// Whether anything has been pressed yet (a pad connected before launch is unknown until then).
 		bool AnyPressed() const { return bAnyPressed; }
 		int32 LastDevice() const { return LastUsed; }
@@ -119,6 +125,8 @@ namespace Slop
 		TArray<FUiEvent> Ui;
 		bool bCapturing = false;
 		TOptional<FCapture> Captured;
+		// The pad whose buttons to show: the one in use, or else the first connected; none is INDEX_NONE.
+		int32 ShownPad() const;
 		int32 LastUsed = 0;
 		// Nothing pressed yet: the prompts then show a connected pad's buttons, if there is one.
 		bool bAnyPressed = false;

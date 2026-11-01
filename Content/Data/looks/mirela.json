@@ -174,5 +174,6 @@
 			"brow": 0.35
 		}
 	},
-	"glow": "#9fd4ff"
+	"glow": "#9fd4ff",
+	"portrait_pose": "mirela_pray"
 }

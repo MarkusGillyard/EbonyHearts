@@ -1,0 +1,14 @@
+{
+	"rival": "gorm",
+	"home": "stilt_market",
+	"bio": "Captain of the Lantern Watch, keeper of Lowmere's peace with his fists and a hardwood baton. He has never once been told a thing was above his authority and believed it.",
+	"rival_lines": [
+		"Tallow. You're under arrest. Again.",
+		"You'll need a bigger cell."
+	],
+	"ending": [
+		"Captain Bram Ketch stood before the sovereign of the Sump, cleared his throat, and placed it under arrest for crimes against the town of Lowmere.",
+		"It did not resist. The Lantern Watch now holds a very large prisoner in a very small cell, and the prisoner has been, by all accounts, extremely well behaved.",
+		"Nobody has asked the Captain what happens when its sentence is up. He has not asked himself."
+	]
+}

@@ -34,6 +34,11 @@ public:
 	void Kick(const FVector& Dir, double Amount);
 	void SetOverride(const FVector& InPos, const FVector& InLook, double Weight = 1.0) { OverridePos = InPos; OverrideLook = InLook; OverrideTarget = Weight; }
 	void ClearOverride() { OverrideTarget = 0.0; }
+	// Puts the camera exactly here this frame (a staged shot, its own motion already smooth); after
+	// ClearOverride the springs carry it from here back to the live framing.
+	void Stage(const FVector& InPos, const FVector& InLook);
+	// How much of the fight's width a shot at this distance from the plane shows at this screen's shape.
+	double HalfWidthAt(double Distance) const;
 	// Depth of field behind the fighting plane, vignette and grain.
 	void SetLook(bool bHighGraphics, bool bPostFx, float ExposureEV100 = 0.f);
 	bool bShakeEnabled = true;

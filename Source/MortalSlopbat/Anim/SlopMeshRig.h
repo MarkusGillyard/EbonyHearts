@@ -30,6 +30,11 @@ namespace Slop::Anim
 		FTransform ComponentTransform(const FXf& Root, const FVector& WorldScale) const;
 		// Bone-space transforms for the whole skeleton from the solved rig.
 		void Pose(const FRig& Rig, TArray<FTransform>& OutLocal) const;
+		// After Pose: swings the mesh's loose chains (hair_<chain>_<link>, the Grandmaster's hair) in
+		// the world, so they trail the body. `Component` is where the mesh is this frame; a zero
+		// Delta holds them still (a freeze on a hit).
+		void SwingChains(const FRig& Rig, const FTransform& Component, double Delta, TArray<FTransform>& InOutLocal);
+		int32 NumChains() const { return Chains.Num(); }
 		int32 NumBones() const { return RefLocal.Num(); }
 		bool IsValid() const { return bValid; }
 		int32 NumHalfJoints() const { return HalfJoints.Num(); }
@@ -66,5 +71,14 @@ namespace Slop::Anim
 		// would pinch it.
 		struct FHalfJoint { int32 Bone; EJoint Upper; EJoint Lower; FVector TwistAxis; };
 		TArray<FHalfJoint> HalfJoints;
+		// A loose chain: its bones, top first, and one point in the world per bone plus the tip.
+		struct FChain
+		{
+			TArray<int32> Bones;
+			TArray<double> Lens;
+			TArray<FVector> Pos, Prev;
+			bool bLive = false;
+		};
+		TArray<FChain> Chains;
 	};
 }

@@ -152,17 +152,17 @@ namespace Slop
 			CloseUp(Mid, Face, 3.4, 0, 200);
 			if (T > 6 && T < 40 && (int32)T % 3 == 0)
 			{
-				Fx->BurstColor(A->Anim.StrikePoint(TEXT("hand_l")), FLinearColor(1.f, 0.55f, 0.15f), 6, 1.0, 0.4);
+				Fx->BurstColor(A->Anim.StrikePoint(TEXT("hand_l")), FLinearColor(1.f, 0.06f, 0.08f), 6, 1.0, 0.4);
 			}
 			if (Once(TEXT("ignite"), 40))
 			{
 				Audio->Play(TEXT("ignite"), 0.f);
-				Fx->FlashAt(VPos + FVector(0, 1.2, 0.3), FLinearColor(1.f, 0.6f, 0.2f), 40.f);
+				Fx->FlashAt(VPos + FVector(0, 1.2, 0.3), FLinearColor(1.f, 0.1f, 0.12f), 40.f);
 			}
 			if (T > 40)
 			{
 				V->SetTint(FLinearColor(0.05f, 0.035f, 0.03f), (float)FMath::Clamp((T - 40) / 70, 0.0, 1.0));
-				V->SetDissolve((float)FMath::Clamp((T - 85) / 90, 0.0, 1.0), FLinearColor(1.f, 0.45f, 0.1f));
+				V->SetDissolve((float)FMath::Clamp((T - 85) / 90, 0.0, 1.0), FLinearColor(1.f, 0.08f, 0.1f));
 				if ((int32)T % 4 == 0 && T < 190)
 				{
 					Fx->BurstColor(VPos + FVector(FMath::FRandRange(-0.2, 0.2), 0.3 + FMath::FRand() * 1.5, 0.2), FLinearColor(1.f, 0.5f, 0.15f), 14, 2.2, 0.7);
@@ -285,42 +285,25 @@ namespace Slop
 		}
 		else if (Id == TEXT("led_astray"))
 		{
-			// Wren opens her hand; the marsh-lights gather, string out into the dark behind her
-			// opponent, and lead them away into the fog until the last light winks out.
-			CloseUp(Mid, Face, 4.8, 0, 236);
-			const FVector Palm = A->Anim.StrikePoint(TEXT("hand_l"));
-			if (T > 12 && T < 70 && (int32)T % 4 == 0)
+			// Punt, what her fans named her for: a step, the kick, and her opponent leaves the world.
+			CloseUp(Mid, Face, 4.2, 0, 150);
+			const double Dir = VPos.X >= Mid.X ? 1.0 : -1.0;
+			if (Once(TEXT("kick"), 36))
 			{
-				Fx->BurstColor(Palm, FLinearColor(0.37f, 0.95f, 0.84f), 3, 0.6, 0.6);
+				Audio->Play(TEXT("burst"), 0.f, 0.7f);
+				Audio->Play(TEXT("far_whoosh"), -6.f, 1.2f);
+				Fx->BloodAt(VPos + FVector(0.0, 1.5 * VF.Scale(), 0.1), Dir, 2.5);
 			}
-			if (Once(TEXT("chime"), 14))
+			if (T > 36)
 			{
-				Audio->Play(TEXT("bell"), -8.f, 1.6f);
+				const double U = EaseRange(36, 120, T);
+				VA.PoseOverride = TEXT("air_hit");
+				VA.LiftExtra = FVector(Dir * 18.0 * U, 9.0 * FMath::Sin(U * UE_DOUBLE_PI), -5.0 * U);
 			}
-			const double Away = 7.0 * EaseRange(70, 215, T);
-			if (T > 40 && T < 220 && (int32)T % 5 == 0)
-			{
-				// The lights ahead of them, always a little further off.
-				for (int32 I = 1; I <= 3; ++I)
-				{
-					Fx->BurstColor(VPos + FVector(-Face * 0.15 * I, 1.1 + 0.15 * FMath::Sin(T * 0.08 + I), -Away - 0.9 * I), FLinearColor(0.37f, 0.95f, 0.84f), 2, 0.3, 0.7);
-				}
-			}
-			if (T > 50)
-			{
-				VA.PoseOverride = TEXT("dazed");
-				VA.LiftExtra = FVector(-Face * 0.3 * EaseRange(70, 215, T), 0, -Away);
-				V->SetTint(FLinearColor(0.01f, 0.015f, 0.02f), (float)(0.75 * EaseRange(90, 215, T)));
-			}
-			if (Once(TEXT("follow"), 70))
-			{
-				Audio->Play(TEXT("far_whoosh"), -8.f, 0.8f);
-			}
-			if (Once(TEXT("gone"), 216))
+			if (Once(TEXT("gone"), 120))
 			{
 				V->SetHidden(true);
-				Audio->Play(TEXT("splash"), -10.f, 0.7f);
-				Audio->Play(TEXT("bell"), -12.f, 1.9f);
+				Audio->Play(TEXT("bell"), -12.f, 1.5f);
 			}
 		}
 		else if (Id == TEXT("still_water"))
@@ -477,7 +460,7 @@ namespace Slop
 		}
 	}
 
-	// The Slopbat's defeat: it blackens into slop and sinks into its pool.
+	// The Fragment's defeat: it blackens and sinks into its pool.
 	void FFinisherDirector::BossStep(double Delta)
 	{
 		if (BossT < 0)

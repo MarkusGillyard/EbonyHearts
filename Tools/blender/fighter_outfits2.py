@@ -1,4 +1,4 @@
-"""Outfits for Nix, Mirela, Bram, Hollis, the Slopbat and Daxion (see fighter_outfits for Ashka
+"""Outfits for Nix, Mirela, Bram, Hollis, the Fragment and Daxion (see fighter_outfits for Ashka
 and Gorm, fighter_wardrobe for the garment library). Registered into fighter_outfits.BUILDERS."""
 import math
 
@@ -69,8 +69,8 @@ def top_with_sleeves(ctx, key, surface, z_bottom, sleeve_t, offset, flare=0.0, f
             c[m] += radial[m] * amt[m, None]
         geo.set_co(ob, c)
 
-    return wd.field_shell(ctx, key, surface, sel, offset * s, wd.f_and(*fields), smooth=smooth, gap=gap,
-                          thickness=thickness, extra=shape)
+    return wd.field_shell(ctx, key, surface, sel, offset if callable(offset) else offset * s, wd.f_and(*fields), smooth=smooth,
+                          gap=gap, thickness=thickness, extra=shape)
 
 
 def side_mask_pts(c, side):
@@ -289,7 +289,7 @@ def nix(ctx):
         geo.transfer_weights(ctx.body, strap)
         geo.solidify(strap, 0.004 * s, 1.0)
         ctx.add("crossstrap%d" % k, strap, "wrap_dark", collide=False)
-    # slop-green sash, knot at the left hip, two tails
+    # lime-green sash, knot at the left hip, two tails
     band(ctx, "sash", "sash", 0.553 * H, 0.587 * H, 0.03, gap=0.01, thickness=0.006)
     coll = ctx.collider()
     kx = 0.11 * s
@@ -355,6 +355,7 @@ def nix(ctx):
 
 
 # ============================================================================ Mirela
+    code_sea(ctx)
 
 def gigot(ctx, ob, amount, folds=0.0, t_peak=0.3):
     """Leg-of-mutton sleeves on a finished top: the upper sleeve puffed out round the upper-arm
@@ -540,18 +541,22 @@ def bram(ctx):
     hf = wd.head_frame(ctx)
     hc = hf["c"]
     nb, nt = ctx.head("neck_01"), ctx.head("head")
+    coated = ctx.cfg.get("wardrobe", "uniform") == "uniform"
     leg_shell(ctx, "trousers", "trousers", 0.55 * H, 0.12 * H, 0.016, folds=0.004)
     boots(ctx, "boots", "sole", 0.25, ctx.cfg.get("sole_m", 0.025))
-    top_with_sleeves(ctx, "coat", "coat", 0.50 * H, 0.95, 0.014, smooth=10, folds=0.002)
-    wd.wrap_skirt(ctx, "coat_tails", "coat", 0.565 * H, 0.29 * H, open_frac=0.12, gap=0.016, flare=0.05,
-                  folds=(0.006, 7), slit_z=0.45 * H, share=(0.85, 0.5, 0.2), thickness=0.005)
+    if coated:
+        top_with_sleeves(ctx, "coat", "coat", 0.50 * H, 0.95, 0.014, smooth=10, folds=0.002)
+        wd.wrap_skirt(ctx, "coat_tails", "coat", 0.565 * H, 0.29 * H, open_frac=0.12, gap=0.016, flare=0.05,
+                      folds=(0.006, 7), slit_z=0.45 * H, share=(0.85, 0.5, 0.2), thickness=0.005)
+    else:
+        undershirt(ctx)
     band(ctx, "belt", "belt", 0.548 * H, 0.578 * H, 0.03, gap=0.008, thickness=0.006)
     coll = ctx.collider()
     yb = ctx.ray_front(0.0, 0.563 * H, coll)
     wd.box_part(ctx, "buckle", "brass", (0, yb - 0.006 * s, 0.563 * H), (0.05 * s, 0.038 * s, 0.01 * s), axis=(0, -1, 0),
                 hint=(1, 0, 0), rigid="pelvis")
     # double-breasted: two columns of brass buttons
-    for col in (-1, 1):
+    for col in (-1, 1) if coated else ():
         for k in range(4):
             zz = 0.735 * H - k * 0.042 * H
             x = col * (0.05 * s + 0.004 * s * k)
@@ -562,8 +567,9 @@ def bram(ctx):
                           (x, y + 0.001 * s, zz), (0, -1, 0), 8, rigid="spine_02" if zz < 0.70 * H else "spine_03")
     # stand collar, epaulettes, dark cuffs
     nk = ctx.w("neck_01", "spine_03", "clavicle_l", "clavicle_r") > 0.3
-    wd.ring_band(ctx, "collar", "coat_dark", nk & (z > nb[2] - 0.05 * s), nb, nt, [0.02, 0.2, 0.42], [0.016, 0.018, 0.016])
-    for side in ("l", "r"):
+    if coated:
+        wd.ring_band(ctx, "collar", "coat_dark", nk & (z > nb[2] - 0.05 * s), nb, nt, [0.02, 0.2, 0.42], [0.016, 0.018, 0.016])
+    for side in ("l", "r") if coated else ():
         sh = ctx.head("upperarm_" + side)
         cl = ctx.head("clavicle_" + side)
         top = np.array([sh[0] * 0.92, sh[1], sh[2] + 0.045 * s])
@@ -595,6 +601,33 @@ def bram(ctx):
                                                 np.array([lc[0] - 0.04 * s, lc[1], 0.555 * H])], 0.003 * s, 5, rigid="pelvis")
 
 
+def code_sea(ctx):
+    """Code Sea sheathed across his back, the hilt over his left shoulder, for his left hand: a jet-black
+    scabbard with lines of lime-green water along it. The hilt has a slot of its own, so the game can put
+    it away while the blade is out (ASlopFighterActor)."""
+    s, H = ctx.s, ctx.H
+    coll = ctx.collider()
+    x0, z0, x1, z1 = 0.17 * s, 0.875 * H, -0.18 * s, 0.57 * H            # hilt end, tip end
+    pts = []
+    for f in np.linspace(0.0, 1.0, 12):
+        x, z = x0 + (x1 - x0) * f, z0 + (z1 - z0) * f
+        loc, _, _, _ = coll.tree.ray_cast(Vector((x, 1.0, z)), Vector((0, -1, 0)))
+        pts.append(np.array([x, (loc[1] if loc is not None else ctx.head("spine_03")[1] + 0.1 * s) + 0.01 * s, z]))
+    pts = np.array(pts)
+    # straight, a sword does not bend round a back: the line that just clears it
+    half = len(pts) // 2
+    pts[:, 1] = np.linspace(pts[:half, 1].max(), pts[half:, 1].max(), len(pts))
+    wd.tube_part(ctx, "code_sea_scabbard", "code_sea", pts, 0.017 * s, 10, rigid="spine_03")
+    across = np.array([0.68, 0.0, 0.73])
+    for k, off in enumerate((-0.012, 0.012)):
+        wd.tube_part(ctx, "code_sea_line%d" % k, "code_sea_water", pts + np.array([0.0, 0.015 * s, 0.0]) + across * off * s, 0.0028 * s, 5, rigid="spine_03")
+    axis = (pts[0] - pts[-1]) / np.linalg.norm(pts[0] - pts[-1])
+    hilt = np.array([pts[0] + axis * f * s for f in (0.0, 0.1, 0.27)])
+    wd.lathe_part(ctx, "code_sea_guard", "hilt", [(0, -0.004 * s), (0.04 * s, -0.004 * s), (0.04 * s, 0.004 * s), (0, 0.004 * s)], hilt[0], axis, 12, rigid="spine_03")
+    wd.tube_part(ctx, "code_sea_grip", "hilt", hilt, 0.0155 * s, 10, rigid="spine_03")
+    wd.tube_part(ctx, "code_sea_grip_line", "hilt_water", hilt + np.array([0.0, 0.014 * s, 0.0]), 0.0024 * s, 5, rigid="spine_03")
+
+
 def mutton_chops(ctx, hf):
     """Two fur shells over the jaw, cheeks and upper lip: a dense core 3 mm off the skin and
     sparse outer strands 9 mm off it, cut along an outline in (angle round the head, height)
@@ -613,9 +646,10 @@ def mutton_chops(ctx, hf):
         A, dz = coords(c)
         top = np.where(A >= 70, -0.002, np.where(A >= 20, -0.056 + (A - 20) / 50 * 0.054, -0.060 + A / 20 * 0.004))
         # moustache over the upper lip, joined to the chops at the mouth corners; below that the
-        # chops' front edge runs from the mouth corner back to the jaw angle (chin and jaw front clear)
+        # chops' front edge runs from the mouth corner back to the jaw angle (chin and jaw front clear),
+        # and they end along the jaw, narrowing up to the sideburn in front of the ear
         bot = np.where(A < 14, -0.083, np.where(A < 30, -0.083 - (A - 14) / 16 * 0.02,
-                                                np.where(A < 55, -0.103 - (A - 30) / 25 * 0.1, -0.2)))
+                                                np.where(A < 60, -0.103 - (A - 30) / 30 * 0.03, -0.133 + (A - 60) / 24 * 0.05)))
         return np.minimum(np.minimum(top - dz, dz - bot) * s, np.radians(84 - A) * r0)
 
     A, _ = coords(V)
@@ -640,6 +674,28 @@ def mutton_chops(ctx, hf):
         me.uv_layers.active.data.foreach_set("uv", np.clip(uv, 0, 1).ravel())
         rad = float(np.mean(np.hypot(c[:, 0] - hc[0], c[:, 1] - hc[1])))
         ob["uv_span_m"] = [np.radians(2 * a_max) * rad, z_hi - z_lo]   # metres across u and v (for the texture)
+
+
+def undershirt(ctx):
+    """Bram with his coat off (an outfit, so his shoulder and its tattoo can be seen): a sleeveless undershirt
+    tucked under the belt, a round neck, the arms bare."""
+    H, s, V = ctx.H, ctx.s, ctx.V
+    z = V[:, 2]
+    nb, sh = ctx.head("neck_01"), ctx.head("upperarm_l")
+    x_strap = abs(sh[0]) * 0.8
+    z_top, z_pit = sh[2] + 0.07 * s, sh[2] - 0.11 * s
+    z_bottom = 0.54 * H
+
+    def cut(c):
+        x, zz = np.abs(c[:, 0]), c[:, 2]
+        t = np.clip((z_top - zz) / (z_top - z_pit), 0.0, 1.5)
+        hole = x_strap + 0.2 * s * t ** 3 - x
+        neck = np.hypot(x / 0.095 / s, (zz - nb[2]) / 0.1 / s) - 1.0
+        return np.minimum(np.minimum(hole, neck), zz - z_bottom)
+
+    sel = (ctx.arm_w < 0.75) & (ctx.w("head") < 0.01) & (z >= z_bottom - 0.03 * s)
+    wd.field_shell(ctx, "undershirt", "undershirt", sel, 0.006 * s, cut, smooth=14, gap=0.004, thickness=0.003,
+                   collider=geo.Collider([ctx.body]))
 
 
 def flush_mask(ctx, hf):
@@ -803,7 +859,7 @@ def hollis(ctx):
                   bstart, -pn, 8, rigid="hand_r")
 
 
-# ============================================================================ the Slopbat
+# ============================================================================ the Fragment
 
 def add_wing_bones(ctx):
     """Extra bones for the folded wings, under the clavicles; the 53 standard bones are untouched."""

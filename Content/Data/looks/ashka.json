@@ -83,5 +83,7 @@
 			"brow": 0.5
 		}
 	},
-	"glow": "#ff8a2a"
+	"glow": "#e8141f",
+	"marks_glow": true,
+	"portrait_pose": "intro"
 }

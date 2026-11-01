@@ -1,0 +1,14 @@
+{
+	"rival": "bram",
+	"home": "rendering_yards",
+	"bio": "Master of the rendering vats of Tallowmarket. Gentle until he is not. If the flood takes the yards, it takes his workers with them.",
+	"rival_lines": [
+		"I didn't start that fire, Captain.",
+		"Then you'll not mind coming quietly."
+	],
+	"ending": [
+		"Gorm asked only that the flood spare Tallowmarket. The Fragment agreed, and Gorm rendered a single candle from what it shed.",
+		"The candle never burns down. He carried it to the Lantern Watch house and set it on Captain Ketch's desk without a word.",
+		"Bram Ketch has not tried to arrest him since. The yards are quiet for a season, and the vats, for once, are cold."
+	]
+}

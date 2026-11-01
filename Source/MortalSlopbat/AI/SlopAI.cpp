@@ -844,6 +844,13 @@ namespace Slop
 			WalkT = 10;
 			return;
 		}
+		// A fighter with an aura calls it when there is room to.
+		const FString Aura = Json::Str(Ai, TEXT("buff"));
+		if (!Aura.IsEmpty() && !M.BuffWait && M.Buff.IsNone() && Dist > 2.0 && Rng.FRand() < 0.12)
+		{
+			Intent.Command(Aura);
+			return;
+		}
 		// A zoner fires from its own range (fighter AI "zone_from"); the others only from afar.
 		if (Dist > Json::Num(Ai, TEXT("zone_from"), 3.4) && Dist <= 3.4)
 		{
@@ -1463,15 +1470,17 @@ namespace Slop
 		DiveCd = L.DiveCd / 2;
 	}
 
-	static const TCHAR* const BossTar = TEXT("D,F+HP");
-	static const TCHAR* const BossGust = TEXT("B,F+HK");
+	static const TCHAR* const BossOrb = TEXT("D,F+HP");
+	static const TCHAR* const BossTide = TEXT("B,F+HK");
+	static const TCHAR* const BossSeal = TEXT("D,D+HP");
+	static const TCHAR* const BossLance = TEXT("F,B+HP");
 	static const TCHAR* const BossBite = TEXT("F,F+LP");
 
 	void FBossBrain::Do(const TCHAR* Command)
 	{
 		Intent.Command(Command);
 		LastCommand = Command;
-		if (LastCommand == BossTar || LastCommand == BossGust)
+		if (LastCommand == BossOrb || LastCommand == BossTide || LastCommand == BossSeal || LastCommand == BossLance)
 		{
 			RangedCd = L.RangedCd + Rng.RandRange(0, 45);
 		}
@@ -1547,13 +1556,25 @@ namespace Slop
 			return Intent.Next(M.Facing);
 		}
 		const double R = Rng.FRand();
-		// Tar and wind keep its distance, but each is followed by a wait and neither comes twice
-		// running: meanwhile it walks in, so a gust that drove the opponent off is followed up.
+		// Each form brings more of the Ebony Energy, every piece of it slow to arrive and clear to
+		// read: water holds the Tide; energy adds the Orb and the Seal; Ebony adds the Lance. Each
+		// is followed by a wait and none comes twice running, and meanwhile it flows in.
 		const auto CanFire = [this](const TCHAR* Command) { return RangedCd <= 0 && LastCommand != Command; };
 		if (Dist > 1.5)
 		{
 			const bool bFar = Dist > 3.2;
-			const TCHAR* Pick = R < (bFar ? 0.45 : 0.3) ? BossTar : (R < (bFar ? 0.65 : 0.5) ? BossGust : nullptr);
+			TArray<const TCHAR*, TInlineAllocator<4>> Ready;
+			Ready.Add(BossTide);
+			if (M.BossForm >= 1)
+			{
+				Ready.Add(BossOrb);
+				Ready.Add(BossSeal);
+			}
+			if (M.BossForm >= 2)
+			{
+				Ready.Add(BossLance);
+			}
+			const TCHAR* Pick = R < (bFar ? 0.65 : 0.5) ? Ready[Rng.RandRange(0, Ready.Num() - 1)] : nullptr;
 			if (Pick && CanFire(Pick)) Do(Pick);
 			else { Walk = 6; WalkT = bFar ? Rng.RandRange(20, 40) : Rng.RandRange(12, 26); }
 		}
@@ -1562,10 +1583,114 @@ namespace Slop
 			if (R < 0.18 && BiteCd <= 0) Do(BossBite);
 			else if (R < 0.55) { Do(TEXT("HP")); Intent.Hold(5, 9); Intent.Command(TEXT("HP")); }
 			else if (R < 0.75) Do(TEXT("D+LK"));
-			else if (R < 0.85 && CanFire(BossGust)) Do(BossGust);
+			else if (R < 0.85 && CanFire(BossTide)) Do(BossTide);
 			else { Walk = 4; WalkT = Rng.RandRange(10, 20); }
 		}
 		return Intent.Busy() ? Intent.Next(M.Facing) : FPadIntent::Pad(5, M.Facing);
+	}
+
+	// --- Hollis ---------------------------------------------------------------------------------------------
+
+	FGuardianBrain::FGuardianBrain(FFightSim& InSim, int32 InIndex, int32 Difficulty) : Sim(InSim), Index(InIndex)
+	{
+		static const int32 Rests[] = {100, 62, 40};
+		static const double Guards[] = {0.3, 0.6, 0.85};
+		RestBase = Rests[FMath::Clamp(Difficulty, 0, 2)];
+		GuardChance = Guards[FMath::Clamp(Difficulty, 0, 2)];
+		Rng.Initialize(9191 + Difficulty);
+	}
+
+	void FGuardianBrain::Sequence(std::initializer_list<const TCHAR*> Commands, int32 Gap)
+	{
+		bool bFirst = true;
+		for (const TCHAR* C : Commands)
+		{
+			if (!bFirst)
+			{
+				Intent.Hold(5, Gap);
+			}
+			Intent.Command(C);
+			bFirst = false;
+		}
+	}
+
+	FPadState FGuardianBrain::Think()
+	{
+		FFighter& M = Sim.Fighters[Index];
+		const FFighter& O = Sim.Fighters[1 - Index];
+		if (!Sim.CanAct())
+		{
+			Intent.Clear();
+			return FPadState();
+		}
+		if (Intent.Busy())
+		{
+			return Intent.Next(M.Facing);
+		}
+		// A sequence that has caught someone goes on by itself; one blocked stops, and he pays for it.
+		if (M.State == EState::Move && M.Move && M.Move->Id.ToString().StartsWith(TEXT("reckoning")) && M.MoveContact == TEXT("hit"))
+		{
+			return FPadIntent::Pad(5, M.Facing, BtnHP);
+		}
+		if (!M.IsActionable())
+		{
+			return FPadState();
+		}
+		const double Dist = FMath::Abs(O.Pos.X - M.Pos.X);
+		// A blow coming at him: decided once for each, and held at its height until it is over.
+		const FMoveDef* Blow = O.State == EState::Move ? O.Move : nullptr;
+		if (Blow != Seen)
+		{
+			Seen = Blow;
+			bGuarding = Blow && Dist < 3.0 && Rng.FRand() < GuardChance;
+		}
+		if (bGuarding && Blow)
+		{
+			return FPadIntent::Pad(Blow->Level == ELevel::Low ? 2 : 5, M.Facing, 0, BtnBL);
+		}
+		if (--Rest > 0)
+		{
+			// He walks in, unhurried.
+			return FPadIntent::Pad(Dist > 1.5 ? 6 : 5, M.Facing);
+		}
+		Rest = RestBase + Rng.RandRange(0, RestBase / 2);
+		const double R = Rng.FRand();
+		if (Dist < 1.1 && Rng.FRand() < GuardChance * 0.5)
+		{
+			// Whoever only guards against his sequences is taken hold of (the throw can be broken).
+			Intent.Command(TEXT("F+LP"));
+		}
+		else if (Dist < 2.2)
+		{
+			if (R < 0.5)
+			{
+				Sequence({TEXT("F,F+HP"), TEXT("HP"), TEXT("HP"), TEXT("HK")}, 12);
+			}
+			else if (R < 0.8)
+			{
+				Intent.Command(TEXT("B,F+HP"));
+			}
+			else
+			{
+				Sequence({TEXT("D,F+HK"), TEXT("HP"), TEXT("HK")}, 18);
+			}
+		}
+		else if (Dist < 4.6)
+		{
+			if (R < 0.6)
+			{
+				Sequence({TEXT("D,F+HK"), TEXT("HP"), TEXT("HK")}, 18);
+			}
+			else
+			{
+				Intent.Command(TEXT("B,F+LP"));
+			}
+		}
+		else
+		{
+			Intent.Command(R < 0.5 ? TEXT("D,D+HK") : TEXT("B,F+LP"));
+		}
+		return Intent.Next(M.Facing);
 	}
 
 	// --- Training dummy --------------------------------------------------------------------------------------

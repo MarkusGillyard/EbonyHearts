@@ -48,14 +48,20 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 	Sim.Setup(D1, D2);
 	if ((M == EMode::Arcade || M == EMode::Survival) && Config.P2Health > 0)
 	{
-		// The arcade sets the Slopbat's health by tower.
+		// The arcade sets the bosses' health by tower.
 		Sim.Fighters[1].HealthMax = Config.P2Health;
 		Sim.Fighters[1].Health = Config.P2Health;
+		Sim.Fighters[1].bGuardian = Config.bGuardian;
+		Sim.Fighters[1].bVessel = Config.GuardianPhase == 2;
+		Sim.Fighters[1].bNoVessel = Config.GuardianPhase == 1;
+		Sim.Fighters[1].NextCharge = 120;
 	}
 	if (M == EMode::Survival && Config.P1Health > 0)
 	{
 		Sim.Fighters[0].Health = FMath::Min(Sim.Fighters[0].MaxHealth(), Config.P1Health);
 	}
+	Sim.Fighters[0].OutfitBody = Config.Outfit[0];
+	Sim.Fighters[1].OutfitBody = Config.Outfit[1];
 	UWorld* W = GetWorld();
 	FActorSpawnParameters P;
 	P.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -65,7 +71,7 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 	for (int32 I = 0; I < 2; ++I)
 	{
 		Views[I] = W->SpawnActor<ASlopFighterActor>(P);
-		if (!Views[I]->Setup(Sim.Fighters[I], USlopGameInstance::MeshFor(Sim.Fighters[I].Def->Body)))
+		if (!Views[I]->Setup(Sim.Fighters[I], USlopGameInstance::MeshFor(Sim.Fighters[I])))
 		{
 			return false;
 		}
@@ -101,6 +107,17 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 				F.Qhi = FMath::Clamp(StartQhi, 0.0, F.QhiRules().Max);
 				F.QhiIdle = 0;
 			}
+		}
+	}
+	// Development: -SlopHealth=<n> gives both fighters that much health every round, to reach a match's
+	// end quickly (the finish, the finisher's call, the results).
+	int32 StartHealth = 0;
+	if (FParse::Value(FCommandLine::Get(), TEXT("SlopHealth="), StartHealth) && StartHealth > 0)
+	{
+		for (FFighter& F : Sim.Fighters)
+		{
+			F.HealthMax = StartHealth;
+			F.Health = StartHealth;
 		}
 	}
 	// Development: -SlopMarks=<0..1> starts both fighters as beaten as that on head, body and legs
@@ -141,6 +158,10 @@ bool ASlopMatch::Start(const FMatchConfig& InConfig)
 				if (Sim.Fighters[I].Def->bBoss)
 				{
 					Brains[I] = MakeUnique<FBossBrain>(Sim, I, Diff);
+				}
+				else if (Sim.Fighters[I].bGuardian)
+				{
+					Brains[I] = MakeUnique<FGuardianBrain>(Sim, I, Diff);
 				}
 				else
 				{
@@ -232,6 +253,148 @@ void ASlopMatch::SetPaused(bool bPause)
 	GI()->Audio->PauseMusic(bPause);
 }
 
+void ASlopMatch::BeginPrelude(bool bShort, bool bWords)
+{
+	if (!Sim.bIntro || Sim.Phase != EPhase::Intro)
+	{
+		return;
+	}
+	bPreludeShort = bShort;
+	PreludeT = 0.0;
+	PreludeBoth = bWords ? 3.4 : 1.25;
+	Prelude = bShort ? EPrelude::Both : EPrelude::Ground;
+	bPreludeCalled[0] = bPreludeCalled[1] = false;
+	// Held longer than any beat can run; the prelude's end releases it.
+	Sim.IntroHold = 60 * 60;
+	if (!bShort)
+	{
+		// Each stands ready until their shot, and then gives their performance.
+		for (FFighter& F : Sim.Fighters)
+		{
+			F.SetState(EState::Idle);
+		}
+	}
+	PreludeStep(0.0);
+}
+
+void ASlopMatch::SkipPrelude()
+{
+	if (InPrelude())
+	{
+		Prelude = EPrelude::None;
+		bHandingOver = true;
+		Sim.EndIntro();
+		Camera->ClearOverride();
+		GI()->Router->bFightActive = !bPaused;
+	}
+}
+
+// The shots, in the simulation's metres. Every beat drifts, so nothing on screen is ever still, and
+// the camera travels between fighters rather than cutting: one unbroken move from the first shot to
+// the live framing, which is what lets the fight begin without a scene change.
+void ASlopMatch::PreludeStep(double Delta)
+{
+	PreludeT += Delta;
+	const FFighter& A = Sim.Fighters[0];
+	const FFighter& B = Sim.Fighters[1];
+	const double Mid = (A.Pos.X + B.Pos.X) * 0.5;
+	const double Sep = FMath::Abs(B.Pos.X - A.Pos.X);
+	// A fighter's head and shoulders, the camera out on the side they face.
+	const auto Close = [](const FFighter& F, double K, FVector& Pos, FVector& Look)
+	{
+		const double H = F.Def->Height;
+		Look = FVector(F.Pos.X + 0.1 * F.Facing, F.Pos.Y + H * 0.86, 0.0);
+		Pos = Look + FVector(FMath::Lerp(0.95, 0.72, K) * F.Facing, FMath::Lerp(-0.1, -0.04, K), FMath::Lerp(2.45, 2.05, K) * FMath::Max(1.0, H / 1.8));
+	};
+	// Both, wide enough for this screen's shape, from low down.
+	const double BothDist = FMath::Max(4.6, (Sep * 0.5 + 0.85) / (Camera->HalfWidthAt(1.0)));
+	const auto Pair = [&](double K, FVector& Pos, FVector& Look)
+	{
+		Look = FVector(Mid, 1.02, 0.0);
+		Pos = Look + FVector(0.0, FMath::Lerp(-0.42, -0.28, K), FMath::Lerp(BothDist + 0.5, BothDist, K));
+	};
+	const auto Sweep = [](const FVector& P0, const FVector& L0, const FVector& P1, const FVector& L1, double K, FVector& Pos, FVector& Look)
+	{
+		const double E = Anim::FPose::Ease(TEXT("inout"), FMath::Clamp(K, 0.0, 1.0));
+		Pos = FMath::Lerp(P0, P1, E);
+		Look = FMath::Lerp(L0, L1, E);
+	};
+	const double Rise = 0.75, One = 1.15, Over = 0.42, Close2 = 0.55;
+	FVector Pos, Look, P0, L0, P1, L1;
+	double T = PreludeT;
+	if (bPreludeShort)
+	{
+		// The ground's wide view coming down onto the two of them.
+		const double K = T / 0.7;
+		Pair(0.0, P1, L1);
+		Sweep(P1 + FVector(0.0, 1.0, 1.6), L1 + FVector(0.0, 0.3, 0.0), P1, L1, K, Pos, Look);
+		if (T >= 0.7)
+		{
+			Pair((T - 0.7) / 1.0, Pos, Look);
+		}
+		Prelude = EPrelude::Both;
+		if (T >= 1.7)
+		{
+			SkipPrelude();
+			return;
+		}
+		Camera->Stage(Pos, Look);
+		return;
+	}
+	const FVector Wide = FVector(Mid + A.Facing * -1.9, 1.7, 7.0);
+	if (T < Rise)
+	{
+		Prelude = EPrelude::Ground;
+		Close(A, 0.0, P1, L1);
+		Sweep(Wide, FVector(Mid - A.Facing * 0.9, 1.3, 0.0), P1, L1, FMath::Pow(T / Rise, 1.4), Pos, Look);
+	}
+	else if ((T -= Rise) < One)
+	{
+		Prelude = EPrelude::First;
+		Close(A, T / One, Pos, Look);
+		if (!bPreludeCalled[0])
+		{
+			bPreludeCalled[0] = true;
+			Sim.Fighters[0].SetState(EState::Intro);
+		}
+	}
+	else if ((T -= One) < Over)
+	{
+		Prelude = EPrelude::Second;
+		Close(A, 1.0, P0, L0);
+		Close(B, 0.0, P1, L1);
+		Sweep(P0, L0, P1, L1, T / Over, Pos, Look);
+		if (!bPreludeCalled[1])
+		{
+			bPreludeCalled[1] = true;
+			Sim.Fighters[1].SetState(EState::Intro);
+		}
+	}
+	else if ((T -= Over) < One)
+	{
+		Prelude = EPrelude::Second;
+		Close(B, T / One, Pos, Look);
+	}
+	else if ((T -= One) < Close2)
+	{
+		Prelude = EPrelude::Both;
+		Close(B, 1.0, P0, L0);
+		Pair(0.0, P1, L1);
+		Sweep(P0, L0, P1, L1, T / Close2, Pos, Look);
+	}
+	else if ((T -= Close2) < PreludeBoth)
+	{
+		Prelude = EPrelude::Both;
+		Pair(T / PreludeBoth, Pos, Look);
+	}
+	else
+	{
+		SkipPrelude();
+		return;
+	}
+	Camera->Stage(Pos, Look);
+}
+
 void ASlopMatch::ResetPositions()
 {
 	Advantage.Reset();
@@ -257,6 +420,14 @@ void ASlopMatch::ResetPositions()
 
 void ASlopMatch::Tick(float DeltaSeconds)
 {
+	if (CineT > 0.0)
+	{
+		CineT -= DeltaSeconds;
+		if (CineT <= 0.0 && Camera)
+		{
+			Camera->ReleaseZoom();
+		}
+	}
 	Super::Tick(DeltaSeconds);
 	FrameEvents.Reset();
 	SteppedThisFrame = 0;
@@ -296,7 +467,26 @@ void ASlopMatch::Tick(float DeltaSeconds)
 			Views[I]->SetDissolve(FormFade[I], FLinearColor(1.f, 0.78f, 0.3f));
 		}
 	}
-	Camera->Step(bPaused ? 0.0 : DeltaSeconds);
+	if (InPrelude())
+	{
+		PreludeStep(bFrozen ? 0.0 : DeltaSeconds);
+	}
+	else
+	{
+		Camera->Step(bPaused ? 0.0 : DeltaSeconds);
+	}
+	if (Sim.RoundNum != ShownRound)
+	{
+		// Both bodies have just been put back at their marks: the camera goes straight there, under
+		// a moment's dark, rather than whipping across the stage.
+		ShownRound = Sim.RoundNum;
+		for (ASlopFighterActor* V : Views)
+		{
+			V->SyncFromSim(true);
+		}
+		Camera->Snap();
+		GI()->Curtain(0.85f, 0.4f);
+	}
 #if !UE_BUILD_SHIPPING
 	// Development: -SlopTraceCam logs both fighters and the camera every 6 ticks.
 	static const bool bTraceCam = FParse::Param(FCommandLine::Get(), TEXT("SlopTraceCam"));
@@ -525,6 +715,14 @@ void ASlopMatch::HandleEvent(const FSimEvent& E)
 	case EEvent::Armor:
 		Camera->AddShake(0.012);
 		break;
+	case EEvent::BossCue:
+		Camera->AddShake(E.Kind == TEXT("cine") ? 0.012 : 0.03);
+		if (E.Kind == TEXT("cine"))
+		{
+			Camera->PunchIn(0.34, E.Who);
+			CineT = 1.7;
+		}
+		break;
 	case EEvent::Form:
 		if (E.Kind == TEXT("borrowed") || E.Kind == TEXT("spent") || E.Kind == TEXT("broken"))
 		{
@@ -564,7 +762,13 @@ void ASlopMatch::HandleEvent(const FSimEvent& E)
 		{
 			V->SyncFromSim(true);
 		}
-		Camera->Snap();
+		// After the staging the camera is already travelling to the fight: a snap here would jump there
+		// and swing back.
+		if (!bHandingOver)
+		{
+			Camera->Snap();
+		}
+		bHandingOver = false;
 		break;
 	case EEvent::MatchEnd:
 		if (!bEnded)
@@ -607,26 +811,38 @@ void ASlopMatch::HandleEvent(const FSimEvent& E)
 	}
 }
 
+float ASlopMatch::ScreenPan(int32 Side) const
+{
+	if (Side < 0 || Side > 1 || !Camera)
+	{
+		return 0.f;
+	}
+	const double Half = FMath::Max(Camera->HalfWidthAt(FMath::Max(Camera->Pos.Z, 1.0)), 0.1);
+	return (float)FMath::Clamp((Sim.Fighters[Side].Pos.X - Camera->LookAt.X) / Half, -1.0, 1.0);
+}
+
 void ASlopMatch::PlayEventSound(const FSimEvent& E)
 {
 	USlopAudio* A = GI()->Audio;
 	const float R = FMath::FRandRange(0.95f, 1.05f);
+	// Whatever a fighter does is heard from where they stand. Calls, gongs and the like take the centre.
+	const float Here = ScreenPan(E.Who);
 	switch (E.Type)
 	{
 	case EEvent::Move:
 		if (const FMoveDef* M = Sim.Fighters[E.Who].Def->Move(E.Move))
 		{
 			const FString Sw = M->Swing.IsNone() ? FString() : M->Swing.ToString();
-			if (Sw == TEXT("light")) A->Play(TEXT("whoosh_light"), -9.f, FMath::FRandRange(0.94f, 1.08f));
-			else if (Sw == TEXT("medium")) A->Play(TEXT("whoosh_medium"), -8.f, FMath::FRandRange(0.94f, 1.06f));
-			else if (Sw == TEXT("heavy")) A->Play(TEXT("whoosh_heavy"), -7.f, FMath::FRandRange(0.94f, 1.04f));
-			else if (!Sw.IsEmpty()) A->Play(Sw, -3.f);
+			if (Sw == TEXT("light")) A->PlayAt(Here, TEXT("whoosh_light"), -9.f, FMath::FRandRange(0.94f, 1.08f));
+			else if (Sw == TEXT("medium")) A->PlayAt(Here, TEXT("whoosh_medium"), -8.f, FMath::FRandRange(0.94f, 1.06f));
+			else if (Sw == TEXT("heavy")) A->PlayAt(Here, TEXT("whoosh_heavy"), -7.f, FMath::FRandRange(0.94f, 1.04f));
+			else if (!Sw.IsEmpty()) A->PlayAt(Here, Sw, -3.f);
 		}
 		break;
 	case EEvent::Hit:
 		if (E.bThrow)
 		{
-			A->Play(TEXT("slam"), 0.f);
+			A->PlayAt(Here, TEXT("slam"), 0.f);
 		}
 		else
 		{
@@ -639,41 +855,41 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 			const FName Mat = M ? M->HitSound : NAME_None;
 			const bool bHeavy = E.Damage >= 70;
 			const float Pitch = E.Level == ELevel::Low ? 0.86f : (E.Level == ELevel::Mid ? 0.94f : 1.05f);
-			A->Play(E.Damage < 55 ? TEXT("hit_light") : (E.Damage < 95 ? TEXT("hit_medium") : TEXT("hit_heavy")), -2.f, R * Pitch);
+			A->PlayAt(Here, E.Damage < 55 ? TEXT("hit_light") : (E.Damage < 95 ? TEXT("hit_medium") : TEXT("hit_heavy")), -2.f, R * Pitch);
 			if (Mat == TEXT("wood"))
 			{
-				A->Play(bHeavy ? TEXT("kenney:impactWood_heavy") : TEXT("kenney:impactWood_medium"), -1.f, R);
+				A->PlayAt(Here, bHeavy ? TEXT("kenney:impactWood_heavy") : TEXT("kenney:impactWood_medium"), -1.f, R);
 			}
 			else if (Mat == TEXT("metal"))
 			{
-				A->Play(bHeavy ? TEXT("kenney:impactMetal_heavy") : TEXT("kenney:impactPlate_medium"), -1.f, R);
+				A->PlayAt(Here, bHeavy ? TEXT("kenney:impactMetal_heavy") : TEXT("kenney:impactPlate_medium"), -1.f, R);
 			}
 			else if (Mat == TEXT("blade"))
 			{
-				A->Play(TEXT("kenney:impactMetal_light"), -3.f, R * 1.15f);
-				A->Play(TEXT("kenney:impactPunch_medium"), -7.f, R);
+				A->PlayAt(Here, TEXT("kenney:impactMetal_light"), -3.f, R * 1.15f);
+				A->PlayAt(Here, TEXT("kenney:impactPunch_medium"), -7.f, R);
 			}
 			else if (Mat == TEXT("chain"))
 			{
-				A->Play(TEXT("kenney:impactMetal_medium"), -2.f, R * 1.1f);
+				A->PlayAt(Here, TEXT("kenney:impactMetal_medium"), -2.f, R * 1.1f);
 			}
 			else if (E.Level == ELevel::High)
 			{
-				A->Play(bHeavy ? TEXT("kenney:impactPunch_heavy") : TEXT("kenney:impactPunch_medium"), -3.f, R * 1.04f);
+				A->PlayAt(Here, bHeavy ? TEXT("kenney:impactPunch_heavy") : TEXT("kenney:impactPunch_medium"), -3.f, R * 1.04f);
 			}
 			else if (E.Level == ELevel::Mid)
 			{
-				A->Play(TEXT("kenney:impactSoft_heavy"), -3.f, R * 0.95f);
-				A->Play(TEXT("kenney:impactPunch_medium"), -8.f, R * 0.9f);
+				A->PlayAt(Here, TEXT("kenney:impactSoft_heavy"), -3.f, R * 0.95f);
+				A->PlayAt(Here, TEXT("kenney:impactPunch_medium"), -8.f, R * 0.9f);
 			}
 			else
 			{
-				A->Play(TEXT("kenney:impactSoft_medium"), -3.f, R * 0.88f);
+				A->PlayAt(Here, TEXT("kenney:impactSoft_medium"), -3.f, R * 0.88f);
 			}
 		}
 		if (E.bProj)
 		{
-			A->Play(TEXT("burst"), -4.f);
+			A->PlayAt(Here, TEXT("burst"), -4.f);
 		}
 		break;
 	case EEvent::Block:
@@ -681,59 +897,66 @@ void ASlopMatch::PlayEventSound(const FSimEvent& E)
 		// A guarded blow: the arms take it, or the weapon's own material on the forearms.
 		const FMoveDef* M = Sim.Fighters[E.By].Def->Move(E.Move);
 		const FName Mat = M ? M->HitSound : NAME_None;
-		A->Play(TEXT("block"), -3.f, R);
+		A->PlayAt(Here, TEXT("block"), -3.f, R);
 		const bool bWeapon = Mat == TEXT("wood") || Mat == TEXT("metal") || Mat == TEXT("blade") || Mat == TEXT("chain");
-		A->Play(Mat == TEXT("wood") ? TEXT("kenney:impactWood_light") : (bWeapon ? TEXT("kenney:impactPlate_light") : TEXT("kenney:impactSoft_medium")),
+		A->PlayAt(Here, Mat == TEXT("wood") ? TEXT("kenney:impactWood_light") : (bWeapon ? TEXT("kenney:impactPlate_light") : TEXT("kenney:impactSoft_medium")),
 			bWeapon ? -3.f : -6.f, R);
 		break;
 	}
-	case EEvent::Armor: A->Play(TEXT("armor"), -2.f); break;
+	case EEvent::Armor: A->PlayAt(Here, TEXT("armor"), -2.f); break;
 	case EEvent::Parry:
 		if (E.Kind == TEXT("ward"))
 		{
-			A->Play(TEXT("bell"), -6.f, 1.4f);
+			A->PlayAt(Here, TEXT("bell"), -6.f, 1.4f);
 			break;
 		}
 		if (E.Kind == TEXT("weave"))
 		{
-			A->Play(TEXT("whoosh_light"), -6.f, 0.85f);
+			A->PlayAt(Here, TEXT("whoosh_light"), -6.f, 0.85f);
 			break;
 		}
 		// The guard's slap with a hard knock over it; a shin check is bone on bone, duller and lower.
-		A->Play(TEXT("block"), -2.f, 0.9f);
-		A->Play(E.Level == ELevel::Low ? TEXT("kenney:impactPunch_heavy") : TEXT("kenney:impactWood_medium"), -4.f, E.Level == ELevel::Low ? 0.8f : 1.1f);
+		A->PlayAt(Here, TEXT("block"), -2.f, 0.9f);
+		A->PlayAt(Here, E.Level == ELevel::Low ? TEXT("kenney:impactPunch_heavy") : TEXT("kenney:impactWood_medium"), -4.f, E.Level == ELevel::Low ? 0.8f : 1.1f);
 		break;
-	case EEvent::Throw: A->Play(TEXT("grab"), -2.f); break;
-	case EEvent::ThrowBreak: A->Play(TEXT("throw_break"), 0.f); break;
+	case EEvent::Throw: A->PlayAt(Here, TEXT("grab"), -2.f); break;
+	case EEvent::ThrowBreak: A->PlayAt(Here, TEXT("throw_break"), 0.f); break;
 	case EEvent::Land:
 		if (E.bSoft)
 		{
-			A->Play(Arena->Footstep, -14.f + Arena->FootstepDb, R);
+			A->PlayAt(Here, Arena->Footstep, -14.f + Arena->FootstepDb, R);
 		}
 		else
 		{
-			A->Play(TEXT("land"), -4.f);
-			A->Play(TEXT("kenney:impactSoft_heavy"), -6.f, R);
+			A->PlayAt(Here, TEXT("land"), -4.f);
+			A->PlayAt(Here, TEXT("kenney:impactSoft_heavy"), -6.f, R);
 		}
 		break;
 	case EEvent::Projectile:
 		// Two kinds have no cast of their own (silent in the original too): Gorm's quake gets the
-		// ground crumbling as the wave runs out from the slap, the Slopbat's gust a far rush of air.
+		// ground crumbling as the wave runs out from the slap, the Fragment's gust a far rush of air.
 		// The Grandmaster's palms sound as the orb and the wave.
-		A->Play(E.Kind == TEXT("quake") ? FString(TEXT("crumble")) : E.Kind == TEXT("gust") ? FString(TEXT("far_whoosh"))
+		A->PlayAt(Here, E.Kind == TEXT("quake") ? FString(TEXT("crumble")) : E.Kind == TEXT("gust") ? FString(TEXT("far_whoosh"))
 			: E.Kind == TEXT("qhi") ? FString(TEXT("cast_orb")) : E.Kind == TEXT("qhi_low") ? FString(TEXT("cast_wave")) : TEXT("cast_") + E.Kind.ToString(), -4.f);
 		break;
-	case EEvent::Clash: A->Play(TEXT("burst"), -2.f); break;
+	case EEvent::Clash: A->PlayAt(Here, TEXT("burst"), -2.f); break;
+	case EEvent::BossCue:
+		// The Vessel filling, and breaking; the bell on a sequence that has caught someone.
+		if (E.Kind == TEXT("vessel")) { A->PlayAt(Here, TEXT("gong"), 0.f, 0.35f); A->PlayAt(Here, TEXT("cast_wave"), -3.f, 0.4f); }
+		else if (E.Kind == TEXT("vessel_broken")) { A->PlayAt(Here, TEXT("burst"), 0.f, 0.7f); A->PlayAt(Here, TEXT("bell"), -3.f, 0.6f); }
+		else if (E.Kind == TEXT("cine")) { A->PlayAt(Here, TEXT("bell"), -6.f, 0.5f); }
+		else if (E.Kind == TEXT("flow")) { A->PlayAt(Here, TEXT("cast_wave"), -2.f, 0.5f); A->PlayAt(Here, TEXT("gong"), -5.f, 0.4f); }
+		break;
 	case EEvent::Form:
 		// A bell for the Qhi taking a shape or letting it go; dust and a low gong when it gives out.
-		if (E.Kind == TEXT("borrowed")) { A->Play(TEXT("bell"), -2.f, 0.8f); A->Play(TEXT("cast_wave"), -6.f, 0.7f); }
-		else if (E.Kind == TEXT("own")) A->Play(TEXT("bell"), -5.f, 1.05f);
-		else if (E.Kind == TEXT("spent") || E.Kind == TEXT("broken")) { A->Play(TEXT("gong"), -4.f, 0.55f); A->Play(TEXT("crumble"), -6.f, 0.9f); }
-		else if (E.Kind == TEXT("recentred")) A->Play(TEXT("bell"), -8.f, 1.25f);
-		else if (E.Kind == TEXT("failed")) A->Play(TEXT("burst"), -6.f, 0.7f);
-		else if (E.Kind == TEXT("refused")) A->Play(TEXT("ui_locked"), -8.f, 0.9f, ESlopBus::Ui);
+		if (E.Kind == TEXT("borrowed")) { A->PlayAt(Here, TEXT("bell"), -2.f, 0.8f); A->PlayAt(Here, TEXT("cast_wave"), -6.f, 0.7f); }
+		else if (E.Kind == TEXT("own")) A->PlayAt(Here, TEXT("bell"), -5.f, 1.05f);
+		else if (E.Kind == TEXT("spent") || E.Kind == TEXT("broken")) { A->PlayAt(Here, TEXT("gong"), -4.f, 0.55f); A->PlayAt(Here, TEXT("crumble"), -6.f, 0.9f); }
+		else if (E.Kind == TEXT("recentred")) A->PlayAt(Here, TEXT("bell"), -8.f, 1.25f);
+		else if (E.Kind == TEXT("failed")) A->PlayAt(Here, TEXT("burst"), -6.f, 0.7f);
+		else if (E.Kind == TEXT("refused")) A->PlayAt(Here, TEXT("ui_locked"), -8.f, 0.9f, ESlopBus::Ui);
 		break;
-	case EEvent::Jump: A->Play(Arena->Footstep, -12.f + Arena->FootstepDb, 1.1f); break;
+	case EEvent::Jump: A->PlayAt(Here, Arena->Footstep, -12.f + Arena->FootstepDb, 1.1f); break;
 	case EEvent::KO: A->Play(TEXT("ko_hit"), 0.f); break;
 	case EEvent::RoundStart: A->Play(TEXT("gong"), -4.f); break;
 	case EEvent::Fight: A->Play(TEXT("fight"), -2.f); break;

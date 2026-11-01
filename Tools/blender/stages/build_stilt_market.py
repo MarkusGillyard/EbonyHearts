@@ -57,7 +57,7 @@ MUD = st.surface("brown_mud_03", tint=(0.35, 0.33, 0.3), rough=0.6)
 AMBER = st.glow("GLOW_lantern_amber", (1.0, 0.42, 0.1), 1.5, "paper lanterns: horizontal paper ribs about 3 cm apart, slow sway", pattern="ribs", scale=0.032)
 RED_L = st.glow("GLOW_lantern_red", (1.0, 0.16, 0.05), 1.3, "red paper lanterns, ribbed likewise", pattern="ribs", scale=0.032)
 WIN = st.glow("GLOW_window", (1.0, 0.56, 0.24), 1.6, "stilt-house windows")
-JAR = st.glow("GLOW_jar", (0.5, 0.95, 0.2), 1.8, "jars of slop at the jar stall")
+JAR = st.glow("GLOW_jar", (0.5, 0.95, 0.2), 1.8, "glowing jars at the jar stall")
 PALE = st.glow("GLOW_lamp_pale", (0.75, 0.8, 1.0), 6.0, "the stranger's lamp")
 MOON = st.glow("GLOW_moon", (0.85, 0.9, 0.82), 3.0, "the low moon disc (delete if the sky carries one)")
 BOG = st.water("WATER_bog", (0.008, 0.012, 0.013), 0.05, 1.0, "black bog water with a little green scum; gentle swell; reflections matter",

@@ -228,6 +228,8 @@ namespace Slop
 			if (BuffTicks == 0 || BuffHits <= 0)
 			{
 				BuffTicks = 0;
+				// The aura has to be earned back.
+				BuffWait = Buff == TEXT("spirit") ? 480 : 0;
 				Buff = NAME_None;
 				FSimEvent E;
 				E.Type = EEvent::BuffEnd;
@@ -235,9 +237,15 @@ namespace Slop
 				Sim->Emit(E);
 			}
 		}
+		if (BuffWait > 0)
+		{
+			--BuffWait;
+		}
 		RegenRun();
 		const bool bWasMoving = State == EState::Move;
 		QhiTick();
+		GuardianTick();
+		BossFormTick();
 		if (State == EState::Move && !bWasMoving)
 		{
 			// The body gave out or steadied itself this tick: that move has begun on its first frame.
@@ -313,6 +321,95 @@ namespace Slop
 			break;
 		}
 		ApplyPush();
+	}
+
+	void FFighter::BossFormTick()
+	{
+		if (!BaseDef->bBoss || !Sim->CanAct() || Health <= 0)
+		{
+			return;
+		}
+		const double Left = double(Health) / MaxHealth();
+		const int32 Next = Left > 0.66 ? 0 : (Left > 0.33 ? 1 : 2);
+		if (Next != BossForm)
+		{
+			BossForm = Next;
+			// It flows into the new form untouchable, a moment's breath for whoever is fighting it.
+			Invuln = FMath::Max(Invuln, 50);
+			FSimEvent E;
+			E.Type = EEvent::BossCue;
+			E.Who = Index;
+			E.Kind = TEXT("flow");
+			E.Point = Pos;
+			Sim->Emit(E);
+		}
+	}
+
+	bool FFighter::IsChargingVessel() const
+	{
+		return bGuardian && State == EState::Move && Move && Move->Id == TEXT("fragmented_vessel");
+	}
+
+	void FFighter::GuardianTick()
+	{
+		if (!bGuardian || !Sim->CanAct() || Health <= 0)
+		{
+			return;
+		}
+		if (VentT > 0)
+		{
+			--VentT;
+		}
+		if (IsChargingVessel())
+		{
+			Charge = FMath::Min(1.0, double(MF) / Move->Startup);
+			bCharging = true;
+			return;
+		}
+		if (bCharging)
+		{
+			// Thrown out of it, or spent into it: either way it is over for now.
+			bCharging = false;
+			Charge = 0.0;
+			ChargeTaken = 0;
+			NextCharge = VesselRest;
+		}
+		if (!bVessel && !bNoVessel && double(Health) / MaxHealth() < 0.5)
+		{
+			bVessel = true;
+			NextCharge = 90;
+			Invuln = FMath::Max(Invuln, 60);
+			FSimEvent E;
+			E.Type = EEvent::BossCue;
+			E.Who = Index;
+			E.Kind = TEXT("vessel");
+			E.Point = Pos;
+			Sim->Emit(E);
+		}
+		if (bVessel && VentT == 0 && --NextCharge <= 0 && IsActionable())
+		{
+			if (const FMoveDef* Vessel = Def->Move(TEXT("fragmented_vessel")))
+			{
+				StartMove(*Vessel);
+			}
+		}
+	}
+
+	void FFighter::BreakVessel()
+	{
+		ChargeTaken = 0;
+		Charge = 0.0;
+		bCharging = false;
+		NextCharge = VesselRest;
+		BreakMove();
+		VentT = VesselSpent;
+		TakeStun(VesselSpent, EStun::Dazed);
+		FSimEvent E;
+		E.Type = EEvent::BossCue;
+		E.Who = Index;
+		E.Kind = TEXT("vessel_broken");
+		E.Point = Pos;
+		Sim->Emit(E);
 	}
 
 	void FFighter::RegenRun()
@@ -925,6 +1022,10 @@ namespace Slop
 		{
 			return false;
 		}
+		if (!M.Buff.IsNone() && (BuffTicks > 0 || BuffWait > 0))
+		{
+			return false;
+		}
 		if (M.RunCost > 0.0 && RunMeter < M.RunCost && !Sim->bInfiniteRun)
 		{
 			return false;
@@ -1189,7 +1290,7 @@ namespace Slop
 		{
 			// Reappears on the far side of the opponent, facing them.
 			const FFighter& O = Opponent();
-			const double D = M.TeleportDist * Scale();
+			const double D = M.TeleportDist * Def->StrikeScale();
 			const int32 Side = -O.Facing;
 			const double Lo = -FFightSim::StageHalf + Def->PushW;
 			const double Hi = FFightSim::StageHalf - Def->PushW;

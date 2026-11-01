@@ -44,11 +44,17 @@ namespace Slop
 		// "high", "epic" (the engine's highest scalability level) or "low".
 		FString Graphics = TEXT("high");
 		double UIScale = 1.0;
+		// The display to play on, by name; empty for the main one.
+		FString Screen;
+		// A share of each screen edge left clear, for a TV that crops its picture (overscan).
+		double ScreenMargin = 0.0;
 		// Audio (0..1).
 		double MasterVolume = 0.8;
 		double MusicVolume = 0.5;
 		double EffectsVolume = 0.9;
 		double VoiceVolume = 0.9;
+		// "auto" follows the output in use; "stereo" or "surround" insist on that mix.
+		FString Speakers = TEXT("auto");
 		// Comfort.
 		bool bScreenShake = true;
 		bool bFlashes = true;
@@ -60,6 +66,8 @@ namespace Slop
 		bool bMotionSmoothing = true;
 		bool bInputDisplay = false;
 		int32 Difficulty = 1;
+		// "full" or "short": the staging before a fight (either can always be skipped).
+		FString IntroLength = TEXT("full");
 		// Versus and Versus CPU: rounds to win the match (1-5) and seconds a round (30, 60, 90;
 		// 0 for no clock).
 		int32 VersusRounds = 2;
@@ -67,7 +75,7 @@ namespace Slop
 		// Controllers.
 		double DeadZone = 0.3;
 		bool bVibration = true;
-		// "auto", "playstation", "xbox".
+		// "auto", "playstation", "xbox", "pc".
 		FString Glyphs = TEXT("auto");
 		// Bindings: one key per action for each keyboard half; one pad button per action shared by
 		// every gamepad (directions also always work on the D-pad and the left stick).
@@ -113,7 +121,7 @@ namespace Slop
 		static FString Path();
 
 		void RecordArcade(FName Fighter, int32 Difficulty, double Seconds, int32 Score);
-		// A better total for a tower already recorded (the run went on past the Slopbat).
+		// A better total for a tower already recorded (the run went on past the Fragment).
 		void RaiseArcadeScore(FName Fighter, int32 Difficulty, int32 Score);
 		// Returns true for a new best.
 		bool RecordSurvival(FName Fighter, int32 Waves);

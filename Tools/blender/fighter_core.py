@@ -114,6 +114,20 @@ def apply_targets(basemesh, targets):
     return applied
 
 
+def apply_expression(basemesh, expression):
+    """Bakes facial expression units into the head ({"race": "asian", "<unit>": weight, ...}): a look
+    the fighter always wears, there being no morph targets in the game."""
+    if not expression:
+        return
+    TS = mpfb("services.targetservice", "TargetService")
+    LS = mpfb("services.locationservice", "LocationService")
+    race = expression["race"]
+    for name, value in expression.items():
+        if name != "race":
+            path = LS.get_mpfb_data("targets/expression/units/%s/%s.target.gz" % (race, name))
+            TS.load_target(basemesh, path, weight=0.0, name=name).value = value
+
+
 def set_height_macro(basemesh, value):
     HOP = mpfb("entities.objectproperties", "HumanObjectProperties")
     TS = mpfb("services.targetservice", "TargetService")
@@ -168,6 +182,7 @@ def build_body(cfg):
     macro["race"] = dict(m.get("race", macro["race"]))
     basemesh = HS.create_human(macro_detail_dict=macro)
     applied = apply_targets(basemesh, cfg.get("targets", {}))
+    apply_expression(basemesh, cfg.get("expression"))
     body_h = cfg["height_m"] - cfg.get("sole_m", 0.0)
     hinfo = fit_height(basemesh, body_h)
     hinfo["targets_applied"] = len(applied)

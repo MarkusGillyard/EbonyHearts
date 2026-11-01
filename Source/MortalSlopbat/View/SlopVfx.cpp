@@ -40,7 +40,8 @@ void ASlopVfx::Setup(ASlopMatch* InMatch)
 		{TEXT("Plane"), FLinearColor(1.f, 0.85f, 0.6f), 2.f, true},    // soft flash disc
 		{TEXT("Cube"), FLinearColor(0.9f, 0.9f, 0.86f), 2.f, true},    // pale flakes (salt, ash, tallow)
 		{TEXT("Cube"), FLinearColor(1.f, 0.78f, 0.32f), 9.f, true},    // Qhi
-		{TEXT("Sphere"), FLinearColor(0.32f, 0.95f, 0.82f), 6.f, true}, // fen-light wisps
+		{TEXT("Sphere"), FLinearColor(0.32f, 0.95f, 0.82f), 6.f, true}, // fen-light wisps,
+		{TEXT("Cube"), FLinearColor(1.f, 0.06f, 0.08f), 10.f, true},   // the Lamplighter Flame,
 	};
 	for (int32 K = 0; K < (int32)EKind::Count; ++K)
 	{
@@ -95,7 +96,8 @@ void ASlopVfx::BurstColor(const FVector& P, const FLinearColor& C, int32 N, doub
 	// The nearest of the effect families to the colour asked for.
 	const FLinearColor H = C.LinearRGBToHSV();
 	EKind K = EKind::Ember;
-	if (H.G > 0.4f && H.R > 163.f && H.R < 200.f) K = EKind::Wisp;
+	if (H.G > 0.6f && (H.R >= 345.f || H.R <= 8.f)) K = EKind::Flame;
+	else if (H.G > 0.4f && H.R > 163.f && H.R < 200.f) K = EKind::Wisp;
 	else if (H.G > 0.5f && H.R >= 36.f && H.R <= 56.f) K = EKind::Qhi;
 	else if (H.B > 0.75f && H.G < 0.25f) K = EKind::Pale;
 	else if (H.R > 70.f && H.R < 160.f) K = EKind::Slop;
@@ -142,7 +144,7 @@ void ASlopVfx::Flash(const FVector& P, const FLinearColor& C, float Intensity)
 // the wind are only dust and streaks along their path.
 namespace
 {
-	enum class EProjSolid : uint8 { None, Blade, Harpoon, Anchor, Tar };
+	enum class EProjSolid : uint8 { None, Blade, Harpoon, Anchor, Tar, Ebony };
 	struct FProjLook { FLinearColor Core; float Glow; float Light; float CoreSize; EProjSolid Solid; int32 Trail; float TrailEvery = 0.03f; float TrailSize = 0.f; };
 
 	const FProjLook& LookOf(FName Kind)
@@ -151,12 +153,15 @@ namespace
 		static const TMap<FName, FProjLook> Looks = {
 			{TEXT("ember"), {FLinearColor(1.f, 0.55f, 0.15f), 8.f, 9.f, 1.f, EProjSolid::None, 1}},
 			{TEXT("flare"), {FLinearColor(1.f, 0.22f, 0.12f), 9.f, 10.f, 0.8f, EProjSolid::None, 1}},
+			// Ashka's Lamplighter Flame: crimson.
+			{TEXT("lamplighter"), {FLinearColor(0.95f, 0.05f, 0.08f), 9.f, 11.f, 1.f, EProjSolid::None, 10}},
 			{TEXT("orb"), {FLinearColor(0.8f, 0.9f, 1.f), 6.f, 6.f, 1.f, EProjSolid::None, -1}},
 			{TEXT("wave"), {FLinearColor(0.55f, 0.8f, 1.f), 0.5f, 5.f, 0.25f, EProjSolid::None, 5}},
 			{TEXT("bubble"), {FLinearColor(0.55f, 0.95f, 0.85f), 0.22f, 2.f, 0.9f, EProjSolid::None, -1}},
 			{TEXT("storm"), {FLinearColor(0.6f, 1.f, 0.4f), 9.f, 12.f, 1.f, EProjSolid::None, 4}},
 			{TEXT("tar"), {FLinearColor(0.05f, 0.08f, 0.04f), 0.f, 0.f, 0.f, EProjSolid::Tar, 4}},
 			{TEXT("sickle"), {FLinearColor(0.75f, 0.8f, 0.85f), 0.f, 0.f, 0.f, EProjSolid::Blade, -1}},
+			{TEXT("shuriken"), {FLinearColor(0.75f, 0.8f, 0.85f), 0.f, 0.f, 0.f, EProjSolid::Blade, -1}},
 			{TEXT("harpoon"), {FLinearColor(0.8f, 0.62f, 0.3f), 0.f, 0.f, 0.f, EProjSolid::Harpoon, -1}},
 			{TEXT("anchor"), {FLinearColor(0.25f, 0.25f, 0.27f), 0.f, 0.f, 0.f, EProjSolid::Anchor, 3}},
 			{TEXT("quake"), {FLinearColor(0.55f, 0.45f, 0.32f), 0.f, 0.f, 0.f, EProjSolid::None, 3, 0.015f, 0.09f}},
@@ -164,6 +169,11 @@ namespace
 			// The Grandmaster's palms: a long gold bolt at head height, and a wave along the floor.
 			{TEXT("qhi"), {FLinearColor(1.f, 0.8f, 0.36f), 9.f, 9.f, 0.7f, EProjSolid::None, 8, 0.012f, 0.035f}},
 			{TEXT("qhi_low"), {FLinearColor(1.f, 0.76f, 0.3f), 5.f, 6.f, 0.45f, EProjSolid::None, 8, 0.01f, 0.05f}},
+			// Ebony Energy: dense, galactic purple, and every form of it shows itself before it can hurt.
+			{TEXT("ebony_orb"), {FLinearColor(0.32f, 0.08f, 0.85f), 7.f, 26.f, 0.92f, EProjSolid::None, 8, 0.02f, 0.05f}},
+			{TEXT("ebony_seal"), {FLinearColor(0.42f, 0.1f, 1.f), 8.f, 18.f, 0.f, EProjSolid::Ebony, -1}},
+			{TEXT("ebony_cross"), {FLinearColor(0.5f, 0.1f, 0.95f), 9.f, 24.f, 0.f, EProjSolid::Ebony, -1}},
+			{TEXT("ebony_beam"), {FLinearColor(0.55f, 0.15f, 1.f), 10.f, 24.f, 0.f, EProjSolid::Ebony, -1}},
 		};
 		static const FProjLook Default = {FLinearColor(0.9f, 0.85f, 0.6f), 6.f, 6.f, 1.f, EProjSolid::None, -1};
 		const FProjLook* L = Looks.Find(Kind);
@@ -264,12 +274,26 @@ void ASlopVfx::OnEvent(const FSimEvent& E)
 			Burst(EKind::Dust, FVector(F.X, 0.05, 0.1), 10, 1.4, 0.7, 0.08, FVector(0, 0.6, 0));
 		}
 		break;
+	case EEvent::BossCue:
+		if (E.Kind == TEXT("vessel"))
+		{
+			Burst(EKind::Qhi, FVector(E.Point.X, 1.6, 0.1), 80, 5.0, 1.1, 0.05, FVector(0, 0.8, 0));
+		}
+		else if (E.Kind == TEXT("vessel_broken"))
+		{
+			Burst(EKind::Qhi, FVector(E.Point.X, 1.4, 0.1), 120, 9.0, 0.8, 0.06, FVector(0, 0.3, 0));
+		}
+		else if (E.Kind == TEXT("flow"))
+		{
+			Burst(EKind::Qhi, FVector(E.Point.X, 1.4, 0.1), 70, 6.0, 0.9, 0.05, FVector(0, 0.6, 0));
+		}
+		break;
 	case EEvent::ProjectileEnd:
 	{
 		// It breaks up into what it was made of: fire into embers, steel into sparks, tar into
 		// slime, the bubble into spray, the anchor and the ground's shock into dust.
 		const FProjLook& L = LookOf(E.Kind);
-		const EKind K = E.Kind.ToString().StartsWith(TEXT("qhi")) ? EKind::Qhi
+		const EKind K = E.Kind == TEXT("lamplighter") ? EKind::Flame : E.Kind.ToString().StartsWith(TEXT("qhi")) ? EKind::Qhi
 			: L.Glow > 0.f && E.Kind != TEXT("bubble") && E.Kind != TEXT("wave") ? EKind::Ember
 			: (L.Solid == EProjSolid::Blade || L.Solid == EProjSolid::Harpoon) ? EKind::Spark
 			: E.Kind == TEXT("bubble") || E.Kind == TEXT("wave") ? EKind::Pale
@@ -370,6 +394,7 @@ ASlopVfx::EKind ASlopVfx::MagicKind(int32 Who) const
 	const ASlopMatch* M = Match.Get();
 	const FFighterDef* D = M ? M->Sim.Fighters[FMath::Clamp(Who, 0, 1)].BaseDef : nullptr;
 	const FLinearColor H = FLinearColor(FColor::FromHex(Json::Str(D ? D->Look : nullptr, TEXT("glow"), TEXT("#ffd27a")))).LinearRGBToHSV();
+	if (H.R >= 345.f || H.R <= 8.f) return EKind::Flame;
 	if (H.R > 163.f && H.R < 200.f) return EKind::Wisp;
 	if (H.R >= 36.f && H.R <= 56.f) return EKind::Qhi;
 	if (H.R > 70.f && H.R <= 163.f) return EKind::Slop;
@@ -462,6 +487,16 @@ void ASlopVfx::SyncProjectiles(double Delta)
 	{
 		return;
 	}
+	// Spirit Enhanced Strikes: golden lightning crawling about the body.
+	for (const FFighter& F : M->Sim.Fighters)
+	{
+		if (F.Buff == TEXT("spirit") && Delta > 0.0 && FMath::FRand() < Delta * 40.0)
+		{
+			const double H = F.Def->Height;
+			const FVector At(F.Pos.X + FMath::FRandRange(-0.28, 0.28), F.Pos.Y + FMath::FRandRange(0.1, H), FMath::FRandRange(-0.2, 0.2));
+			Burst(EKind::Qhi, At, 3, 2.4, 0.16, 0.02, FVector(0, 0.5, 0));
+		}
+	}
 	TSet<int32> Live;
 	for (const FProjectile& P : M->Sim.Projectiles)
 	{
@@ -496,6 +531,17 @@ void ASlopVfx::SyncProjectiles(double Delta)
 				break;
 			case EProjSolid::Tar:
 				N.Part = ProjPart(TEXT("Sphere"), SolidMaterial(L.Core, 0.15, 0.0, true));
+				break;
+			case EProjSolid::Ebony:
+				N.Part = ProjPart(P.Kind == TEXT("ebony_beam") ? TEXT("Cube") : TEXT("Cylinder"), GlowMaterial(L.Core, L.Glow));
+				if (P.Kind != TEXT("ebony_beam"))
+				{
+					N.Mesh = ProjPart(TEXT("Cylinder"), GlowMaterial(L.Core, L.Glow * 1.6f));
+				}
+				if (P.Kind == TEXT("ebony_cross"))
+				{
+					N.Chain = ProjPart(TEXT("Cube"), GlowMaterial(L.Core, L.Glow * 1.6f));
+				}
 				break;
 			default:
 				break;
@@ -560,10 +606,37 @@ void ASlopVfx::SyncProjectiles(double Delta)
 			V->Part->SetWorldLocation(WorldToUE(At));
 			V->Part->SetWorldScale3D(FVector(Big * 0.85, Big * 0.7, Big * 0.7));
 			break;
+		case EProjSolid::Ebony:
+		{
+			// A thread or a ring on the water while it warns; then the thing itself.
+			const int32 Arm = P.Def().Arm;
+			const bool bArmed = P.Age >= Arm;
+			const double Warn = Arm > 0 ? FMath::Clamp(double(P.Age) / Arm, 0.0, 1.0) : 1.0;
+			const double Fade = FMath::Clamp((P.Life - P.Age) / 8.0, 0.0, 1.0);
+			if (P.Kind == TEXT("ebony_beam"))
+			{
+				V->Part->SetWorldLocation(WorldToUE(At));
+				V->Part->SetWorldScale3D(FVector(bArmed ? P.Size.Y : 0.02, P.Size.X, bArmed ? P.Size.Y * Fade : 0.015 + 0.03 * Warn));
+				break;
+			}
+			const FVector Floor(P.Pos.X, 0.05, 0.0);
+			V->Part->SetWorldLocation(WorldToUE(Floor));
+			V->Part->SetWorldScale3D(FVector(P.Size.X * (0.35 + 0.65 * Warn), P.Size.X * (0.35 + 0.65 * Warn), 0.015));
+			V->Mesh->SetVisibility(bArmed);
+			V->Mesh->SetWorldLocation(WorldToUE(FVector(P.Pos.X, P.Size.Y * 0.5, 0.0)));
+			V->Mesh->SetWorldScale3D(FVector(P.Size.X * Fade, P.Size.X * Fade, P.Size.Y));
+			if (P.Kind == TEXT("ebony_cross"))
+			{
+				V->Chain->SetVisibility(bArmed);
+				V->Chain->SetWorldLocation(WorldToUE(FVector(P.Pos.X, P.Size.Y * 0.68, 0.0)));
+				V->Chain->SetWorldScale3D(FVector(0.5 * Fade, P.Size.X * 2.4, 0.5 * Fade));
+			}
+			break;
+		}
 		default:
 			break;
 		}
-		if (V->Chain && M->Views[P.Owner])
+		if (V->Chain && L.Solid != EProjSolid::Ebony && M->Views[P.Owner])
 		{
 			// The line back to the thrower's nearer hand.
 			const Slop::Anim::FAnimator& A = M->Views[P.Owner]->Anim;

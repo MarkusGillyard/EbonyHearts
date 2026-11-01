@@ -166,6 +166,15 @@ namespace Slop
 		StartRound(bIntro);
 	}
 
+	void FFightSim::EndIntro()
+	{
+		IntroHold = 0;
+		if (Phase == EPhase::Intro)
+		{
+			PhaseT = IntroTicks;
+		}
+	}
+
 	void FFightSim::Emit(FSimEvent E)
 	{
 		E.Tick = TickCount;
@@ -191,6 +200,11 @@ namespace Slop
 			F.Health = F.MaxHealth();
 			F.RunMeter = FFighter::RunMax;
 			F.RunIdle = 0;
+			F.BossForm = 0;
+			F.Charge = 0.0;
+			F.ChargeTaken = 0;
+			F.VentT = 0;
+			F.bCharging = false;
 			F.Pos = FVector2D(StartGap * (F.Index == 0 ? -0.5 : 0.5), 0.0);
 			F.Facing = F.Index == 0 ? 1 : -1;
 			F.Vel = FVector2D::ZeroVector;
@@ -211,6 +225,7 @@ namespace Slop
 			F.ThrownBy = -1;
 			F.Buff = NAME_None;
 			F.BuffTicks = 0;
+			F.BuffWait = 0;
 			F.Input.Clear();
 			F.SetState(EState::Intro);
 			F.SF = 0;
@@ -291,7 +306,7 @@ namespace Slop
 		switch (Phase)
 		{
 		case EPhase::Intro:
-			if (PhaseT >= IntroTicks)
+			if (PhaseT >= IntroTicks + IntroHold)
 			{
 				Phase = EPhase::Ready;
 				PhaseT = 0;
@@ -574,7 +589,7 @@ namespace Slop
 		for (int32 I = 0; I < Projectiles.Num(); ++I)
 		{
 			const FProjectile& P = Projectiles[I];
-			if (P.bDead)
+			if (P.bDead || P.Age < P.Def().Arm)
 			{
 				continue;
 			}
@@ -692,6 +707,35 @@ namespace Slop
 		{
 			Damage = FMath::RoundToInt(Damage * 1.15);
 		}
+		if (D.VentT > 0)
+		{
+			Damage = FMath::RoundToInt(Damage * 1.5);
+		}
+		else if (D.bGuardian)
+		{
+			Damage = FMath::RoundToInt(Damage * FFighter::GuardianDefence);
+		}
+		// Spirit Enhanced Strikes: harder blows, and the energy and magic in a blow turned aside.
+		if (A.Buff == TEXT("spirit"))
+		{
+			Damage = FMath::RoundToInt(Damage * 1.2);
+		}
+		if (D.Buff == TEXT("spirit"))
+		{
+			Damage = FMath::RoundToInt(Damage * (1.0 - 0.4 * Magic));
+		}
+		// The Fighting Spirit of Humanity: the Fragment is vulnerable to its holder.
+		if (A.BaseDef->Id == D.BaseDef->SpiritHolder)
+		{
+			Damage = FMath::RoundToInt(Damage * 1.25);
+		}
+		if (!P && M.Id == TEXT("reckoning") && !CanBlock(D, Level))
+		{
+			FSimEvent E = Ev(EEvent::BossCue, A.Index, D.Index);
+			E.Kind = TEXT("cine");
+			E.Point = C.Point;
+			Emit(E);
+		}
 		if (P)
 		{
 			--P->HitsLeft;
@@ -788,19 +832,29 @@ namespace Slop
 			}
 		}
 		const bool bBuffed = D.Buff == TEXT("armor") && D.BuffHits > 0 && Level != ELevel::Throw;
-		if (bBuffed || (D.State == EState::Move && D.Move && FMoveDef::InRange(D.Move->Armor, D.MF) && D.ArmorLeft > 0))
+		// Charging the Vessel he does not flinch, and everything that lands counts toward breaking it.
+		const bool bHull = D.IsChargingVessel();
+		if (bBuffed || bHull || (D.State == EState::Move && D.Move && FMoveDef::InRange(D.Move->Armor, D.MF) && D.ArmorLeft > 0))
 		{
 			if (bBuffed)
 			{
 				--D.BuffHits;
 			}
-			else
+			else if (!bHull)
 			{
 				--D.ArmorLeft;
 			}
 			const int32 Absorbed = (int32)(Damage * 0.5);
 			D.Health = FMath::Max(0, D.Health - Absorbed);
 			D.DamageTaken += Absorbed;
+			if (bHull)
+			{
+				D.ChargeTaken += Damage;
+				if (D.ChargeTaken >= FFighter::VesselBreak && D.Health > 0)
+				{
+					D.BreakVessel();
+				}
+			}
 			D.Hitstop = 6;
 			if (!P)
 			{
@@ -1240,7 +1294,7 @@ namespace Slop
 		{
 			return false;
 		}
-		return !Fighters[1 - Winner].Def->bBoss && !Fighters[Winner].Def->bBoss;
+		return !Fighters[1 - Winner].Def->bBoss && !Fighters[Winner].Def->bBoss && !Fighters[1 - Winner].bGuardian && !Fighters[Winner].bGuardian;
 	}
 
 	void FFightSim::EndRound(int32 Winner, FName How)

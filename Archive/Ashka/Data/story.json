@@ -1,0 +1,14 @@
+{
+	"rival": "nix",
+	"home": "stilt_market",
+	"bio": "Last lamplighter of drowned Ninefathom. She keeps the city's beacon-flame alive in a brass lamp at her breast and means to carry it home.",
+	"rival_lines": [
+		"Ninefathom's light went out the night your Hand came.",
+		"We only drowned what was already sinking."
+	],
+	"ending": [
+		"Ashka asked the Fragment for one thing: the deep fire that once burned in Ninefathom's beacon.",
+		"She swam down through the drowned streets with her little brass lamp and lit the tower from within. For the first time in forty years, light moved under the water.",
+		"Fishermen say the Drowned Hand no longer walks the causeways after dark. They say a lamplighter still makes her rounds, street by street, below the waves."
+	]
+}

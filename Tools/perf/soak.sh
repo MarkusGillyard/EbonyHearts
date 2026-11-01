@@ -19,7 +19,7 @@ mkdir -p "$OUT"
 SAVES="${XDG_DATA_HOME:-$HOME/.local/share}/MortalSlopbat/UE5"
 BEFORE="$(ls "$SAVES"/framestats-*.csv 2>/dev/null)"
 nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader > "$OUT/gpu.txt" 2>/dev/null
-timeout -k 10 $((SECS + 180)) systemd-run --user --scope -p MemoryMax=10G --quiet "$PKG/MortalSlopbat.sh" -windowed -resx=1920 -resy=1080 \
+timeout -k 10 $((SECS + 180)) systemd-run --user --scope -p MemoryMax=10G --quiet "$PKG/MortalSlopbat.sh" -windowed -resx="${RESX:-1920}" -resy="${RESY:-1080}" \
 	$(offscreen_flag) $([ -n "${SOAK_MATCH:-}" ] && echo "-SlopSoakMatch=$SOAK_MATCH" || echo -SlopAutoPlay=2) -SlopFrameStats -SlopQuitAfter="$SECS" -profile="$LABEL" "$@" > "$OUT/stdout.log" 2>&1 &
 GAME=$!
 sleep 5

@@ -1,11 +1,13 @@
 {
 	"id": "mirela",
 	"name": "Mirela Sorrow",
-	"title": "The Keening Widow",
+	"title": "The Keening Nun",
 	"pronoun": "her",
-	"style": "Baguazhang palms and the dirge",
+	"style": "Baguazhang and supernatural vocal techniques",
 	"stats": {
-		"height": 1.82,
+		"height": 1.65,
+		"strike_height": 1.82,
+		"throw_range": 0.9606,
 		"health": 1040,
 		"walk_f": 2.4,
 		"walk_b": 2.0,
@@ -22,6 +24,9 @@
 		"walk_cycle": false
 	},
 	"basic_tweaks": {
+		"hk": {
+			"hitboxes": [{"rect": [0.36, 1.2, 0.62, 0.4]}]
+		},
 		"hp": {
 			"chain": [
 				{

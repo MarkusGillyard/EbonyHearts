@@ -237,10 +237,14 @@ def skin_textures(fid, cfg, built, out_dir, size):
         notes.append("blended %.0f%% of %s" % (a2 * 100, os.path.basename(src2)))
     cover = raster(uv_tris(body), size) >= 0
     target = srgb_to_lin(hex_srgb(sk["color"]))
-    mean = lin[cover].mean(0)
-    lin = np.clip(lin * (target / mean), 0, 1)
-    notes.insert(0, "tinted %s -> %s (per-channel gain %s)" % (os.path.basename(src), sk["color"],
-                                                               np.round(target / mean, 3).tolist()))
+    # The map's broad tones give way to the look colour and only its detail stays (pores, lips, nails):
+    # MakeHuman's heads and hands are lighter than its arms, and any one gain, taken over what clothes
+    # leave of a body, left the covered fighters' faces washed out against their own arms.
+    c = cover.astype(float)
+    weight = np.maximum(blur(c, 40), 1e-3)
+    broad = np.stack([blur(lin[..., k] * c, 40) / weight for k in range(3)], -1)
+    lin = np.clip(lin * (target / np.maximum(broad, 1e-3)), 0, 1)
+    notes.insert(0, "toned %s to %s, broad tones flattened" % (os.path.basename(src), sk["color"]))
     if sk.get("flush") and "flush" in body.data.attributes:
         # weathering: cheeks, nose, ears and brow pushed towards a ruddy colour (mask from the build)
         fl = raster_scalar(body, attribute_values(body, "flush"), size)
@@ -249,6 +253,8 @@ def skin_textures(fid, cfg, built, out_dir, size):
         L = luminance(lin)[..., None]
         lin = np.clip(lin * (1 - fl) + fc * (L / (luminance(target) + 1e-6)) * fl, 0, 1)
         notes.append("weathered flush %s on cheeks, nose, ears and brow" % sk["flush"]["color"])
+    if sk.get("tattoo"):
+        lin = paint_tattoo(sk["tattoo"], cfg, body, lin, size, notes)
     if sk.get("scalp_paint") and "hair" in built["objects"]:
         # short hair shows the scalp between its cards: paint the scalp under it in the hair colour
         lin = paint_scalp(cfg, built, body, lin, size)
@@ -298,6 +304,45 @@ def attribute_values(ob, name):
     a = np.empty(len(ob.data.vertices), np.float32)
     ob.data.attributes[name].data.foreach_get("value", a)
     return a
+
+
+def paint_tattoo(tat, cfg, body, lin, size, notes):
+    """Lettering on the outer side of a limb. The mask image is wrapped round the bone, reading across the
+    limb from the back of the body to the front, its top towards the body, so it stays flat in the skin's
+    own UVs whatever islands they are cut into. Where the clothes have taken that skin, nothing is painted."""
+    rig = next(m.object for m in body.modifiers if m.type == "ARMATURE")
+    bone = rig.data.bones[tat["bone"]]
+    a, b = np.array(bone.head_local), np.array(bone.tail_local)
+    d = (b - a) / np.linalg.norm(b - a)
+    c0 = a + (b - a) * tat["at"]
+    out = np.array([0.0, 0.0, 1.0]) - d * d[2]
+    out /= np.linalg.norm(out)
+    across = np.cross(d, out)
+    if across[1] > 0:
+        across = -across
+    V = np.empty(len(body.data.vertices) * 3)
+    body.data.vertices.foreach_get("co", V)
+    r = V.reshape(-1, 3) - c0
+    along, ao, ac = r @ d, r @ out, r @ across
+    radius = float(np.median(np.hypot(ao, ac)[np.abs(along) < 0.05]))
+    u = np.arctan2(ac, ao) * radius / tat["size_m"] + 0.5
+    v = along / tat["size_m"] + 0.5
+    near = (np.abs(u - 0.5) < 1.0) & (np.abs(v - 0.5) < 1.0) & (ao > -0.02)
+    if near.sum() < 30:
+        notes.append("tattoo not painted: the clothes cover that skin")
+        return lin
+    w = raster_scalar(body, near.astype(np.float64), size)
+    mu = raster_scalar(body, np.where(near, u + 2.0, 0.0), size) - 2.0
+    mv = raster_scalar(body, np.where(near, v + 2.0, 0.0), size) - 2.0
+    ink = load_rgba(os.path.join(os.path.dirname(os.path.abspath(__file__)), tat["image"]))
+    h = ink.shape[0]
+    hit = (w > 0.999) & (mu >= 0) & (mu < 1) & (mv >= 0) & (mv < 1)
+    ys, xs = np.nonzero(hit)
+    a_ = ink[np.clip(((1.0 - mv[ys, xs]) * h).astype(int), 0, h - 1), np.clip((mu[ys, xs] * h).astype(int), 0, h - 1), 3] * 0.9
+    tint = srgb_to_lin(hex_srgb(tat["color"]))
+    lin[ys, xs] = lin[ys, xs] * (1.0 - a_[:, None]) + tint * a_[:, None]
+    notes.append("tattoo %s on %s, %d texels" % (os.path.basename(tat["image"]), tat["bone"], len(ys)))
+    return lin
 
 
 def raster_scalar(ob, values, size):
@@ -767,7 +812,7 @@ def tiled_slot(fid, cfg, built, out_dir, slot, objs, size):
                 alpha[m] = fn(u[m] * k, v[m] * k)
                 any_alpha = True
             if sp.get("emission"):
-                emis[m] = lin_to_srgb(target * sp["emission"])
+                emis[m] = lin_to_srgb((srgb_to_lin(hex_srgb(sp["emit_color"])) if sp.get("emit_color") else target) * sp["emission"])
             notes.append("%s: flat %s%s" % (objs[i].name, sp["color"], " + procedural lace" if "lace" in sp["set"] else ""))
             continue
         mp = acg_maps(sp["set"])
@@ -788,7 +833,7 @@ def tiled_slot(fid, cfg, built, out_dir, slot, objs, size):
         ao = sample(mp["ao"], uu, vv)[:, 0] if "ao" in mp else np.ones(m.sum())
         orm[m] = np.stack([0.35 + 0.65 * ao, r, np.full(m.sum(), sp["metallic"])], 1)
         if sp.get("emission"):
-            emis[m] = lin_to_srgb(target * sp["emission"])
+            emis[m] = lin_to_srgb((srgb_to_lin(hex_srgb(sp["emit_color"])) if sp.get("emit_color") else target) * sp["emission"])
         if sp.get("pattern"):
             n_emb = embroider(objs[i], sp["pattern"], size, m, base, orm, (np.maximum(L, 1e-4) / mp["lum_mean"]) ** g)
             notes.append("%s: %s embroidery in %s on %d texels" % (objs[i].name, sp["pattern"]["kind"], sp["pattern"]["thread"], n_emb))
@@ -988,10 +1033,12 @@ def write_set(fid, slot, out_dir, base, normal, orm, emissive, alpha):
     p = os.path.join(out_dir, "%s_%s_orm.png" % (fid, slot))
     save_png(p, orm, colorspace="Non-Color")
     files["orm"] = p
+    p = os.path.join(out_dir, "%s_%s_emissive.png" % (fid, slot))
     if emissive is not None:
-        p = os.path.join(out_dir, "%s_%s_emissive.png" % (fid, slot))
         save_png(p, emissive, colorspace="sRGB")
         files["emissive"] = p
+    elif os.path.exists(p):        # an earlier build's map would still be imported and still glow
+        os.remove(p)
     return files
 
 

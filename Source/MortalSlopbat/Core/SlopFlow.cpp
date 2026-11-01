@@ -29,7 +29,7 @@ namespace Slop
 
 	const FGameFlow::FTower& FGameFlow::Tower(int32 I)
 	{
-		static const FTower T[] = {{TEXT("Novice"), 3, false}, {TEXT("Warrior"), 4, false}, {TEXT("Master"), 4, true}};
+		static const FTower T[] = {{TEXT("Novice"), 3, false}, {TEXT("Warrior"), 4, false}, {TEXT("Grandmaster"), 4, true}};
 		return T[FMath::Clamp(I, 0, 2)];
 	}
 
@@ -39,7 +39,7 @@ namespace Slop
 		{
 		case 0: return LOCTEXT("Novice", "Novice");
 		case 1: return LOCTEXT("Warrior", "Warrior");
-		default: return LOCTEXT("Master", "Master");
+		default: return LOCTEXT("Grandmaster", "Grandmaster");
 		}
 	}
 
@@ -90,11 +90,54 @@ namespace Slop
 		{
 			Rungs.Add({Fighter, TEXT("drowned_chapel"), TEXT("mirror")});
 		}
+		// Hollis serves the Fragment and stands before it, unless he was this fighter's rival.
+		if (Rival != ServantId() && GetContent().Fighter(ServantId()))
+		{
+			Rungs.Add({ServantId(), StoryOf(ServantId(), TEXT("home")), TEXT("servant")});
+		}
 		if (GetContent().Fighter(TEXT("slopbat")))
 		{
 			Rungs.Add({TEXT("slopbat"), BossArena(), TEXT("boss")});
 		}
 		return Rungs;
+	}
+
+	TArray<FRung> FGameFlow::PlanStory() const
+	{
+		TArray<FRung> Rungs;
+		const TSharedPtr<FJsonObject> Story = Json::Obj(GetContent().Story, TEXT("story"));
+		if (const TArray<TSharedPtr<FJsonValue>>* Chapters = Json::Arr(Story, TEXT("chapters")))
+		{
+			for (const TSharedPtr<FJsonValue>& V : *Chapters)
+			{
+				const TSharedPtr<FJsonObject> C = V->AsObject();
+				FRung R;
+				R.Opponent = FName(*Json::Str(C, TEXT("opponent")));
+				R.Stage = FName(*Json::Str(C, TEXT("stage")));
+				R.Kind = FName(*Json::Str(C, TEXT("kind"), TEXT("fight")));
+				R.Player = FName(*Json::Str(C, TEXT("player")));
+				R.Outfit = FName(*Json::Str(C, TEXT("outfit")));
+				if (R.Kind == TEXT("boss"))
+				{
+					R.Stage = BossArena();
+				}
+				if (const TArray<TSharedPtr<FJsonValue>>* L = Json::Arr(C, TEXT("lines")))
+				{
+					for (const TSharedPtr<FJsonValue>& Line : *L)
+					{
+						R.Lines.Add(Line->AsString());
+					}
+				}
+				Rungs.Add(MoveTemp(R));
+			}
+		}
+		return Rungs;
+	}
+
+	void FGameFlow::StartStory(int32 TowerIndex)
+	{
+		StartArcade(TEXT("wren"), TowerIndex, PlanStory());
+		Arcade.bStory = true;
 	}
 
 	void FGameFlow::StartArcade(FName Fighter, int32 TowerIndex, const TArray<FRung>& Rungs)
@@ -108,8 +151,10 @@ namespace Slop
 		// The player's colours outlive the fresh configuration (here and below: Survival's Try Again
 		// had dropped them).
 		const bool bCostume = Config.bCostume[0];
+		const FName Outfit = Config.Outfit[0];
 		Config = FMatchConfig();
 		Config.bCostume[0] = bCostume;
+		Config.Outfit[0] = Outfit;
 		Config.Mode = EMode::Arcade;
 		Config.P1 = Fighter;
 		Config.Difficulty = TowerIndex;
@@ -122,10 +167,25 @@ namespace Slop
 		Config.P2 = R.Opponent;
 		Config.Stage = R.Stage;
 		Config.bMirrorDark = R.Kind == TEXT("mirror");
-		// The boss fight is a single long round, as the last stand should be.
+		// The boss fights are a single long round, as a last stand should be.
 		const bool bBoss = R.Kind == TEXT("boss");
-		Config.RoundsToWin = bBoss ? 1 : 2;
-		Config.P2Health = bBoss ? BossHealth[FMath::Clamp(Arcade.Tower, 0, 2)] : 0;
+		const bool bServant = R.Opponent == ServantId();
+		const int32 TowerIndex = FMath::Clamp(Arcade.Tower, 0, 2);
+		Config.RoundsToWin = bBoss || bServant ? 1 : 2;
+		Config.P2Health = bBoss ? BossHealth[TowerIndex] : (bServant ? ServantHealth[TowerIndex] : 0);
+		Config.bGuardian = bServant;
+		Config.GuardianPhase = R.Kind == TEXT("servant_one") ? 1 : (R.Kind == TEXT("servant_two") ? 2 : 0);
+		if (Config.GuardianPhase > 0)
+		{
+			Config.P2Health /= 2;
+		}
+		Config.P1 = R.Player.IsNone() ? Arcade.Fighter : R.Player;
+		if (Arcade.bStory)
+		{
+			Config.Outfit[0] = R.Outfit;
+		}
+		// A boss is beaten, not outlasted: no clock.
+		Config.RoundSeconds = bBoss || bServant ? 0 : FMatchConfig().RoundSeconds;
 		Config.P1Health = 0;
 		Config.Mode = EMode::Arcade;
 		// The old master fights at his best whatever the tower: the demonstration is the point.
@@ -177,7 +237,7 @@ namespace Slop
 	bool FGameFlow::SecretEarned() const
 	{
 		const FRung* R = CurrentRung();
-		return R && R->Kind == TEXT("boss") && Arcade.Continues == 0 && Arcade.Fighter != SecretFighter() && GetContent().Fighter(SecretFighter()) != nullptr;
+		return R && R->Kind == TEXT("boss") && (Arcade.bStory || Arcade.Continues == 0) && Arcade.Fighter != SecretFighter() && GetContent().Fighter(SecretFighter()) != nullptr;
 	}
 
 	void FGameFlow::AddSecretRung()
@@ -236,15 +296,17 @@ namespace Slop
 		Survival.Seed = Seed;
 		Arcade = FArcade();
 		const bool bCostume = Config.bCostume[0];
+		const FName Outfit = Config.Outfit[0];
 		Config = FMatchConfig();
 		Config.bCostume[0] = bCostume;
+		Config.Outfit[0] = Outfit;
 		Config.Mode = EMode::Survival;
 		Config.P1 = Fighter;
 		ConfigureWave();
 	}
 
-	// The next survival fight: the opponent (never the same twice running, the Slopbat on its
-	// waves), the stage, the difficulty and the health carried in.
+	// The next survival fight: the opponent (never the same twice running, Hollis and the Fragment
+	// in turn on the boss waves), the stage, the difficulty and the health carried in.
 	void FGameFlow::ConfigureWave()
 	{
 		const int32 Wave = Survival.Wave;
@@ -253,9 +315,12 @@ namespace Slop
 		const bool bBoss = SurvivalBossWave(Wave) && GetContent().Fighter(TEXT("slopbat"));
 		if (bBoss)
 		{
-			Config.P2 = TEXT("slopbat");
-			Config.Stage = BossArena();
-			Config.P2Health = BossHealth[Diff] - 200;
+			const bool bServant = (Wave / SurvivalBossEvery) % 2 == 0 && GetContent().Fighter(ServantId());
+			Config.P2 = bServant ? ServantId() : FName(TEXT("slopbat"));
+			Config.Stage = bServant ? StoryOf(ServantId(), TEXT("home")) : BossArena();
+			Config.P2Health = (bServant ? ServantHealth[Diff] : BossHealth[Diff]) - 200;
+			Config.bGuardian = bServant;
+			Config.GuardianPhase = 0;
 		}
 		else
 		{
@@ -270,6 +335,7 @@ namespace Slop
 			Config.P2 = Pool[Rng.RandRange(0, Pool.Num() - 1)];
 			Config.Stage = Arenas()[Rng.RandRange(0, Arenas().Num() - 1)];
 			Config.P2Health = 0;
+			Config.bGuardian = false;
 		}
 		Config.P1Health = Survival.Health;
 		Config.Difficulty = Diff;

@@ -1,11 +1,11 @@
 {
-	"accent": 0.5,
+	"accent": 0.15,
 	"build": {
-		"shoulders": 0.96,
-		"chest": 0.9,
-		"waist": 0.86,
-		"limbs": 0.92,
-		"hips": 0.92
+		"shoulders": 1.08,
+		"chest": 1.06,
+		"waist": 0.96,
+		"limbs": 1.04,
+		"hips": 0.98
 	},
 	"materials": {
 		"skin": {
@@ -15,41 +15,41 @@
 			"color": "#15110f"
 		},
 		"eyes": {
-			"color": "#8ad62a",
+			"color": "#9ee82a",
 			"emission": 2.6
 		},
 		"wrap": {
-			"color": "#2e3032",
+			"color": "#26282a",
 			"kind": "fabric",
 			"roughness": 0.9
 		},
 		"wrap_dark": {
-			"color": "#161718",
+			"color": "#0d0e0f",
 			"kind": "fabric",
 			"roughness": 0.85
 		},
 		"hood": {
-			"color": "#232527",
+			"color": "#1b1c1e",
 			"kind": "fabric",
 			"roughness": 0.92
 		},
 		"mask": {
-			"color": "#1a1b1c",
+			"color": "#0d0e0f",
 			"kind": "fabric",
 			"roughness": 0.9
 		},
 		"trousers": {
-			"color": "#28292b",
+			"color": "#1f2022",
 			"kind": "fabric",
 			"roughness": 0.9
 		},
 		"feet": {
-			"color": "#3b3936",
+			"color": "#141516",
 			"kind": "fabric",
 			"roughness": 0.85
 		},
 		"sash": {
-			"color": "#7aab26",
+			"color": "#8fdc1e",
 			"kind": "silk",
 			"roughness": 0.5
 		},
@@ -114,12 +114,12 @@
 	],
 	"sculpt": {
 		"figure": "male",
-		"muscle": 0.55,
+		"muscle": 0.72,
 		"face": {
 			"eye_open": 0.82,
 			"tilt": 4.0,
 			"brow": 1.1
 		}
 	},
-	"glow": "#8ad62a"
+	"glow": "#9ee82a"
 }

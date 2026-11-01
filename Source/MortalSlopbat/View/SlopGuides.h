@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Combat/SlopSim.h"
+#include "Core/SlopInputRouter.h"
 #include "Core/SlopSave.h"
 
 class ASlopMatch;
@@ -24,7 +25,7 @@ namespace Slop
 
 	// The tutorial (Ashka against Gorm): one prompt at a time, each checked against what actually
 	// happens. Gorm attacks on cue for the blocking steps; the last step asks for a knockout and a
-	// Sloptality.
+	// Hearted.
 	class FTutorial : public IGuide
 	{
 	public:
@@ -38,6 +39,7 @@ namespace Slop
 
 	private:
 		void Next();
+		void Word();
 		void ArmFinish();
 		FText Keys(EGameAction A) const;
 		double Reach(const FFighter& F, FName Move) const;
@@ -50,6 +52,7 @@ namespace Slop
 		bool bDone = false;
 		int32 RetryAt = -1;
 		FText PromptText;
+		EGlyphs Words = EGlyphs::Keyboard;
 	};
 
 	// Combo trials against the fighter's rival: one at a time, its inputs on screen, each hit
@@ -76,5 +79,6 @@ namespace Slop
 		FTrialCheck Check;
 		int32 BusyUntil = -1;
 		FText PromptText;
+		EGlyphs Words = EGlyphs::Keyboard;
 	};
 }

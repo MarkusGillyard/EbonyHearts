@@ -1,0 +1,4 @@
+# Story mode, the CPU playing Wren: every fight, Hollis, the Fragment, the Grandmaster, the ending.
+14:confirm,1.5:confirm
+-SlopAutoPlay=2
+660

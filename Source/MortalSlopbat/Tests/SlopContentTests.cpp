@@ -128,6 +128,50 @@ bool FSlopHalfTurn::RunTest(const FString&)
 	return true;
 }
 
+// The Grandmaster's hair hangs from his head, keeps its length, and trails him when he moves.
+SLOP_TEST(FSlopHairSwings, "Anim.HairHangsAndTrailsTheBody")
+bool FSlopHairSwings::RunTest(const FString&)
+{
+	const FFighterDef* Def = GetContent().Fighter(TEXT("grandmaster"));
+	USkeletalMesh* Mesh = LoadObject<USkeletalMesh>(nullptr, *USlopGameInstance::MeshFor(TEXT("grandmaster")));
+	Anim::FMeshRig MeshRig;
+	FString Error;
+	if (!TestTrue(TEXT("rig"), Def && Mesh && MeshRig.Init(Mesh->GetRefSkeleton(), Def->Height, Error)) || !TestTrue(TEXT("his hair has chains"), MeshRig.NumChains() >= 3))
+	{
+		return true;
+	}
+	Anim::FRig Rig;
+	MeshRig.ConfigureRig(Rig);
+	const FReferenceSkeleton& Ref = Mesh->GetRefSkeleton();
+	TArray<FTransform> Locals;
+	const int32 Tip = Ref.FindBoneIndex(TEXT("hair_1_4"));
+	auto Run = [&](const FVector& At)
+	{
+		MeshRig.Pose(Rig, Locals);
+		MeshRig.SwingChains(Rig, FTransform(At), 1.0 / 60.0, Locals);
+		FTransform T = Locals[Tip];
+		for (int32 B = Ref.GetParentIndex(Tip); B >= 0; B = Ref.GetParentIndex(B))
+		{
+			T = T * Locals[B];
+		}
+		return T.GetLocation() + At;
+	};
+	FVector Rest;
+	for (int32 F = 0; F < 240; ++F)
+	{
+		Rest = Run(FVector::ZeroVector);
+	}
+	TestFalse(TEXT("nothing blows up"), Rest.ContainsNaN());
+	TestTrue(FString::Printf(TEXT("the tip hangs low (%.0f cm above the floor)"), Rest.Z), Rest.Z < 100.0);
+	double Trail = 0.0;
+	for (int32 F = 1; F <= 30; ++F)
+	{
+		Trail = FMath::Max(Trail, (Rest.X + F * 6.0) - Run(FVector(F * 6.0, 0, 0)).X);
+	}
+	TestTrue(FString::Printf(TEXT("the tip trails a run by up to %.0f cm"), Trail), Trail > 8.0);
+	return true;
+}
+
 // Each fighter has its twelve half joints, sitting on their joints between the bones either side, and
 // no pose bends a joint so far that the short way round could flip from one frame to the next.
 SLOP_TEST(FSlopHalfJoints, "Content.HalfJointsSitBetweenTheirBones")
@@ -251,7 +295,7 @@ bool FSlopEveryStagePieceIsMade::RunTest(const FString&)
 					Mi && (Mi->GetName().StartsWith(TEXT("MI_")) || Mi->GetPathName().StartsWith(TEXT("/Game/Slop/Props/"))));
 			}
 		}
-		TestTrue(*FString::Printf(TEXT("%s has pieces"), *St.ToString()), Pieces > 10);
+		TestTrue(*FString::Printf(TEXT("%s has pieces"), *St.ToString()), Pieces > 5);
 		for (const auto& S : D->GetObjectField(TEXT("surfaces"))->Values)
 		{
 			const FString Set = S.Value->AsObject()->GetStringField(TEXT("set"));

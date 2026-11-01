@@ -1,12 +1,12 @@
 {
 	"id": "wren",
-	"name": "Wren",
-	"title": "The All-Rounder",
+	"name": "Wren Ku",
+	"title": "Punt",
 	"pronoun": "her",
-	"style": "Mixed martial arts and marsh-light",
-	"blurb": "A young all-rounder of elite discipline who strikes, throws and locks with equal precision, with a little marsh-light magic in her hands.",
+	"style": "Mixed Martial Arts and Look See Do",
+	"blurb": "Former undefeated WMMA bantamweight champion, 26 and 0, and the first the Outer Gods chose. Strikes, throws and locks with equal precision.",
 	"stats": {
-		"height": 1.68,
+		"height": 1.78,
 		"health": 1000,
 		"walk_f": 2.6,
 		"walk_b": 2.15,
@@ -56,7 +56,7 @@
 			]
 		},
 		"throw_f": {
-			"name": "Reaping Throw",
+			"name": "Suplex",
 			"throw": {
 				"frames": 40,
 				"damage_frame": 24,
@@ -377,21 +377,157 @@
 			],
 			"anim": {
 				"tip": "foot_r",
-				"keys": [[3, "mc_wren_head_kick_03", "linear"], [4, "mc_wren_head_kick_04", "linear"], [5, "mc_wren_head_kick_05", "linear"], [6, "mc_wren_head_kick_06", "linear"], [7, "mc_wren_head_kick_07", "linear"], [8, "mc_wren_head_kick_08", "linear"], [9, "mc_wren_head_kick_09", "linear"], [10, "mc_wren_head_kick_10", "linear"], [11, "mc_wren_head_kick_11", "linear"], [12, "mc_wren_head_kick_12", "linear"], [13, "mc_wren_head_kick_13", "linear"], [14, "mc_wren_head_kick_14", "linear"], [15, "mc_wren_head_kick_15", "linear"], [16, "mc_wren_head_kick_16", "linear"], [17, "mc_wren_head_kick_17", "linear"], [18, "mc_wren_head_kick_18", "linear"], [19, "mc_wren_head_kick_19", "linear"], [20, "mc_wren_head_kick_20", "linear"], [21, "mc_wren_head_kick_21", "linear"], [22, "mc_wren_head_kick_22", "linear"], [23, "mc_wren_head_kick_23", "linear"], [24, "mc_wren_head_kick_24", "linear"], [25, "mc_wren_head_kick_25", "linear"], [26, "mc_wren_head_kick_26", "linear"], [27, "mc_wren_head_kick_27", "linear"], [28, "mc_wren_head_kick_28", "linear"], [32, "stance", "inout"]]
+				"keys": [
+					[
+						3,
+						"mc_wren_head_kick_03",
+						"linear"
+					],
+					[
+						4,
+						"mc_wren_head_kick_04",
+						"linear"
+					],
+					[
+						5,
+						"mc_wren_head_kick_05",
+						"linear"
+					],
+					[
+						6,
+						"mc_wren_head_kick_06",
+						"linear"
+					],
+					[
+						7,
+						"mc_wren_head_kick_07",
+						"linear"
+					],
+					[
+						8,
+						"mc_wren_head_kick_08",
+						"linear"
+					],
+					[
+						9,
+						"mc_wren_head_kick_09",
+						"linear"
+					],
+					[
+						10,
+						"mc_wren_head_kick_10",
+						"linear"
+					],
+					[
+						11,
+						"mc_wren_head_kick_11",
+						"linear"
+					],
+					[
+						12,
+						"mc_wren_head_kick_12",
+						"linear"
+					],
+					[
+						13,
+						"mc_wren_head_kick_13",
+						"linear"
+					],
+					[
+						14,
+						"mc_wren_head_kick_14",
+						"linear"
+					],
+					[
+						15,
+						"mc_wren_head_kick_15",
+						"linear"
+					],
+					[
+						16,
+						"mc_wren_head_kick_16",
+						"linear"
+					],
+					[
+						17,
+						"mc_wren_head_kick_17",
+						"linear"
+					],
+					[
+						18,
+						"mc_wren_head_kick_18",
+						"linear"
+					],
+					[
+						19,
+						"mc_wren_head_kick_19",
+						"linear"
+					],
+					[
+						20,
+						"mc_wren_head_kick_20",
+						"linear"
+					],
+					[
+						21,
+						"mc_wren_head_kick_21",
+						"linear"
+					],
+					[
+						22,
+						"mc_wren_head_kick_22",
+						"linear"
+					],
+					[
+						23,
+						"mc_wren_head_kick_23",
+						"linear"
+					],
+					[
+						24,
+						"mc_wren_head_kick_24",
+						"linear"
+					],
+					[
+						25,
+						"mc_wren_head_kick_25",
+						"linear"
+					],
+					[
+						26,
+						"mc_wren_head_kick_26",
+						"linear"
+					],
+					[
+						27,
+						"mc_wren_head_kick_27",
+						"linear"
+					],
+					[
+						28,
+						"mc_wren_head_kick_28",
+						"linear"
+					],
+					[
+						32,
+						"stance",
+						"inout"
+					]
+				]
 			},
 			"sfx": {
 				"swing": "medium"
 			}
 		},
 		"wren_backfist": {
-			"name": "One-Two: backfist",
+			"name": "One-Two: spinning elbow",
 			"kind": "chain",
 			"startup": 10,
 			"active": 3,
 			"recovery": 18,
 			"level": "high",
 			"damage": 75,
-			"magic": 0.2,
+			"magic": 0.0,
 			"hitstun": 26,
 			"blockstun": 13,
 			"effect": "knockdown",
@@ -433,21 +569,147 @@
 			],
 			"anim": {
 				"tip": "hand_l",
-				"keys": [[4, "mc_wren_backfist_04", "linear"], [5, "mc_wren_backfist_05", "linear"], [6, "mc_wren_backfist_06", "linear"], [7, "mc_wren_backfist_07", "linear"], [8, "mc_wren_backfist_08", "linear"], [9, "mc_wren_backfist_09", "linear"], [10, "mc_wren_backfist_10", "linear"], [11, "mc_wren_backfist_11", "linear"], [12, "mc_wren_backfist_12", "linear"], [13, "mc_wren_backfist_13", "linear"], [14, "mc_wren_backfist_14", "linear"], [15, "mc_wren_backfist_15", "linear"], [16, "mc_wren_backfist_16", "linear"], [17, "mc_wren_backfist_17", "linear"], [18, "mc_wren_backfist_18", "linear"], [19, "mc_wren_backfist_19", "linear"], [20, "mc_wren_backfist_20", "linear"], [21, "mc_wren_backfist_21", "linear"], [22, "mc_wren_backfist_22", "linear"], [23, "mc_wren_backfist_23", "linear"], [24, "mc_wren_backfist_24", "linear"], [25, "mc_wren_backfist_25", "linear"], [26, "mc_wren_backfist_26", "linear"], [27, "mc_wren_backfist_27", "linear"], [31, "stance", "inout"]]
+				"keys": [
+					[
+						4,
+						"mc_wren_backfist_04",
+						"linear"
+					],
+					[
+						5,
+						"mc_wren_backfist_05",
+						"linear"
+					],
+					[
+						6,
+						"mc_wren_backfist_06",
+						"linear"
+					],
+					[
+						7,
+						"mc_wren_backfist_07",
+						"linear"
+					],
+					[
+						8,
+						"mc_wren_backfist_08",
+						"linear"
+					],
+					[
+						9,
+						"mc_wren_backfist_09",
+						"linear"
+					],
+					[
+						10,
+						"mc_wren_backfist_10",
+						"linear"
+					],
+					[
+						11,
+						"mc_wren_backfist_11",
+						"linear"
+					],
+					[
+						12,
+						"mc_wren_backfist_12",
+						"linear"
+					],
+					[
+						13,
+						"mc_wren_backfist_13",
+						"linear"
+					],
+					[
+						14,
+						"mc_wren_backfist_14",
+						"linear"
+					],
+					[
+						15,
+						"mc_wren_backfist_15",
+						"linear"
+					],
+					[
+						16,
+						"mc_wren_backfist_16",
+						"linear"
+					],
+					[
+						17,
+						"mc_wren_backfist_17",
+						"linear"
+					],
+					[
+						18,
+						"mc_wren_backfist_18",
+						"linear"
+					],
+					[
+						19,
+						"mc_wren_backfist_19",
+						"linear"
+					],
+					[
+						20,
+						"mc_wren_backfist_20",
+						"linear"
+					],
+					[
+						21,
+						"mc_wren_backfist_21",
+						"linear"
+					],
+					[
+						22,
+						"mc_wren_backfist_22",
+						"linear"
+					],
+					[
+						23,
+						"mc_wren_backfist_23",
+						"linear"
+					],
+					[
+						24,
+						"mc_wren_backfist_24",
+						"linear"
+					],
+					[
+						25,
+						"mc_wren_backfist_25",
+						"linear"
+					],
+					[
+						26,
+						"mc_wren_backfist_26",
+						"linear"
+					],
+					[
+						27,
+						"mc_wren_backfist_27",
+						"linear"
+					],
+					[
+						31,
+						"stance",
+						"inout"
+					]
+				]
 			},
 			"sfx": {
 				"swing": "medium"
 			}
 		},
 		"turning_light": {
-			"name": "Turning Light",
+			"name": "Spinning Heel Kick",
 			"kind": "special",
 			"startup": 12,
 			"active": 4,
 			"recovery": 22,
 			"level": "mid",
 			"damage": 95,
-			"magic": 0.25,
+			"magic": 0.0,
 			"chip": 12,
 			"hitstun": 26,
 			"blockstun": 14,
@@ -498,21 +760,182 @@
 			],
 			"anim": {
 				"tip": "foot_r",
-				"keys": [[4, "mc_turning_light_04", "linear"], [5, "mc_turning_light_05", "linear"], [6, "mc_turning_light_06", "linear"], [7, "mc_turning_light_07", "linear"], [8, "mc_turning_light_08", "linear"], [9, "mc_turning_light_09", "linear"], [10, "mc_turning_light_10", "linear"], [11, "mc_turning_light_11", "linear"], [12, "mc_turning_light_12", "linear"], [13, "mc_turning_light_13", "linear"], [14, "mc_turning_light_14", "linear"], [15, "mc_turning_light_15", "linear"], [16, "mc_turning_light_16", "linear"], [17, "mc_turning_light_17", "linear"], [18, "mc_turning_light_18", "linear"], [19, "mc_turning_light_19", "linear"], [20, "mc_turning_light_20", "linear"], [21, "mc_turning_light_21", "linear"], [22, "mc_turning_light_22", "linear"], [23, "mc_turning_light_23", "linear"], [24, "mc_turning_light_24", "linear"], [25, "mc_turning_light_25", "linear"], [26, "mc_turning_light_26", "linear"], [27, "mc_turning_light_27", "linear"], [28, "mc_turning_light_28", "linear"], [29, "mc_turning_light_29", "linear"], [30, "mc_turning_light_30", "linear"], [31, "mc_turning_light_31", "linear"], [32, "mc_turning_light_32", "linear"], [33, "mc_turning_light_33", "linear"], [34, "mc_turning_light_34", "linear"], [38, "stance", "inout"]]
+				"keys": [
+					[
+						4,
+						"mc_turning_light_04",
+						"linear"
+					],
+					[
+						5,
+						"mc_turning_light_05",
+						"linear"
+					],
+					[
+						6,
+						"mc_turning_light_06",
+						"linear"
+					],
+					[
+						7,
+						"mc_turning_light_07",
+						"linear"
+					],
+					[
+						8,
+						"mc_turning_light_08",
+						"linear"
+					],
+					[
+						9,
+						"mc_turning_light_09",
+						"linear"
+					],
+					[
+						10,
+						"mc_turning_light_10",
+						"linear"
+					],
+					[
+						11,
+						"mc_turning_light_11",
+						"linear"
+					],
+					[
+						12,
+						"mc_turning_light_12",
+						"linear"
+					],
+					[
+						13,
+						"mc_turning_light_13",
+						"linear"
+					],
+					[
+						14,
+						"mc_turning_light_14",
+						"linear"
+					],
+					[
+						15,
+						"mc_turning_light_15",
+						"linear"
+					],
+					[
+						16,
+						"mc_turning_light_16",
+						"linear"
+					],
+					[
+						17,
+						"mc_turning_light_17",
+						"linear"
+					],
+					[
+						18,
+						"mc_turning_light_18",
+						"linear"
+					],
+					[
+						19,
+						"mc_turning_light_19",
+						"linear"
+					],
+					[
+						20,
+						"mc_turning_light_20",
+						"linear"
+					],
+					[
+						21,
+						"mc_turning_light_21",
+						"linear"
+					],
+					[
+						22,
+						"mc_turning_light_22",
+						"linear"
+					],
+					[
+						23,
+						"mc_turning_light_23",
+						"linear"
+					],
+					[
+						24,
+						"mc_turning_light_24",
+						"linear"
+					],
+					[
+						25,
+						"mc_turning_light_25",
+						"linear"
+					],
+					[
+						26,
+						"mc_turning_light_26",
+						"linear"
+					],
+					[
+						27,
+						"mc_turning_light_27",
+						"linear"
+					],
+					[
+						28,
+						"mc_turning_light_28",
+						"linear"
+					],
+					[
+						29,
+						"mc_turning_light_29",
+						"linear"
+					],
+					[
+						30,
+						"mc_turning_light_30",
+						"linear"
+					],
+					[
+						31,
+						"mc_turning_light_31",
+						"linear"
+					],
+					[
+						32,
+						"mc_turning_light_32",
+						"linear"
+					],
+					[
+						33,
+						"mc_turning_light_33",
+						"linear"
+					],
+					[
+						34,
+						"mc_turning_light_34",
+						"linear"
+					],
+					[
+						38,
+						"stance",
+						"inout"
+					]
+				]
 			},
 			"sfx": {
 				"swing": "heavy"
 			}
 		},
 		"flying_cross": {
-			"name": "Flying Cross",
+			"name": "Flying Knee",
 			"kind": "special",
 			"startup": 10,
 			"active": 4,
 			"recovery": 19,
 			"level": "high",
 			"damage": 60,
-			"magic": 0.2,
+			"magic": 0.0,
 			"chip": 8,
 			"hitstun": 22,
 			"blockstun": 14,
@@ -555,17 +978,17 @@
 					],
 					[
 						8,
-						"hp2_load",
+						"jkn_load",
 						"linear"
 					],
 					[
 						10,
-						"hp2_hit",
+						"jkn_hit",
 						"snap"
 					],
 					[
 						14,
-						"hp2_hit",
+						"jkn_hit",
 						"linear"
 					],
 					[
@@ -580,14 +1003,14 @@
 			}
 		},
 		"lifting_light": {
-			"name": "Lifting Light",
+			"name": "Tornado Kick",
 			"kind": "special",
 			"startup": 6,
 			"active": 5,
 			"recovery": 24,
 			"level": "mid",
 			"damage": 90,
-			"magic": 0.3,
+			"magic": 0.0,
 			"chip": 12,
 			"hitstun": 28,
 			"blockstun": 14,
@@ -635,14 +1058,170 @@
 			],
 			"anim": {
 				"tip": "foot_r",
-				"keys": [[2, "mc_lifting_light_02", "linear"], [3, "mc_lifting_light_03", "linear"], [4, "mc_lifting_light_04", "linear"], [5, "mc_lifting_light_05", "linear"], [6, "mc_lifting_light_06", "linear"], [7, "mc_lifting_light_07", "linear"], [8, "mc_lifting_light_08", "linear"], [9, "mc_lifting_light_09", "linear"], [10, "mc_lifting_light_10", "linear"], [11, "mc_lifting_light_11", "linear"], [12, "mc_lifting_light_12", "linear"], [13, "mc_lifting_light_13", "linear"], [14, "mc_lifting_light_14", "linear"], [15, "mc_lifting_light_15", "linear"], [16, "mc_lifting_light_16", "linear"], [17, "mc_lifting_light_17", "linear"], [18, "mc_lifting_light_18", "linear"], [19, "mc_lifting_light_19", "linear"], [20, "mc_lifting_light_20", "linear"], [21, "mc_lifting_light_21", "linear"], [22, "mc_lifting_light_22", "linear"], [23, "mc_lifting_light_23", "linear"], [24, "mc_lifting_light_24", "linear"], [25, "mc_lifting_light_25", "linear"], [26, "mc_lifting_light_26", "linear"], [27, "mc_lifting_light_27", "linear"], [28, "mc_lifting_light_28", "linear"], [29, "mc_lifting_light_29", "linear"], [30, "mc_lifting_light_30", "linear"], [31, "mc_lifting_light_31", "linear"], [35, "stance", "inout"]]
+				"keys": [
+					[
+						2,
+						"mc_lifting_light_02",
+						"linear"
+					],
+					[
+						3,
+						"mc_lifting_light_03",
+						"linear"
+					],
+					[
+						4,
+						"mc_lifting_light_04",
+						"linear"
+					],
+					[
+						5,
+						"mc_lifting_light_05",
+						"linear"
+					],
+					[
+						6,
+						"mc_lifting_light_06",
+						"linear"
+					],
+					[
+						7,
+						"mc_lifting_light_07",
+						"linear"
+					],
+					[
+						8,
+						"mc_lifting_light_08",
+						"linear"
+					],
+					[
+						9,
+						"mc_lifting_light_09",
+						"linear"
+					],
+					[
+						10,
+						"mc_lifting_light_10",
+						"linear"
+					],
+					[
+						11,
+						"mc_lifting_light_11",
+						"linear"
+					],
+					[
+						12,
+						"mc_lifting_light_12",
+						"linear"
+					],
+					[
+						13,
+						"mc_lifting_light_13",
+						"linear"
+					],
+					[
+						14,
+						"mc_lifting_light_14",
+						"linear"
+					],
+					[
+						15,
+						"mc_lifting_light_15",
+						"linear"
+					],
+					[
+						16,
+						"mc_lifting_light_16",
+						"linear"
+					],
+					[
+						17,
+						"mc_lifting_light_17",
+						"linear"
+					],
+					[
+						18,
+						"mc_lifting_light_18",
+						"linear"
+					],
+					[
+						19,
+						"mc_lifting_light_19",
+						"linear"
+					],
+					[
+						20,
+						"mc_lifting_light_20",
+						"linear"
+					],
+					[
+						21,
+						"mc_lifting_light_21",
+						"linear"
+					],
+					[
+						22,
+						"mc_lifting_light_22",
+						"linear"
+					],
+					[
+						23,
+						"mc_lifting_light_23",
+						"linear"
+					],
+					[
+						24,
+						"mc_lifting_light_24",
+						"linear"
+					],
+					[
+						25,
+						"mc_lifting_light_25",
+						"linear"
+					],
+					[
+						26,
+						"mc_lifting_light_26",
+						"linear"
+					],
+					[
+						27,
+						"mc_lifting_light_27",
+						"linear"
+					],
+					[
+						28,
+						"mc_lifting_light_28",
+						"linear"
+					],
+					[
+						29,
+						"mc_lifting_light_29",
+						"linear"
+					],
+					[
+						30,
+						"mc_lifting_light_30",
+						"linear"
+					],
+					[
+						31,
+						"mc_lifting_light_31",
+						"linear"
+					],
+					[
+						35,
+						"stance",
+						"inout"
+					]
+				]
 			},
 			"sfx": {
 				"swing": "medium"
 			}
 		},
 		"bar_the_door": {
-			"name": "Bar the Door",
+			"name": "Armbar Counter",
 			"kind": "special",
 			"startup": 3,
 			"active": 0,
@@ -690,7 +1269,7 @@
 			}
 		},
 		"wren_armlock": {
-			"name": "Bar the Door: armlock",
+			"name": "Armbar",
 			"kind": "grab",
 			"startup": 1,
 			"active": 3,
@@ -815,14 +1394,14 @@
 			]
 		},
 		"flicker_step": {
-			"name": "Flicker Step",
+			"name": "Slip Step",
 			"kind": "special",
 			"startup": 1,
 			"active": 0,
 			"recovery": 0,
 			"total": 18,
 			"level": "none",
-			"magic": 1.0,
+			"magic": 0.0,
 			"motion": [
 				[
 					2,
@@ -874,14 +1453,14 @@
 			}
 		},
 		"flicker_back": {
-			"name": "Flicker Step (back)",
+			"name": "Slip Back",
 			"kind": "special",
 			"startup": 1,
 			"active": 0,
 			"recovery": 0,
 			"total": 20,
 			"level": "none",
-			"magic": 1.0,
+			"magic": 0.0,
 			"motion": [
 				[
 					2,
@@ -929,7 +1508,7 @@
 			}
 		},
 		"wisp_feint": {
-			"name": "Wisp Feint",
+			"name": "Feint",
 			"kind": "special",
 			"startup": 1,
 			"active": 0,
@@ -974,7 +1553,7 @@
 			}
 		},
 		"led_astray": {
-			"name": "Led Astray",
+			"name": "Punt",
 			"kind": "finisher",
 			"startup": 1,
 			"active": 0,
@@ -983,17 +1562,22 @@
 			"anim": {
 				"keys": [
 					[
-						12,
-						"wren_beckon",
-						"inout"
+						18,
+						"rh_turn",
+						"out"
 					],
 					[
-						150,
-						"wren_beckon",
+						36,
+						"rh_hit",
+						"snap"
+					],
+					[
+						70,
+						"rh_hit",
 						"linear"
 					],
 					[
-						190,
+						130,
 						"stance",
 						"inout"
 					],
@@ -1003,6 +1587,215 @@
 						"inout"
 					]
 				]
+			}
+		},
+		"spinning_back_kick": {
+			"name": "Spinning Back Kick",
+			"kind": "special",
+			"startup": 13,
+			"active": 4,
+			"recovery": 24,
+			"level": "mid",
+			"damage": 90,
+			"hitstun": 26,
+			"blockstun": 14,
+			"effect": "knockdown",
+			"launch": [
+				3.8,
+				3.4
+			],
+			"hitstop": 12,
+			"push_block": 0.8,
+			"motion": [
+				[
+					6,
+					0.1
+				],
+				[
+					13,
+					0.3
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.25,
+						0.8,
+						0.8,
+						0.5
+					]
+				}
+			],
+			"anim": {
+				"tip": "foot_r",
+				"keys": [
+					[
+						6,
+						"wren_spin_load",
+						"out"
+					],
+					[
+						10,
+						"wren_720_b",
+						"inout"
+					],
+					[
+						13,
+						"rh_hit",
+						"snap"
+					],
+					[
+						17,
+						"rh_hit",
+						"linear"
+					],
+					[
+						41,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"hook_720": {
+			"name": "720 Hook Kick",
+			"kind": "special",
+			"startup": 30,
+			"active": 4,
+			"recovery": 28,
+			"level": "high",
+			"damage": 150,
+			"hitstun": 30,
+			"blockstun": 16,
+			"effect": "knockdown",
+			"launch": [
+				4.0,
+				4.2
+			],
+			"hitstop": 14,
+			"push_block": 0.9,
+			"motion": [
+				[
+					8,
+					0.1
+				],
+				[
+					30,
+					0.7
+				]
+			],
+			"lift": [
+				[
+					6,
+					0.0
+				],
+				[
+					18,
+					0.75
+				],
+				[
+					34,
+					0.0
+				]
+			],
+			"props": {
+				"airborne": [
+					6,
+					34
+				]
+			},
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						1.15,
+						0.95,
+						0.55
+					]
+				}
+			],
+			"anim": {
+				"tip": "foot_r",
+				"keys": [
+					[
+						6,
+						"wren_720_a",
+						"out"
+					],
+					[
+						12,
+						"wren_720_b",
+						"inout"
+					],
+					[
+						18,
+						"wren_720_c",
+						"linear"
+					],
+					[
+						24,
+						"wren_720_d",
+						"linear"
+					],
+					[
+						30,
+						"wren_720_hit",
+						"snap"
+					],
+					[
+						34,
+						"wren_720_hit",
+						"linear"
+					],
+					[
+						62,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"spirit_strikes": {
+			"name": "Spirit Enhanced Strikes",
+			"kind": "special",
+			"startup": 14,
+			"active": 0,
+			"recovery": 14,
+			"level": "none",
+			"effects": {
+				"buff": "spirit",
+				"buff_frame": 12,
+				"buff_ticks": 420,
+				"buff_hits": 999
+			},
+			"anim": {
+				"tip": "chest",
+				"keys": [
+					[
+						6,
+						"wren_beckon",
+						"out"
+					],
+					[
+						14,
+						"wren_beckon",
+						"linear"
+					],
+					[
+						28,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "charge"
 			}
 		}
 	},
@@ -1034,6 +1827,18 @@
 		[
 			"D,B+LK",
 			"wisp_feint"
+		],
+		[
+			"D,B+HK",
+			"spinning_back_kick"
+		],
+		[
+			"D,F,D,B+HK",
+			"hook_720"
+		],
+		[
+			"D,D+HP",
+			"spirit_strikes"
 		]
 	],
 	"finisher": {
@@ -1056,7 +1861,9 @@
 			"turning_light": 0.8,
 			"flicker_step": 0.5,
 			"throw_f": 0.6,
-			"flying_cross": 0.8
+			"flying_cross": 0.8,
+			"spinning_back_kick": 0.5,
+			"hook_720": 0.12
 		},
 		"approach": [
 			"F,F+LK"
@@ -1086,6 +1893,7 @@
 		],
 		"juggle": [
 			"D,U+LK"
-		]
+		],
+		"buff": "D,D+HP"
 	}
 }

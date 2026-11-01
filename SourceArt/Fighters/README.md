@@ -65,7 +65,7 @@ Tools/blender/run_blender.sh Tools/blender/render_fighter.py -- gorm
 - No leaf bones, deform bones only, face smoothing groups, tangents and binormals.
 - The bone names are the UE4 mannequin's, without its twist and IK bones (`game_engine` rig from MPFB, root renamed `root`).
 - Twelve helper bones sit on the limb joints, `shoulder_half_l`, `elbow_half_l`, `wrist_half_l`, `hip_half_l`, `knee_half_l`, `ankle_half_l` and the same on the right. Each takes the middle of its joint's skin blend and turns half way between the bones either side, so a bent or twisted joint keeps its width (`Tools/blender/fighter_joints.py`; `FMeshRig::Pose` turns them in the game).
-- The only other extra bones are the Slopbat's wing bones: `wing_l_01` (parent `clavicle_l`) → `wing_l_02` → `wing_l_03`, and the same on the right. The 53 standard bones keep their names and hierarchy.
+- The only other extra bones are the Fragment's wing bones: `wing_l_01` (parent `clavicle_l`) → `wing_l_02` → `wing_l_03`, and the same on the right. The 53 standard bones keep their names and hierarchy.
 - The wings rest folded at the back. The membrane is weighted from the spar bones (outer edge) to `spine_03`/`spine_02`/`pelvis` (inner edge), so rotating `wing_*_01` opens the wing.
 - Standing height is floor to the top of the skull, boots included:
 
@@ -119,6 +119,9 @@ Garments are meshes authored by the script on that body. Most are **shells**: co
 
 **Gorm Tallow** (bald)
 
+From his sheet of 30 October 2026, `gorm_yard` in `Tools/blender/fighter_outfits3.py` builds on `gorm()` and lays a stripe, knee
+patches, toe caps and guard straps over it. His face and skin changed too; his old body is in `Archive/Gorm`.
+
 | Part | Made from | Weights |
 |---|---|---|
 | Scalp | The skin's painted hair is repainted with forehead tone | — |
@@ -142,26 +145,30 @@ Garments are meshes authored by the script on that body. Most are **shells**: co
 | Loose trousers (`Fabric066`) | Leg shell gathered into the shins | Body |
 | Shin wraps, forearm bands, hand wraps, split-toe foot wraps | Shells and section rings | Body; bands transferred from the body |
 | Chest cross straps | Ribbons | Transferred from the body |
-| Slop-green sash (`Fabric040`) | Band with a knot at the left hip | Body; knot rigid `pelvis` |
+| Acid-green sash (`Fabric040`) | Band with a knot at the left hip | Body; knot rigid `pelvis` |
 | Two sash tails | Ribbons | `pelvis` → 50% `thigh_l` |
 | Kusarigama (`Wood051` handle, `Metal055A` blade and chain) | Wood handle, steel blade, 14-link chain with a weight | Rigid `hand_r` |
 
 **Mirela Sorrow**
 
+From her sheet of 30 October 2026, `mirela_habit` in `Tools/blender/fighter_outfits3.py`. Her old mourning gown is
+kept in `Archive/Mirela` and its recipe is still `mirela()` in `fighter_outfits2.py`.
+
 | Part | Made from | Weights |
 |---|---|---|
-| Ash-ivory gown (`Fabric040`, `#b6b0a1`: greyer and darker than her skin) | Bodice with a high collar to the throat and long sleeves in one shell; the upper sleeves puffed out (leg-of-mutton) and gathered under the shoulder | Body |
-| Black cuffs, choker | Section rings at the wrists and over the collar top | Transferred from the body |
-| Black overbust corset (`Fabric040`) | Shell over the bust and waist (bust flattened under it), straight across the front, dipping under the arms, pointed at the front hem, shallow seam grooves | Body |
-| Ivory piping | Strips laid on the corset's outer surface along both edges and down ten seams (centre-front busk, side and back seams) | Transferred from the body |
-| Black close lace (`veil` slot) | Shell from the corset top to the collar over the chest, shoulders and upper back; alpha lace generated in code (flowers on a net, about 70% cover) | Body |
-| Long skirt | Two wrap-over panels from the waist (tucked under the corset), overlapping at the front and back; the panels share leg weights where they overlap, so the front stays closed | Body above the hips, then `pelvis` with a thigh share falling from front to back; below the knee the hem rides the shins and the pelvis share is capped by height, so it stays above the floor in a deep crouch |
-| Leggings (`#a7a193`) | Leg shell, smoothed and decimated (mostly hidden) | Body |
-| Black gloves (`Leather026`), short boots | Hand shell including fingers; boot loft | Body |
-| Black lace veil | Wrap sheet over the hair, open at the face, alpha lace generated in code | Transferred from the body |
-| Hair | MakeHuman `long01`, lifted clear of the corset and piping where it lies on the back | MPFB |
+| Black habit (`Fabric066`) | Bodice and long sleeves in one shell, high at the throat, wide at the wrist, loose over the chest (the body under it is softened first, or the collision pass brings its shape back through the cloth) | Body |
+| Long skirt | Two wrap-over panels from the waist, overlapping at the front and back; the flare is ramped (`max_slope`) so the legs entering a column make no step in the silhouette | Body above the hips, then `pelvis` with a thigh share falling from front to back; below the knee the hem rides the shins |
+| Cord | A short sheet round the skirt's top | Transferred from the body |
+| White collar (`Fabric001`) | Section rings at the throat, over the habit's top edge | Transferred from the body |
+| Black veil | Wrap sheet over the hair, open at the face, with a white strip under each front edge | Transferred from the body |
+| Leggings, plain shoes | Leg shell (mostly hidden), boot loft | Body |
+| Hair | MakeHuman `long01`, lengthened below the veil and hung on three swinging chains (`flowing_hair`) | MPFB, then `hair_<c>_<n>` |
 
 **Bram Ketch**
+
+His sheet of 30 October 2026 made him 1.91 m, lean and muscular; he was 1.86 m and broad (`Archive/Bram`). `bram_coat_off` is
+the same build with an undershirt for the coat. The tattoo is painted into the skin by `paint_tattoo` in `fighter_tex.py` from
+`Tools/blender/tattoos/bram_the_law_is_order.png`, wherever the clothes leave that skin; under the coat there is none to paint.
 
 | Part | Made from | Weights |
 |---|---|---|
@@ -190,7 +197,7 @@ Garments are meshes authored by the script on that body. Most are **shells**: co
 | Harpoon gun | Lathe parts | Rigid `hand_r` |
 | Head | Only the face is kept inside the helmet | Body |
 
-**The Slopbat**
+**The Fragment**
 
 | Part | Made from | Weights |
 |---|---|---|
@@ -253,7 +260,7 @@ Everything that ships is either CC0 or first-party. Nothing in the FBX/PNGs come
 | MPFB bundled assets: base mesh, targets, `game_engine` rig and weights | CC0 1.0 | `LICENSE.md` §C (same folder); `data/3dobjs/base.obj` header; `weights.game_engine.json` `"license": "CC0"` |
 | MakeHuman system assets used: skins `young_african_female`, `young_caucasian_male`, `young_caucasian_female`, `young_asian_male`, `middleage_caucasian_male`, `middleage_african_male`, `old_caucasian_male`, `old_asian_male`; eyes `high-poly`/`low-poly` with `brownlight`, `brown`, `grey`, `green`, `lightblue`, `deepblue` textures; eyebrows `001`, `002`, `003`, `005`, `006`, `008`; eyelashes `01`–`03`; hair `ponytail01`, `long01`, `short02` | CC0 1.0 | `packs/makehuman_system_assets.json` (all 94 assets CC0) and the CC0 header in every asset file; SHA-256 and URLs in `SourceArt/ThirdParty/MakeHuman/PROVENANCE.json` |
 | ambientCG `Leather021`, `Leather026`, `Fabric040`, `Fabric001`, `Fabric066`, `Fabric034`, `Metal042A`, `Metal055A`, and `Wood051` (an existing stage entry, reused for the baton and sickle handle) (1K JPG) | CC0 1.0 | Ledger entries `ambientcg/<id>` in `SourceArt/ThirdParty/ledger.json`, with saved asset pages, SHA-256 and the four rights conclusions |
-| Garment geometry, recoloured and atlased textures, procedural lace, veins, beard fur, braided hair, cloud embroidery and stitching, build scripts | First-party (Mortal Slopbat) | Generated by `Tools/blender/` |
+| Garment geometry, recoloured and atlased textures, procedural lace, veins, beard fur, braided hair, cloud embroidery and stitching, build scripts | First-party (Ebony Hearts) | Generated by `Tools/blender/` |
 
 Notes:
 
@@ -272,7 +279,7 @@ Notes:
 - **Nix's chain** and other props are rigid to one bone.
 - **Long skirts and tails** follow a share of the thighs: in high kicks and crouches they lift like panels. Coat tails and the other long skirts can dip below the floor in a deep crouch; Mirela's skirt hands its hem to the shins and stays above it (lowest skirt vertex 2.2 cm above the soles in the review crouch).
 - **The fist poses** in the review renders are rough: the pose library is a deformation check, not animation.
-- **Rebuilds are not all bit-identical.** Ashka, Gorm and Nix come out slightly different from run to run: Blender's nearest-surface queries break ties differently, which moves a few vertices of some shells (vest, waistband, belt, hood, mask) by up to about 2 cm and changes the UV packing. Mirela, Hollis, the Slopbat and Daxion rebuilt identically in checks.
+- **Rebuilds are not all bit-identical.** Ashka, Gorm and Nix come out slightly different from run to run: Blender's nearest-surface queries break ties differently, which moves a few vertices of some shells (vest, waistband, belt, hood, mask) by up to about 2 cm and changes the UV packing. Mirela, Hollis, the Fragment and Daxion rebuilt identically in checks.
 - **Vest straps** come to small peaks where they meet the neck, and the waistband's lower edge ripples slightly.
 - **Wren**: the braids are rigid on the scalp and skinned, not simulated, below the nape; seen edge-on the braid lobes read slightly beaded. The jacket's skirt panels are short, so a raised thigh still passes partly through the front panel in the review kick.
 - **The Grandmaster**: in the deep crouch the knees press through the front skirt panels (as with the other long skirts); with both arms high the sleeves bunch round the elbow. The robe and sash ends sway through the material only.

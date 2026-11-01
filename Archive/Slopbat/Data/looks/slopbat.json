@@ -1,0 +1,22 @@
+{
+	"build": {"shoulders": 1.04, "chest": 0.84, "waist": 0.72, "limbs": 0.8, "hips": 0.86},
+	"materials": {
+		"skin": {"color": "#121a10", "kind": "leather", "roughness": 0.26},
+		"lips": {"color": "#0a0f08", "kind": "leather", "roughness": 0.3},
+		"brows": {"color": "#0a0f08"},
+		"eyes": {"color": "#8cff3c", "emission": 2.4},
+		"vein": {"color": "#4fae24", "kind": "glow", "roughness": 0.3},
+		"horn": {"color": "#2b2a22", "kind": "leather", "roughness": 0.45},
+		"claw": {"color": "#26241c", "kind": "metal", "roughness": 0.3, "metallic": 0.2},
+		"membrane": {"color": "#18200f", "kind": "leather", "roughness": 0.42, "backlight": "#28501a"},
+		"spar": {"color": "#10160d", "roughness": 0.3}
+	},
+	"hair": {"brows": 0.0},
+	"cloth": [{"kind": "skirt", "joint": "chest", "material": "membrane", "top": -0.02, "rx": 0.11, "rz": 0.09, "length": 0.42, "flare": 0.09, "cols": 14, "rows": 7, "shape": 0.06, "gap": 0.34, "folds": 0.02, "fold_count": 10}],
+	"props": [
+		{"kind": "wing", "joint": "chest", "side": 1, "offset": [0.07, 0.06, 0.07]},
+		{"kind": "wing", "joint": "chest", "side": -1, "offset": [-0.07, 0.06, 0.07]}
+	],
+	"sculpt": {"figure": "male", "muscle": 0.95, "face": {"jaw": 1.25, "chin": 1.2, "nose": 0.75, "lips": 0.7, "brow": 1.5, "cheek": 0.8, "eye_open": 1.15, "tilt": -8.0}},
+	"glow": "#7dff3a"
+}

@@ -33,7 +33,7 @@ public:
 
 private:
 	// Qhi: the Grandmaster's gold; Wisp: Wren's fen-light teal.
-	enum class EKind : uint8 { Spark, Ember, Blood, Dust, Slop, Ring, Disc, Pale, Qhi, Wisp, Count };
+	enum class EKind : uint8 { Spark, Ember, Blood, Dust, Slop, Ring, Disc, Pale, Qhi, Wisp, Flame, Count };
 	struct FParticle { FVector P; FVector V; double Life; double Age; double Size; double Grow; double Drag; double Gravity; FRotator R; };
 	void Spawn(EKind K, const FVector& P, const FVector& V, double Life, double Size, double Grow = 0, double Drag = 2.0, double Gravity = 9.8);
 	void Burst(EKind K, const FVector& P, int32 N, double Speed, double Life, double Size, const FVector& Bias = FVector::ZeroVector);

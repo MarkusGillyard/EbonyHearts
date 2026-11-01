@@ -77,6 +77,31 @@ namespace Slop::Anim
 				HalfJoints.Add({Bone, HN.Upper, HN.Lower, Along.GetSafeNormal()});
 			}
 		}
+		Chains.Reset();
+		for (int32 C = 0;; ++C)
+		{
+			FChain Chain;
+			for (int32 L = 0;; ++L)
+			{
+				const int32 Bone = Find(*FString::Printf(TEXT("hair_%d_%d"), C, L));
+				if (Bone == INDEX_NONE)
+				{
+					break;
+				}
+				Chain.Bones.Add(Bone);
+			}
+			if (Chain.Bones.Num() < 2)
+			{
+				break;
+			}
+			for (int32 L = 0; L + 1 < Chain.Bones.Num(); ++L)
+			{
+				Chain.Lens.Add(FVector::Dist(RefCS[Chain.Bones[L]].GetLocation(), RefCS[Chain.Bones[L + 1]].GetLocation()));
+			}
+			const double LastLen = Chain.Lens.Last();
+			Chain.Lens.Add(LastLen);
+			Chains.Add(MoveTemp(Chain));
+		}
 		auto CS = [&](EJoint J) { return RefCS[BoneOf[(int32)J]].GetLocation(); };
 		// The mesh's own axes: up is +Z; right runs from the left shoulder to the right; forward is
 		// where the toes point.
@@ -246,6 +271,95 @@ namespace Slop::Anim
 		OutBone = Half.Bone;
 		OutUpper = BoneOf[(int32)Half.Upper];
 		OutLower = BoneOf[(int32)Half.Lower];
+	}
+
+	void FMeshRig::SwingChains(const FRig& Rig, const FTransform& Component, double Delta, TArray<FTransform>& InOutLocal)
+	{
+		if (Chains.Num() == 0)
+		{
+			return;
+		}
+		static constexpr double Gravity = 880.0;    // cm/s^2: lighter than a falling body, hair drags
+		static constexpr double Damping = 4.6;      // per second
+		static constexpr double Shape = 3.0;        // per second, the pull back to hanging from the head
+		const double Dt = FMath::Min(Delta, 1.0 / 30.0);
+		const double Keep = FMath::Exp(-Damping * Dt);
+		const double Pull = 1.0 - FMath::Exp(-Shape * Dt);
+		// The body the hair lies against: a capsule from the hips to the chest.
+		const FVector Chest = Component.TransformPosition(RigToMeshPos(Rig.J(EJoint::Chest).P));
+		const FVector Hips = Component.TransformPosition(RigToMeshPos(Rig.J(EJoint::Hips).P));
+		const double Radius = 11.5 * H;
+		for (FChain& Chain : Chains)
+		{
+			// Where the chain hangs from.
+			FTransform Top = InOutLocal[Parent[Chain.Bones[0]]];
+			for (int32 B = Parent[Parent[Chain.Bones[0]]]; B >= 0; B = Parent[B])
+			{
+				Top = Top * InOutLocal[B];
+			}
+			const int32 Anchor = Parent[Chain.Bones[0]];
+			const FQuat Turn = Top.GetRotation() * RefCS[Anchor].GetRotation().Inverse();
+			const FVector Root = Top.TransformPosition(RefLocal[Chain.Bones[0]].GetLocation());
+			const int32 N = Chain.Bones.Num();
+			auto RestDir = [&](int32 I)
+			{
+				const FVector To = I + 1 < N ? RefCS[Chain.Bones[I + 1]].GetLocation() : RefCS[Chain.Bones[I]].GetLocation() + (RefCS[Chain.Bones[I]].GetLocation() - RefCS[Chain.Bones[I - 1]].GetLocation());
+				return (To - RefCS[Chain.Bones[I]].GetLocation()).GetSafeNormal();
+			};
+			const FVector World0 = Component.TransformPosition(Root);
+			if (!Chain.bLive)
+			{
+				Chain.Pos.SetNum(N + 1);
+				Chain.Pos[0] = World0;
+				for (int32 I = 0; I < N; ++I)
+				{
+					Chain.Pos[I + 1] = Chain.Pos[I] + Component.TransformVectorNoScale(Turn.RotateVector(RestDir(I))) * Chain.Lens[I];
+				}
+				Chain.Prev = Chain.Pos;
+				Chain.bLive = true;
+			}
+			Chain.Pos[0] = World0;
+			if (Dt > 0.0)
+			{
+				for (int32 I = 1; I <= N; ++I)
+				{
+					const FVector Moved = Chain.Pos[I] - Chain.Prev[I];
+					Chain.Prev[I] = Chain.Pos[I];
+					Chain.Pos[I] += Moved * Keep + FVector(0, 0, -Gravity * Dt * Dt);
+				}
+				for (int32 Pass = 0; Pass < 3; ++Pass)
+				{
+					for (int32 I = 1; I <= N; ++I)
+					{
+						FVector P = Chain.Pos[I];
+						if (Pass == 0)
+						{
+							const FVector Hang = Component.TransformVectorNoScale(Turn.RotateVector(RestDir(I - 1)));
+							P = FMath::Lerp(P, Chain.Pos[I - 1] + Hang * Chain.Lens[I - 1], Pull);
+						}
+						const FVector Near = FMath::ClosestPointOnSegment(P, Hips, Chest);
+						const FVector Out = P - Near;
+						if (Out.SizeSquared() < Radius * Radius)
+						{
+							P = Near + Out.GetSafeNormal() * Radius;
+						}
+						Chain.Pos[I] = Chain.Pos[I - 1] + (P - Chain.Pos[I - 1]).GetSafeNormal() * Chain.Lens[I - 1];
+					}
+				}
+			}
+			FTransform Above = Top;
+			for (int32 I = 0; I < N; ++I)
+			{
+				const FVector A = Component.InverseTransformPosition(Chain.Pos[I]);
+				const FVector B = Component.InverseTransformPosition(Chain.Pos[I + 1]);
+				const FVector Rest = Turn.RotateVector(RestDir(I));
+				const FQuat Q = FQuat::FindBetweenNormals(Rest, (B - A).GetSafeNormal()) * Turn;
+				const FTransform Here(Q * RefCS[Chain.Bones[I]].GetRotation(), A);
+				InOutLocal[Chain.Bones[I]] = Here.GetRelativeTransform(Above);
+				InOutLocal[Chain.Bones[I]].SetScale3D(RefLocal[Chain.Bones[I]].GetScale3D());
+				Above = Here;
+			}
+		}
 	}
 
 	FTransform FMeshRig::ComponentTransform(const FXf& Root, const FVector& WorldScale) const

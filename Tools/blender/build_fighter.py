@@ -57,7 +57,16 @@ def main():
     a = parse()
     with open(os.path.join(core.HERE, "fighters.json")) as f:
         spec = json.load(f)
-    cfg = spec["fighters"][a.id]
+    variant = spec.get("outfits", {}).get(a.id)
+    cfg = json.loads(json.dumps(spec["fighters"][variant["base"] if variant else a.id]))
+    if variant:
+        # Another outfit on the same fighter: a body of its own, the same but for what it wears.
+        cfg["wardrobe"] = variant["wardrobe"]
+        for key, colour in variant["surfaces"].items():
+            cfg["surfaces"][key]["color"] = colour
+        for slot in variant.get("drop_slots", ()):
+            del cfg["slots"][slot]
+            cfg["surfaces"] = {k: v for k, v in cfg["surfaces"].items() if v["slot"] != slot}
     if cfg.get("status") != "build":
         raise SystemExit("%s is not ready to build (status %s)" % (a.id, cfg.get("status")))
     out_dir = os.path.abspath(a.out or os.path.join(core.PROJECT, "SourceArt", "Fighters", a.id))

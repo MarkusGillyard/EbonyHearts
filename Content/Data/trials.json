@@ -3,7 +3,7 @@
 	"partners": {"wren": "mirela", "grandmaster": "wren"},
 	"ashka": [
 		{
-			"name": "Lantern Lash",
+			"name": "Muay Thai Combination",
 			"steps": [
 				"HP",
 				"HP",
@@ -18,7 +18,7 @@
 			]
 		},
 		{
-			"name": "Temple Bell",
+			"name": "Clinch Strikes",
 			"steps": [
 				"LK",
 				"LK",
@@ -31,7 +31,7 @@
 			]
 		},
 		{
-			"name": "Lash into the Rush",
+			"name": "Muay Thai Combination, Spinning Elbows",
 			"steps": [
 				"HP",
 				"HP",
@@ -46,7 +46,7 @@
 			]
 		},
 		{
-			"name": "Bell and Rising Knee",
+			"name": "Clinch Strikes, Rising Knee",
 			"steps": [
 				"LK",
 				"LK",
@@ -61,7 +61,7 @@
 			]
 		},
 		{
-			"name": "Rush and Ember",
+			"name": "Spinning Elbows, Lamplighter Flame",
 			"steps": [
 				"F,F+LP",
 				"D,F+HP"
@@ -74,7 +74,7 @@
 	],
 	"gorm": [
 		{
-			"name": "Three Hammers",
+			"name": "Tallow Mill",
 			"steps": [
 				"HP",
 				"HP",
@@ -87,7 +87,7 @@
 			]
 		},
 		{
-			"name": "Belly Kick",
+			"name": "Vat Stir",
 			"steps": [
 				"LK",
 				"HK"
@@ -206,11 +206,31 @@
 			"moves": [
 				"sinkstep"
 			]
+		},
+		{
+			"name": "Hidden Weapons",
+			"steps": ["LP", "LP", "LP", "LP"],
+			"moves": ["lp", "lp2", "nix_kunai", "nix_shuriken"]
+		},
+		{
+			"name": "Into Code Sea",
+			"steps": ["HP", "HP", "HP", "HP", "HP"],
+			"moves": ["hp", "hp2", "nix_slash", "code_sea_cut", "code_sea_rise"]
+		},
+		{
+			"name": "Code Sea",
+			"steps": ["D,F+HP", "HP", "HP"],
+			"moves": ["code_sea_draw", "code_sea_cut", "code_sea_rise"]
+		},
+		{
+			"name": "Hypnosis",
+			"steps": ["D,F+LP"],
+			"moves": ["code_sea_hypnosis"]
 		}
 	],
 	"mirela": [
 		{
-			"name": "Circling Palms",
+			"name": "Mourning Palms",
 			"steps": [
 				"HP",
 				"LP",
@@ -223,7 +243,7 @@
 			]
 		},
 		{
-			"name": "Crescent",
+			"name": "Veil Kick",
 			"steps": [
 				"LK",
 				"B+HK"
@@ -267,7 +287,7 @@
 	],
 	"bram": [
 		{
-			"name": "Watch Combination",
+			"name": "Watchman's Four",
 			"steps": [
 				"HP",
 				"HP",
@@ -282,7 +302,7 @@
 			]
 		},
 		{
-			"name": "Baton Lift",
+			"name": "Night Stick",
 			"steps": [
 				"LP",
 				"LP",
@@ -313,7 +333,7 @@
 			]
 		},
 		{
-			"name": "Three Drives",
+			"name": "Three Prize Ring Drives",
 			"steps": [
 				"F,F+HP",
 				"F,F+HP",
@@ -420,7 +440,7 @@
 			]
 		},
 		{
-			"name": "One-Two, Backfist",
+			"name": "One-Two, Spinning Elbow",
 			"steps": [
 				"LP",
 				"HP",
@@ -433,7 +453,7 @@
 			]
 		},
 		{
-			"name": "Turning Light",
+			"name": "Spinning Heel Kick",
 			"steps": [
 				"B,F+HK"
 			],
@@ -442,7 +462,7 @@
 			]
 		},
 		{
-			"name": "Flying Cross",
+			"name": "Flying Knee",
 			"steps": [
 				"B,F+HP"
 			],
@@ -451,7 +471,7 @@
 			]
 		},
 		{
-			"name": "Head Kick, Lifting Light",
+			"name": "Head Kick, Tornado Kick",
 			"steps": [
 				"LK",
 				"HK",
@@ -464,7 +484,7 @@
 			]
 		},
 		{
-			"name": "Feint into the Reaping Throw",
+			"name": "Feint into the Suplex",
 			"steps": [
 				"D,B+LK",
 				"F+LP"

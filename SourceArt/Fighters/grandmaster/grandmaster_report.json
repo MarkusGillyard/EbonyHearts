@@ -25,8 +25,7 @@
     "grandmaster_eyes",
     "grandmaster_brows",
     "grandmaster_lashes",
-    "grandmaster_beard",
-    "grandmaster_beard_outer"
+    "grandmaster_hair"
    ]
   },
   "robe": {
@@ -68,75 +67,55 @@
     "grandmaster_shoe_r",
     "grandmaster_sole_r"
    ]
-  },
-  "props": {
-   "material": "M_grandmaster_props",
-   "size": 512,
-   "files": {
-    "basecolor": "grandmaster_props_basecolor.png",
-    "normal": "grandmaster_props_normal.png",
-    "orm": "grandmaster_props_orm.png"
-   },
-   "objects": [
-    "grandmaster_jade_cord",
-    "grandmaster_jade_bead",
-    "grandmaster_jade"
-   ]
   }
  },
  "texture_notes": {
   "skin": [
-   "tinted old_lightskinned_male_diffuse2.png -> #ad8766 (per-channel gain [1.039, 1.729, 1.966])",
+   "toned young_lightskinned_male_diffuse3.png to #e6c6ab, broad tones flattened",
    "painted scalp hair replaced by forehead skin tone",
-   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #ad8766"
+   "texels outside the body UVs (incl. the MakeHuman.org stamp) filled with #e6c6ab"
   ],
   "hairface": [
+   "hair: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/hair/long01/long01_diffuse.png -> tile (0.0, 0.5, 1.0, 0.5)",
    "eyes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyes/materials/brown_eye.png -> tile (0.0, 0.0, 0.5, 0.5)",
-   "brows: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyebrows/eyebrow008/eyebrow008.png -> tile (0.5, 0.0, 0.5, 0.5)",
-   "lashes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyelashes/eyelashes01/eyelashes01.png -> tile (0.0, 0.5, 0.5, 0.5)",
-   "beard: generated fur strands #c8c2b6, alpha edges -> tile (0.5, 0.5, 0.25, 0.5)",
-   "beard_outer: generated fur strands #c8c2b6, alpha edges -> tile (0.75, 0.5, 0.25, 0.5)"
+   "brows: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyebrows/eyebrow008/eyebrow008.png -> tile (0.5, 0.25, 0.25, 0.25)",
+   "lashes: SourceArt/ThirdParty/MakeHuman/extracted/makehuman_system_assets/eyelashes/eyelashes01/eyelashes01.png -> tile (0.75, 0.25, 0.25, 0.25)"
   ],
   "robe": [
-   "grandmaster_inner_robe: Fabric001 tinted #c7c1b2, 14 cm tiles, roughness 0.85, metallic 0",
-   "grandmaster_inner_collar: Fabric001 tinted #c7c1b2, 14 cm tiles, roughness 0.85, metallic 0",
-   "grandmaster_robe: cloud embroidery in #d6c38e on 0 texels",
-   "grandmaster_robe: Fabric040 tinted #1b2333, 5 cm tiles, roughness 0.58, metallic 0",
-   "grandmaster_cuff_l: cloud embroidery in #d6c38e on 5808 texels",
-   "grandmaster_cuff_l: Fabric040 tinted #10141d, 5 cm tiles, roughness 0.55, metallic 0",
-   "grandmaster_cuff_r: cloud embroidery in #d6c38e on 5951 texels",
-   "grandmaster_cuff_r: Fabric040 tinted #10141d, 5 cm tiles, roughness 0.55, metallic 0",
-   "grandmaster_robe_skirt_under: cloud embroidery in #d6c38e on 26130 texels",
-   "grandmaster_robe_skirt_under: Fabric040 tinted #1b2333, 5 cm tiles, roughness 0.58, metallic 0",
-   "grandmaster_robe_skirt_back: cloud embroidery in #d6c38e on 39100 texels",
-   "grandmaster_robe_skirt_back: Fabric040 tinted #1b2333, 5 cm tiles, roughness 0.58, metallic 0",
-   "grandmaster_robe_skirt_outer: cloud embroidery in #d6c38e on 85422 texels",
-   "grandmaster_robe_skirt_outer: Fabric040 tinted #1b2333, 5 cm tiles, roughness 0.58, metallic 0",
-   "grandmaster_collar: cloud embroidery in #d6c38e on 94327 texels",
-   "grandmaster_collar: Fabric040 tinted #10141d, 5 cm tiles, roughness 0.55, metallic 0",
-   "grandmaster_sash: Fabric040 tinted #0e0e11, 5 cm tiles, roughness 0.45, metallic 0",
-   "grandmaster_sash_knot: Fabric040 tinted #0e0e11, 5 cm tiles, roughness 0.45, metallic 0",
-   "grandmaster_sash_tail0: Fabric040 tinted #0e0e11, 5 cm tiles, roughness 0.45, metallic 0",
-   "grandmaster_sash_tail1: Fabric040 tinted #0e0e11, 5 cm tiles, roughness 0.45, metallic 0"
+   "grandmaster_inner_robe: Fabric001 tinted #14161e, 14 cm tiles, roughness 0.62, metallic 0",
+   "grandmaster_inner_collar: Fabric001 tinted #14161e, 14 cm tiles, roughness 0.62, metallic 0",
+   "grandmaster_robe: cloud embroidery in #23252f on 0 texels",
+   "grandmaster_robe: Fabric040 tinted #0b0c12, 5 cm tiles, roughness 0.60, metallic 0",
+   "grandmaster_cuff_l: cloud embroidery in #23252f on 5439 texels",
+   "grandmaster_cuff_l: Fabric040 tinted #07080b, 5 cm tiles, roughness 0.58, metallic 0",
+   "grandmaster_cuff_r: cloud embroidery in #23252f on 5487 texels",
+   "grandmaster_cuff_r: Fabric040 tinted #07080b, 5 cm tiles, roughness 0.58, metallic 0",
+   "grandmaster_robe_skirt_under: cloud embroidery in #23252f on 23552 texels",
+   "grandmaster_robe_skirt_under: Fabric040 tinted #0b0c12, 5 cm tiles, roughness 0.60, metallic 0",
+   "grandmaster_robe_skirt_back: cloud embroidery in #23252f on 36102 texels",
+   "grandmaster_robe_skirt_back: Fabric040 tinted #0b0c12, 5 cm tiles, roughness 0.60, metallic 0",
+   "grandmaster_robe_skirt_outer: cloud embroidery in #23252f on 80398 texels",
+   "grandmaster_robe_skirt_outer: Fabric040 tinted #0b0c12, 5 cm tiles, roughness 0.60, metallic 0",
+   "grandmaster_collar: cloud embroidery in #23252f on 87812 texels",
+   "grandmaster_collar: Fabric040 tinted #07080b, 5 cm tiles, roughness 0.58, metallic 0",
+   "grandmaster_sash: Fabric040 tinted #060607, 5 cm tiles, roughness 0.55, metallic 0",
+   "grandmaster_sash_knot: Fabric040 tinted #060607, 5 cm tiles, roughness 0.55, metallic 0",
+   "grandmaster_sash_tail0: Fabric040 tinted #060607, 5 cm tiles, roughness 0.55, metallic 0",
+   "grandmaster_sash_tail1: Fabric040 tinted #060607, 5 cm tiles, roughness 0.55, metallic 0"
   ],
   "garb": [
    "grandmaster_trousers: Fabric034 tinted #17181c, 20 cm tiles, roughness 0.90, metallic 0",
    "grandmaster_shoe_l: Fabric066 tinted #131315, 6 cm tiles, roughness 0.90, metallic 0",
-   "grandmaster_sole_l: Fabric001 tinted #d3ccbc, 5 cm tiles, roughness 0.90, metallic 0",
+   "grandmaster_sole_l: Fabric001 tinted #17171b, 5 cm tiles, roughness 0.80, metallic 0",
    "grandmaster_shoe_r: Fabric066 tinted #131315, 6 cm tiles, roughness 0.90, metallic 0",
-   "grandmaster_sole_r: Fabric001 tinted #d3ccbc, 5 cm tiles, roughness 0.90, metallic 0"
-  ],
-  "props": [
-   "grandmaster_jade_cord: Leather021 tinted #111113, 5 cm tiles, roughness 0.70, metallic 0",
-   "grandmaster_jade_bead: Metal042A tinted #8c6a3c, 6 cm tiles, roughness 0.42, metallic 1",
-   "grandmaster_jade: flat #3f7b60"
+   "grandmaster_sole_r: Fabric001 tinted #17171b, 5 cm tiles, roughness 0.80, metallic 0"
   ]
  },
  "parts": {
   "grandmaster_body": {
-   "vertices": 8262,
-   "faces": 8112,
-   "triangles": 16224,
+   "vertices": 8254,
+   "faces": 8100,
+   "triangles": 16200,
    "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_grandmaster_skin",
@@ -238,11 +217,46 @@
     "head"
    ]
   },
+  "grandmaster_hair": {
+   "vertices": 3239,
+   "faces": 2054,
+   "triangles": 4108,
+   "max_influences": 12,
+   "unweighted_vertices": 0,
+   "material": "M_grandmaster_hairface",
+   "surface": "hair",
+   "bones": [
+    "clavicle_l",
+    "clavicle_r",
+    "hair_0_0",
+    "hair_0_1",
+    "hair_0_2",
+    "hair_0_3",
+    "hair_0_4",
+    "hair_1_0",
+    "hair_1_1",
+    "hair_1_2",
+    "hair_1_3",
+    "hair_1_4",
+    "hair_2_0",
+    "hair_2_1",
+    "hair_2_2",
+    "hair_2_3",
+    "hair_2_4",
+    "head",
+    "neck_01",
+    "shoulder_half_l",
+    "shoulder_half_r",
+    "spine_03",
+    "upperarm_l",
+    "upperarm_r"
+   ]
+  },
   "grandmaster_trousers": {
-   "vertices": 2744,
-   "faces": 2760,
-   "triangles": 5492,
-   "max_influences": 8,
+   "vertices": 2748,
+   "faces": 2764,
+   "triangles": 5500,
+   "max_influences": 6,
    "unweighted_vertices": 0,
    "material": "M_grandmaster_garb",
    "surface": "trousers",
@@ -268,7 +282,7 @@
    "vertices": 1120,
    "faces": 1144,
    "triangles": 2236,
-   "max_influences": 3,
+   "max_influences": 2,
    "unweighted_vertices": 0,
    "material": "M_grandmaster_garb",
    "surface": "shoes",
@@ -296,7 +310,7 @@
    "vertices": 1120,
    "faces": 1144,
    "triangles": 2236,
-   "max_influences": 3,
+   "max_influences": 2,
    "unweighted_vertices": 0,
    "material": "M_grandmaster_garb",
    "surface": "shoes",
@@ -321,9 +335,9 @@
    ]
   },
   "grandmaster_inner_robe": {
-   "vertices": 2602,
-   "faces": 2794,
-   "triangles": 5204,
+   "vertices": 2698,
+   "faces": 2896,
+   "triangles": 5396,
    "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_grandmaster_robe",
@@ -342,9 +356,7 @@
     "spine_02",
     "spine_03",
     "upperarm_l",
-    "upperarm_r",
-    "wrist_half_l",
-    "wrist_half_r"
+    "upperarm_r"
    ]
   },
   "grandmaster_inner_collar": {
@@ -369,10 +381,10 @@
    ]
   },
   "grandmaster_robe": {
-   "vertices": 5040,
-   "faces": 5166,
-   "triangles": 10088,
-   "max_influences": 8,
+   "vertices": 4988,
+   "faces": 5074,
+   "triangles": 9984,
+   "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_grandmaster_robe",
    "surface": "robe",
@@ -431,7 +443,7 @@
    "vertices": 1922,
    "faces": 1920,
    "triangles": 3840,
-   "max_influences": 8,
+   "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_grandmaster_robe",
    "surface": "robe",
@@ -476,7 +488,7 @@
    "vertices": 1922,
    "faces": 1920,
    "triangles": 3840,
-   "max_influences": 8,
+   "max_influences": 7,
    "unweighted_vertices": 0,
    "material": "M_grandmaster_robe",
    "surface": "robe",
@@ -515,16 +527,15 @@
     "spine_01",
     "spine_02",
     "spine_03",
-    "thigh_r",
     "upperarm_l",
     "upperarm_r"
    ]
   },
   "grandmaster_sash": {
-   "vertices": 616,
-   "faces": 648,
-   "triangles": 1232,
-   "max_influences": 8,
+   "vertices": 592,
+   "faces": 634,
+   "triangles": 1184,
+   "max_influences": 6,
    "unweighted_vertices": 0,
    "material": "M_grandmaster_robe",
    "surface": "sash",
@@ -572,7 +583,7 @@
    "vertices": 48,
    "faces": 46,
    "triangles": 92,
-   "max_influences": 6,
+   "max_influences": 5,
    "unweighted_vertices": 0,
    "material": "M_grandmaster_robe",
    "surface": "sash",
@@ -584,81 +595,13 @@
     "spine_03",
     "thigh_l"
    ]
-  },
-  "grandmaster_jade_cord": {
-   "vertices": 15,
-   "faces": 10,
-   "triangles": 20,
-   "max_influences": 1,
-   "unweighted_vertices": 0,
-   "material": "M_grandmaster_props",
-   "surface": "cord",
-   "bones": [
-    "pelvis"
-   ]
-  },
-  "grandmaster_jade_bead": {
-   "vertices": 52,
-   "faces": 60,
-   "triangles": 100,
-   "max_influences": 1,
-   "unweighted_vertices": 0,
-   "material": "M_grandmaster_props",
-   "surface": "bronze",
-   "bones": [
-    "pelvis"
-   ]
-  },
-  "grandmaster_jade": {
-   "vertices": 250,
-   "faces": 240,
-   "triangles": 480,
-   "max_influences": 1,
-   "unweighted_vertices": 0,
-   "material": "M_grandmaster_props",
-   "surface": "jade",
-   "bones": [
-    "pelvis"
-   ]
-  },
-  "grandmaster_beard": {
-   "vertices": 314,
-   "faces": 284,
-   "triangles": 466,
-   "max_influences": 5,
-   "unweighted_vertices": 0,
-   "material": "M_grandmaster_hairface",
-   "surface": "beard",
-   "bones": [
-    "clavicle_l",
-    "clavicle_r",
-    "head",
-    "neck_01",
-    "spine_03"
-   ]
-  },
-  "grandmaster_beard_outer": {
-   "vertices": 174,
-   "faces": 146,
-   "triangles": 238,
-   "max_influences": 5,
-   "unweighted_vertices": 0,
-   "material": "M_grandmaster_hairface",
-   "surface": "beard",
-   "bones": [
-    "clavicle_l",
-    "clavicle_r",
-    "head",
-    "neck_01",
-    "spine_03"
-   ]
   }
  },
- "triangles_total": 60024,
- "top_of_everything_cm": 170.0,
- "standing_height_cm": 170.0,
+ "triangles_total": 62852,
+ "top_of_everything_cm": 184.22,
+ "standing_height_cm": 183.0,
  "lowest_point_cm": 0.0,
- "bones": 65,
+ "bones": 80,
  "root_bone": [
   "root"
  ],
@@ -666,25 +609,25 @@
  "name": "The Grandmaster",
  "height": {
   "macro_range_m": [
-   1.2529,
-   2.2996
+   1.22,
+   2.2414
   ],
-  "height_macro": 0.56958,
-  "height_before_scale_m": 1.67999,
-  "uniform_scale": 1.000004,
-  "body_height_m": 1.68,
-  "targets_applied": 48
+  "height_macro": 0.687012,
+  "height_before_scale_m": 1.81004,
+  "uniform_scale": 0.99998,
+  "body_height_m": 1.81,
+  "targets_applied": 21
  },
  "timings_s": {
   "enable_mpfb": 0.18,
-  "mpfb_body": 1.36,
+  "mpfb_body": 1.34,
   "bake_body": 0.02,
-  "outfit": 5.16,
-  "textures": 22.82,
-  "finalize": 0.24,
+  "outfit": 5.0,
+  "textures": 21.37,
+  "finalize": 0.27,
   "save_blend": 0.02,
-  "export_fbx": 0.4
+  "export_fbx": 0.39
  },
- "script_wall_s": 30.2,
- "peak_rss_mb": 1742.9
+ "script_wall_s": 28.6,
+ "peak_rss_mb": 1896.8
 }

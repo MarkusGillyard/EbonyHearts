@@ -1,0 +1,17 @@
+{
+	"build": {
+		"shoulders": 1.04,
+		"chest": 0.84,
+		"waist": 0.72,
+		"limbs": 0.8,
+		"hips": 0.86
+	},
+	"materials": {
+		"skin": {
+			"color": "#120a24",
+			"kind": "glow"
+		}
+	},
+	"glow": "#8f5cff",
+	"accent": 0.0
+}

@@ -1,0 +1,441 @@
+{
+ "stage": "heartwater",
+ "title": "The Heartwater",
+ "units": {
+  "positions": "Blender metres, Z up, fighting plane XZ at Y=0, camera at -Y looking +Y",
+  "unreal": "UE = (100*x, -100*y, 100*z) cm; *_ue_cm fields are already converted",
+  "lights": "candela (point/spot), lux (directional), glow strength in cd/m2; for manual exposure EV100 = 0.6",
+  "exposure_ev100": 0.6
+ },
+ "lights": [
+  {
+   "name": "key_star",
+   "type": "directional",
+   "pos": [
+    -6,
+    -6,
+    10
+   ],
+   "color": [
+    0.72,
+    0.72,
+    1.0
+   ],
+   "lux": 2.2,
+   "dir": [
+    0.3831,
+    0.6631,
+    -0.6431
+   ],
+   "dir_ue": [
+    0.3831,
+    -0.6631,
+    -0.6431
+   ],
+   "shadows": true,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    -600,
+    600,
+    1000
+   ],
+   "source_angle_deg": 0.05,
+   "note": "cold starlight from the upper left front"
+  },
+  {
+   "name": "rim_galaxy",
+   "type": "directional",
+   "pos": [
+    0,
+    20,
+    10
+   ],
+   "color": [
+    0.6,
+    0.3,
+    1.0
+   ],
+   "lux": 3.4,
+   "dir": [
+    -0.081,
+    -0.9236,
+    -0.3748
+   ],
+   "dir_ue": [
+    -0.081,
+    0.9236,
+    -0.3748
+   ],
+   "shadows": false,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    0,
+    -2000,
+    1000
+   ],
+   "source_angle_deg": 0.05,
+   "affects": "not_floor",
+   "note": "violet rim from the galaxy band"
+  },
+  {
+   "name": "fill_camera",
+   "type": "directional",
+   "pos": [
+    0,
+    -10,
+    3
+   ],
+   "color": [
+    0.75,
+    0.75,
+    0.95
+   ],
+   "lux": 1.3,
+   "dir": [
+    -0.1361,
+    0.9686,
+    -0.2081
+   ],
+   "dir_ue": [
+    -0.1361,
+    -0.9686,
+    -0.2081
+   ],
+   "shadows": false,
+   "flicker": 0.0,
+   "flicker_speed": 0.0,
+   "pos_ue_cm": [
+    0,
+    1000,
+    300
+   ],
+   "source_angle_deg": 0.05,
+   "affects": "fighters_only",
+   "note": "camera side fill so the fighters read"
+  },
+  {
+   "name": "sheen_1",
+   "type": "point",
+   "pos": [
+    -7.0,
+    6.0,
+    1.6
+   ],
+   "color": [
+    0.5,
+    0.25,
+    1.0
+   ],
+   "intensity_candela": 26.0,
+   "radius_m": 11.0,
+   "shadows": false,
+   "flicker": 0.08,
+   "flicker_speed": 0.6,
+   "pos_ue_cm": [
+    -700.0,
+    -600.0,
+    160.0
+   ],
+   "source_radius_m": 1.0,
+   "specular_scale": 0.3,
+   "note": "violet light lying on the water"
+  },
+  {
+   "name": "sheen_2",
+   "type": "point",
+   "pos": [
+    7.0,
+    6.0,
+    1.6
+   ],
+   "color": [
+    0.5,
+    0.25,
+    1.0
+   ],
+   "intensity_candela": 26.0,
+   "radius_m": 11.0,
+   "shadows": false,
+   "flicker": 0.08,
+   "flicker_speed": 0.6,
+   "pos_ue_cm": [
+    700.0,
+    -600.0,
+    160.0
+   ],
+   "source_radius_m": 1.0,
+   "specular_scale": 0.3,
+   "note": "violet light lying on the water"
+  }
+ ],
+ "glows": [
+  {
+   "material": "GLOW_stars",
+   "color": [
+    0.85,
+    0.85,
+    1.0
+   ],
+   "strength": 26.0,
+   "note": "stars on the far dome"
+  },
+  {
+   "material": "GLOW_galaxy",
+   "color": [
+    0.42,
+    0.14,
+    0.95
+   ],
+   "strength": 2.6,
+   "pattern": 0.6,
+   "pattern_scale": 9.0,
+   "note": "the galaxy band across the sky"
+  },
+  {
+   "material": "GLOW_galaxy_core",
+   "color": [
+    0.85,
+    0.5,
+    0.95
+   ],
+   "strength": 5.0,
+   "pattern": 0.5,
+   "pattern_scale": 6.0,
+   "note": "its bright core"
+  }
+ ],
+ "water": [
+  {
+   "material": "WATER_heartwater",
+   "color": [
+    0.006,
+    0.005,
+    0.012
+   ],
+   "roughness": 0.03,
+   "ripple": 0.008,
+   "ripple_scale": 0.03,
+   "opacity": 1.0,
+   "emissive_color": [
+    0.3,
+    0.1,
+    0.8
+   ],
+   "emissive": 0.02,
+   "note": "the Heartwater: black, still, a mirror for the stars; slow ripples, a faint violet sheen"
+  }
+ ],
+ "animated": [],
+ "fog": {
+  "color": [
+   0.03,
+   0.02,
+   0.06
+  ],
+  "density": 0.06,
+  "height_falloff": 0.5,
+  "density_per_m": 0.006,
+  "height_falloff_per_m": 0.05,
+  "fog_height_m": 0.0,
+  "fog_height_ue_cm": 0.0,
+  "note": "thin violet haze over the water, the pillars fading into it"
+ },
+ "ambient": {
+  "color": [
+   0.3,
+   0.26,
+   0.5
+  ],
+  "intensity": 0.3,
+  "units": "cd/m2 sky radiance at EV100 0.6 (Sky Light intensity: tune)"
+ },
+ "music": "music_roost",
+ "footstep": "rock",
+ "sky": "none",
+ "surfaces": {
+  "dark_rock": {
+   "set": "dark_rock",
+   "tiling": 0.4132,
+   "tint": [
+    0.1,
+    0.09,
+    0.14
+   ],
+   "roughness": 0.5,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  },
+  "Rock035": {
+   "set": "Rock035",
+   "tiling": 0.5,
+   "tint": [
+    0.06,
+    0.05,
+    0.09
+   ],
+   "roughness": 0.5,
+   "metallic": 0.0,
+   "normal_strength": 1.0
+  }
+ },
+ "props": [],
+ "fx": [
+  {
+   "kind": "motes",
+   "note": "sparks of Ebony Energy rising from the water",
+   "box_center": [
+    0,
+    4.0,
+    1.4
+   ],
+   "box_extent": [
+    15,
+    5,
+    1.4
+   ],
+   "count": 60,
+   "color": [
+    0.55,
+    0.3,
+    1.0,
+    0.9
+   ],
+   "size_m": 0.03,
+   "rise_m_s": 0.18
+  },
+  {
+   "kind": "mist",
+   "center": [
+    0,
+    14.0,
+    0.4
+   ],
+   "size": [
+    90,
+    14
+   ],
+   "color": [
+    0.1,
+    0.06,
+    0.2
+   ],
+   "density": 0.25
+  }
+ ],
+ "objects": [
+  {
+   "name": "heartwater_seabed",
+   "triangles": 12,
+   "materials": [
+    "Rock035"
+   ]
+  },
+  {
+   "name": "heartwater_water",
+   "triangles": 12,
+   "materials": [
+    "WATER_heartwater"
+   ]
+  },
+  {
+   "name": "heartwater_pillars",
+   "triangles": 612,
+   "materials": [
+    "dark_rock"
+   ]
+  },
+  {
+   "name": "heartwater_stars",
+   "triangles": 16800,
+   "materials": [
+    "GLOW_stars"
+   ]
+  },
+  {
+   "name": "heartwater_galaxy",
+   "triangles": 5120,
+   "materials": [
+    "GLOW_galaxy"
+   ]
+  },
+  {
+   "name": "heartwater_galaxy_core",
+   "triangles": 2560,
+   "materials": [
+    "GLOW_galaxy_core"
+   ]
+  },
+  {
+   "name": "ORIGIN_MARKER_1m",
+   "triangles": 12,
+   "materials": [
+    "ORIGIN_MARKER"
+   ]
+  }
+ ],
+ "placements": [
+  {
+   "object": "heartwater_seabed",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "heartwater_water",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "heartwater_pillars",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "heartwater_stars",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "heartwater_galaxy",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "heartwater_galaxy_core",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "object": "ORIGIN_MARKER_1m",
+   "pivot_ue_cm": [
+    0.0,
+    -0.0,
+    0.0
+   ]
+  }
+ ],
+ "triangles_total": 25116,
+ "strip_check": "clean",
+ "notes": [
+  "No shore on purpose: the strip's ends are held by the game's walls, as on every stage."
+ ]
+}

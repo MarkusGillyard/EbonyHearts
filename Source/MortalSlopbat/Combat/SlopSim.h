@@ -120,6 +120,31 @@ namespace Slop
 		int32 JumpDir = 0;
 		int32 Invuln = 0;
 		int32 ArmorLeft = 0;
+		// Ticks until a spent aura can be called again (Spirit Enhanced Strikes).
+		int32 BuffWait = 0;
+		// A body other than the fighter's usual one (an outfit), or none.
+		FName OutfitBody;
+		// The Fragment flows from form to form as it is hurt (0 water, 1 energy, 2 Ebony; BossForm).
+		int32 BossForm = 0;
+		void BossFormTick();
+		// Hollis as a boss, never the Grandmaster's shape of him (GuardianTick): his defence, and from
+		// half his health the Fragmented Vessel, a long charge that kills outright unless enough damage
+		// breaks it. Broken, he stands spent (VentT), taking half as much again.
+		bool bGuardian = false;
+		bool bVessel = false;
+		bool bNoVessel = false;
+		double Charge = 0.0;
+		int32 ChargeTaken = 0;
+		int32 NextCharge = 0;
+		int32 VentT = 0;
+		bool bCharging = false;
+		static constexpr int32 VesselBreak = 111;
+		static constexpr int32 VesselRest = 540;
+		static constexpr int32 VesselSpent = 150;
+		static constexpr double GuardianDefence = 0.6;
+		bool IsChargingVessel() const;
+		void GuardianTick();
+		void BreakVessel();
 		int32 ProjectilesOut = 0;
 		int32 DamageTaken = 0;
 		// Throw in progress: indices of the victim / thrower, and the frame of the throw sequence.
@@ -251,6 +276,9 @@ namespace Slop
 		static constexpr double MaxSep = 5.6;
 		static constexpr double StartGap = 3.0;
 		static constexpr int32 IntroTicks = 110;
+		// Extra ticks the presentation may hold the first intro for its staging; nothing in a fight
+		// depends on them, and 0 leaves the round as it always was.
+		int32 IntroHold = 0;
 		static constexpr int32 ReadyTicks = 100;
 		static constexpr int32 RoundTicks = 90 * 60;
 		static constexpr int32 RoundEndTicks = 170;
@@ -297,6 +325,8 @@ namespace Slop
 		// The arena's own finisher, when it has one (a move id in the shared basics).
 		FName StageFinisher;
 		bool bIntro = true;
+		// Ends a held intro now: the round's Ready phase begins on the next tick.
+		void EndIntro();
 		bool Flawless[2] = {false, false};
 		// Damage taken over the whole match: a flawless match is one the winner finished unhurt.
 		int32 MatchDamage[2] = {0, 0};

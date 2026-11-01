@@ -1,54 +1,52 @@
 {
 	"premise": [
 		"The Ebony Heart is said to bestow Divinity upon whoever holds it. It has been lost for exactly five hundred years.",
-		"Now the Outer Gods, bored, have staged a tournament for their entertainment: one worthy mortal may claim the Heart.",
+		"Now the Outer Gods, bored, have staged the Ebony Heart Tournament for their entertainment: one worthy mortal may claim the Heart.",
 		"The fighters gather in the Sump, where every river in the world ends. Each has a reason of their own.",
-		"At the end of the tournament waits a Fragment of the Heart, wearing the shape of the Slopbat."
+		"At the end of the tournament waits a Fragment of the Heart."
 	],
 	"fighters": {
 		"ashka": {
 			"rival": "nix", "home": "stilt_market",
-			"bio": "Last lamplighter of drowned Ninefathom. She keeps the city's beacon-flame alive in a brass lamp at her breast and means to carry it home.",
-			"rival_lines": ["Ninefathom's light went out the night your Hand came.", "We only drowned what was already sinking."],
+			"bio": "The Last Lamplighter. A Muay Thai fighter, Wren Ku's best friend and the third the Outer Gods chose. She is here to stand with Wren, and to learn whether the Ebony Heart has anything to do with the disappearance of her people.",
+			"rival_lines": ["You are in my way.", "Lamplighter. You carry a candle into a flood."],
 			"ending": [
-				"Ashka asked the Slopbat for one thing: the deep fire that once burned in Ninefathom's beacon.",
-				"She swam down through the drowned streets with her little brass lamp and lit the tower from within. For the first time in forty years, light moved under the water.",
-				"Fishermen say the Drowned Hand no longer walks the causeways after dark. They say a lamplighter still makes her rounds, street by street, below the waves."
+				"Ashka asked the Fragment one thing: what it knew of her people.",
+				"What it told her, she has told no one."
 			]
 		},
 		"gorm": {
 			"rival": "bram", "home": "rendering_yards",
-			"bio": "Master of the rendering vats of Tallowmarket. Gentle until he is not. If the flood takes the yards, it takes his workers with them.",
+			"bio": "Master of the rendering vats of Tallowmarket, and the sixth the Outer Gods chose. Gentle until he is not. If the flood takes the yards, it takes his workers with them.",
 			"rival_lines": ["I didn't start that fire, Captain.", "Then you'll not mind coming quietly."],
 			"ending": [
-				"Gorm asked only that the flood spare Tallowmarket. The Slopbat agreed, and Gorm rendered a single candle from the tar it shed.",
+				"Gorm asked only that the flood spare Tallowmarket. The Fragment agreed, and Gorm rendered a single candle from what it shed.",
 				"The candle never burns down. He carried it to the Lantern Watch house and set it on Captain Ketch's desk without a word.",
 				"Bram Ketch has not tried to arrest him since. The yards are quiet for a season, and the vats, for once, are cold."
 			]
 		},
 		"nix": {
 			"rival": "ashka", "home": "drowned_chapel",
-			"bio": "A blade of the Drowned Hand, the cult that worships the Slopbat and prays for the flood. He was sent to win. No one asked what he would wish for.",
-			"rival_lines": ["Lamplighter. You carry a candle into a flood.", "And you will learn what a candle does to slop."],
+			"bio": "Shinobi of the Code Sea, ordered into the tournament by the Drowned Hand, and the fifth the Outer Gods chose. His mission, he says, is to win and kill every other competitor.",
+			"rival_lines": ["Lamplighter. You carry a candle into a flood.", "And you will learn what a candle does to the dark."],
 			"ending": [
-				"The Drowned Hand had promised the Slopbat a town. Nix knelt in the roost and offered it one: the cult's own island.",
-				"By morning the island was gone, temple and elders and all, folded into the mud without a sound.",
-				"The Hand always said that Nix would bring the water. They never asked whose door it would come to."
+				"Nix Hollow stood before the Fragment with his mission done.",
+				"What he asked of it, he has told no one."
 			]
 		},
 		"mirela": {
 			"rival": "hollis", "home": "drowned_chapel",
-			"bio": "A mourner of Lowmere's floating cemetery, paid to weep at drowned men's funerals. Her voice can unmake. She means to sing the Slopbat to sleep for good.",
+			"bio": "A mourner of Lowmere's floating cemetery, paid to weep at drowned men's funerals, and the second the Outer Gods chose. Her voice can unmake.",
 			"rival_lines": ["I sang for you once. You did not stay buried.", "...still listening."],
 			"ending": [
-				"Mirela did not ask the Slopbat for anything. She sat at the edge of its pool and sang the last verse of the funeral song, the one no mourner is paid to finish.",
+				"Mirela did not ask the Fragment for anything. She sat at the edge of its pool and sang the last verse of the funeral song, the one no mourner is paid to finish.",
 				"It closed its eyes. The waters went down further than anyone in Lowmere had ever seen.",
 				"Walking home across the uncovered mud, she heard, far below, the slow toll of a diving bell, keeping time with her."
 			]
 		},
 		"bram": {
 			"rival": "gorm", "home": "stilt_market",
-			"bio": "Captain of the Lantern Watch, keeper of Lowmere's peace with his fists and a hardwood baton. He has never once been told a thing was above his authority and believed it.",
+			"bio": "Captain of the Lantern Watch, a former General, and the fourth the Outer Gods chose. He keeps Lowmere's peace with his fists and a hardwood baton, and he has never once been told a thing was above his authority and believed it.",
 			"rival_lines": ["Tallow. You're under arrest. Again.", "You'll need a bigger cell."],
 			"ending": [
 				"Captain Bram Ketch stood before the sovereign of the Sump, cleared his throat, and placed it under arrest for crimes against the town of Lowmere.",
@@ -57,18 +55,18 @@
 			]
 		},
 		"hollis": {
-			"rival": "mirela", "home": "rendering_yards",
-			"bio": "A brass diving suit that walked out of the Sump the year its diver went down and never came up. A voice inside it still answers to Hollis.",
+			"rival": "mirela", "home": "palace_gate",
+			"bio": "Guardian of the Ebony Heart. Once a diver, dead at twenty-five; the Fragment chose his soul as a worthy champion and bound it to the door of the Fragmented Palace. He asks every challenger one thing: “Is a single wish truly worth everything to you?”",
 			"rival_lines": ["Sing it again.", "This time, stay down."],
 			"ending": [
-				"Hollis asked to see the bottom of the Sump. The Slopbat showed him.",
+				"Hollis asked to see the bottom of the Sump. The Fragment showed him.",
 				"When the waters fell, the people of Lowmere found the brass helmet on the steps of the drowned chapel, its three portholes turned toward the sea.",
 				"It was empty. Someone inside it, they swear, was humming."
 			]
 		},
 		"wren": {
 			"home": "stilt_market",
-			"bio": "A young all-rounder of elite discipline: she strikes, throws and locks with equal precision, and carries a little marsh-light magic in her hands.",
+			"bio": "Wren Ku of Moscow, undefeated WMMA bantamweight champion, 26 and 0. 'Punt' to her fans, for what her kicks do. The first the Outer Gods chose.",
 			"ending": [
 				"Wren stood before the Fragment with the Outer Gods watching.",
 				"What she asked of it, she has told no one."
@@ -76,25 +74,84 @@
 		},
 		"grandmaster": {
 			"home": "drowned_chapel",
-			"bio": "An elderly master of martial arts and Qhi. His body is failing; his Qhi is not.",
+			"bio": "The Grandmaster of the Ebony Heart Tournament. Who appointed him, and why, only he knows.",
 			"ending": [
-				"Grandmaster bowed to the Fragment, and it was still.",
+				"The Grandmaster bowed to the worm, and it was still.",
 				"What passed between them the Outer Gods saw, and did not explain."
 			]
 		}
 	},
-	"reflection": "Your own reflection climbs out of the slop.",
-	"boss_intro": "The roost. A Fragment of the Ebony Heart wakes in the Slopbat's shape.",
-	"boss_defeated": "The Fragment's shape sinks into its pool, and the waters recede.",
+	"reflection": "Your own reflection climbs out of the dark.",
+	"servant_line": "Hollis Fathom: “Is a single wish truly worth everything to you?”",
+	"boss_intro": "Water without a shore. A Fragment of the Ebony Heart rises to meet you.",
+	"boss_defeated": "The Fragment flows apart and sinks, and the waters recede.",
 	"secret": {
-		"offer": "The waters recede. In the Drowned Chapel an old man stands on the still water. He has been watching you climb.",
+		"offer": "The waters recede. In the Drowned Chapel a man stands on the still water, smiling. He has been watching you climb.",
 		"approach": "Face him",
 		"leave": "Walk on",
 		"above": "THE STILL WATER",
-		"lines": ["An old man waits on the flooded nave, his hands behind his back.", "Grandmaster: “You never needed a second chance. Show me what else you learned.”"],
-		"won": "Grandmaster bows, and the water closes over his reflection.",
-		"lost": "The old man bows and is gone. The water is still again.",
-		"unlocked": "Grandmaster can now be chosen.",
-		"hint": "An old master is said to watch the champions who never need a second chance."
+		"lines": ["A man waits on the flooded nave, his hands folded behind his back.", "The Grandmaster: “You never needed a second chance. Show me what else you learned.”"],
+		"won": "The Grandmaster bows, and the water closes over his reflection.",
+		"lost": "He bows and is gone. The water is still again.",
+		"unlocked": "The Grandmaster can now be chosen.",
+		"hint": "Someone is said to watch the champions who never need a second chance."
+	},
+	"story": {
+		"chapters": [
+			{"opponent": "bram", "stage": "stilt_market", "lines": [
+				"The Ebony Heart has been lost for exactly five hundred years. Now the Outer Gods, bored, have staged the Ebony Heart Tournament, and the first they choose is Wren Ku, 26 and 0.",
+				"She refuses. They tell her they will erase the Earth. They promise the winner the Heart; she has no interest in their prize. She vows to protect humanity, and warns them not to underestimate her, or to try to deceive her.",
+				"She comes to the Sump, where every river in the world ends.",
+				"Captain Bram Ketch keeps Lowmere's peace with his fists and a hardwood baton, and he is the fourth the Outer Gods chose. When he first heard their voices in his head he accused them of breaking the law. He could not say which law. He was certain they had broken one.",
+				"He insists he is not a hair over 50. Nobody believes him. His men call him Officer Knuckles, for an undefeated bare-knuckle career he rarely discusses.",
+				"Wren tells him she was forced into the tournament, and he grows angrier still. His men say someone has been watching the tournament from the still water. He says nobody is above his authority."
+			]},
+			{"opponent": "gorm", "stage": "rendering_yards", "outfit": "wren_uniform", "lines": [
+				"The 720 Hook Kick puts Captain Ketch on his back. He wakes and hands her an unmarked jet-black military uniform. She needs a proper one, he tells her.",
+				"Gorm Tallow, master of the rendering vats, the sixth the Outer Gods chose. Gentle until he is not. He asked why they chose him when he could think of plenty of stronger people. Strength is not everything, they told him, and he should not underestimate himself.",
+				"He wanted no part of it. So the Outer Gods saw to it that Captain Ketch arrested him, over a vat fire he did not start, and promised much worse for everyone he knows. He came, and he warned them: hurt anyone he loves, and he will make them pay dearly.",
+				"On the first night of every tournament his workers leave a cup of tea on the vat-house step. Nobody remembers who began it. Nobody drinks it."
+			]},
+			{"opponent": "nix", "stage": "drowned_chapel", "outfit": "wren_uniform", "lines": [
+				"Ashka Rook is here too: Wren's best friend, the third the Outer Gods chose. She called the tournament nonsense until she heard Wren had been forced into it. She has come to stand with her, and to learn whether the Ebony Heart has anything to do with where her people went.",
+				"Nix Hollow, Shinobi of the Code Sea, the fifth the Outer Gods chose. The Drowned Hand ordered him into the tournament. His mission, he says, is to win and kill every other competitor.",
+				"He has beaten Ashka Rook.",
+				"He tells Wren that true free will is merely an illusion.",
+				"Even the Hand does not walk the flooded nave alone."
+			]},
+			{"opponent": "mirela", "stage": "drowned_chapel", "outfit": "wren_uniform", "lines": [
+				"Mirela Sorrow, the Keening Nun, the second the Outer Gods chose. She is paid to weep at drowned men's funerals, and her voice can unmake.",
+				"When she heard how they had forced Wren into the tournament, she called their methods uncouth and childish.",
+				"She tells Wren that no one in the world is entirely good or entirely bad, and to remember that people are complex.",
+				"She has finished the song for every man the water took, but one."
+			]},
+			{"opponent": "hollis", "kind": "servant_one", "stage": "palace_gate", "outfit": "wren_uniform", "lines": [
+				"There is one way into the Fragmented Palace, and a tall figure in a black diving suit sits in meditation before it.",
+				"Hollis Fathom, Guardian of the Ebony Heart. He rises. “Is a single wish truly worth everything to you?”",
+				"The Ebony Heart Greatsword comes to his hand. They say no one who sees it survives."
+			]},
+			{"opponent": "hollis", "kind": "servant_two", "player": "ashka", "stage": "palace_gate", "lines": [
+				"He rises again, and the Fragment's light gathers in him. A vessel, filling.",
+				"Ashka Rook steps up beside Wren, crimson flame in her hand. Neither of them says anything."
+			]},
+			{"opponent": "slopbat", "kind": "boss", "outfit": "wren_uniform", "lines": [
+				"Ashka lifts her Lamplighter Flame, and it guides Hollis's soul up out of the dark.",
+				"Before he goes he turns to Wren: she must make the right choice, when she earns the Ebony Heart.",
+				"Beyond the door, water without a shore. A Fragment of the Ebony Heart rises to meet her.",
+				"It flows and will not hold a shape. To Wren it is a thing like an amoeba, with a galaxy for a body.",
+				"It is the most beautiful thing she has ever seen."
+			]}
+		],
+		"after_fragment": [
+			"It could not stand against the Fighting Spirit of Humanity, and Wren Ku holds that.",
+			"It was the first of the Heart to fall. For a moment she sees how much more of it there is."
+		],
+		"grandmaster_line": "The Grandmaster: “Young Champion. You never needed a second chance. Show me what else you learned.”",
+		"grandmaster_after_continues": "The Grandmaster: “Young Champion. You needed a second chance. Show me what you did with it.”",
+		"ending": [
+			"The Outer Gods watched, and said nothing.",
+			"Wren Ku is the first champion of the Ebony Heart Tournament, and the Ebony Heart is hers.",
+			"She has not forgotten what Hollis told her. She does not yet know what he meant."
+		]
 	}
 }

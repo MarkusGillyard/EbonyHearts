@@ -1,12 +1,12 @@
 {
 	"id": "hollis",
 	"name": "Hollis Fathom",
-	"title": "The Diving Bell",
+	"title": "Guardian of the Ebony Heart",
 	"pronoun": "him",
-	"style": "Deep-sea pressure and harpoon",
+	"style": "Hollism",
 	"stats": {
-		"height": 1.95,
-		"health": 1080,
+		"height": 2.01,
+		"health": 800,
 		"walk_f": 2.0,
 		"walk_b": 1.7,
 		"run_speed": 4.6,
@@ -480,6 +480,759 @@
 					]
 				]
 			}
+		},
+		"gs_cleave": {
+			"name": "Ebony Heart Greatsword: Cleave",
+			"kind": "special",
+			"startup": 15,
+			"active": 4,
+			"recovery": 22,
+			"level": "mid",
+			"damage": 70,
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						0.5,
+						2.1,
+						1.5
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						12,
+						"hp_load",
+						"out"
+					],
+					[
+						15,
+						"hp_hit",
+						"snap"
+					],
+					[
+						19,
+						"hp_hit",
+						"linear"
+					],
+					[
+						41,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 24,
+			"blockstun": 14,
+			"sfx": {
+				"swing": "heavy"
+			},
+			"form": "form_greatsword",
+			"motion": [
+				[
+					10,
+					0.5
+				]
+			],
+			"chain": [
+				{
+					"input": "HP",
+					"move": "gs_backhand",
+					"window": [
+						15,
+						41
+					],
+					"cost": 0
+				}
+			]
+		},
+		"gs_backhand": {
+			"name": "Ebony Heart Greatsword: Backhand",
+			"kind": "chain",
+			"startup": 11,
+			"active": 4,
+			"recovery": 20,
+			"level": "mid",
+			"damage": 60,
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						0.5,
+						2.1,
+						1.5
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						8,
+						"hp2_load",
+						"out"
+					],
+					[
+						11,
+						"hp2_hit",
+						"snap"
+					],
+					[
+						15,
+						"hp2_hit",
+						"linear"
+					],
+					[
+						35,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 24,
+			"blockstun": 14,
+			"sfx": {
+				"swing": "heavy"
+			},
+			"form": "form_greatsword",
+			"motion": [
+				[
+					8,
+					0.35
+				]
+			],
+			"chain": [
+				{
+					"input": "HP",
+					"move": "gs_reap",
+					"window": [
+						11,
+						35
+					],
+					"cost": 0
+				}
+			]
+		},
+		"gs_reap": {
+			"name": "Ebony Heart Greatsword: Reap",
+			"kind": "chain",
+			"startup": 13,
+			"active": 4,
+			"recovery": 20,
+			"level": "low",
+			"damage": 60,
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						0.0,
+						2.2,
+						0.7
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						10,
+						"sweep_load",
+						"out"
+					],
+					[
+						13,
+						"sweep_hit",
+						"snap"
+					],
+					[
+						17,
+						"sweep_hit",
+						"linear"
+					],
+					[
+						37,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 24,
+			"blockstun": 14,
+			"sfx": {
+				"swing": "heavy"
+			},
+			"form": "form_greatsword",
+			"chain": [
+				{
+					"input": "HK",
+					"move": "gs_execution",
+					"window": [
+						13,
+						37
+					],
+					"cost": 0
+				}
+			]
+		},
+		"gs_execution": {
+			"name": "Ebony Heart Greatsword: Execution",
+			"kind": "chain",
+			"startup": 20,
+			"active": 5,
+			"recovery": 50,
+			"level": "overhead",
+			"damage": 110,
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						0.3,
+						2.3,
+						2.0
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						17,
+						"upper_load",
+						"out"
+					],
+					[
+						20,
+						"hp_hit",
+						"snap"
+					],
+					[
+						25,
+						"hp_hit",
+						"linear"
+					],
+					[
+						75,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 24,
+			"blockstun": 14,
+			"sfx": {
+				"swing": "heavy"
+			},
+			"form": "form_greatsword",
+			"effect": "knockdown",
+			"launch": [
+				3.0,
+				3.6
+			],
+			"hitstop": 12,
+			"motion": [
+				[
+					14,
+					0.5
+				]
+			]
+		},
+		"shark_lunge": {
+			"name": "Hollism: The Shark",
+			"kind": "special",
+			"startup": 18,
+			"active": 16,
+			"recovery": 12,
+			"level": "mid",
+			"damage": 85,
+			"hitboxes": [
+				{
+					"rect": [
+						-0.6,
+						0.4,
+						2.2,
+						1.2
+					]
+				}
+			],
+			"motion": [
+				[
+					8,
+					0.0
+				],
+				[
+					30,
+					4.4
+				]
+			],
+			"form": "form_shark",
+			"form_replaces_body": true,
+			"props": {
+				"invuln": [
+					8,
+					18
+				]
+			},
+			"anim": {
+				"tip": "chest",
+				"keys": [
+					[
+						8,
+						"crouch",
+						"out"
+					],
+					[
+						18,
+						"hp_hit",
+						"snap"
+					],
+					[
+						46,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 24,
+			"blockstun": 14,
+			"sfx": {
+				"swing": "heavy"
+			},
+			"chain": [
+				{
+					"input": "HP",
+					"move": "eel_coil",
+					"window": [
+						34,
+						46
+					],
+					"cost": 0
+				}
+			]
+		},
+		"eel_coil": {
+			"name": "Hollism: The Eel",
+			"kind": "chain",
+			"startup": 10,
+			"active": 14,
+			"recovery": 10,
+			"level": "low",
+			"damage": 70,
+			"hitboxes": [
+				{
+					"rect": [
+						-0.8,
+						0.0,
+						2.4,
+						0.6
+					]
+				}
+			],
+			"motion": [
+				[
+					4,
+					0.0
+				],
+				[
+					20,
+					1.8
+				]
+			],
+			"form": "form_eel",
+			"form_replaces_body": true,
+			"anim": {
+				"tip": "chest",
+				"keys": [
+					[
+						10,
+						"crouch",
+						"snap"
+					],
+					[
+						34,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 24,
+			"blockstun": 14,
+			"sfx": {
+				"swing": "medium"
+			},
+			"chain": [
+				{
+					"input": "HK",
+					"move": "anchor_fall",
+					"window": [
+						20,
+						34
+					],
+					"cost": 0
+				}
+			]
+		},
+		"anchor_fall": {
+			"name": "Hollism: The Anchor",
+			"kind": "chain",
+			"startup": 20,
+			"active": 5,
+			"recovery": 52,
+			"level": "overhead",
+			"damage": 110,
+			"hitboxes": [
+				{
+					"rect": [
+						0.1,
+						0.2,
+						2.0,
+						2.2
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						17,
+						"upper_load",
+						"out"
+					],
+					[
+						20,
+						"hp_hit",
+						"snap"
+					],
+					[
+						25,
+						"hp_hit",
+						"linear"
+					],
+					[
+						77,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 24,
+			"blockstun": 14,
+			"sfx": {
+				"swing": "heavy"
+			},
+			"form": "form_anchor",
+			"effect": "knockdown",
+			"launch": [
+				2.8,
+				3.6
+			],
+			"hitstop": 12
+		},
+		"reckoning": {
+			"name": "Hollism: Reckoning",
+			"kind": "special",
+			"startup": 16,
+			"active": 4,
+			"recovery": 40,
+			"level": "mid",
+			"damage": 55,
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						0.4,
+						2.2,
+						1.6
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						13,
+						"hp_load",
+						"out"
+					],
+					[
+						16,
+						"hp_hit",
+						"snap"
+					],
+					[
+						20,
+						"hp_hit",
+						"linear"
+					],
+					[
+						60,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 44,
+			"blockstun": 12,
+			"sfx": {
+				"swing": "heavy"
+			},
+			"form": "form_greatsword",
+			"motion": [
+				[
+					10,
+					0.7
+				]
+			],
+			"chain": [
+				{
+					"input": "HP",
+					"move": "reckoning2",
+					"window": [
+						16,
+						40
+					],
+					"cost": 0
+				}
+			]
+		},
+		"reckoning2": {
+			"name": "Hollism: Reckoning: second",
+			"kind": "chain",
+			"startup": 9,
+			"active": 4,
+			"recovery": 18,
+			"level": "mid",
+			"damage": 45,
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						0.4,
+						2.2,
+						1.6
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						6,
+						"hp2_load",
+						"out"
+					],
+					[
+						9,
+						"hp2_hit",
+						"snap"
+					],
+					[
+						13,
+						"hp2_hit",
+						"linear"
+					],
+					[
+						31,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 40,
+			"blockstun": 12,
+			"sfx": {
+				"swing": "heavy"
+			},
+			"form": "form_greatsword",
+			"chain": [
+				{
+					"input": "HP",
+					"move": "reckoning3",
+					"window": [
+						9,
+						33
+					],
+					"cost": 0
+				}
+			]
+		},
+		"reckoning3": {
+			"name": "Hollism: Reckoning: third",
+			"kind": "chain",
+			"startup": 9,
+			"active": 4,
+			"recovery": 18,
+			"level": "mid",
+			"damage": 45,
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						0.4,
+						2.2,
+						1.6
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						6,
+						"upper_load",
+						"out"
+					],
+					[
+						9,
+						"sweep_hit",
+						"snap"
+					],
+					[
+						13,
+						"sweep_hit",
+						"linear"
+					],
+					[
+						31,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 40,
+			"blockstun": 12,
+			"sfx": {
+				"swing": "heavy"
+			},
+			"form": "form_greatsword",
+			"chain": [
+				{
+					"input": "HP",
+					"move": "reckoning4",
+					"window": [
+						9,
+						33
+					],
+					"cost": 0
+				}
+			]
+		},
+		"reckoning4": {
+			"name": "Hollism: Reckoning: last",
+			"kind": "chain",
+			"startup": 9,
+			"active": 4,
+			"recovery": 44,
+			"level": "mid",
+			"damage": 120,
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						0.4,
+						2.2,
+						1.6
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						6,
+						"upper_load",
+						"out"
+					],
+					[
+						9,
+						"hp_hit",
+						"snap"
+					],
+					[
+						13,
+						"hp_hit",
+						"linear"
+					],
+					[
+						57,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 30,
+			"blockstun": 12,
+			"sfx": {
+				"swing": "heavy"
+			},
+			"form": "form_greatsword",
+			"effect": "knockdown",
+			"launch": [
+				3.4,
+				4.2
+			],
+			"hitstop": 14
+		},
+		"fragmented_vessel": {
+			"name": "Fragmented Vessel",
+			"magic": 1.0,
+			"kind": "special",
+			"startup": 400,
+			"active": 14,
+			"recovery": 40,
+			"level": "unblockable",
+			"damage": 9999,
+			"hitboxes": [
+				{
+					"rect": [
+						-14.0,
+						0.0,
+						28.0,
+						7.0
+					]
+				}
+			],
+			"anim": {
+				"tip": "chest",
+				"keys": [
+					[
+						30,
+						"hollis_vent_load",
+						"out"
+					],
+					[
+						398,
+						"hollis_vent_load",
+						"linear"
+					],
+					[
+						402,
+						"hollis_vent",
+						"snap"
+					],
+					[
+						420,
+						"hollis_vent",
+						"linear"
+					],
+					[
+						454,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"hitstun": 30,
+			"effect": "knockdown",
+			"launch": [
+				3.0,
+				4.0
+			],
+			"hitstop": 14,
+			"sfx": {
+				"swing": "charge"
+			}
 		}
 	},
 	"commands": [
@@ -498,6 +1251,18 @@
 		[
 			"D,B+HP",
 			"vent"
+		],
+		[
+			"F,F+HP",
+			"gs_cleave"
+		],
+		[
+			"D,F+HK",
+			"shark_lunge"
+		],
+		[
+			"B,F+HP",
+			"reckoning"
 		]
 	],
 	"finisher": {

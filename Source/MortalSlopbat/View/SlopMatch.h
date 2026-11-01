@@ -43,6 +43,10 @@ namespace Slop
 	};
 }
 
+// The beats of the staging before a fight: the camera finds the ground, each fighter in turn, then
+// both, and the live framing takes over. None when no staging is running.
+enum class EPrelude : uint8 { None, Ground, First, Second, Both };
+
 // A fight on screen. Steps the simulation at 60 Hz from the players' devices or the CPU, then
 // draws the fighters between ticks, the camera, effects and HUD. Losing focus or a controller
 // pauses the match and clears every held input.
@@ -59,6 +63,12 @@ public:
 	void SetPaused(bool bPause);
 	bool IsPaused() const { return bPaused; }
 	bool HasEnded() const { return bEnded; }
+	// Plays the staging before this match's first round, on the real stage with the real fighters,
+	// holding the round's intro until it ends or is skipped. `bWords`: something is said over it.
+	void BeginPrelude(bool bShort, bool bWords);
+	void SkipPrelude();
+	bool InPrelude() const { return Prelude != EPrelude::None; }
+	EPrelude PreludeBeat() const { return Prelude; }
 	// Training: back to the start positions.
 	void ResetPositions();
 	void SkipFinisher() { Sim.SkipFinisher(); }
@@ -104,6 +114,7 @@ public:
 	TObjectPtr<ASlopFighterActor> Views[2];
 	UPROPERTY()
 	TObjectPtr<ASlopFightCamera> Camera;
+	double CineT = 0.0;
 	UPROPERTY()
 	TObjectPtr<ASlopArena> Arena;
 	UPROPERTY()
@@ -116,6 +127,16 @@ public:
 
 private:
 	void FixedTick();
+	void PreludeStep(double Delta);
+	EPrelude Prelude = EPrelude::None;
+	double PreludeT = 0.0;
+	double PreludeBoth = 1.2;
+	bool bPreludeShort = false;
+	bool bPreludeCalled[2] = {false, false};
+	// The staging has handed over: the first round begins from where its camera stands.
+	bool bHandingOver = false;
+	// A new round puts both bodies back at their marks; this notices, to cover the jump.
+	int32 ShownRound = 1;
 	// A fighter that changed shape gets its new body, and the looks this match gives it.
 	void RebindView(int32 I);
 	void DressView(int32 I);
@@ -123,6 +144,8 @@ private:
 	float FormFade[2] = {0.f, 0.f};
 	void HandleEvent(const Slop::FSimEvent& E);
 	void PlayEventSound(const Slop::FSimEvent& E);
+	// Where a fighter stands across the screen, -1 left to 1 right, for their sounds.
+	float ScreenPan(int32 Side) const;
 public:
 	// Every box in play, in simulation space, with the colour it is drawn in (training's box
 	// view, drawn by the HUD so it works in any build).

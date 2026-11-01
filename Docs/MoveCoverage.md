@@ -2,7 +2,7 @@
 
 Written by the automation test `Slop.Fighters.Grandmaster.EveryMoveIsCovered` from the loaded data (Source/MortalSlopbat/Combat/SlopCoverage.cpp). Every move of every fighter in Ebony Hearts, and how the Grandmaster reaches it: **own** (his own body), **spent** (his body with no Qhi), **form** (the shape from his form library, its input, then the move's own input), **carried** (a technique of a fighter no longer in the game, now his). Each fighter he can face can also be copied with Borrowed Face (D,B,F+Block), Qhi-enhanced. **excluded** rows are not counted: finishers (the fight's end lets a shape go, so a shape never performs its source's finisher) and moves the game starts itself.
 
-**253 of 253 counted moves covered** (17 excluded).
+**281 of 281 counted moves covered** (18 excluded).
 
 | Fighter | Move | Name | Via | How |
 |---|---|---|---|---|
@@ -67,16 +67,17 @@ Written by the automation test `Slop.Fighters.Grandmaster.EveryMoveIsCovered` fr
 | grandmaster_spent | `throw_b` | Back Throw | spent | B+LP |
 | grandmaster_spent | `throw_f` | Throw | spent | F+LP |
 | grandmaster_spent | `uppercut` | Uppercut | spent | D+HP |
-| ashka | `ashka_elbow_chain` | Lantern Lash: elbow | form | RN+LP, then  |
-| ashka | `ashka_head_chain` | Temple Bell: head kick | form | RN+LP, then  |
-| ashka | `ashka_knee_chain` | Temple Bell: knee | form | RN+LP, then  |
-| ashka | `ashka_spin_chain` | Lantern Lash: spinning heel | form | RN+LP, then  |
-| ashka | `ashka_teep` | Teep | form | RN+LP, then F+LK |
+| ashka | `ashka_elbow_chain` | Muay Thai Combination: elbow | form | RN+LP, then  |
+| ashka | `ashka_head_chain` | Clinch Strikes: head kick | form | RN+LP, then  |
+| ashka | `ashka_knee_chain` | Clinch Strikes: knee | form | RN+LP, then  |
+| ashka | `ashka_spin_chain` | Muay Thai Combination: spinning heel | form | RN+LP, then  |
+| ashka | `ashka_teep` | Teep Kick | form | RN+LP, then F+LK |
 | ashka | `crouch_hk` | Crouching High Kick | form | RN+LP, then D+HK |
-| ashka | `crouch_lk` | Crouching Low Kick | form | RN+LP, then D+LK |
+| ashka | `crouch_lk` | Calf Kick | form | RN+LP, then D+LK |
 | ashka | `crouch_lp` | Crouching Punch | form | RN+LP, then D+LP |
-| ashka | `elbow_rush` | Elbow Rush | form | RN+LP, then F,F+LP |
-| ashka | `ember_shot` | Ember Shot | form | RN+LP, then D,F+HP |
+| ashka | `elbow_rush` | Spinning Elbows | form | RN+LP, then F,F+LP |
+| ashka | `ember_shot` | Lamplighter Flame | form | RN+LP, then D,F+HP |
+| ashka | `front_kick` | Front Kick | form | RN+LP, then F+HK |
 | ashka | `hk` | High Kick | form | RN+LP, then HK |
 | ashka | `hp` | High Punch | form | RN+LP, then HP |
 | ashka | `hp2` | High Punch (second) | form | RN+LP, then  |
@@ -84,25 +85,61 @@ Written by the automation test `Slop.Fighters.Grandmaster.EveryMoveIsCovered` fr
 | ashka | `jump_kick_n` | Straight Jump Kick | form | RN+LP, then Air HK |
 | ashka | `jump_punch` | Jump Punch | form | RN+LP, then Air HP |
 | ashka | `last_light` | Last Light | excluded | a finisher: the fight's end lets the shape go |
-| ashka | `lk` | Low Kick | form | RN+LP, then LK |
+| ashka | `lk` | Leg Kick | form | RN+LP, then LK |
 | ashka | `lp` | Low Punch | form | RN+LP, then LP |
 | ashka | `lp2` | Low Punch (second) | form | RN+LP, then  |
-| ashka | `rising_knee` | Rising Knee | form | RN+LP, then D,U+HK |
+| ashka | `rising_knee` | Lamplighter Flame: Rising Knee | form | RN+LP, then D,U+HK |
 | ashka | `roundhouse` | Roundhouse | form | RN+LP, then B+HK |
 | ashka | `shin_check` | Shin Check | form | RN+LP, then B,D+LK |
 | ashka | `stage_vat` | Into the Vat | excluded | a finisher: the fight's end lets the shape go |
 | ashka | `sweep` | Sweep | form | RN+LP, then B+LK |
-| ashka | `throw_b` | Back Throw | form | RN+LP, then B+LP |
-| ashka | `throw_f` | Throw | form | RN+LP, then F+LP |
+| ashka | `throw_b` | Clinch Trip | form | RN+LP, then B+LP |
+| ashka | `throw_f` | Clinch Strikes | form | RN+LP, then F+LP |
 | ashka | `uppercut` | Uppercut | form | RN+LP, then D+HP |
-| ashka | `wick_knee` | Wick Knee | form | RN+LP, then B,F+HK |
+| ashka | `wick_knee` | Lamplighter Flame: Flying Knee | form | RN+LP, then B,F+HK |
+| wren | `bar_the_door` | Armbar Counter | form | RN+LK, then B,D+HP |
+| wren | `crouch_hk` | Crouching High Kick | form | RN+LK, then D+HK |
+| wren | `crouch_lk` | Crouching Low Kick | form | RN+LK, then D+LK |
+| wren | `crouch_lp` | Crouching Punch | form | RN+LK, then D+LP |
+| wren | `flicker_back` | Slip Back | form | RN+LK, then B,B+LK |
+| wren | `flicker_step` | Slip Step | form | RN+LK, then F,F+LK |
+| wren | `flying_cross` | Flying Knee | form | RN+LK, then B,F+HP |
+| wren | `hk` | High Kick | form | RN+LK, then HK |
+| wren | `hook_720` | 720 Hook Kick | form | RN+LK, then D,F,D,B+HK |
+| wren | `hp` | High Punch | form | RN+LK, then HP |
+| wren | `hp2` | High Punch (second) | form | RN+LK, then  |
+| wren | `jump_kick` | Jump Kick | form | RN+LK, then Air HK |
+| wren | `jump_kick_n` | Straight Jump Kick | form | RN+LK, then Air HK |
+| wren | `jump_punch` | Jump Punch | form | RN+LK, then Air HP |
+| wren | `led_astray` | Punt | excluded | a finisher: the fight's end lets the shape go |
+| wren | `lifting_light` | Tornado Kick | form | RN+LK, then D,U+LK |
+| wren | `lk` | Thigh Kick | form | RN+LK, then LK |
+| wren | `lp` | Low Punch | form | RN+LK, then LP |
+| wren | `lp2` | Low Punch (second) | form | RN+LK, then  |
+| wren | `roundhouse` | Roundhouse | form | RN+LK, then B+HK |
+| wren | `spinning_back_kick` | Spinning Back Kick | form | RN+LK, then D,B+HK |
+| wren | `spirit_strikes` | Spirit Enhanced Strikes | form | RN+LK, then D,D+HP |
+| wren | `stage_vat` | Into the Vat | excluded | a finisher: the fight's end lets the shape go |
+| wren | `sweep` | Sweep | form | RN+LK, then B+LK |
+| wren | `throw_b` | Hip Throw | form | RN+LK, then B+LP |
+| wren | `throw_f` | Suplex | form | RN+LK, then F+LP |
+| wren | `turning_light` | Spinning Heel Kick | form | RN+LK, then B,F+HK |
+| wren | `uppercut` | Uppercut | form | RN+LK, then D+HP |
+| wren | `wisp_feint` | Feint | form | RN+LK, then D,B+LK |
+| wren | `wren_armlock` | Armbar | form | RN+LK, then  |
+| wren | `wren_backfist` | One-Two: spinning elbow | form | RN+LK, then  |
+| wren | `wren_cross` | One-Two: cross | form | RN+LK, then  |
+| wren | `wren_head_kick` | Head Kick | form | RN+LK, then  |
 | gorm | `belly_slide` | Belly Slide | form | RN+HK, then D,F+LK |
 | gorm | `belly_to_belly` | Belly-to-Belly | form | RN+HK, then F,B+LP |
 | gorm | `crouch_hk` | Crouching High Kick | form | RN+HK, then D+HK |
 | gorm | `crouch_lk` | Crouching Low Kick | form | RN+HK, then D+LK |
 | gorm | `crouch_lp` | Crouching Punch | form | RN+HK, then D+LP |
+| gorm | `double_wristlock` | Double Wristlock | form | RN+HK, then D,B+LP |
+| gorm | `forearm_smash` | Forearm Smash | form | RN+HK, then F,B+HP |
 | gorm | `gorm_belly` | Vat Stir: belly | form | RN+HK, then  |
 | gorm | `gorm_hammer` | Tallow Mill: hammer | form | RN+HK, then  |
+| gorm | `gorm_headbutt` | Headbutt | form | RN+HK, then D,B+HP |
 | gorm | `gorm_thrust2` | Tallow Slaps: second | form | RN+HK, then  |
 | gorm | `gorm_thrust3` | Tallow Slaps: shove | form | RN+HK, then  |
 | gorm | `ground_slap` | Ground Slap | form | RN+HK, then D,D+HP |
@@ -115,6 +152,7 @@ Written by the automation test `Slop.Fighters.Grandmaster.EveryMoveIsCovered` fr
 | gorm | `lk` | Low Kick | form | RN+HK, then LK |
 | gorm | `lp` | Low Punch | form | RN+HK, then LP |
 | gorm | `lp2` | Low Punch (second) | form | RN+HK, then  |
+| gorm | `overarm_throw` | Overarm Throw | form | RN+HK, then B,F+HP |
 | gorm | `rendered_down` | Rendered Down | excluded | a finisher: the fight's end lets the shape go |
 | gorm | `rendering_charge` | Rendering Charge | form | RN+HK, then B,F+HK |
 | gorm | `rising_belly` | Rising Belly | form | RN+HK, then D,U+HK |
@@ -127,6 +165,11 @@ Written by the automation test `Slop.Fighters.Grandmaster.EveryMoveIsCovered` fr
 | gorm | `throw_f` | Throw | form | RN+HK, then F+LP |
 | gorm | `uppercut` | Uppercut | form | RN+HK, then D+HP |
 | gorm | `vat_press` | Vat Press | form | RN+HK, then B,F+LP |
+| nix | `code_sea_cut` | Code Sea: cut | form | D+RN+LP, then  |
+| nix | `code_sea_draw` | Code Sea | form | D+RN+LP, then D,F+HP |
+| nix | `code_sea_hypnosis` | Code Sea: Hypnosis | form | D+RN+LP, then D,F+LP |
+| nix | `code_sea_illusion` | Code Sea: Illusion | form | D+RN+LP, then D,D+LK |
+| nix | `code_sea_rise` | Code Sea: rising cut | form | D+RN+LP, then  |
 | nix | `crouch_hk` | Crouching High Kick | form | D+RN+LP, then D+HK |
 | nix | `crouch_lk` | Crouching Low Kick | form | D+RN+LP, then D+LK |
 | nix | `crouch_lp` | Crouching Punch | form | D+RN+LP, then D+LP |
@@ -141,7 +184,9 @@ Written by the automation test `Slop.Fighters.Grandmaster.EveryMoveIsCovered` fr
 | nix | `lp` | Low Punch | form | D+RN+LP, then LP |
 | nix | `lp2` | Low Punch (second) | form | D+RN+LP, then  |
 | nix | `nix_axe` | Black Water: axe kick | form | D+RN+LP, then  |
+| nix | `nix_kunai` | Hidden Weapon: kunai | form | D+RN+LP, then  |
 | nix | `nix_low` | Drowned Hand: hook | form | D+RN+LP, then  |
+| nix | `nix_shuriken` | Hidden Weapon: shuriken | form | D+RN+LP, then  |
 | nix | `nix_slash` | Drowned Hand: slash | form | D+RN+LP, then  |
 | nix | `nix_spin` | Black Water: spin kick | form | D+RN+LP, then  |
 | nix | `roundhouse` | Roundhouse | form | D+RN+LP, then B+HK |
@@ -210,11 +255,18 @@ Written by the automation test `Slop.Fighters.Grandmaster.EveryMoveIsCovered` fr
 | bram | `throw_f` | Chancery | form | RN+HP, then F+LP |
 | bram | `uppercut` | Uppercut | form | RN+HP, then D+HP |
 | hollis | `anchor_drop` | Anchor Drop | form | D+RN+LK, then D,D+HK |
+| hollis | `anchor_fall` | Hollism: The Anchor | form | D+RN+LK, then  |
 | hollis | `bubble` | Bubble | form | D+RN+LK, then D,F+LP |
 | hollis | `crouch_hk` | Crouching High Kick | form | D+RN+LK, then D+HK |
 | hollis | `crouch_lk` | Crouching Low Kick | form | D+RN+LK, then D+LK |
 | hollis | `crouch_lp` | Crouching Punch | form | D+RN+LK, then D+LP |
 | hollis | `crush_depth` | Crush Depth | excluded | a finisher: the fight's end lets the shape go |
+| hollis | `eel_coil` | Hollism: The Eel | form | D+RN+LK, then  |
+| hollis | `fragmented_vessel` | Fragmented Vessel | excluded | started by the game, not an input |
+| hollis | `gs_backhand` | Ebony Heart Greatsword: Backhand | form | D+RN+LK, then  |
+| hollis | `gs_cleave` | Ebony Heart Greatsword: Cleave | form | D+RN+LK, then F,F+HP |
+| hollis | `gs_execution` | Ebony Heart Greatsword: Execution | form | D+RN+LK, then  |
+| hollis | `gs_reap` | Ebony Heart Greatsword: Reap | form | D+RN+LK, then  |
 | hollis | `harpoon` | Harpoon | form | D+RN+LK, then B,F+LP |
 | hollis | `hk` | High Kick | form | D+RN+LK, then HK |
 | hollis | `hollis_boot` | Lead Boot | form | D+RN+LK, then  |
@@ -227,52 +279,29 @@ Written by the automation test `Slop.Fighters.Grandmaster.EveryMoveIsCovered` fr
 | hollis | `lk` | Low Kick | form | D+RN+LK, then LK |
 | hollis | `lp` | Low Punch | form | D+RN+LK, then LP |
 | hollis | `lp2` | Low Punch (second) | form | D+RN+LK, then  |
+| hollis | `reckoning` | Hollism: Reckoning | form | D+RN+LK, then B,F+HP |
+| hollis | `reckoning2` | Hollism: Reckoning: second | form | D+RN+LK, then  |
+| hollis | `reckoning3` | Hollism: Reckoning: third | form | D+RN+LK, then  |
+| hollis | `reckoning4` | Hollism: Reckoning: last | form | D+RN+LK, then  |
 | hollis | `roundhouse` | Roundhouse | form | D+RN+LK, then B+HK |
+| hollis | `shark_lunge` | Hollism: The Shark | form | D+RN+LK, then D,F+HK |
 | hollis | `stage_vat` | Into the Vat | excluded | a finisher: the fight's end lets the shape go |
 | hollis | `sweep` | Sweep | form | D+RN+LK, then B+LK |
 | hollis | `throw_b` | Back Throw | form | D+RN+LK, then B+LP |
 | hollis | `throw_f` | Throw | form | D+RN+LK, then F+LP |
 | hollis | `uppercut` | Uppercut | form | D+RN+LK, then D+HP |
 | hollis | `vent` | Vent | form | D+RN+LK, then D,B+HP |
-| wren | `bar_the_door` | Bar the Door | form | RN+LK, then B,D+HP |
-| wren | `crouch_hk` | Crouching High Kick | form | RN+LK, then D+HK |
-| wren | `crouch_lk` | Crouching Low Kick | form | RN+LK, then D+LK |
-| wren | `crouch_lp` | Crouching Punch | form | RN+LK, then D+LP |
-| wren | `flicker_back` | Flicker Step (back) | form | RN+LK, then B,B+LK |
-| wren | `flicker_step` | Flicker Step | form | RN+LK, then F,F+LK |
-| wren | `flying_cross` | Flying Cross | form | RN+LK, then B,F+HP |
-| wren | `hk` | High Kick | form | RN+LK, then HK |
-| wren | `hp` | High Punch | form | RN+LK, then HP |
-| wren | `hp2` | High Punch (second) | form | RN+LK, then  |
-| wren | `jump_kick` | Jump Kick | form | RN+LK, then Air HK |
-| wren | `jump_kick_n` | Straight Jump Kick | form | RN+LK, then Air HK |
-| wren | `jump_punch` | Jump Punch | form | RN+LK, then Air HP |
-| wren | `led_astray` | Led Astray | excluded | a finisher: the fight's end lets the shape go |
-| wren | `lifting_light` | Lifting Light | form | RN+LK, then D,U+LK |
-| wren | `lk` | Thigh Kick | form | RN+LK, then LK |
-| wren | `lp` | Low Punch | form | RN+LK, then LP |
-| wren | `lp2` | Low Punch (second) | form | RN+LK, then  |
-| wren | `roundhouse` | Roundhouse | form | RN+LK, then B+HK |
-| wren | `stage_vat` | Into the Vat | excluded | a finisher: the fight's end lets the shape go |
-| wren | `sweep` | Sweep | form | RN+LK, then B+LK |
-| wren | `throw_b` | Hip Throw | form | RN+LK, then B+LP |
-| wren | `throw_f` | Reaping Throw | form | RN+LK, then F+LP |
-| wren | `turning_light` | Turning Light | form | RN+LK, then B,F+HK |
-| wren | `uppercut` | Uppercut | form | RN+LK, then D+HP |
-| wren | `wisp_feint` | Wisp Feint | form | RN+LK, then D,B+LK |
-| wren | `wren_armlock` | Bar the Door: armlock | form | RN+LK, then  |
-| wren | `wren_backfist` | One-Two: backfist | form | RN+LK, then  |
-| wren | `wren_cross` | One-Two: cross | form | RN+LK, then  |
-| wren | `wren_head_kick` | Head Kick | form | RN+LK, then  |
-| slopbat | `bite` | Bite | form | D+RN+HK, then F,F+LP |
-| slopbat | `claw` | Claw | form | D+RN+HK, then HP |
-| slopbat | `claw2` | Raking Claw | form | D+RN+HK, then  |
-| slopbat | `dive` | The Dive | form | D+RN+HK, then D,U+HK |
-| slopbat | `low_claw` | Low Rake | form | D+RN+HK, then D+LK |
-| slopbat | `rising_claw` | Rising Talon | form | D+RN+HK, then D+HP |
-| slopbat | `storm_shroud` | Storm Shroud | form | D+RN+HK, then B,B+HP |
-| slopbat | `tar_spit` | Tar Spit | form | D+RN+HK, then D,F+HP |
-| slopbat | `wing_gust` | Wing Gust | form | D+RN+HK, then B,F+HK |
+| slopbat | `bite` | Engulf | form | D+RN+HK, then F,F+LP |
+| slopbat | `claw` | Pseudopod | form | D+RN+HK, then HP |
+| slopbat | `claw2` | Pseudopod | form | D+RN+HK, then  |
+| slopbat | `dive` | Swim | form | D+RN+HK, then D,U+HK |
+| slopbat | `ebony_beam` | Ebony Lance | form | D+RN+HK, then F,B+HP |
+| slopbat | `ebony_seal` | Ebony Seal | form | D+RN+HK, then D,D+HP |
+| slopbat | `low_claw` | Undertow | form | D+RN+HK, then D+LK |
+| slopbat | `rising_claw` | Rising Flow | form | D+RN+HK, then D+HP |
+| slopbat | `storm_shroud` | Ebony Cross | form | D+RN+HK, then B,B+HP |
+| slopbat | `tar_spit` | Ebony Orb | form | D+RN+HK, then D,F+HP |
+| slopbat | `wing_gust` | The Tide | form | D+RN+HK, then B,F+HK |
 | daxion | `dax_evade` | Step Aside | carried | step_aside (B,B+LK) |
 | daxion | `dax_palm` | One Strike | carried | one_strike () |
 | daxion | `dax_crack` | Find the Crack | carried | find_the_crack (B,F,B,F+HP) |

@@ -3,7 +3,7 @@
     source Tools/ue.sh && SLOP_IMPORT_ONLY=audio,materials editor_py "$PROJ_DIR/Tools/import_assets.py"
 
 SLOP_IMPORT_ONLY (comma list of steps: audio, materials, fighters, surfaces, props,
-stages, slots, portraits, stagepics) limits the run; without it every step runs. SLOP_FIGHTERS
+stages, slots, portraits, stagepics, ui) limits the run; without it every step runs. SLOP_STAGES and SLOP_FIGHTERS
 (comma list of ids) limits the fighters, slots and portraits steps to those fighters. `slots` gives the imported fighters and
 stages their material instances; run it in a second editor session after importing them (edits
 made in the session that imported a mesh do not stick).
@@ -722,6 +722,89 @@ def sky_material():
     EAL.save_loaded_asset(m)
 
 
+def fragment_material():
+    """M_CharacterFragment: the Ebony Heart Fragment's skin, a window on a galaxy. Nebula and stars are
+    read in screen space, so they stay put while the body flows over them; TintA and TintB are the
+    colours its beholder sees (FragmentColours in ASlopFighterActor), Galaxy rises with each form. The
+    surface breathes (world position offset) and a rim of its own light holds its shape on black."""
+    src = os.path.join(SRC, "Fragment")
+    import_as(os.path.join(src, "fragment_stars.png"), "/Game/Slop/Materials", "T_fragment_stars")
+    import_as(os.path.join(src, "fragment_nebula.png"), "/Game/Slop/Materials", "T_fragment_nebula")
+    # (By path: an import that changes nothing hands nothing back.)
+    stars = EAL.load_asset("/Game/Slop/Materials/T_fragment_stars")
+    nebula = EAL.load_asset("/Game/Slop/Materials/T_fragment_nebula")
+    m = fresh_material("/Game/Slop/Materials/M_CharacterFragment")
+    m.set_editor_property("used_with_skeletal_mesh", True)
+    time = expr(m, unreal.MaterialExpressionTime, -1500, 0)
+    screen = expr(m, unreal.MaterialExpressionScreenPosition, -1500, 200)
+
+    def layer(tex, tiling, speed, x, y):
+        uv = mul(m, screen, const2(m, tiling, x - 300, y + 120), x - 240, y, "ViewportUV", "")
+        pan = expr(m, unreal.MaterialExpressionPanner, x - 120, y)
+        pan.set_editor_property("speed_x", speed[0])
+        pan.set_editor_property("speed_y", speed[1])
+        link(uv, "", pan, "Coordinate")
+        s = expr(m, unreal.MaterialExpressionTextureSample, x, y)
+        s.set_editor_property("texture", tex)
+        link(pan, "", s, "UVs")
+        return s
+
+    near = layer(nebula, (1.5, 0.9), (0.012, -0.006), -900, 0)
+    far = layer(nebula, (0.8, 0.5), (-0.007, 0.004), -900, 300)
+    sky = layer(stars, (2.4, 1.4), (0.003, 0.0), -900, 600)
+    tint_a = vector(m, "TintA", (0.3, 0.08, 0.75, 1), -600, 0)
+    tint_b = vector(m, "TintB", (0.05, 0.25, 0.65, 1), -600, 300)
+    a = mul(m, near, tint_a, -400, 0, "R", "RGB")
+    b = mul(m, far, tint_b, -400, 300, "G", "RGB")
+    fres = expr(m, unreal.MaterialExpressionFresnel, -600, 800)
+    fres.set_editor_property("exponent", 4.5)
+    rim = mul(m, fres, tint_a, -400, 800, "", "RGB")
+    glow = scalar(m, "Galaxy", 1.0, -400, 500)
+    two = expr(m, unreal.MaterialExpressionConstant, -400, 650)
+    two.set_editor_property("r", 2.0)
+    body = mul(m, add(m, a, b, -200, 150), mul(m, glow, two, -300, 560), -100, 200)
+    em = add(m, add(m, body, mul(m, mul(m, sky, const1(m, 7.0, -420, 640), -340, 640, "R", ""), glow, -300, 640), 60, 300), mul(m, rim, const1(m, 1.3, -300, 860), -200, 800), 220, 400)
+    flash = mul(m, scalar(m, "Flash", 0.0, 60, 620), vector(m, "FlashColor", (1, 0.95, 0.85, 1), 60, 720), 240, 640, "", "RGB")
+    output(add(m, em, flash, 400, 500), "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    black = expr(m, unreal.MaterialExpressionConstant3Vector, 400, 0)
+    black.set_editor_property("constant", unreal.LinearColor(0.002, 0.001, 0.005, 1))
+    output(black, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    rough = expr(m, unreal.MaterialExpressionConstant, 400, 120)
+    rough.set_editor_property("r", 0.22)
+    output(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    # breathing: the surface swells and sinks in slow waves running up the body
+    wp = expr(m, unreal.MaterialExpressionWorldPosition, -600, 1100)
+    z = expr(m, unreal.MaterialExpressionComponentMask, -450, 1100)
+    z.set_editor_property("b", True)
+    z.set_editor_property("r", False)
+    z.set_editor_property("g", False)
+    link(wp, "", z, "")
+    freq = expr(m, unreal.MaterialExpressionConstant, -450, 1220)
+    freq.set_editor_property("r", 0.012)
+    rate = expr(m, unreal.MaterialExpressionConstant, -450, 1320)
+    rate.set_editor_property("r", 0.28)
+    wave = expr(m, unreal.MaterialExpressionSine, -100, 1150)
+    link(add(m, mul(m, z, freq, -300, 1150), mul(m, time, rate, -300, 1270), -200, 1200), "", wave, "")
+    normal = expr(m, unreal.MaterialExpressionVertexNormalWS, -100, 1300)
+    amp = scalar(m, "Wobble", 7.0, -100, 1420)
+    output(mul(m, mul(m, wave, normal, 80, 1250), amp, 240, 1300), "", unreal.MaterialProperty.MP_WORLD_POSITION_OFFSET)
+    MEL.recompile_material(m)
+    EAL.save_loaded_asset(m)
+
+
+def const1(m, v, x, y):
+    e = expr(m, unreal.MaterialExpressionConstant, x, y)
+    e.set_editor_property("r", v)
+    return e
+
+
+def const2(m, v, x, y):
+    e = expr(m, unreal.MaterialExpressionConstant2Vector, x, y)
+    e.set_editor_property("r", v[0])
+    e.set_editor_property("g", v[1])
+    return e
+
+
 def materials():
     white_linear()
     billboard_material("/Game/Slop/Materials/M_SoftDisc", False)
@@ -732,6 +815,7 @@ def materials():
     stage_glow_material()
     character_material()
     character_material("/Game/Slop/Materials/M_CharacterSkin", skin=True)
+    fragment_material()
     surface_material()
     glow_material("/Game/Slop/Materials/M_GlowAdd", unreal.BlendMode.BLEND_ADDITIVE)
     glow_material("/Game/Slop/Materials/M_GlowTranslucent", unreal.BlendMode.BLEND_TRANSLUCENT)
@@ -768,6 +852,8 @@ SLOT_EXTRA = {
     # The stranger in white stays clean; the robe hangs long.
     "daxion_cloth": {"ClothDetail": 0.15, "Sway": 1.0},
     "mirela_gown": {"ClothDetail": 0.25, "Sway": 1.0},
+    # Her black hair holds a rim light at any angle it can catch one; the fall of it stays matte.
+    "mirela_hairface": {"HairRoughness": 0.85, "HairSpecDrop": 0.08},
     "gorm_canvas": {"ClothDetail": 0.8, "Sway": 0.6},
     # Wren: the judo jacket's skirt and the belt tails swing; the spats and rash guard (her "cloth"
     # slot) stay on the body.
@@ -776,6 +862,8 @@ SLOT_EXTRA = {
     "wren_cloth": {"ClothDetail": 0.3, "Sway": 0.0},
     # The Grandmaster: the long robe and its sash ends sway; trousers and shoes ("garb") do not.
     "grandmaster_robe": {"ClothDetail": 0.25, "Sway": 1.0},
+    # Ashka: her trench coat's skirt swings.
+    "ashka_coat": {"ClothDetail": 0.3, "Sway": 0.8},
     "grandmaster_garb": {"ClothDetail": 0.4},
 }
 
@@ -800,6 +888,15 @@ def fighter(fid, fbx, import_meshes=True):
         slot = str(sm.get_editor_property("material_slot_name"))
         # Slots are named M_<id>_<slot>; their textures <id>_<slot>_<map>.png.
         key = slot[len(f"M_{fid}_"):] if slot.startswith(f"M_{fid}_") else slot
+        if key == "ebony":
+            # The Fragment's skin has no textures of its own to bind: it is all in the material.
+            mi_path = f"{dest}/MI_{fid}_ebony"
+            mi = EAL.load_asset(mi_path) if EAL.does_asset_exist(mi_path) else TOOLS.create_asset(f"MI_{fid}_ebony", dest, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
+            unreal.MaterialEditingLibrary.set_material_instance_parent(mi, EAL.load_asset("/Game/Slop/Materials/M_CharacterFragment"))
+            EAL.save_loaded_asset(mi)
+            sm.set_editor_property("material_interface", mi)
+            mats[i] = sm
+            continue
         prefix = f"{fid}_{key}_".lower()
         if not any(c.lower().endswith(".png") and c.lower().startswith(prefix) for c in os.listdir(folder)):
             # No textures of ours for this slot: keep what the FBX brought.
@@ -810,6 +907,7 @@ def fighter(fid, fbx, import_meshes=True):
         else:
             mi = TOOLS.create_asset(f"MI_{fid}_{key}", dest, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
         unreal.MaterialEditingLibrary.set_material_instance_parent(mi, skin_base if key == "skin" else base)
+        MEL.clear_all_material_instance_parameters(mi)   # (a map a slot no longer has must not stay on it)
         for suffix, param, kind in [("basecolor", "BaseColorTex", "srgb"), ("normal", "NormalTex", "normal"), ("orm", "ORMTex", "linear"), ("emissive", "EmissiveTex", "srgb")]:
             png = os.path.join(folder, f"{fid}_{key}_{suffix}.png")
             if not os.path.exists(png):
@@ -1049,10 +1147,11 @@ def stages(import_meshes=True):
     root = os.path.join(SRC, "Stages")
     data_dir = os.path.join(PROJECT, "Content", "Data", "Stages")
     os.makedirs(data_dir, exist_ok=True)
+    wanted = {f.strip() for f in os.environ.get("SLOP_STAGES", "").split(",") if f.strip()}
     for st in sorted(os.listdir(root)):
         fbx = os.path.join(root, st, st + ".fbx")
         js = os.path.join(root, st, st + ".json")
-        if not (os.path.exists(fbx) and os.path.exists(js)):
+        if not (os.path.exists(fbx) and os.path.exists(js)) or (wanted and st not in wanted):
             continue
         with open(js) as f:
             d = json.load(f)
@@ -1073,11 +1172,53 @@ def stages(import_meshes=True):
         log(f"stage {st}: {n} meshes, {len(mats)} materials, unmatched slots {sorted(missing)}")
 
 
+def forms():
+    """SourceArt/Forms/form_<name>.fbx (Tools/blender/build_forms.py) -> /Game/Slop/Forms: what Hollis
+    summons or becomes. Their material goes on in a later pass (step `slots`)."""
+    src = os.path.join(SRC, "Forms")
+    for f in sorted(os.listdir(src)):
+        if f.endswith(".fbx"):
+            import_as(os.path.join(src, f), "/Game/Slop/Forms", f[:-4])
+
+
+def form_own_material(name, dest):
+    """A form with maps of its own (Nix's Code Sea) is no part of the Fragment's skin."""
+    src = os.path.join(SRC, "Forms")
+    if not os.path.exists(os.path.join(src, f"{name}_basecolor.png")):
+        return None
+    path = f"{dest}/MI_{name}"
+    mi = EAL.load_asset(path) if EAL.does_asset_exist(path) else TOOLS.create_asset(f"MI_{name}", dest, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
+    MEL.set_material_instance_parent(mi, EAL.load_asset("/Game/Slop/Materials/M_Character"))
+    for suffix, param in (("basecolor", "BaseColorTex"), ("emissive", "EmissiveTex")):
+        t = texture(os.path.join(src, f"{name}_{suffix}.png"), dest + "/Textures", srgb=True, normal=False)
+        if t:
+            MEL.set_material_instance_texture_parameter_value(mi, param, t)
+    MEL.set_material_instance_scalar_parameter_value(mi, "Roughness", 0.3)
+    MEL.set_material_instance_scalar_parameter_value(mi, "EmissiveStrength", 2.0)
+    EAL.save_loaded_asset(mi)
+    return mi
+
+
+def form_slots():
+    dest = "/Game/Slop/Forms"
+    path = f"{dest}/MI_form"
+    mi = EAL.load_asset(path) if EAL.does_asset_exist(path) else TOOLS.create_asset("MI_form", dest, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
+    MEL.set_material_instance_parent(mi, EAL.load_asset("/Game/Slop/Materials/M_CharacterFragment"))
+    EAL.save_loaded_asset(mi)
+    for f in os.listdir(os.path.join(SRC, "Forms")):
+        if f.endswith(".fbx"):
+            mesh = EAL.load_asset(f"{dest}/{f[:-4]}")
+            if mesh:
+                mesh.set_material(0, form_own_material(f[:-4], dest) or mi)
+                EAL.save_loaded_asset(mesh)
+
+
 def slots():
     # Only the named fighters' slots when SLOP_FIGHTERS limits the run; the stages are left alone.
     if not os.environ.get("SLOP_FIGHTERS", "").strip():
         stages(import_meshes=False)
     fighters(import_meshes=False)
+    form_slots()
 
 
 def stagepics():
@@ -1096,6 +1237,40 @@ def stagepics():
             EAL.save_loaded_asset(tex)
             n += 1
     log(f"stage pictures: {n}")
+
+
+def ui():
+    """SourceArt/UI/*.png (the title card, and Tools/ui_art.py's textures) -> /Game/Slop/UI/T_ui_<name>,
+    plus M_Hall, the menus' far sky. Uncompressed: the card must keep its pixels, and BC compression
+    bands the dark gradients. Mips only where a texture is drawn smaller than its source."""
+    root = os.path.join(SRC, "UI")
+    names = {"EbonyHearts_TitleCard": "logo"}
+    mipped = {"logo", "logo_energy", "bar_frame", "timer_plate", "spike", "spike_hollow", "frame", "hall"}
+    n = 0
+    for f in sorted(os.listdir(root)):
+        if not f.endswith(".png"):
+            continue
+        stem = names.get(f[:-4], f[:-4])
+        tex = import_as(os.path.join(root, f), "/Game/Slop/UI", "T_ui_" + stem)
+        if tex:
+            tex.set_editor_property("lod_group", unreal.TextureGroup.TEXTUREGROUP_UI)
+            tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_EDITOR_ICON)
+            tex.set_editor_property("mip_gen_settings", unreal.TextureMipGenSettings.TMGS_SIMPLE_AVERAGE if stem in mipped else unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
+            tex.set_editor_property("never_stream", True)
+            tex.set_editor_property("srgb", True)
+            tex.set_editor_property("address_x", unreal.TextureAddress.TA_CLAMP)
+            tex.set_editor_property("address_y", unreal.TextureAddress.TA_CLAMP)
+            EAL.save_loaded_asset(tex)
+            n += 1
+    log(f"interface textures: {n}")
+    m = fresh_material("/Game/Slop/Materials/M_Hall")
+    m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    m.set_editor_property("two_sided", True)
+    t = texparam(m, "Tex", "/Game/Slop/UI/T_ui_hall", -500, 0)
+    e = mul(m, t, scalar(m, "Intensity", 2.2, -500, 240), -250, 100, "RGB", "")
+    output(e, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    MEL.recompile_material(m)
+    EAL.save_loaded_asset(m)
 
 
 def portraits():
@@ -1119,7 +1294,7 @@ def portraits():
 def main():
     only = args()
     steps = [("audio", audio), ("materials", materials), ("fighters", fighters),
-             ("surfaces", surfaces), ("props", props), ("stages", stages), ("slots", slots), ("portraits", portraits), ("stagepics", stagepics)]
+             ("surfaces", surfaces), ("props", props), ("stages", stages), ("forms", forms), ("slots", slots), ("portraits", portraits), ("stagepics", stagepics), ("ui", ui)]
     for name, fn in steps:
         if only is None or name in only:
             log("step " + name)

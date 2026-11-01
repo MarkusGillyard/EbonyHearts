@@ -3,10 +3,10 @@
 	"name": "Ashka Rook",
 	"title": "The Last Lamplighter",
 	"pronoun": "her",
-	"style": "Muay Thai and lamp-fire",
-	"blurb": "The last lamplighter of drowned Ninefathom fights to carry its beacon-flame back to the city.",
+	"style": "Muay Thai & Flame Style",
+	"blurb": "A Muay Thai fighter and Wren Ku's best friend, calm and reticent, with a crimson flame she calls purifying.",
 	"stats": {
-		"height": 1.74,
+		"height": 1.7,
 		"health": 1000,
 		"walk_f": 2.5,
 		"walk_b": 2.05,
@@ -52,12 +52,22 @@
 					],
 					"cost": 12
 				}
-			]
+			],
+			"name": "Leg Kick"
+		},
+		"crouch_lk": {
+			"name": "Calf Kick"
+		},
+		"throw_f": {
+			"name": "Clinch Strikes"
+		},
+		"throw_b": {
+			"name": "Clinch Trip"
 		}
 	},
 	"moves": {
 		"ashka_elbow_chain": {
-			"name": "Lantern Lash: elbow",
+			"name": "Muay Thai Combination: elbow",
 			"kind": "chain",
 			"startup": 6,
 			"active": 3,
@@ -129,7 +139,7 @@
 			}
 		},
 		"ashka_spin_chain": {
-			"name": "Lantern Lash: spinning heel",
+			"name": "Muay Thai Combination: spinning heel",
 			"kind": "chain",
 			"startup": 10,
 			"active": 4,
@@ -210,7 +220,7 @@
 			}
 		},
 		"ashka_knee_chain": {
-			"name": "Temple Bell: knee",
+			"name": "Clinch Strikes: knee",
 			"kind": "chain",
 			"startup": 6,
 			"active": 3,
@@ -278,7 +288,7 @@
 			}
 		},
 		"ashka_head_chain": {
-			"name": "Temple Bell: head kick",
+			"name": "Clinch Strikes: head kick",
 			"kind": "chain",
 			"startup": 9,
 			"active": 3,
@@ -358,7 +368,7 @@
 			}
 		},
 		"ember_shot": {
-			"name": "Ember Shot",
+			"name": "Lamplighter Flame",
 			"magic": 1.0,
 			"kind": "special",
 			"startup": 12,
@@ -367,7 +377,7 @@
 			"level": "none",
 			"projectile": {
 				"frame": 12,
-				"kind": "ember",
+				"kind": "lamplighter",
 				"offset": [
 					0.62,
 					1.34
@@ -419,7 +429,7 @@
 			}
 		},
 		"wick_knee": {
-			"name": "Wick Knee",
+			"name": "Lamplighter Flame: Flying Knee",
 			"magic": 0.4,
 			"kind": "special",
 			"startup": 11,
@@ -523,7 +533,7 @@
 			}
 		},
 		"elbow_rush": {
-			"name": "Elbow Rush",
+			"name": "Spinning Elbows",
 			"kind": "special",
 			"startup": 9,
 			"active": 4,
@@ -596,7 +606,7 @@
 			}
 		},
 		"rising_knee": {
-			"name": "Rising Knee",
+			"name": "Lamplighter Flame: Rising Knee",
 			"magic": 0.4,
 			"kind": "special",
 			"startup": 5,
@@ -749,26 +759,45 @@
 			"level": "none",
 			"effects": {
 				"parry": {
-					"frames": [2, 14],
+					"frames": [
+						2,
+						14
+					],
 					"stun": 22,
-					"levels": ["low"],
+					"levels": [
+						"low"
+					],
 					"damage": 30
 				}
 			},
 			"anim": {
 				"keys": [
-					[3, "ashka_check", "snap"],
-					[15, "ashka_check", "linear"],
-					[22, "stance", "inout"]
+					[
+						3,
+						"ashka_check",
+						"snap"
+					],
+					[
+						15,
+						"ashka_check",
+						"linear"
+					],
+					[
+						22,
+						"stance",
+						"inout"
+					]
 				]
 			},
-			"tags": ["counter"],
+			"tags": [
+				"counter"
+			],
 			"sfx": {
 				"swing": "whoosh_light"
 			}
 		},
 		"ashka_teep": {
-			"name": "Teep",
+			"name": "Teep Kick",
 			"startup": 8,
 			"active": 3,
 			"recovery": 14,
@@ -807,7 +836,165 @@
 			],
 			"anim": {
 				"tip": "foot_l",
-				"keys": [[3, "mc_ashka_teep_03", "linear"], [4, "mc_ashka_teep_04", "linear"], [5, "mc_ashka_teep_05", "linear"], [6, "mc_ashka_teep_06", "linear"], [7, "mc_ashka_teep_07", "linear"], [8, "mc_ashka_teep_08", "linear"], [9, "mc_ashka_teep_09", "linear"], [10, "mc_ashka_teep_10", "linear"], [11, "mc_ashka_teep_11", "linear"], [12, "mc_ashka_teep_12", "linear"], [13, "mc_ashka_teep_13", "linear"], [14, "mc_ashka_teep_14", "linear"], [15, "mc_ashka_teep_15", "linear"], [16, "mc_ashka_teep_16", "linear"], [17, "mc_ashka_teep_17", "linear"], [18, "mc_ashka_teep_18", "linear"], [19, "mc_ashka_teep_19", "linear"], [20, "mc_ashka_teep_20", "linear"], [21, "mc_ashka_teep_21", "linear"], [25, "stance", "inout"]]
+				"keys": [
+					[
+						3,
+						"mc_ashka_teep_03",
+						"linear"
+					],
+					[
+						4,
+						"mc_ashka_teep_04",
+						"linear"
+					],
+					[
+						5,
+						"mc_ashka_teep_05",
+						"linear"
+					],
+					[
+						6,
+						"mc_ashka_teep_06",
+						"linear"
+					],
+					[
+						7,
+						"mc_ashka_teep_07",
+						"linear"
+					],
+					[
+						8,
+						"mc_ashka_teep_08",
+						"linear"
+					],
+					[
+						9,
+						"mc_ashka_teep_09",
+						"linear"
+					],
+					[
+						10,
+						"mc_ashka_teep_10",
+						"linear"
+					],
+					[
+						11,
+						"mc_ashka_teep_11",
+						"linear"
+					],
+					[
+						12,
+						"mc_ashka_teep_12",
+						"linear"
+					],
+					[
+						13,
+						"mc_ashka_teep_13",
+						"linear"
+					],
+					[
+						14,
+						"mc_ashka_teep_14",
+						"linear"
+					],
+					[
+						15,
+						"mc_ashka_teep_15",
+						"linear"
+					],
+					[
+						16,
+						"mc_ashka_teep_16",
+						"linear"
+					],
+					[
+						17,
+						"mc_ashka_teep_17",
+						"linear"
+					],
+					[
+						18,
+						"mc_ashka_teep_18",
+						"linear"
+					],
+					[
+						19,
+						"mc_ashka_teep_19",
+						"linear"
+					],
+					[
+						20,
+						"mc_ashka_teep_20",
+						"linear"
+					],
+					[
+						21,
+						"mc_ashka_teep_21",
+						"linear"
+					],
+					[
+						25,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "medium"
+			}
+		},
+		"front_kick": {
+			"name": "Front Kick",
+			"kind": "special",
+			"startup": 9,
+			"active": 3,
+			"recovery": 18,
+			"level": "mid",
+			"damage": 70,
+			"hitstun": 24,
+			"blockstun": 13,
+			"push_hit": 0.7,
+			"push_block": 0.7,
+			"motion": [
+				[
+					6,
+					0.2
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						0.7,
+						0.8,
+						0.5
+					]
+				}
+			],
+			"anim": {
+				"tip": "foot_r",
+				"keys": [
+					[
+						6,
+						"hk_chamber",
+						"out"
+					],
+					[
+						9,
+						"hk_hit",
+						"snap"
+					],
+					[
+						12,
+						"hk_hit",
+						"linear"
+					],
+					[
+						30,
+						"stance",
+						"inout"
+					]
+				]
 			},
 			"sfx": {
 				"swing": "medium"
@@ -838,6 +1025,10 @@
 		[
 			"B,D+LK",
 			"shin_check"
+		],
+		[
+			"F+HK",
+			"front_kick"
 		]
 	],
 	"finisher": {
@@ -860,7 +1051,8 @@
 			"ember_shot": 1.0,
 			"wick_knee": 0.5,
 			"elbow_rush": 0.7,
-			"ashka_teep": 0.8
+			"ashka_teep": 0.8,
+			"front_kick": 0.7
 		},
 		"anti_air": [
 			"rising_knee",

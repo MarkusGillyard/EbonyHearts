@@ -1164,6 +1164,387 @@
 			"sfx": {
 				"swing": "grab"
 			}
+		},
+		"overarm_throw": {
+			"kind": "grab",
+			"level": "throw",
+			"requires": "",
+			"hitboxes": [
+				{
+					"rect": [
+						0.15,
+						0.4,
+						0.8,
+						1.4
+					]
+				}
+			],
+			"tags": [
+				"grab"
+			],
+			"sfx": {
+				"swing": "grab"
+			},
+			"name": "Overarm Throw",
+			"startup": 8,
+			"active": 3,
+			"recovery": 30,
+			"throw": {
+				"frames": 52,
+				"damage_frame": 38,
+				"damage": 140,
+				"release": [
+					2.0,
+					1.6
+				],
+				"recover": 8,
+				"breakable": true,
+				"path": [
+					[
+						0,
+						0.72,
+						0.1
+					],
+					[
+						12,
+						0.78,
+						0.3
+					],
+					[
+						26,
+						0.55,
+						0.75
+					],
+					[
+						38,
+						1.0,
+						0.25
+					],
+					[
+						52,
+						1.35,
+						0.0
+					]
+				]
+			},
+			"anim": {
+				"keys": [
+					[
+						5,
+						"grab_reach",
+						"snap"
+					],
+					[
+						12,
+						"grab_reach",
+						"linear"
+					],
+					[
+						42,
+						"stance",
+						"inout"
+					]
+				],
+				"hold": [
+					[
+						8,
+						"grab_hold",
+						"out"
+					],
+					[
+						24,
+						"gorm_overarm_load",
+						"inout"
+					],
+					[
+						38,
+						"gorm_overarm",
+						"snap"
+					],
+					[
+						52,
+						"stance",
+						"inout"
+					]
+				],
+				"victim": [
+					[
+						6,
+						"thrown_hold",
+						"out"
+					],
+					[
+						22,
+						"thrown_lift",
+						"inout"
+					],
+					[
+						38,
+						"air_fall",
+						"snap"
+					]
+				]
+			}
+		},
+		"double_wristlock": {
+			"kind": "grab",
+			"level": "throw",
+			"requires": "",
+			"hitboxes": [
+				{
+					"rect": [
+						0.15,
+						0.4,
+						0.8,
+						1.4
+					]
+				}
+			],
+			"tags": [
+				"grab"
+			],
+			"sfx": {
+				"swing": "grab"
+			},
+			"name": "Double Wristlock",
+			"startup": 9,
+			"active": 3,
+			"recovery": 32,
+			"throw": {
+				"frames": 70,
+				"damage_frame": 54,
+				"damage": 150,
+				"release": [
+					0.9,
+					0.6
+				],
+				"recover": 4,
+				"breakable": true,
+				"path": [
+					[
+						0,
+						0.72,
+						0.1
+					],
+					[
+						16,
+						0.7,
+						0.0
+					],
+					[
+						40,
+						0.64,
+						0.0
+					],
+					[
+						54,
+						0.6,
+						0.0
+					],
+					[
+						70,
+						0.72,
+						0.0
+					]
+				]
+			},
+			"anim": {
+				"keys": [
+					[
+						5,
+						"grab_reach",
+						"snap"
+					],
+					[
+						12,
+						"grab_reach",
+						"linear"
+					],
+					[
+						44,
+						"stance",
+						"inout"
+					]
+				],
+				"hold": [
+					[
+						8,
+						"grab_hold",
+						"out"
+					],
+					[
+						24,
+						"gorm_lock",
+						"inout"
+					],
+					[
+						46,
+						"gorm_lock",
+						"linear"
+					],
+					[
+						54,
+						"gorm_lock_crank",
+						"snap"
+					],
+					[
+						62,
+						"gorm_lock_crank",
+						"linear"
+					],
+					[
+						70,
+						"stance",
+						"inout"
+					]
+				],
+				"victim": [
+					[
+						6,
+						"thrown_hold",
+						"out"
+					],
+					[
+						26,
+						"hit_low",
+						"inout"
+					],
+					[
+						46,
+						"crumple",
+						"inout"
+					],
+					[
+						70,
+						"crumple",
+						"linear"
+					]
+				]
+			}
+		},
+		"forearm_smash": {
+			"name": "Forearm Smash",
+			"kind": "special",
+			"startup": 13,
+			"active": 4,
+			"recovery": 24,
+			"level": "mid",
+			"damage": 100,
+			"hitstun": 28,
+			"blockstun": 14,
+			"effect": "knockdown",
+			"launch": [
+				3.0,
+				2.0
+			],
+			"hitstop": 12,
+			"motion": [
+				[
+					13,
+					0.35
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.2,
+						1.0,
+						0.9,
+						0.8
+					]
+				}
+			],
+			"props": {
+				"armor": [
+					3,
+					12
+				]
+			},
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						6,
+						"gorm_forearm_load",
+						"out"
+					],
+					[
+						13,
+						"gorm_forearm",
+						"snap"
+					],
+					[
+						18,
+						"gorm_forearm",
+						"linear"
+					],
+					[
+						41,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "heavy"
+			}
+		},
+		"gorm_headbutt": {
+			"name": "Headbutt",
+			"kind": "special",
+			"startup": 9,
+			"active": 3,
+			"recovery": 20,
+			"level": "high",
+			"damage": 85,
+			"hitstun": 26,
+			"blockstun": 12,
+			"effect": "stagger",
+			"hitstop": 10,
+			"motion": [
+				[
+					9,
+					0.3
+				]
+			],
+			"hitboxes": [
+				{
+					"rect": [
+						0.15,
+						1.35,
+						0.75,
+						0.6
+					]
+				}
+			],
+			"anim": {
+				"tip": "hand_r",
+				"keys": [
+					[
+						4,
+						"gorm_headbutt_load",
+						"out"
+					],
+					[
+						9,
+						"gorm_headbutt",
+						"snap"
+					],
+					[
+						13,
+						"gorm_headbutt",
+						"linear"
+					],
+					[
+						32,
+						"stance",
+						"inout"
+					]
+				]
+			},
+			"sfx": {
+				"swing": "heavy"
+			}
 		}
 	},
 	"commands": [
@@ -1198,6 +1579,22 @@
 		[
 			"F,B+LP",
 			"belly_to_belly"
+		],
+		[
+			"B,F+HP",
+			"overarm_throw"
+		],
+		[
+			"D,B+LP",
+			"double_wristlock"
+		],
+		[
+			"F,B+HP",
+			"forearm_smash"
+		],
+		[
+			"D,B+HP",
+			"gorm_headbutt"
 		]
 	],
 	"finisher": {
@@ -1233,7 +1630,11 @@
 		"weights": {
 			"tallow_slaps": 1.1,
 			"belly_slide": 0.5,
-			"rising_belly": 0.2
+			"rising_belly": 0.2,
+			"overarm_throw": 0.45,
+			"double_wristlock": 0.35,
+			"forearm_smash": 0.6,
+			"gorm_headbutt": 0.7
 		},
 		"approach": [
 			"D,F+LK"

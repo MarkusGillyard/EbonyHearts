@@ -1,4 +1,4 @@
-"""Shared building blocks for the Mortal Slopbat stage sets (Blender 5.2, headless; see run.sh).
+"""Shared building blocks for the Ebony Hearts stage sets (Blender 5.2, headless; see run.sh).
 
 Coordinates: Blender metres, Z up. The fighting plane is XZ at Y = 0; fighters walk along X
 (-7..+7) on a floor at Z = 0; the camera stands at -Y looking toward +Y; scenery runs toward +Y.

@@ -18,7 +18,8 @@ public:
 	// Called when the screen is shown (after Build) and when it is replaced.
 	virtual void Enter() {}
 	virtual void Leave() {}
-	// Whether a running match keeps drawing behind this screen.
+	// Whether a running match keeps drawing behind this screen. Any other screen stands in the hall
+	// (ASlopShowroom), which it may compose in Enter.
 	virtual bool ShowsMatch() const { return false; }
 	USlopGameInstance* GI = nullptr;
 	// For logs and automated checks.

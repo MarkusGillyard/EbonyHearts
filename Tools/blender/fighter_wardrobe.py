@@ -111,7 +111,7 @@ def nonarm_masks(ctx, objs):
 def wrap_skirt(ctx, key, surface, z_top, z_hem, open_frac=0.14, open_at="front", gap=0.012,
                flare=0.03, folds=(0.006, 7), slit_z=None, share=(0.85, 0.45, 0.2), thickness=0.004,
                nu=40, row=0.028, y_c=None, objs=None, tatter=None, hips_z=None, weight_mode="legs",
-               snug_rows=1, arc=None, calf_share=0.0):
+               snug_rows=1, arc=None, calf_share=0.0, max_slope=None):
     """A sheet hanging round a vertical axis from z_top to z_hem: each column hangs from the
     widest point above it (so it drapes over hips, belly or shoulders), flares and folds
     towards the hem. `open_frac` of the circumference is left open at the front (coats,
@@ -121,7 +121,8 @@ def wrap_skirt(ctx, key, surface, z_top, z_hem, open_frac=0.14, open_at="front",
     back. `tatter` = (depth, teeth) cuts a ragged hem. `arc` = (from, to) angles (0 front, +x
     left) makes an explicit panel instead (wrap-over skirts); `calf_share` hands the hem below
     the knee to the shins and caps the pelvis share by height, so a long hem stays above the
-    floor in a deep crouch."""
+    floor in a deep crouch. `max_slope` starts each column's flare earlier, so a leg entering it
+    lower down makes a ramp and not a step in the silhouette."""
     s, V = ctx.s, ctx.V
     if y_c is None:
         y_c = float(ctx.head("pelvis")[1])
@@ -156,6 +157,9 @@ def wrap_skirt(ctx, key, surface, z_top, z_hem, open_frac=0.14, open_at="front",
     env = R.copy()
     for i in range(snug_rows, len(zs)):
         env[i] = np.maximum(env[i], env[i - 1])
+    if max_slope:
+        for i in range(len(zs) - 2, snug_rows - 1, -1):
+            env[i] = np.maximum(env[i], env[i + 1] - max_slope * (zs[i] - zs[i + 1]))
     for _ in range(2):
         env[:, 1:-1] = 0.5 * env[:, 1:-1] + 0.25 * (env[:, :-2] + env[:, 2:])
     below = (z_top - zs) / max(z_top - z_hem, 1e-6)

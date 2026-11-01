@@ -3,56 +3,141 @@
 #include "Engine/Texture2D.h"
 #include "Misc/Paths.h"
 #include "Styling/CoreStyle.h"
-#include "Widgets/Images/SImage.h"
-#include "Widgets/Layout/SBorder.h"
-#include "Widgets/Layout/SBox.h"
-#include "Widgets/SBoxPanel.h"
-#include "Widgets/SOverlay.h"
-#include "Widgets/Text/STextBlock.h"
+#include "Styling/SlateBrush.h"
 #include "Core/SlopGameInstance.h"
 
 #define LOCTEXT_NAMESPACE "SlopUI"
 
 namespace SlopUI
 {
-	const FLinearColor Accent(FColor(168, 219, 56));
-	const FLinearColor Amber(FColor(245, 168, 61));
-	const FLinearColor Rust(FColor(184, 61, 31));
-	const FLinearColor Text(FColor(237, 230, 209));
-	const FLinearColor Dim(FColor(153, 158, 143));
-	const FLinearColor Bg(FColor(5, 9, 8));
-	const FLinearColor Panel(0.004f, 0.007f, 0.006f, 0.88f);
-	const FLinearColor PanelEdge(FColor(46, 56, 46));
+	const FLinearColor Ink(FColor(10, 7, 16));
+	const FLinearColor Panel = FLinearColor(FColor(14, 9, 21)).CopyWithNewOpacity(0.84f);
+	const FLinearColor Raised = FLinearColor(FColor(44, 26, 66)).CopyWithNewOpacity(0.9f);
+	const FLinearColor Line = FLinearColor(FColor(133, 122, 138)).CopyWithNewOpacity(0.55f);
+	const FLinearColor Text(FColor(232, 225, 236));
+	const FLinearColor Dim(FColor(174, 162, 184));
+	const FLinearColor Faint(FColor(108, 98, 116));
+	const FLinearColor Accent(FColor(136, 77, 186));
+	const FLinearColor Spark(FColor(210, 125, 242));
+	const FLinearColor Second(FColor(124, 196, 214));
+	const FLinearColor Warn(FColor(232, 168, 76));
+	const FLinearColor Danger(FColor(218, 62, 72));
+	const FLinearColor Good(FColor(126, 200, 160));
+	const FLinearColor Qhi(1.f, 0.78f, 0.3f);
+	const FLinearColor Run(FColor(96, 150, 232));
 
 	static TSharedPtr<const FCompositeFont> LoadFont(const TCHAR* Name, const TCHAR* File)
 	{
 		const FString Path = FPaths::ProjectContentDir() / TEXT("Fonts") / File;
 		TSharedPtr<FStandaloneCompositeFont> F = MakeShared<FStandaloneCompositeFont>(FName(Name), Path, EFontHinting::Default, EFontLoadingPolicy::LazyLoad);
-		// Arrows, ticks, dots and the infinity sign come from the engine's own fallback face; the
-		// game's faces have letters, digits and common punctuation only.
+		// Arrows, button symbols and marks come from the engine's own fallback face; the game's faces
+		// have letters, digits and common punctuation only.
 		F->FallbackTypeface.Typeface.AppendFont(TEXT("Fallback"), FPaths::EngineContentDir() / TEXT("Slate/Fonts/DroidSansFallback.ttf"), EFontHinting::Default, EFontLoadingPolicy::LazyLoad);
 		return F;
 	}
 
 	static float TextScale = 1.f;
+	static bool bReducedMotion = false;
 
 	void SetTextScale(float Scale) { TextScale = FMath::Clamp(Scale, 0.85f, 1.25f); }
 
+	// Sizes are written in pixels at 1080p; Slate's are points.
+	static FSlateFontInfo Make(const TSharedPtr<const FCompositeFont>& F, float Size, int32 Tracking = 0)
+	{
+		FSlateFontInfo I(F, Size * 0.75f * TextScale);
+		I.LetterSpacing = Tracking;
+		return I;
+	}
+
+	// The faces are loaded once and kept for the life of the process (Slate holds them until exit).
 	FSlateFontInfo Display(float Size)
 	{
-		// Loaded once and kept for the life of the process (Slate holds it until exit).
-		static TSharedPtr<const FCompositeFont>* F = new TSharedPtr<const FCompositeFont>(LoadFont(TEXT("NewRocker"), TEXT("NewRocker-Regular.ttf")));
-		// Sizes are written in pixels at 1080p, as the original's were; Slate's are points.
-		return FSlateFontInfo(*F, Size * 0.75f * TextScale);
+		static TSharedPtr<const FCompositeFont>* F = new TSharedPtr<const FCompositeFont>(LoadFont(TEXT("CinzelSemiBold"), TEXT("Cinzel-SemiBold.ttf")));
+		return Make(*F, Size, 40);
+	}
+
+	FSlateFontInfo Call(float Size)
+	{
+		static TSharedPtr<const FCompositeFont>* F = new TSharedPtr<const FCompositeFont>(LoadFont(TEXT("CinzelBold"), TEXT("Cinzel-Bold.ttf")));
+		return Make(*F, Size, 60);
 	}
 
 	FSlateFontInfo Body(float Size)
 	{
-		static TSharedPtr<const FCompositeFont>* F = new TSharedPtr<const FCompositeFont>(LoadFont(TEXT("Oswald"), TEXT("Oswald-Variable.ttf")));
-		return FSlateFontInfo(*F, Size * 0.75f * TextScale);
+		static TSharedPtr<const FCompositeFont>* F = new TSharedPtr<const FCompositeFont>(LoadFont(TEXT("SourceSans"), TEXT("SourceSans3-Regular.ttf")));
+		return Make(*F, Size);
 	}
 
-	const FSlateBrush* White() { return FCoreStyle::Get().GetBrush("GenericWhiteBox"); }
+	FSlateFontInfo Strong(float Size)
+	{
+		static TSharedPtr<const FCompositeFont>* F = new TSharedPtr<const FCompositeFont>(LoadFont(TEXT("SourceSansSemi"), TEXT("SourceSans3-SemiBold.ttf")));
+		return Make(*F, Size);
+	}
+
+	FSlateFontInfo Caps(float Size)
+	{
+		FSlateFontInfo I = Strong(Size);
+		I.LetterSpacing = 140;
+		return I;
+	}
+
+	static UTexture2D* LoadUiTexture(const FString& Folder, const FString& Name)
+	{
+		UTexture2D* T = LoadObject<UTexture2D>(nullptr, *FString::Printf(TEXT("%s/%s.%s"), *Folder, *Name, *Name), nullptr, LOAD_Quiet | LOAD_NoWarn);
+		if (T)
+		{
+			T->AddToRoot();
+		}
+		return T;
+	}
+
+	const FSlateBrush* Brush(ETex T)
+	{
+		struct FDef { const TCHAR* Name; FVector2f Size; bool bSliced; bool bFlipped; };
+		static const FDef Defs[(int32)ETex::Count] = {
+			{TEXT("T_ui_logo"), {2172.f, 724.f}, false, false},
+			{TEXT("T_ui_logo_energy"), {1086.f, 362.f}, false, false},
+			{TEXT("T_ui_fade_side"), {1024.f, 64.f}, false, false},
+			{TEXT("T_ui_fade_foot"), {64.f, 512.f}, false, false},
+			{TEXT("T_ui_rule"), {1024.f, 8.f}, false, false},
+			{TEXT("T_ui_spike"), {64.f, 64.f}, false, false},
+			{TEXT("T_ui_spike_hollow"), {64.f, 64.f}, false, false},
+			{TEXT("T_ui_frame"), {48.f, 48.f}, true, false},
+			{TEXT("T_ui_bar_frame"), {880.f, 74.f}, false, false},
+			{TEXT("T_ui_bar_frame"), {880.f, 74.f}, false, true},
+			{TEXT("T_ui_timer_plate"), {150.f, 116.f}, false, false},
+			{TEXT("T_ui_bar_fill"), {512.f, 24.f}, false, false},
+			{TEXT("T_ui_band"), {1024.f, 256.f}, false, false},
+			{TEXT("T_ui_vignette"), {512.f, 288.f}, false, false},
+			{TEXT("T_ui_glow"), {256.f, 256.f}, false, false},
+			{TEXT("T_ui_sweep"), {512.f, 64.f}, false, false},
+		};
+		// Kept for the life of the process, like the fonts: a handful of small textures.
+		static TArray<TSharedPtr<FSlateBrush>>* Cache = new TArray<TSharedPtr<FSlateBrush>>();
+		if (Cache->Num() == 0)
+		{
+			Cache->SetNum((int32)ETex::Count);
+		}
+		TSharedPtr<FSlateBrush>& B = (*Cache)[(int32)T];
+		if (!B.IsValid())
+		{
+			const FDef& D = Defs[(int32)T];
+			B = MakeShared<FSlateBrush>();
+			if (UTexture2D* Tex = LoadUiTexture(TEXT("/Game/Slop/UI"), D.Name))
+			{
+				B->SetResourceObject(Tex);
+				B->ImageSize = FVector2D(D.Size);
+				B->DrawAs = D.bSliced ? ESlateBrushDrawType::Box : ESlateBrushDrawType::Image;
+				B->Margin = D.bSliced ? FMargin(0.34f) : FMargin(0.f);
+				B->Mirroring = D.bFlipped ? ESlateBrushMirrorType::Horizontal : ESlateBrushMirrorType::NoMirror;
+			}
+			else
+			{
+				B->DrawAs = ESlateBrushDrawType::NoDrawType;
+			}
+		}
+		return B.Get();
+	}
 
 	const FSlateBrush* Box()
 	{
@@ -60,99 +145,55 @@ namespace SlopUI
 		return &B;
 	}
 
-	const FSlateBrush* Rounded()
+	void SetReducedMotion(bool bReduced) { bReducedMotion = bReduced; }
+	bool ReducedMotion() { return bReducedMotion; }
+	float EaseOut(float T) { const float I = 1.f - FMath::Clamp(T, 0.f, 1.f); return 1.f - I * I * I; }
+	float EaseInOut(float T) { T = FMath::Clamp(T, 0.f, 1.f); return T * T * (3.f - 2.f * T); }
+	float Span(float T, float From, float To) { return FMath::Clamp((T - From) / FMath::Max(To - From, 1e-4f), 0.f, 1.f); }
+
+	float StageScale(const FVector2D& Local) { return FMath::Max(1e-3f, FMath::Min((float)Local.X / 1920.f, (float)Local.Y / 1080.f)); }
+	FVector2D StageSize(const FVector2D& Local) { return Local / StageScale(Local); }
+
+	static float ScreenMargin = 0.f;
+
+	void SetScreenMargin(float Share) { ScreenMargin = FMath::Clamp(Share, 0.f, 0.05f); }
+
+	FStageFrame StageFrame(const FVector2D& Local)
 	{
-		static FSlateRoundedBoxBrush B(FLinearColor::White, 6.f, FLinearColor::White, 0.f);
-		return &B;
+		FStageFrame F;
+		F.Origin = Local * ScreenMargin;
+		const FVector2D Inner = Local - F.Origin * 2.0;
+		F.Scale = StageScale(Inner);
+		F.Size = Inner / F.Scale;
+		return F;
 	}
 
-	TSharedRef<SWidget> Label(const TAttribute<FText>& InText, float Size, const TAttribute<FSlateColor>& Color, bool bDisplay)
+	FText StageName(FName Id)
 	{
-		return SNew(STextBlock).Text(InText).Font(bDisplay ? Display(Size) : Body(Size)).ColorAndOpacity(Color)
-			.ShadowOffset(FVector2D(2.f, 2.f)).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.6f));
+		if (Id == TEXT("rendering_yards")) return LOCTEXT("Yards", "The Rendering Yards");
+		if (Id == TEXT("drowned_chapel")) return LOCTEXT("Chapel", "The Drowned Chapel");
+		if (Id == TEXT("stilt_market")) return LOCTEXT("Market", "Lowmere Stilt Market");
+		if (Id == TEXT("roost")) return LOCTEXT("Roost", "The Roost");
+		if (Id == TEXT("palace_gate")) return LOCTEXT("Palace", "The Fragmented Palace");
+		if (Id == TEXT("heartwater")) return LOCTEXT("Heartwater", "The Heartwater");
+		return FText::FromName(Id);
 	}
 
-	TSharedRef<SWidget> Title(const FText& InText, float Size, const FLinearColor& Color)
+	FText StageBlurb(FName Id)
 	{
-		FSlateFontInfo F = Display(Size);
-		F.OutlineSettings.OutlineSize = 2;
-		F.OutlineSettings.OutlineColor = FLinearColor(0, 0, 0, 0.8f);
-		return SNew(STextBlock).Text(InText).Font(F).ColorAndOpacity(Color)
-			.ShadowOffset(FVector2D(3.f, 4.f)).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.7f));
-	}
-
-	TSharedRef<SWidget> Menu(const TArray<FText>& Items, TFunction<int32()> Selected, TFunction<bool(int32)> Enabled,
-		TFunction<void(int32)> OnClick, float Width, float Size, TFunction<void(int32)> OnHover)
-	{
-		TSharedRef<SVerticalBox> V = SNew(SVerticalBox);
-		for (int32 I = 0; I < Items.Num(); ++I)
-		{
-			auto IsSel = [Selected, I]() { return Selected() == I; };
-			auto IsOn = [Enabled, I]() { return !Enabled || Enabled(I); };
-			V->AddSlot().AutoHeight().Padding(0.f, 3.f)
-			[
-				SNew(SBox).WidthOverride(Width)
-				[
-					SNew(SBorder)
-					.BorderImage(Rounded())
-					.BorderBackgroundColor_Lambda([IsSel]() { return IsSel() ? FLinearColor(0.04f, 0.07f, 0.02f, 0.95f) : FLinearColor(0.01f, 0.016f, 0.013f, 0.8f); })
-					.Padding(FMargin(18.f, 6.f))
-					.OnMouseButtonDown_Lambda([OnClick, IsOn, I](const FGeometry&, const FPointerEvent&)
-					{
-						if (OnClick && IsOn())
-						{
-							OnClick(I);
-						}
-						return FReply::Handled();
-					})
-					// The item under the mouse becomes the selection, as in the original.
-					.OnMouseMove_Lambda([OnHover, IsOn, IsSel, I](const FGeometry&, const FPointerEvent&)
-					{
-						if (OnHover && IsOn() && !IsSel())
-						{
-							OnHover(I);
-						}
-						return FReply::Unhandled();
-					})
-					[
-						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 12, 0)
-						[
-							SNew(SBox).WidthOverride(6.f).HeightOverride(Size * 1.1f)
-							[
-								SNew(SImage).Image(Box()).ColorAndOpacity_Lambda([IsSel]() { return IsSel() ? Accent : FLinearColor::Transparent; })
-							]
-						]
-						+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)
-						[
-							SNew(STextBlock).Text(Items[I]).Font(Body(Size))
-							.ColorAndOpacity_Lambda([IsSel, IsOn]() { return !IsOn() ? FSlateColor(Dim * 0.6f) : (IsSel() ? FSlateColor(Accent) : FSlateColor(Text)); })
-						]
-					]
-				]
-			];
-		}
-		return V;
-	}
-
-	TSharedRef<SWidget> PanelBox(const TSharedRef<SWidget>& Content, const FMargin& Padding)
-	{
-		return SNew(SBorder).BorderImage(Rounded()).BorderBackgroundColor(Panel).Padding(Padding)[Content];
-	}
-
-	TSharedRef<SWidget> Hint(TFunction<FText()> TextFn)
-	{
-		return SNew(SBox).Padding(FMargin(0, 0, 0, 34)).VAlign(VAlign_Bottom).HAlign(HAlign_Center)
-		[
-			SNew(STextBlock).Font(Body(24.f)).ColorAndOpacity(Dim).Text_Lambda(MoveTemp(TextFn))
-		];
+		if (Id == TEXT("rendering_yards")) return LOCTEXT("YardsB", "Tallowmarket's iron floor between great glowing vats, catwalks and furnace mouths. Gorm's home.");
+		if (Id == TEXT("drowned_chapel")) return LOCTEXT("ChapelB", "Lowmere's sunken church: ankle-deep water on stone flags, broken pews, candles and a rose window full of moonlight. Mirela's home.");
+		if (Id == TEXT("stilt_market")) return LOCTEXT("MarketB", "The market on stilts over the bog at night: planks and rope rails, strings of paper lanterns, mist. Bram's beat.");
+		if (Id == TEXT("roost")) return LOCTEXT("RoostB", "Beneath the Sump: a ledge over a glowing lake, tar falls, bone and the drowned hoard, lit by green storm light.");
+		if (Id == TEXT("heartwater")) return LOCTEXT("HeartwaterB", "Water without a shore: the Fragment's own arena.");
+		return FText::GetEmpty();
 	}
 
 	FText Confirm(Slop::EGlyphs G)
 	{
 		switch (G)
 		{
-		case Slop::EGlyphs::PlayStation: return LOCTEXT("PsConfirm", "Cross");
+		case Slop::EGlyphs::PlayStation: return LOCTEXT("PsConfirm", "✕");
 		case Slop::EGlyphs::Xbox: return LOCTEXT("XbConfirm", "A");
 		default: return LOCTEXT("KbConfirm", "Enter");
 		}
@@ -162,7 +203,7 @@ namespace SlopUI
 	{
 		switch (G)
 		{
-		case Slop::EGlyphs::PlayStation: return LOCTEXT("PsBack", "Circle");
+		case Slop::EGlyphs::PlayStation: return LOCTEXT("PsBack", "○");
 		case Slop::EGlyphs::Xbox: return LOCTEXT("XbBack", "B");
 		default: return LOCTEXT("KbBack", "Esc");
 		}
@@ -178,11 +219,11 @@ namespace SlopUI
 		}
 	}
 
-	FText ResetName(Slop::EGlyphs G)
+	FText ResetName(USlopGameInstance* GI)
 	{
-		switch (G)
+		switch (GI->Router->Glyphs())
 		{
-		case Slop::EGlyphs::PlayStation: return LOCTEXT("PsReset", "Create");
+		case Slop::EGlyphs::PlayStation: return GI->Router->PadSaysShare() ? LOCTEXT("PsResetOld", "Share") : LOCTEXT("PsReset", "Create");
 		case Slop::EGlyphs::Xbox: return LOCTEXT("XbReset", "View");
 		default: return LOCTEXT("KbReset", "F4");
 		}
@@ -201,12 +242,14 @@ namespace SlopUI
 	FText KeyName(const FKey& K, Slop::EGlyphs G)
 	{
 		const bool bPs = G == Slop::EGlyphs::PlayStation;
-		if (K == EKeys::Gamepad_FaceButton_Bottom) return bPs ? LOCTEXT("Cross", "Cross") : LOCTEXT("A", "A");
-		if (K == EKeys::Gamepad_FaceButton_Right) return bPs ? LOCTEXT("Circle", "Circle") : LOCTEXT("B", "B");
-		if (K == EKeys::Gamepad_FaceButton_Left) return bPs ? LOCTEXT("Square", "Square") : LOCTEXT("X", "X");
-		if (K == EKeys::Gamepad_FaceButton_Top) return bPs ? LOCTEXT("Triangle", "Triangle") : LOCTEXT("Y", "Y");
+		if (K == EKeys::Gamepad_FaceButton_Bottom) return bPs ? LOCTEXT("Cross", "✕") : LOCTEXT("A", "A");
+		if (K == EKeys::Gamepad_FaceButton_Right) return bPs ? LOCTEXT("Circle", "○") : LOCTEXT("B", "B");
+		if (K == EKeys::Gamepad_FaceButton_Left) return bPs ? LOCTEXT("Square", "□") : LOCTEXT("X", "X");
+		if (K == EKeys::Gamepad_FaceButton_Top) return bPs ? LOCTEXT("Triangle", "△") : LOCTEXT("Y", "Y");
 		if (K == EKeys::Gamepad_LeftShoulder) return bPs ? LOCTEXT("L1", "L1") : LOCTEXT("LB", "LB");
 		if (K == EKeys::Gamepad_RightShoulder) return bPs ? LOCTEXT("R1", "R1") : LOCTEXT("RB", "RB");
+		if (K == EKeys::Gamepad_LeftTrigger || K == EKeys::Gamepad_LeftTriggerAxis) return bPs ? LOCTEXT("L2", "L2") : LOCTEXT("LT", "LT");
+		if (K == EKeys::Gamepad_RightTrigger || K == EKeys::Gamepad_RightTriggerAxis) return bPs ? LOCTEXT("R2", "R2") : LOCTEXT("RT", "RT");
 		if (K == EKeys::Gamepad_LeftThumbstick) return bPs ? LOCTEXT("L3", "L3") : LOCTEXT("LS", "LS");
 		if (K == EKeys::Gamepad_RightThumbstick) return bPs ? LOCTEXT("R3", "R3") : LOCTEXT("RS", "RS");
 		if (K == EKeys::Gamepad_DPad_Up) return LOCTEXT("DUp", "D-pad up");
@@ -226,6 +269,39 @@ namespace SlopUI
 		return KeyName(GI->Settings.PadButtons[(int32)A], G);
 	}
 
+	FString ButtonsIn(USlopGameInstance* GI, const FString& Notation, int32 Side)
+	{
+		using Slop::EGameAction;
+		static const TPair<const TCHAR*, EGameAction> Codes[] = {{TEXT("HP"), EGameAction::HP}, {TEXT("LP"), EGameAction::LP}, {TEXT("HK"), EGameAction::HK},
+			{TEXT("LK"), EGameAction::LK}, {TEXT("BL"), EGameAction::BL}, {TEXT("RN"), EGameAction::RN}};
+		FString Out;
+		for (int32 I = 0; I < Notation.Len();)
+		{
+			int32 End = I;
+			while (End < Notation.Len() && FChar::IsAlnum(Notation[End]))
+			{
+				++End;
+			}
+			if (End == I)
+			{
+				Out.AppendChar(Notation[I++]);
+				continue;
+			}
+			const FString Word = Notation.Mid(I, End - I);
+			FString Name = Word;
+			for (const TPair<const TCHAR*, EGameAction>& C : Codes)
+			{
+				if (Word == C.Key)
+				{
+					Name = ActionKey(GI, C.Value, Side).ToString();
+				}
+			}
+			Out += Name;
+			I = End;
+		}
+		return Out;
+	}
+
 	const FSlateBrush* Portrait(FName Fighter)
 	{
 		// Kept for the life of the process, like the fonts: a handful of small textures.
@@ -235,11 +311,10 @@ namespace SlopUI
 			return Found->Get();
 		}
 		const FString Name = FString::Printf(TEXT("T_portrait_%s"), *Fighter.ToString());
-		UTexture2D* T = LoadObject<UTexture2D>(nullptr, *FString::Printf(TEXT("/Game/Slop/Portraits/%s.%s"), *Name, *Name), nullptr, LOAD_Quiet | LOAD_NoWarn);
+		UTexture2D* T = LoadUiTexture(TEXT("/Game/Slop/Portraits"), Name);
 		TSharedPtr<FSlateBrush> B;
 		if (T)
 		{
-			T->AddToRoot();
 			B = MakeShared<FSlateBrush>();
 			B->SetResourceObject(T);
 			B->ImageSize = FVector2D(420, 500);
@@ -258,11 +333,10 @@ namespace SlopUI
 			return Found->Get();
 		}
 		const FString Name = FString::Printf(TEXT("T_stage_%s"), *Stage.ToString());
-		UTexture2D* T = LoadObject<UTexture2D>(nullptr, *FString::Printf(TEXT("/Game/Slop/UI/%s.%s"), *Name, *Name), nullptr, LOAD_Quiet | LOAD_NoWarn);
+		UTexture2D* T = LoadUiTexture(TEXT("/Game/Slop/UI"), Name);
 		TSharedPtr<FSlateBrush> B;
 		if (T)
 		{
-			T->AddToRoot();
 			B = MakeShared<FSlateBrush>();
 			B->SetResourceObject(T);
 			B->ImageSize = FVector2D(960, 540);
@@ -270,16 +344,6 @@ namespace SlopUI
 		}
 		Cache->Add(Stage, B);
 		return B.Get();
-	}
-
-	TSharedRef<SWidget> Backdrop()
-	{
-		return SNew(SOverlay)
-			+ SOverlay::Slot()[SNew(SImage).Image(Box()).ColorAndOpacity(Bg)]
-			+ SOverlay::Slot()
-			[
-				SNew(SImage).Image(Box()).ColorAndOpacity(FLinearColor(0.03f, 0.06f, 0.04f, 0.35f))
-			];
 	}
 }
 
