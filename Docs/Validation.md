@@ -702,6 +702,14 @@ the downloaded archive was byte-identical to the local one.
 
 The public branch carries 2.8.0 to 2.17.0 as one commit, so commits named from 2.8.0 on, here and in `Docs/Evidence`, are not in its history.
 
+## 2.17.1: the licence
+
+`LICENSE` now lets anyone download an official release build and play it for personal, non-commercial use; nothing else changed. `v2.17.1`:
+`EbonyHearts-2.17.1-linux-x86_64.tar.gz`, SHA-256 `85de43e27244ef4bf1d40b54ba90282d51ee362704cda62add3720e2a4561960`, Shipping build of commit `a3ba585`.
+167 tests pass. Checked as 2.17.0 was: every file against `SHA256SUMS`; a fresh unpack through `EbonyHearts.sh` on an empty save folder, offscreen, into a CPU
+fight for 50 s (frame median and 99th percentile 16.67 ms, exit 0); then from GitHub with no credentials, a fresh clone with all 1253 LFS files, fsck clean, and an
+archive byte-identical to the local one.
+
 ## Not verified
 
 - DualSense, USB connection, rumble and reconnection on a real pad, two physical pads (above).
